@@ -10,7 +10,7 @@
 | A work session (characters being built, scene, UI layout) | `.blend` — Blender's own file; JustStage's data rides in Blender data-blocks and `juststage` PropertyGroups | [Blender files](https://docs.blender.org/manual/en/latest/files/blend/index.html) |
 | A finished character for other programs | the USD character package ([`interchange.md`](interchange.md) §2) | OpenUSD |
 | A library asset (character, garment, groom, morph preset, skin preset, pose, expression) | one self-contained `.blend` per asset in a library folder, marked as an asset with Blender's metadata | [Asset libraries](https://docs.blender.org/manual/en/latest/files/asset_libraries/index.html) |
-| App settings | Blender add-on preferences (the extension's `AddonPreferences`) and the user's `juststage.json` in Blender's config folder for what preferences can't hold | [AddonPreferences](https://docs.blender.org/api/current/bpy.types.AddonPreferences.html) |
+| App settings | Blender add-on preferences (the extension's `AddonPreferences`, saved by Blender with the user's preferences) | [AddonPreferences](https://docs.blender.org/api/current/bpy.types.AddonPreferences.html) |
 
 No JustStage-private project format: `.blend` is the working file (R1 puts JustStage inside Blender; a second project
 format would be a second way to do Blender's job).
@@ -49,9 +49,9 @@ schema families with `_N` suffixes.
 
 | Layer | Version field | Where | Migration |
 |---|---|---|---|
-| The character JSON and the `juststage` PropertyGroups | `schema_version` (integer, starts at 1) | JSON root; each PropertyGroup | `juststage/migrations/v<N>.py`, run in order on `load_post` and on package import; tested with a frozen sample file per version ([`testing.md`](testing.md) §6) |
-| The base mesh and parts | `base_version` | the body and part meshes' PropertyGroup; the JSON | a vertex map per bump (`data/base/maps/v<old>-to-v<new>.json`) remaps morphs, weights, fit data |
-| The skeleton | `skeleton_version` | the armature; the JSON | append-only bone changes between minor versions; a rename table per major |
+| The JustStage USD schemas (`schema.usda`) and the `juststage` PropertyGroups generated from them | the USD family suffix (`JustStageSliderAPI_1` → `_2`); `schema_version` (integer) on the PropertyGroups | `schema.usda`; each PropertyGroup | `juststage/migrations/v<N>.py`, run in order on `load_post` and on package import; tested with a frozen sample package per version ([`testing.md`](testing.md) §6) |
+| The base mesh and parts | `baseVersion` | the body and part meshes' PropertyGroup; `JustStageCharacterAPI` | a vertex map per bump (`data/base/maps/v<old>-to-v<new>.usda`) remaps morphs, weights, fit data |
+| The skeleton | `skeletonVersion` | the armature; `JustStageCharacterAPI` | append-only bone changes between minor versions; a rename table per major |
 | The face control vocabulary | `face_controls_version` | `data/face/controls.json`; the DNA descriptor | additive; renames carry an alias list |
 | USD schemas | `_N` suffix per family | `schema.usda` | a new version is a new schema; readers accept all |
 | Commands | `since` and `deprecated` dates in each command's JSON Schema | the command registry | deprecated commands answer for 12 months at least (MCP's rule, §8), then are removed |
@@ -62,7 +62,8 @@ Rules:
 
 - A file whose `schema_version` is newer than the running extension knows is **refused with the needed version
   named** (Blender's behaviour on a newer major, §8), never half-loaded.
-- Unknown JSON fields and unknown `extensions` namespaces survive load and save untouched.
+- Unknown applied schemas, attributes and `customData` keys survive load and save untouched (USD keeps them; the
+  Blender side keeps them in ID properties it doesn't interpret).
 - Every change to a schema lands with its migration and its test in the same commit; a schema change without a
   migration fails the test suite.
 

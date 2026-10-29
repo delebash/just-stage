@@ -14,19 +14,33 @@ A JustStage character exists in three forms, each with one job (the kit rule "on
 | Form | Job | Standard | Link |
 |---|---|---|---|
 | **Blender data-blocks in a `.blend`** | the live, editable character while the user works, and the asset-library copy | Blender's own data model: Mesh, Shape Keys, Armature, Curves (hair), Material, Image; JustStage's own fields as a registered `PropertyGroup` named `juststage` on each data-block | [bpy.types.PropertyGroup](https://docs.blender.org/api/current/bpy.types.PropertyGroup.html), [Asset libraries](https://docs.blender.org/manual/en/latest/files/asset_libraries/index.html) |
-| **The character package** (a folder: `character.usda` root layer, binary `.usdc` side layers, `textures/`, `grooms/`, `rig/`, `character.juststage.json`) | the portable character: export, import, the Unreal plugin, JustDirect, archives | OpenUSD with UsdSkel, UsdShade, UsdGeomBasisCurves, plus JustStage applied API schemas; companions for what USD lacks (R17, §8) | [UsdSkel](https://openusd.org/release/api/_usd_skel__intro.html), [UsdShade](https://openusd.org/release/api/usd_shade_page_front.html) |
-| **The character JSON** (`character.juststage.json`, one JSON Schema 2020-12) | everything USD has no schema for: slider definitions, shape-space maps, correctives, wrinkle layers, groom settings, garment fit data, provenance and licence; also the source of the `PropertyGroup` classes | JSON Schema 2020-12 (the schema language MCP tools use too, §8) | [json-schema.org](https://json-schema.org/draft/2020-12) |
+| **The character package** (a folder: `character.usda` root layer, binary `.usdc` side layers, `textures/`, `grooms/`, `rig/face.dna`) | the portable character: export, import, the Unreal plugin, JustDirect, archives | OpenUSD with UsdSkel, UsdShade (render contexts), UsdGeomBasisCurves, UsdGeomSubset, primvars, `assetInfo`; **JustStage applied API schemas** for what the core schemas lack (R17, §8); the DNA face rig beside it | [UsdSkel](https://openusd.org/release/api/_usd_skel__intro.html), [UsdShade](https://openusd.org/release/api/usd_shade_page_front.html), [applied API schemas](https://openusd.org/release/api/_usd__page__generating_schemas.html) |
+| **The sidecar** (`<name>.juststage.json`, written only beside FBX and glTF exports) | carries the JustStage schema data into formats that cannot hold it — the pattern CC5 (FBX + JSON + `.fbxkey`), Daz (FBX + `.dtu`) and MetaHuman (FBX + `.dna`) use (S9) | generated from `schema.usda`; JSON Schema 2020-12 | — |
 
-The `PropertyGroup` classes are **generated at registration from the JSON Schema** (one source; `bpy.props` fields per
-schema property), so the `.blend` form and the JSON form never drift. Mesh, shape-key, bone, curve, image and material
-data stay in Blender's own blocks and in USD; the JSON carries references by name, never geometry.
+**One source: `schema.usda`.** JustStage's own data is defined once, as USD applied API schemas in `schema.usda`
+(USD's own way to extend USD; `usdGenSchema` generates the C++/Python classes — the mechanism Epic uses for
+`GroomAPI`/`GroomBindingAPI`, S9 §4). From that file the build generates the Blender `PropertyGroup` classes (`bpy.props`
+fields per attribute), the sidecar's JSON Schema, and the reference docs. Blender writes and reads the schemas through
+its own **USD hook API** (`bpy.types.USDHook`: `on_export` gets the `pxr` stage and prim map, `on_material_export` the
+USD material, `on_import`/`on_material_import` the reverse — Blender's source `io/usd/intern/usd_hook.cc` and its docs
+example, read 2026-10-29; Blender's bundled `pxr` module is what the example imports), so a JustStage character is a
+single USD package any USD reader opens: the standard parts are read everywhere, the applied schemas by JustStage, the
+Unreal plugin and JustDirect, and ignored (not lost) elsewhere, by USD's design.
 
-**NOT STANDARD — the character JSON schema itself.** No open standard carries correctives, slider definitions,
-wrinkle layers or garment fit data (§8: UsdSkel has none; the AOUSD character group may not publish normative schemas
-before 2027; no app's USD carries correctives). Standard option: USD only — loses correctives today (S9). Trade-off:
-one schema of our own to maintain and version, against losing the data that makes a CC5-class character a character.
-Where a standard appears (AOUSD CMI, OpenExec rigs), the JSON field moves into a USD schema and the JSON field is
-deprecated with a migration.
+**NOT STANDARD (N1) — the content of JustStage's applied schemas.** The *mechanism* is standard; the *fields* are ours
+because no industry schema defines correctives drivers, slider definitions, groom generator settings, garment layering
+or HD morphs (§8: UsdSkel "does not aim to provide general rigging and execution behaviours"; the AOUSD character
+interest group cannot publish normative schemas; no app's USD carries correctives — S9). Standard option: wait for
+AOUSD. Trade-off: fields of our own to version (`_N` families), against shipping characters whose joints collapse and
+whose sliders have no names. When AOUSD publishes, a converter maps our families onto theirs.
+
+Schema families (version 1): `JustStageCharacterAPI` (ids, base/skeleton/face versions), `JustStageSliderAPI` (slider
+definitions), `JustStageShapeSpaceAPI` (a space's parameter map), `JustStageHDMorphAPI`, `JustStageCorrectiveAPI`
+([`skeleton-and-face.md`](skeleton-and-face.md) §3), `JustStageGroomAPI`, `JustStageGarmentAPI`, `JustStageLipsyncAPI`,
+`JustStageTakeAPI` ([`animation-and-later-features.md`](animation-and-later-features.md)). Materials carry their JustStage
+parameters as a UsdShade network under the `juststage` render context (§3.2), provenance lives in USD's native
+`assetInfo` and `customData` (§6), per-vertex data in primvars, face sets in `UsdGeomSubset`s, references between prims
+as USD relationships — never as JSON blobs.
 
 ## 1 · The base human
 
@@ -48,11 +62,12 @@ Rules:
 
 - **Helpers and joint cubes are not part of the shipped base.** MakeHuman's helper geometry (tights, skirt, hair,
   genital) and its 125 joint cubes exist for MakeHuman's own fitting (`.mhclo`) and rigging; JustStage fits clothes
-  with its own method (R8) and rigs with its own skeleton (§2 of this doc). A fixed index map
+  with its own method (R8) and rigs with the UE5 skeleton (§2 of this doc). A fixed index map
   (`data/base/hm08-index-map.json`, 19,158 → 13,380 + parts) lets the importer read MakeHuman targets, `.mhclo` clothes
-  and MPFB2 rigs. **NOT STANDARD** against MakeHuman's convention of keeping helpers: the standard option is to ship
-  hm08 whole; the trade-off is 5,778 dead vertices in every character and every morph for a fitting system we don't
-  use. Waits for the user's word.
+  and MPFB2 rigs. Precedent: Anny, the bridge MHR reaches us through, already works on a 13,718-vertex MakeHuman mesh
+  (body, eyes, tongue — §5), not the 19,158-vertex raw mesh. **NOT STANDARD (N2)** against MakeHuman's own convention of
+  keeping helpers: the standard option is to ship hm08 whole; the trade-off is 5,778 dead vertices in every character
+  and every morph for a fitting system we don't use. Waits for the user's word.
 - **The body's topology is frozen** once the gate (R3) passes on it. Any change bumps `base_version` (integer) and
   ships a vertex map from the old base, so every morph, texture and garment made for version 1 still loads.
 - **Parts** are separate meshes, each with its own base version: `eye.L`, `eye.R` (eyeball with cornea bulge),
@@ -81,23 +96,24 @@ weights. Three ship (R4):
 | `gnm` | Google's GNM head: 253 identity components (170 head, 3 eyeball, 80 teeth) | each component = one shape key on the head region (and on the eye and teeth parts); typical range −3..+3 | Apache-2.0 | scan-realistic heads, eyes and teeth |
 
 Rules: a wrap is computed **offline** (deformation transfer: the space's mesh → hm08, the standard technique, §8 S9's
-"morph transfer"), checked in as data (`data/spaces/<space>/`), and versioned with the base. The wrap's error is
-measured and recorded (max and mean vertex distance in mm) — a gate input (R3). Sliders over a space are ordinary
-sliders (§1.3) whose `shape_keys` list the space's keys.
+"morph transfer") and shipped as a **USD layer of `UsdSkelBlendShape` prims** (`data/spaces/<space>.usdc`, the standard
+carrier for a shape basis), with the parameter map as `JustStageShapeSpaceAPI` attributes on the layer's root prim;
+versioned with the base. The wrap's error is measured and recorded (max and mean vertex distance in mm) — a gate input
+(R3). Sliders over a space are ordinary sliders (§1.3) whose `shape_keys` list the space's keys.
 
 ### 1.3 Morphs and sliders
 
 - A **morph** is a relative shape key on a level-0 mesh (Blender's own: [Shape Keys](https://docs.blender.org/manual/en/latest/animation/shape_keys/index.html)).
   Names are `<space>.<name>` (e.g. `makehuman.nose-width-incr`, `gnm.identity.017`, `user.jaw-square`). Shape keys on
   the body and on parts with the same name move together.
-- A **slider** is a JSON record (schema `slider`) the UI shows:
-  `id`, `label`, `group` (an anatomy path such as `head/nose`), `type` (`macro`, `detail`, `scan`, `hd`, `expression`,
-  `corrective`), `min`, `max` (default −1..1; the UI may extrapolate to the Blender shape-key limit, −10..10),
-  `default`, `mirror` (the paired slider id), `shape_keys` (list of `{name, weight}` or a named function for non-linear
-  maps), `hd` (optional: displacement deltas per level, §1.4), `source` (`{origin, licence, url}`).
-  Standard: the slider record follows CC5's observable grouping (anatomy groups, favourites, search, mirror pairs —
-  §2) and Blender's shape-key value model; the record format is ours (covered by the character JSON's NOT STANDARD
-  mark).
+- A **slider** is a prim under `/Character/Sliders/<id>` with `JustStageSliderAPI` applied: `label`, `group` (an
+  anatomy path such as `head/nose`), `type` (`macro`, `detail`, `scan`, `hd`, `expression`, `corrective`), `min`,
+  `max` (default −1..1; the UI may extrapolate to Blender's shape-key limit, −10..10), `default`, a `mirror`
+  relationship to the paired slider, `shapeKeys` (names) and `shapeWeights` (floats, or a `curve` for non-linear maps),
+  an `hd` relationship to its HD map prim (§1.4), and `assetInfo`/`customData` for origin and licence. Its **value** is a
+  plain float attribute (`juststage:value`), and the live weights go out through `UsdSkelAnimation.blendShapeWeights`
+  as USD defines. Standard: the grouping follows CC5's observable UI (anatomy groups, favourites, search, mirror pairs —
+  §2) and Blender's shape-key value model; the definition fields are N1's.
 - **Custom morphs:** sculpt on level 0 → "Save as slider" (R7) writes a shape key and a slider record; from an OBJ
   with the base's vertex count (CC5's Morph Slider Editor and Daz's Morph Loader Pro behaviour, §2, S9).
 - **Baking:** "Bake sliders into the base" collapses shape keys into the basis (Blender's "Apply as Shape"/"Join as
@@ -111,12 +127,16 @@ JustStage's equivalent:
 - **Level detail** lives in the Multires modifier's per-level displacement (Blender's own storage) for sculpted
   detail, and in **displacement maps** for authored or generated detail: `displacement` channel, OpenEXR 32-bit
   float, UDIM, one per level ([`#3`](#3--materials-and-texture-sets)).
-- An **HD morph** is a slider whose `hd` field names displacement-delta EXR tiles per level; the slider weight blends
-  them (shader-side in EEVEE through the material's displacement input, true displacement in Cycles). Its
-  low-frequency part is an ordinary level-0 shape key in the same slider.
-  **NOT STANDARD** — no open app defines HD morphs; the standard option is sculpt layers only (Blender's multires,
-  no slider); trade-off: a blend of displacement maps costs texture memory per active HD slider and must be baked
-  before export (a bake step exists anyway for every target). Waits for the user's word.
+- An **HD morph** is a slider whose `hd` relationship points at one displacement-delta map (EXR 32-bit float, UDIM
+  tiles, authored at the level-2 resolution; lower levels are derived by filtering, never authored twice); the slider
+  weight blends the active maps (shader-side in EEVEE through the material's displacement input, true displacement in
+  Cycles). Its low-frequency part is an ordinary level-0 shape key in the same slider. The map is the industry's
+  carrier for sculpted detail (ZBrush, Mari, Substance, Unreal and CC5's own per-level EXR displacement — §2).
+  **NOT STANDARD (N3)** — only the *blend by slider* is ours; the alternatives are ZBrush-style layers (per-vertex
+  offsets at the top level with an intensity slider), which Blender cannot key on multires without a fork, or a baked
+  level-2 mesh with shape keys (214,000 offsets per slider, and no more multires sculpting). Trade-off: texture memory
+  per active HD slider (measured at the gate), and a bake before export (a bake step exists anyway for every target).
+  Waits for the user's word.
 
 ## 2 · Rig, face rig and correctives
 
@@ -124,10 +144,10 @@ Defined in [`skeleton-and-face.md`](skeleton-and-face.md). In the data model the
 
 | Piece | Storage in `.blend` | Storage in the package | Standard |
 |---|---|---|---|
-| Skeleton | one Armature, deform bones in a `DEF` bone collection, Blender `.L`/`.R` names | `UsdSkelSkeleton` + `UsdSkelBindingAPI` on each skinned mesh | [Armatures](https://docs.blender.org/manual/en/latest/animation/armatures/index.html), UsdSkel |
+| Skeleton | one Armature, deform bones in a `DEF` bone collection, the UE5 skeleton's own names (`thigh_l`; Blender's mirror tools accept the `_l`/`_r` suffix — its naming page, read 2026-10-29) | `UsdSkelSkeleton` + `UsdSkelBindingAPI` on each skinned mesh | [Armatures](https://docs.blender.org/manual/en/latest/animation/armatures/index.html), UsdSkel |
 | Skin weights | vertex groups named after bones; max 8 influences per vertex on the body (MetaHuman LOD0 uses 12 on the head, 8 on the body — §8 pass 2); export presets cap to 4 where a target needs it | `primvars:skel:jointIndices/jointWeights` | UsdSkel |
-| Face rig | a DNA file (`rig/face.dna`) evaluated by OpenRigLogic; its outputs drive shape keys, face bones and wrinkle layers; the ARKit 52 shapes exist as plain shape keys too | `rig/face.dna` + the JSON's `face` section | OpenRigLogic (MIT) — [repo](https://github.com/EpicGames/OpenRigLogic) |
-| Body correctives | drivers on shape keys and on corrective bones, generated from the JSON's `correctives` list; never hand-made drivers | JSON `correctives` (schema in [`skeleton-and-face.md`](skeleton-and-face.md) §3) | ours (NOT STANDARD, see that doc) |
+| Face rig | a DNA file (`rig/face.dna`) evaluated by OpenRigLogic; its outputs drive shape keys, face bones and wrinkle layers; the ARKit 52 shapes exist as plain shape keys too | `rig/face.dna` + `JustStageCharacterAPI` attributes naming it and its control-vocabulary version | OpenRigLogic (MIT) — [repo](https://github.com/EpicGames/OpenRigLogic) |
+| Body correctives | drivers on shape keys and on corrective bones, generated from the corrective prims; never hand-made drivers | `/Character/Rig/Correctives/<id>` prims with `JustStageCorrectiveAPI` ([`skeleton-and-face.md`](skeleton-and-face.md) §3) | N5: our fields on USD's applied-schema mechanism |
 
 ## 3 · Materials and texture sets
 
@@ -175,9 +195,16 @@ data, linear EXR for float — Blender's OpenColorIO config):
 Eye, teeth and tongue channels: `base_color`, `normal`, `roughness`, `scatter`, plus the parameter set in §3.2.
 Hair cards: `base_color` (with alpha), `normal`, `flow`, `id`, `root` (CC5's root and ID maps — §2), 2048 max.
 
-**Generation and provenance:** every generated texture records its generator, model, seed and prompt in the JSON
-`provenance` list; every imported texture records its origin and licence label. A texture with no record is a build
-error (the test in [`testing.md`](testing.md)).
+**Resolution budget (the 8 GB rule):** 8K masters live on disk; the viewport never loads them whole. One 8K RGBA
+8-bit tile is 268 MB uncompressed; six tiles of five channels at 8K is about 8 GB — the whole card. So: the master
+set is stored at up to 8K; JustStage's **working resolution** is 2K per tile by default (≈ 0.5 GB for the body) and 4K
+on request (Blender's *Texture Limit* preference and the file's own derived sizes); 8K is used by Cycles (out-of-core
+on CPU) and by final bakes. MetaHuman itself ships 2K "UE Optimized" and bakes "up to 8K" for Cine (S10 §4a). The gate
+measures VRAM at 2K, 4K and 8K on the RTX 2070 Super ([`quality-gate.md`](quality-gate.md) §4).
+
+**Generation and provenance:** every generated texture records its generator, model, seed and prompt in USD's
+`customData` on its texture-reader prim (§6); every imported texture records its origin and licence label the same
+way. A texture with no record is a build error (the test in [`testing.md`](testing.md)).
 
 ### 3.2 Material model
 
@@ -187,15 +214,21 @@ error (the test in [`testing.md`](testing.md)).
   coat/layer, micro normal, wrinkle layers) and Principled Hair BSDF (melanin model — §7 S10). Standard: Blender's
   shader nodes ([Principled BSDF](https://docs.blender.org/manual/en/latest/render/shader_nodes/shader/principled.html),
   [Principled Hair BSDF](https://docs.blender.org/manual/en/latest/render/shader_nodes/shader/hair_principled.html)).
-- **Parameters** (the JSON `materials` section) are the inputs of those groups: skin tone (melanin, haemoglobin,
-  the physically based layers of R5), roughness scale, specular scale, SSS radius and scale, micro-normal tiling and
-  strength, wrinkle layer weights; eye: iris pattern seed, iris colours, limbal ring size/softness/colour, pupil size,
-  cornea bulge, sclera tint and vascularity, wetness (MetaHuman's public eye-tool list is the behaviour reference —
-  S10 §4a); teeth: plaque, gum colour; hair: melanin, redness, tint, roughness, random colour.
-- Interchange: USD `UsdPreviewSurface` always, plus MaterialX OpenPBR Surface for USD and Unreal (Unreal imports
-  MaterialX OpenPBR — S9 §4); glTF PBR metallic-roughness with `KHR_materials_specular`, `KHR_materials_sheen`
-  (cloth) and `KHR_materials_ior`; the skin, eye and hair parameters travel in the JSON and are rebuilt by the Unreal
-  plugin on Unreal's shaders ([`import-export.md`](import-export.md) §5). Standard: [MaterialX](https://materialx.org/),
+- **Parameters** are the inputs of those groups: skin tone (melanin, haemoglobin, the physically based layers of
+  R5), roughness scale, specular scale, SSS radius and scale, micro-normal tiling and strength, wrinkle layer weights;
+  eye: iris pattern seed, iris colours, limbal ring size/softness/colour, pupil size, cornea bulge, sclera tint and
+  vascularity, wetness (MetaHuman's public eye-tool list is the behaviour reference — S10 §4a); teeth: plaque, gum
+  colour; hair: melanin, redness, tint, roughness, random colour.
+- **In USD** a material is one `UsdShade.Material` with three networks, USD's own multi-renderer design ("can host
+  data for any number of render targets", each terminal "qualified by a token-valued renderContext" — the
+  UsdShadeMaterial docs, read 2026-10-29): the universal `UsdPreviewSurface` (every reader), MaterialX OpenPBR Surface
+  under the `mtlx` context (USD pipelines, Unreal — S9 §4), and JustStage's own shader network under the `juststage`
+  context (`outputs:juststage:surface` → a `Shader` with `info:id = "juststage:skin"` and the parameters above as inputs).
+  Blender writes the second and third through `on_material_export` and reads them back through `material_import_poll`
+  / `on_material_import` (the USD hook API). The Unreal plugin rebuilds the `juststage` network on Unreal's shaders
+  ([`import-export.md`](import-export.md) §5).
+- glTF: PBR metallic-roughness with `KHR_materials_specular`, `KHR_materials_sheen` (cloth) and `KHR_materials_ior`;
+  the skin, eye and hair parameters ride in the sidecar. Standard: [MaterialX](https://materialx.org/),
   [glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html).
 
 ## 4 · Hair
@@ -207,10 +240,10 @@ error (the test in [`testing.md`](testing.md)).
 - **Per-curve attributes** (named after Unreal's groom schema so export is a copy, not a mapping — §8 pass 2):
   `groom_root_uv` (float2), `groom_guide` (bool), `groom_group_id` (int), `groom_id` (int), `groom_color` (float3),
   `groom_width` (float, per point; metres internally, cm on export), plus JustStage's `melanin`, `redness`, `clump_id`.
-- **Per-groom settings** (JSON `grooms[]`): type, binding surface and UV set, generator parameters (guide count,
-  interpolation, clumping, noise, length maps), simulation settings (Jolt strand hair when it ships inside the
-  extension; Blender's hair simulation nodes meanwhile), LOD policy (`strands` → `cards` → `mesh`, with the card bake's
-  outputs and card count), licence and provenance.
+- **Per-groom settings** (`JustStageGroomAPI` on the curves prim): type, a binding relationship to the surface mesh and
+  its UV set, generator parameters (guide count, interpolation, clumping, noise, length maps), simulation settings
+  (Jolt strand hair when it ships inside the extension; Blender's hair simulation nodes meanwhile), LOD policy
+  (`strands` → `cards` → `mesh`, with the card bake's outputs and card count); licence and provenance in `customData`.
 - **Interchange:** USD `UsdGeomBasisCurves` with Epic's `GroomAPI` applied and the `groom_*` primvars; Alembic with
   the `groom_*` attributes at `groom_version 1.5` for Unreal's reliable path; card meshes for CC5 and glTF
   ([`interchange.md`](interchange.md) §4). Standard: [BasisCurves](https://openusd.org/release/api/class_usd_geom_basis_curves.html),
@@ -218,33 +251,39 @@ error (the test in [`testing.md`](testing.md)).
 
 ## 5 · Clothes
 
-- A **garment** is a Mesh object with a `juststage.garment` group: `layer` (integer draw/tuck order, outermost
-  highest — MPFB2's `z_depth` pattern, §5), `kind` (free text tag), `fit` (§5.1), `hide_mask` (the body faces hidden
-  under it: a boolean face attribute on the body named `hide.<garment>`), `weights` (`transferred` | `authored`),
-  `sim` (a subset of Blender's Cloth modifier settings: mass, stiffness, damping, collision distance, pinning group),
-  `tuck` (list of garment ids this one goes under), `materials`, `provenance`.
-- **5.1 Fit data (R8):** per garment vertex, a binding to the base body in the rest pose: `triangle` index,
-  barycentric weights and signed `offset` along the body normal, recorded against `base_version`. When the body's
-  shape changes (sliders, scan spaces, imports), the garment refits from the binding (LoBoFit's method, BSD-3 with a
-  pending-patent notice — §7 pass 2; the method is an implementation detail behind the binding record). Standard
-  for the *behaviour*: CC5's conform model (conform, layers, tuck-in, hide-under, weight transfer — §2); Blender's
-  Surface Deform is the behaviour reference for binding (§8 S9).
+- A **garment** is a Mesh with `JustStageGarmentAPI` applied: `layer` (integer draw/tuck order, outermost highest —
+  MPFB2's `z_depth` pattern, §5), `kind` (free text tag), the fit primvars (§5.1), `weights` (`transferred` |
+  `authored`), `sim` (a subset of Blender's Cloth modifier settings: mass, stiffness, damping, collision distance,
+  pinning group), a `tuckUnder` **relationship** to the garments it goes under, and `customData` provenance. The body
+  faces hidden under it are a **`UsdGeomSubset`** on the body mesh (family `juststage:hide`, element type face; in
+  Blender a boolean face attribute `hide.<garment>`) — USD's standard carrier for a set of faces.
+- **5.1 Fit data (R8):** per garment vertex, a binding to the base body in the rest pose, stored as **primvars**
+  (vertex interpolation, USD's carrier for per-vertex data): `primvars:juststage:fitTriangle` (int), `fitBary`
+  (float3), `fitOffset` (float, signed along the body normal), recorded against `baseVersion`. When the body's shape
+  changes (sliders, scan spaces, imports), the garment refits from the binding (LoBoFit's method, BSD-3 with a
+  pending-patent notice — §7 pass 2; the method is an implementation detail behind the primvars). Standard for the
+  *behaviour*: CC5's conform model (conform, layers, tuck-in, hide-under, weight transfer — §2); Blender's Surface
+  Deform is the behaviour reference for binding (§8 S9).
 - **Skin weights** come from the body by transfer (Robust Skin Weights Transfer, MIT — S9 §3) unless authored.
 - **Simulation:** Blender's Cloth modifier in the app (standard: [Cloth](https://docs.blender.org/manual/en/latest/physics/cloth/index.html));
   the garment's `sim` record is what gets exported to Unreal's Chaos cloth config by the plugin where it maps.
-- **Making from patterns** (R8, step 8) adds `pattern` (2D pieces, seams) to the garment record later: the field is
+- **Making from patterns** (R8, step 8) adds a `JustStagePatternAPI` (2D pieces, seams) later; the family name is
   reserved now ([`animation-and-later-features.md`](animation-and-later-features.md) §2).
 
 ## 6 · Identity, versioning and provenance
 
-- Every character has a `character_id` (UUID v4) that never changes across edits, exports and re-imports; the Unreal
-  plugin's keep-animation rule keys on it ([`import-export.md`](import-export.md) §5.3). Standard: UUID (RFC 9562).
-- `schema_version` (integer) on the JSON and on every `juststage` PropertyGroup; migrations are ordered Python steps
-  (`juststage/migrations/`) run on load and on package import — Blender's versioning-code pattern (§8). A file with a
-  newer `schema_version` than the app knows is refused with the version named ("minimum reader", Blender's rule, §8).
-- Unknown JSON fields are preserved on save (protobuf's rule, §8) in `extensions`, keyed by a reverse-DNS namespace
-  (`org.juststage.fx`, `com.example.plugin`), so plugins and later features store data without a schema change
-  ([`animation-and-later-features.md`](animation-and-later-features.md) §3).
-- `provenance`: a list of `{what, origin, licence, url, tool, model, seed, date}` records — one per imported or
-  generated asset (VRM's in-file licence pattern, §8). The export commands copy it into the package; the importers
-  create it. Licences are labels, never filters ([`README.md`](README.md) §4).
+- Every character has a `characterId` (UUID v4, `JustStageCharacterAPI`) that never changes across edits, exports and
+  re-imports; the Unreal plugin's keep-animation rule keys on it ([`import-export.md`](import-export.md) §5.3).
+  Standard: UUID (RFC 9562).
+- **Versions:** USD schema families carry theirs in the name (`JustStageSliderAPI_1` → `_2`; version 0 has no suffix —
+  USD's rule, §8); the generated `PropertyGroup`s carry `schema_version`; migrations are ordered Python steps
+  (`juststage/migrations/`) run on `load_post` and on package import — Blender's versioning-code pattern (§8). A file
+  with a newer family than the app knows is refused with the version named ("minimum reader", Blender's rule, §8).
+- **Plugin and later-feature data** is the plugin's own applied schema (its `schema.usda`, its family names) or, for
+  small records, `customData` under a reverse-DNS key (`org.juststage.fx`, `com.example.plugin`) — both preserved by
+  every USD reader and by JustStage's own load/save (protobuf's rule, §8) ([`animation-and-later-features.md`](animation-and-later-features.md) §3).
+- **Provenance** is USD's native metadata: `assetInfo` on the character prim (`name`, `version`, `identifier`) and
+  `customData["juststage"]` on the prim it describes — `{origin, licence, url, tool, model, seed, date}` on each
+  imported or generated mesh, texture reader, groom and garment (VRM's in-file licence pattern for the fields, §8).
+  The export commands write it; the importers create it. Licences are labels, never filters
+  ([`README.md`](README.md) §4).

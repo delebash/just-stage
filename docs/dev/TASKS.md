@@ -149,6 +149,18 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           ("so how do we get character in other apps if we use our own custom json instead of usd or aousd?…"),
           2 ("are you making some non standard skeleton?") and 3 (N3, "i dont even understnad what this means") answered
           in chat with revised recs; N1, N2, N3 still open.
+        - Then, verbatim (2026-10-29): "so why after adversirally researching and thinking did you recommend json, i
+          dont trust you lazy logic"; "then rethink all your recs and make sure you have the correct one, do it
+          adversarilly, check you work and recs"; "so do i trust all the docs you have written to be correct i bet the
+          answer is no"; "it is a rule do standard unless there is no better alternative, stop breaking rule" → the
+          **standard-first pass** over every piece of the spec, same day: eleven changes, listed in
+          [`../standards/README.md`](../standards/README.md) §6 (USD applied schemas through Blender's USD hook API
+          instead of a JSON companion; primvars, GeomSubsets, relationships, assetInfo; the UE5 skeleton's names
+          verbatim; one extension with modules instead of inter-dependent extensions and a custom manifest table; MCP
+          as the only remote protocol; pytest as the only runner; the 8 GB texture budget; the `cc5` preset fixed; one
+          map per HD morph; every "verify later" item verified at the source or on this machine — RESEARCH §1, §6, §8).
+          Still open for the user's word, by name: **N1** (the fields of the USD schemas), **N2** (hm08 without
+          helpers), **N3** (HD morphs as displacement blends). N4, N5 and the port stand approved.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

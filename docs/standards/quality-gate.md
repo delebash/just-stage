@@ -39,8 +39,9 @@ is rendered in Blender and Unreal beside ours.
 
 ## 4 · Measurements recorded with the renders
 
-- EEVEE viewport fps with the head alone and with the body (level 2, 8K textures), VRAM in use (Blender's
-  statistics; `nvidia-smi`); Cycles time per frame.
+- EEVEE viewport fps with the head alone and with the body (level 2) at the 2K, 4K and 8K working resolutions, VRAM
+  in use at each (Blender's statistics; `nvidia-smi`) — the numbers that fix the resolution budget of
+  [`character-data-model.md`](character-data-model.md) §3.1; Cycles time per frame at 8K.
 - The peak VRAM of one skin-generation job on the engine host beside the EEVEE viewport ([`ai-engines.md`](ai-engines.md) §4).
 - The shape-space wrap errors (max, mean, mm) for MHR and GNM onto the base ([`character-data-model.md`](character-data-model.md) §1.2).
 - The face rig's control count and the shapes it drives.

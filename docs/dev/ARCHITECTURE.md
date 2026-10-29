@@ -55,20 +55,25 @@ non-commercial and mostly 1K — labelled, never trained on.
 ## 5 · One data model, three forms
 
 The live character is Blender's data (meshes, shape keys, armatures, curves, materials) with JustStage's fields as
-PropertyGroups generated from one JSON Schema; the portable character is a USD package (UsdSkel, UsdShade,
-BasisCurves) with two companions — the DNA face rig and the character JSON. Why: OpenUSD is the only open format with
-layers, composition, variants and skinned characters in one model, and Unreal reads it (Beta) (§8); UsdSkel has no
-correctives, rig behaviour, wrinkle maps or cloth, and no app's USD carries correctives today (S9) — hence the
-companions, kept USD-shaped so they can move into schemas when AOUSD's character group delivers (not before 2027 —
-§8 pass 2). Versioning follows Blender (writer and minimum reader versions, ordered versioning code), protobuf
-(unknown fields preserved) and USD (`_N` schema families).
+PropertyGroups generated from one USD schema file; the portable character is a USD package (UsdSkel, UsdShade,
+BasisCurves) carrying JustStage's own data as **USD applied API schemas**, with one companion — the DNA face rig. Why
+USD: it is the only open format with layers, composition, variants and skinned characters in one model, and Unreal
+reads it (Beta) (§8). Why our own schemas: UsdSkel stores shapes but "does not aim to provide general rigging and
+execution behaviours", so correctives' drivers, slider definitions, groom and garment settings have no industry schema,
+and no app's USD carries them (S9); USD's own answer is the applied API schema (Epic's `GroomAPI` is one), and Blender's
+own answer for writing them is its USD hook API. A JSON exists only as the sidecar FBX and glTF need (CC5's, Daz's and
+MetaHuman's pattern). When AOUSD's character group delivers (not before 2027 — §8 pass 2), a converter maps our
+families onto theirs. Versioning follows Blender (writer and minimum reader versions, ordered versioning code),
+protobuf (unknown fields preserved) and USD (`_N` schema families). The first draft had the JSON as the record and USD
+as a mirror; the standard-first pass of 2026-10-29 reversed it (standards README §6).
 
 ## 6 · Skeleton and face: where the industry converged (R18)
 
 CC5 added ten bones to line up with UE5/MetaHuman and shares MetaHuman's facial controls (§2, §8); Daz's bridges map
-Genesis onto the same skeleton (§8). So JustStage's skeleton has that structure, under Blender's own naming
-convention so Blender's tools work, with mapping tables to every other vocabulary (VRM/Unity/Godot — the converged
-open set; HumanIK and Mixamo; Daz G8/G9; CC). The face is two layers: ARKit's 52 as the guaranteed, measurable
+Genesis onto the same skeleton (§8). So JustStage's skeleton **is** the UE5 skeleton, by its own names (measured from
+the user's Unreal project: 80 deform bones), which Blender's mirror tools accept as they are — so Unreal needs no
+renaming — with mapping tables to every other vocabulary (VRM/Unity/Godot — the converged open set; HumanIK and
+Mixamo; Daz G8/G9; CC). The face is two layers: ARKit's 52 as the guaranteed, measurable
 interchange set (public; iPhone and MediaPipe produce it), and a DNA + RigLogic rig underneath (the proven layered
 design, open under MIT since June 2026 — §4). Correctives are the one thing no format carries — hence our schema.
 
@@ -84,11 +89,12 @@ Python tool is the reason permissions are first-class (Cinema 4D's model — §4
 
 ## 8 · Plugins (R19, R2)
 
-In-process plugins are Blender extensions — the host's own mechanism, with a manifest JustStage extends by one
-table; outside programs use the API. A sandboxed WebAssembly tier was the right design for an own-engine route
-(§8) and the wrong one inside Blender (no GPU or mesh access across the boundary); it is not built. JustStage's own
-features ship as extensions too, so the plugin API is proven on our own work and a character-only user installs only
-what they use.
+JustStage is **one** Blender extension with feature modules (Blender's manifest has no field for one extension
+depending on another — read 2026-10-29 — so a family of extensions cannot be declared or installed), plus the
+application template. Third-party plugins are their own extensions that import `juststage` and register in Python,
+the way Blender add-ons talk to each other; the manifest stays stock. Outside programs use the MCP door. A sandboxed
+WebAssembly tier was the right design for an own-engine route (§8) and the wrong one inside Blender (no GPU or mesh
+access across the boundary); it is not built. The plugin API is proven on our own modules, which register through it.
 
 ## 9 · Import and export (R11, R12)
 
@@ -132,7 +138,7 @@ later: Animate, or staying on Unreal. The scorecard's floor only rises.
 | Trigger | Change |
 |---|---|
 | The gate fails on viewport work no extension can fix | a Blender fork (R1's trigger), the extension unchanged |
-| AOUSD publishes character schemas | the character JSON's fields move into USD; the JSON stays for the rest |
+| AOUSD publishes character schemas | a converter maps JustStage's schema families onto theirs; ours stay for what AOUSD doesn't define |
 | Unreal's USD export carries morph targets reliably | the FBX fallback in the plugin is retired |
 | ufbx-write passes the round trips | it replaces Blender's FBX exporter for the MIT libraries |
 | MetaHuman's terms read one way (the user's reading) | "Send to Unreal as a MetaHuman" and DNA import of MetaHuman assets are enabled or labelled accordingly |

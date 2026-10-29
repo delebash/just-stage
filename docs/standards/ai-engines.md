@@ -31,7 +31,12 @@ same door. Everything geometric (wraps, fits, bakes, rigs) runs inside Blender.
 | From step 1 (the gate) | the kit's own template server, run from source (`npm run server` in `just-core/template`) with `sdcpp` enabled — the server the kit already tests | exists today; no new program; the template is the standard shape |
 | When JustDirect exists (R20) | JustDirect's server (`just-direct-server serve`) — the family's 3D-side app, linked to JustStage by the API anyway | one engine host beside JustStage; JustDirect needs the same engines |
 
-**Kit gap (to fill in `just-core` before step 2):** the kit runs image features in-process (`llm/image_dispatch.js`
+**For end users** the host must be a shipped family app: JustDirect. Until it ships, JustStage's generators run only
+where a family server runs (the developer's machine); the family releases together (the family rule), so this costs
+nothing at release time but must be said: no generator is promised to a user before JustDirect exists.
+
+**Kit gap (being filled in the open `just-core` session — the user, 2026-10-29: "core already has open session which
+it is working"):** the kit runs image features in-process (`llm/image_dispatch.js`
 `runImageFeature`, used by just-house-paint's own routes) and exposes runtime management over HTTP
 (`/v1/ai/runtimes`, `/v1/ai/runtimes/:id/engine/status`, `/v1/ai/runtimes/:id/models`), but **no generic HTTP route
 runs an image feature as a job**. JustStage needs one: `POST /v1/ai/image/jobs` (feature key, request) → a kit

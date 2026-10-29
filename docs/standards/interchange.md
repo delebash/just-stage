@@ -28,26 +28,35 @@ AOUSD Core Specification 1.0 for composition and the USDA/USDC/USDZ formats (§8
 ```
 <Name>.juststage/                 a folder package (USDZ can't hold UDIM tiles — Blender's note, S9 §1.4)
   character.usda                  root layer: the prim tree, variants, references to the side layers
-  geometry.usdc                   meshes, UVs, skin weights, blend shapes (binary)
-  rig/skeleton.usdc               UsdSkelSkeleton (rest and bind transforms)
+  geometry.usdc                   meshes, UVs, skin weights, blend shapes, primvars, GeomSubsets (binary)
+  rig/skeleton.usdc               UsdSkelSkeleton (rest and bind transforms); the Correctives scope
   rig/face.dna                    the face rig (OpenRigLogic DNA)
-  grooms/<groom>.usdc             UsdGeomBasisCurves with GroomAPI (+ an Alembic twin on request, §4)
+  grooms/<groom>.usdc             UsdGeomBasisCurves with GroomAPI + JustStageGroomAPI (+ an Alembic twin, §4)
   textures/<channel>.<tile>.<ext> the master texture set
-  character.juststage.json        the companion (schema `juststage-character`, version N)
   thumbnail.webp                  ≥ 256×256 (Blender's asset-preview rule, §8 pass 2)
 ```
+
+Everything JustStage knows about the character is **inside the USD** (applied API schemas, primvars, GeomSubsets,
+relationships, `assetInfo`/`customData`) plus the DNA. No JSON travels with the package; the `.juststage.json` sidecar
+exists only beside FBX and glTF exports ([`character-data-model.md`](character-data-model.md) §0). Blender writes the
+JustStage schemas through its USD hook API (`bpy.types.USDHook.on_export` / `on_material_export`) and reads them back
+through `on_import` / `on_material_import` — Blender's own extension point for its USD I/O.
 
 ### 2.2 Prim layout (root layer)
 
 ```
-/Character (Xform, kind = component, customData: juststage:characterId, juststage:schemaVersion)
+/Character (Xform, kind = component, apiSchemas = [JustStageCharacterAPI_1]; assetInfo name/version/identifier)
   /Character/Skel            UsdSkelRoot
-    /Body, /Eye_L, /Eye_R, /Cornea_L, …, /Teeth_Upper, /Tongue      Mesh (level 0) + UsdSkelBindingAPI
-    /Skeleton                UsdSkelSkeleton
+    /Body, /Eye_L, /Eye_R, /Cornea_L, …, /Teeth_Upper, /Tongue      Mesh (level 0) + UsdSkelBindingAPI;
+                             GeomSubsets family "juststage:hide" (faces hidden under garments); fit primvars on garments
+    /Skeleton                UsdSkelSkeleton (the UE5 names)
     /Anim                    UsdSkelAnimation (rest; blendShapeWeights for the ARKit 52 and the slider state)
+  /Character/Rig/Correctives/<id>   prims with JustStageCorrectiveAPI_1 (skeleton-and-face §3)
+  /Character/Sliders/<id>    prims with JustStageSliderAPI_1; HD maps under /Character/HD/<id> (JustStageHDMorphAPI_1)
   /Character/Grooms/<groom>  BasisCurves, apiSchemas = [GroomAPI, JustStageGroomAPI_1]
-  /Character/Garments/<garment>   Mesh + UsdSkelBindingAPI, apiSchemas = [JustStageGarmentAPI_1]
-  /Character/Looks/<material>     UsdShade Material: UsdPreviewSurface + MaterialX OpenPBR (render contexts)
+  /Character/Garments/<garment>   Mesh + UsdSkelBindingAPI, apiSchemas = [JustStageGarmentAPI_1]; rel tuckUnder
+  /Character/Looks/<material>     UsdShade Material: outputs:surface (UsdPreviewSurface, universal),
+                             outputs:mtlx:surface (MaterialX OpenPBR), outputs:juststage:surface (our shader network)
   variantSets: "lod" (0..3), "outfit" (named garment sets), "groom_lod" (strands | cards | mesh)
 ```
 
@@ -57,12 +66,11 @@ AOUSD Core Specification 1.0 for composition and the USDA/USDC/USDZ formats (§8
 - Blend shapes: one `UsdSkelBlendShape` per shape key, `offsets` + `pointIndices` sparse, `normalOffsets` when
   authored; in-betweens for non-linear sliders.
 - **JustStage applied API schemas**, versioned by USD's family rule (`_1`, `_2` …; version 0 has no suffix — §8):
-  `JustStageCharacterAPI_1` (ids, versions, provenance pointer), `JustStageSliderAPI_1` (slider state per shape),
-  `JustStageGroomAPI_1`, `JustStageGarmentAPI_1`, `JustStageMaterialAPI_1` (the skin/eye/hair parameters). They hold
-  what UsdSkel lacks and mirror the companion JSON for USD-native readers; the JSON stays the full record. Schemas are
-  generated with USD's `usdGenSchema` from `schema.usda` in the repo. **NOT STANDARD** (own schemas; standard option:
-  wait for AOUSD's character group — no normative schemas before 2027 at the earliest, §8 pass 2). Covered by the
-  character-JSON mark in [`character-data-model.md`](character-data-model.md) §0.
+  `JustStageCharacterAPI`, `JustStageSliderAPI`, `JustStageShapeSpaceAPI`, `JustStageHDMorphAPI`,
+  `JustStageCorrectiveAPI`, `JustStageGroomAPI`, `JustStageGarmentAPI`, `JustStageLipsyncAPI`, `JustStageTakeAPI`,
+  defined once in `schema.usda` and generated with USD's `usdGenSchema`. They hold what UsdSkel lacks and are **the**
+  record (no JSON twin). Material parameters are a shading network under the `juststage` render context, not an
+  applied schema. The mechanism is standard; the fields are N1 ([`character-data-model.md`](character-data-model.md) §0).
 
 ### 2.3 Scenes (later)
 
@@ -74,13 +82,15 @@ side today — S9 §1.4; the scene workspace, when built, resolves composition i
 
 ### 2.4 What USD does not carry — the companions (R17)
 
-| Data | Companion | Why |
+| Data | Carrier | Why |
 |---|---|---|
-| Face rig behaviour | `rig/face.dna` | UsdSkel has no rig behaviour (§8); DNA + OpenRigLogic is the proven open runtime |
-| Body correctives, slider definitions, shape-space maps, wrinkle layers, groom settings, garment fit data, provenance, licence, extensions | `character.juststage.json` | no USD schema; one versioned JSON Schema (§0 of the data model) |
+| Face rig behaviour | `rig/face.dna` beside the USD | UsdSkel has no rig behaviour (§8); DNA + OpenRigLogic is the proven open runtime |
+| Body correctives, slider definitions, shape-space maps, HD maps, groom settings, garment data | JustStage applied API schemas, primvars, GeomSubsets and relationships **inside** the USD | USD's own extension mechanism (§2.2); no industry schema for the fields yet (N1) |
+| Provenance and licence | `assetInfo` and `customData` inside the USD | USD's native metadata |
+| The same data for FBX and glTF | `<name>.juststage.json` sidecar, generated from `schema.usda` | those formats cannot hold it (the CC5, Daz and MetaHuman sidecar pattern, S9) |
 
-The companions are **always** written beside the USD; a package with the JSON missing imports as a plain UsdSkel
-character with a warning naming what was lost.
+The DNA is always written beside the USD; a package without it imports as a plain UsdSkel character with a warning
+naming what was lost.
 
 ## 3 · glTF 2.0 and VRM 1.0 — engines and avatars (R17)
 
@@ -127,9 +137,10 @@ Export rules (the glTF/VRM preset):
 | A character between JustStage installs, to JustDirect, to the Unreal plugin, to archives | the USD character package + companions | a `.blend` (Blender-only), a bare FBX |
 | A character into Unity, Godot, Three.js, VRM apps | glTF/GLB (+ VRM when the user asks) | FBX first |
 | A character into Unreal | the plugin reads the package; FBX fallback | hand FBX import without the plugin |
-| A character into Maya, 3ds Max, MotionBuilder, Marvelous Designer, CC5 | FBX (+ companion JSON) | — |
+| A character into Maya, 3ds Max, MotionBuilder, Marvelous Designer, CC5 | FBX (+ the generated sidecar), or USD where the app reads it (Maya, Max, Houdini, MD — S9 §4) | — |
 | A character into Blender without JustStage | `.blend` (it is one) or the package through Blender's USD import | — |
 | Grooms into Unreal | Alembic 1.5 attributes (reliable) or USD BasisCurves + GroomAPI | cards unless the target has no strands |
 | Materials into USD readers | UsdPreviewSurface + MaterialX OpenPBR | MDL (CC's choice; Blender can't read it — S9) |
-| Correctives and the face rig anywhere | DNA + the companion JSON | USD alone |
+| Correctives, sliders, grooms, garments anywhere USD goes | the JustStage applied schemas inside the USD + the DNA | a JSON beside the USD |
+| The same data into FBX or glTF | the generated `.juststage.json` sidecar | hand-written sidecars |
 | Scenes (later) | USD stage referencing packages | one giant file |

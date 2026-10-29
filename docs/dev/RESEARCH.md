@@ -34,7 +34,11 @@ Subjects: [1 · The machine](#1--the-machine) ·
   user's word; not measured from this repo).
 - The user has Unreal Engine C++ projects on this machine (`E:\Dev\Unreal`: DeformCPlusTest,
   DeformationSystem, FootprintDeformation, GlobalEnvironmentalSystem, UE_GlobalEnvironmentalSystem) —
-  *measured (listed), 2026-10-29*.
+  *measured (listed), 2026-10-29*. `DeformCPlusTest` is on UE **5.7** (its `.uproject`) and holds the Mannequin
+  meshes (§8).
+- **Blender is not installed on this machine** — *measured, 2026-10-29*: no `blender.exe` on C:, D:, E: or F: (full
+  `find`), no `BlenderFoundation` registry key, no Start Menu shortcut. So Blender-side facts in this register come
+  from Blender's sources and docs, not from a run here, until the user installs it.
 
 ## 2 · CC5 and its plugins
 
@@ -550,6 +554,34 @@ unverified — the second pass (S5) looks for a readable current copy; otherwise
   type), change the widget toolkit or the window system; it can draw in the viewport (the `gpu` module), add
   gizmos and custom node editors. The user, 2026-10-29: a Blender fork is an allowed route (TASKS).
 
+*web, 2026-10-29* — read at Blender's sources by the standards-spec session (for the spec's USD, plugin and
+animation pieces):
+
+- **The USD hook API** (`source/blender/io/usd/intern/usd_hook.cc`, main; the docs example
+  `doc/python_api/examples/bpy.types.USDHook.0.py`): a Python `bpy.types.USDHook` subclass may define `on_export(export_context)`
+  (before the USD export is saved; the context gives `get_stage()`, `get_depsgraph()`, `get_prim_map()` — exported
+  prim paths → Blender IDs), `on_material_export(export_context, bl_material, usd_material)` (`get_stage()`,
+  `export_texture(image)`), `on_import(import_context)` (`get_stage()`, `get_prim_map()`),
+  `material_import_poll(import_context, usd_material)` and `on_material_import(import_context, bl_material,
+  usd_material)` (`get_stage()`, `import_texture(asset_path)`); if a hook's poll returns true the built-in Preview Surface
+  and MaterialX importers are skipped for that material. The example calls `bpy.utils.expose_bundled_modules()` ("makes
+  the `pxr` module available when running as the `bpy` PIP package") and then `from pxr import Gf, Sdf, Usd, UsdShade`;
+  it writes custom layer data and a MaterialX `ND_standard_surface_surfaceshader` network on export and reads it back on
+  import. So Blender bundles the USD Python module and gives extensions a documented way to write and read their own USD
+  data during its native USD I/O. (docs.blender.org itself still refuses scripted reads — 403.)
+- **The extension manifest** (`manual/advanced/extensions/getting_started.rst`, re-read): required `schema_version`,
+  `id`, `version`, `name`, `tagline`, `maintainer`, `type`, `blender_version_min`, `license`; optional
+  `blender_version_max`, `website`, `copyright`, `tags`, `platforms`, `wheels`; tables `[permissions]`, `[build]`
+  (`paths`, `paths_exclude_pattern`), `[asset_library]` (`remote_url`, only for that type), `[build.generated]`
+  (reserved). **No field lets an extension depend on another extension**; the page says nothing about extra keys.
+- **Slotted Actions** (release notes 4.4, `animation_rigging.md`): "a single Action can animate multiple data-blocks at
+  the same time"; a slot is bound to one data-block type; a new Python API for slots, layers, strips and channelbags; the
+  old F-Curve/Action-group API is a backward-compatible legacy API working on the first slot.
+- **Blender's bone naming page** (`manual/animation/armatures/bones/editing/naming.rst`, read through its rendered
+  copy): mirroring and flipping recognise "lower or upper case 'L', 'R', 'left' or 'right'" with the separators `_`,
+  `.`, `-` and space ("hand.l to hand.r", "hand_L to hand_R"), as suffix or prefix; a bare `handL` does not work; number
+  extensions (`.001`) are removed before mirroring. So Unreal's `thigh_l`/`thigh_r` spelling works with Blender's tools.
+
 *agent, 2026-10-29* — 06b, sources per fact there:
 
 - No open, cross-vendor render library ships CC5-class humans: Filament's subsurface is "approximated",
@@ -792,6 +824,19 @@ Candidates from the chat, not checked:
 *web, 2026-10-29* — re-checked by this session (GitHub's API): OpenUSD's latest release is v26.11.1
 (2026-10-21); the MCP specification repo's latest release is `2026-07-28`; WASI's latest is v0.3.2
 (2026-10-13); MediaPipe is Apache-2.0, v1.2.0 (2026-10-28).
+
+*web, 2026-10-29* — read by the standards-spec session for the spec's USD pieces:
+
+- **UsdShade render contexts** (`class_usd_shade_material.html`, OpenUSD docs): a Material "can host data for any
+  number of render targets"; each terminal output (surface, displacement, volume) "can further be qualified by a
+  token-valued renderContext"; an empty context is the universal output; "Render context token values is typically
+  driven by the rendering backend"; properties are namespaced per context (`outputs:ri:surface`); shaders of a Material
+  "live under the Material in namespace"; resolution takes the first context in the caller's list that yields a shader,
+  else the universal one. (The mechanism the spec uses for a `juststage` material network beside UsdPreviewSurface and
+  MaterialX.)
+- **`usd-core` on PyPI**: Pixar's "core USD libraries" for pip, version **26.11** (2026-10-21), licence
+  `LicenseRef-TOST-1.0`, Python ≥ 3.11 < 3.15, wheels for Windows x86-64, Linux x86-64/ARM64 (glibc 2.27+), macOS
+  10.15+ universal2; no imaging plugins. (The spec's USD library for tests and tools outside Blender.)
 
 *agent, 2026-10-29* — round one's standards notes, sources per fact there:
 

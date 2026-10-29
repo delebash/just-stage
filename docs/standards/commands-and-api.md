@@ -69,7 +69,7 @@ Namespaces: `juststage.<area>.<verb>_<object>`; areas: `base`, `body`, `head`, `
 | UI | panels, menus and keymaps call the operator; the application template owns the layout (R1) | Blender |
 | Python | `bpy.ops.juststage.body_set_slider(character="Eve", slider="nose-width", value=0.4)`; a thin `juststage.api` module wraps it with typed functions generated from the schemas | Blender `bpy.ops` |
 | Command line | `blender -b file.blend --python-expr "import juststage; juststage.cli(['body.set_slider', '--character', 'Eve', …])"` and a `juststage` console script that wraps that line; `--json` input and output; exit codes | Blender `-b --python` (R16) |
-| Remote | JSON-RPC 2.0 over the add-on's TCP socket (loopback), and MCP for agents (§4) | JSON-RPC 2.0, MCP |
+| Remote (programs and agents alike) | **MCP** — over stdio for clients that launch it, over Streamable HTTP on loopback for programs such as JustDirect (§4). MCP is JSON-RPC 2.0, so there is no second remote protocol | MCP 2026-07-28 |
 
 ## 4 · The MCP server (R19)
 
@@ -83,12 +83,12 @@ JustStage's shape, built on it:
 
 | Piece | JustStage | Note |
 |---|---|---|
-| In Blender | the socket server from Blender Lab's add-on, inside the JustStage extension, speaking **JSON-RPC 2.0** (method = command id, params = the schema's object, result = `returns`) | Blender Lab's wire is `{type, params}`; JSON-RPC 2.0 is the same shape with a standard envelope and error codes (−32700…−32603; MCP reserves −32020…−32099) |
-| Outside | `juststage-mcp`, a Python process on the MCP SDK, started by the client over **stdio**, or started by JustStage with **Streamable HTTP** on loopback for programs such as JustDirect; MCP revision 2026-07-28: stateless, version and capabilities in `_meta`, `server/discover`, JSON Schema 2020-12 tool schemas, deterministic `tools/list` | the MCP spec's two transports |
+| In Blender | Blender Lab's add-on socket server, as it is, inside the JustStage extension's API module: its `{type, params}` wire stays **private** between the two JustStage processes (nothing else speaks it) | reusing Blender Lab's code unchanged, GPL inside GPL |
+| Outside | `juststage-mcp`, Blender Lab's `blmcp` server process with JustStage's tool modules, started by the client over **stdio**, or started by JustStage with **Streamable HTTP** on loopback for programs such as JustDirect; MCP revision 2026-07-28: stateless, version and capabilities in `_meta`, `server/discover`, JSON Schema 2020-12 tool schemas, deterministic `tools/list` | the MCP spec's two transports; the only public protocol |
 | Tools | **generated from the command schemas** — one MCP tool per command whose `x-juststage.headless` is true, `inputSchema` = the command schema, `outputSchema` = `returns`; grouped by area for the permission UI | one schema, four doors |
 | State | an open file, a character, a selection are **explicit handles** in tool arguments (`character_id`), never session state — MCP 2026-07-28 removed sessions (§8 pass 2) | |
-| Resources | read-only views: the character JSON, the slider list, the scorecard, the gate's last report, the API reference | MCP resources |
-| Port | the add-on's socket and the HTTP transport on **17480** (loopback only), registered in the 3D family table ([`README.md`](README.md) §3); configurable in preferences | — |
+| Resources | read-only views: a character's schema data (as USDA text), the slider list, the scorecard, the gate's last report, the API reference | MCP resources |
+| Port | the MCP HTTP transport on **17480** (loopback only; approved 2026-10-29), registered in the 3D family table ([`README.md`](README.md) §3); the private socket on the port Blender Lab's add-on preferences set; both configurable | — |
 
 **Permissions** — the attack on Blender Lab's server (it runs model code "without any guards" — §6) and the model
 Cinema 4D ships (off by default, local, an access token, the user picks the tool groups — §4):

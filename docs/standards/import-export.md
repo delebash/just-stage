@@ -31,7 +31,7 @@ Every import writes `provenance` with the source program, file, date and licence
 |---|---|---|---|---|---|
 | **CC5 / CC4 / iClone** | FBX (Target Tool Preset "Blender" or "Unreal") + JSON sidecar; OBJ; GLB (5.2 import; export via API only) | `CC_Base_*` names or UE5 names → ours; the 52 ARKit shapes from the Standard profile; HD profile sliders by CC5's public slider names; UDIM tiles 1001–1006 → our tiles 1:1 | mesh, UVs, skeleton, weights, morphs as blend shapes, LODs, clothes and hair cards as separate meshes, textures; the JSON's material parameters (the GPL CC/iC Blender Tools' behaviour; reused as code only inside the GPL extension — R11) | wrinkle and physics data (sidecar read); `.fbxkey` (CC's own re-import key, ignored); joint correctives — CC has none; CC's USD is MDL (not used) | Reallusion content EULA: conditional — no character-generation systems, no AI training; the user decided importing is fine (TASKS) |
 | **Daz Studio (G8, G8.1, G9)** | bridge export (FBX + `.dtu`, Apache-2.0 format) — preferred; plain FBX; native `.duf`/`.dsf` (DSON, public JSON) | the G8/G9 columns of [`skeleton-and-face.md`](skeleton-and-face.md) §1.4; `.dtu` `JointLinks` → our `correctives`; Iray Uber properties → our materials | mesh, morphs chosen by the export rules, weights, JCMs (from `.dtu`), subdivision level 0 | HD morphs (baked only); dForce settings; strand hair as strands (unverified) | Daz EULA: conditional — no redistribution of extractable content (so Daz-derived assets stay referenced, never packed into a shared library) |
-| **MetaHuman** | the DCC export zip (`.dna` head + body, textures, JSON) or the Fab `.mhpkg` via Unreal; FBX via Unreal | DNA read with OpenRigLogic: joints, blend shapes, animated maps, controls; MetaHuman texture set → our channels | the full face rig (as a foreign DNA), body skeleton, textures | grooms (no exporter out of Unreal found — S9); vertex order in FBX (use DNA) | UE EULA (5.6+: "any engine") vs the DNA Calibration licence (Unreal/Twinmotion only, 2022) — **the user reads** (recs, "not recs"); labelled conditional until then |
+| **MetaHuman** | the DCC export zip (`.dna` head + body, textures, JSON) or the Fab `.mhpkg` via Unreal; FBX via Unreal | DNA read with OpenRigLogic: joints, blend shapes, animated maps, controls; MetaHuman texture set → our channels | the full face rig (as a foreign DNA), body skeleton, textures | grooms (no exporter out of Unreal found — S9); vertex order in FBX (use DNA) | shown as a label (UE EULA 5.6+ "any engine"; the 2022 DNA Calibration licence names Unreal/Twinmotion); the user, 2026-10-29: "we do whatever to make it work not worry about license" — enabled |
 | **VRM / VRoid** | `.vrm` (glTF + VRMC) through the VRM add-on | humanoid map → role map; `expressions` → the 52 subset; `meta` → provenance and licence label | everything VRM defines | PBR skin detail (MToon), strand hair | in-file `meta` fields decide; shown as the label |
 | **Unreal (Fab, MetaHuman, own projects)** | USD (Unreal's exporter, Beta), FBX (`export_morph_targets`), glTF | UE5 names → ours; MetaHuman via DNA | meshes, skeleton, weights, animation, cameras, lights; morph targets via FBX | `.uasset` (re-export from Unreal); USD morph targets (unverified — test on `E:\Dev\Unreal` first, S9 §4's "Changed") | Fab licences per asset (CC-BY, Standard, NoAI); label from Fab's page |
 | **MakeHuman / MPFB2** | `.mhm`, targets, `.mhclo`, MPFB2 `.blend` | the hm08 index map; targets → `makehuman.*` shape keys; MHCLO offsets → garment fit | all of it | — | CC0 |
@@ -53,7 +53,7 @@ units, rest pose, bone names, texture bake sizes, material model, hair form and 
 | `unity` | FBX (+ glTF on request) | T-pose, ≤ 4 weights, Y-up metres, blend-shape normals with smoothing groups, Unity's `HumanBodyBones` names in a companion map |
 | `godot` | glTF | deform bones only, ≤ 4 weights, `extras.targetNames` |
 | `blender`, `maya`, `max`, `motionbuilder` | FBX + companion; USD for Maya/Max/Houdini pipelines | HumanIK names on request |
-| `cc5` | FBX + JSON (CC's own sidecar shape for materials), ARKit 52 by CC Standard names, cards for hair, our six tiles as CC's UDIM 1001–1006 | CC imports FBX characters through Characterization (a bone-skinned humanoid; §2) |
+| `cc5` | FBX with the ARKit 52 by CC Standard names, cards for hair, our six tiles as CC's UDIM 1001–1006, textures in folders; our sidecar beside it | CC imports a bone-skinned FBX through Characterization (§2); CC's own JSON sidecar is CC's export, whose structure is unpublished (S9) — not imitated |
 | `marvelous` | FBX/OBJ avatar | avatar for garment making |
 
 Rules: every preset has a **round-trip test** into its target where the target is free to run (Blender, Godot,
@@ -77,7 +77,7 @@ Auto Setup pattern (§2) and MetaHuman's own assembler (§4). The plugin is MIT 
   skeleton version** (so animations retarget nowhere), morph targets by our names, the DNA as a RigLogic-driven
   face (the MetaHuman runtime path), grooms from the Alembic twins with `UGroomBindingAsset`s, materials as instances
   of the plugin's master materials (skin, eye, cornea, occlusion, tearline, teeth, tongue, hair, cloth) fed by our
-  texture channels and the JSON parameters, body correctives as a Control Rig / Anim Blueprint set
+  texture channels and the `juststage` render-context parameters, body correctives as a Control Rig / Anim Blueprint set
   (the `_JCMAnim` pattern of Daz's bridge — S9), a Blueprint actor `BP_<Character>` that assembles the parts.
 - Asset paths: `/Game/JustStage/<CharacterId>/…` (the UUID, not the display name), so renames never move assets.
 - Every asset gets metadata tags `juststage:characterId`, `juststage:version`, `juststage:part`.
@@ -105,8 +105,8 @@ face curve and lip-sync, re-imports an edited version, and asserts the sequence 
 ### 5.4 "Send to Unreal as a MetaHuman" (optional, R12)
 
 Runs Epic's Mesh to MetaHuman on our head (and body since 5.8) inside Unreal — Epic's cloud identity solve, Epic's
-terms — and returns a real MetaHuman that any MetaHuman tool accepts. It is a user-run button, never automatic, and
-it needs the user's reading of the MetaHuman terms (the "not recs" item).
+terms shown as a label — and returns a real MetaHuman that any MetaHuman tool accepts. It is a user-run button, never
+automatic, and it ships enabled (the user, 2026-10-29: "we do whatever to make it work not worry about license").
 
 ## 6 · iClone's side, for now (R13)
 

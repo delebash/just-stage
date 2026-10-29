@@ -11,7 +11,7 @@
 **JustStage — characters, scenes, animation.** A free, open-source 3D character creator — what Character Creator 5
 and its plugins do — that makes whole humans at CC5 and MetaHuman quality or better, pulls in characters from CC5,
 Daz, MetaHuman, VRM and Unreal, and sends set-up characters to Unreal in one click. It runs as its own application on
-top of stock Blender (an application template plus extensions), on Windows, macOS and Linux, on any GPU vendor, with
+top of stock Blender (an application template plus one extension with feature modules), on Windows, macOS and Linux, on any GPU vendor, with
 an API every program and AI agent can call. Scenes and animation (iClone's side) come later in the same app; until
 then Unreal, reached through JustStage's own plugin, and Blender's animation tools stand in. Every feature is built by
 AI agents against written standards, with a measured quality gate before the features and a parity scorecard whose
