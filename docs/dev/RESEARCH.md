@@ -160,6 +160,26 @@ bases for our own engine); how AI agents test a 3D app (a headless mode, image s
 channel) — every family app is built by AI, so this is scored for every route; and the licence each route
 would force on JustStage (§9).
 
+Out, on the user's word 2026-10-29 (TASKS): NVIDIA Omniverse ("it only works on nvidia cards"), anything that
+only comes paid, core parts that run on one GPU vendor only, and Unity (its free tier is far smaller than
+Unreal's — below). Unreal is in ("unreal is ok i use it all the time").
+
+*web, 2026-10-29* — unity.com/products/unity-personal and unity.com/products/pricing-updates (pages read; no
+page dates shown):
+
+- Unity Personal is free for "individuals and small organizations with less than $200K USD of revenue and funds
+  raised", measured over the last 12 months; above it a paid plan is required. The $200K line came with Unity 6
+  on 2024-10-17.
+- Unity Pro: $2,310 a year per seat (or $210 a month), for $200,001–$24,999,999 of funding or annual revenue
+  (since 2025-01-01), after a 5% rise from 2026-01-12; Enterprise above $25M, custom-priced.
+- The Runtime Fee was cancelled on 2024-09-12, for Unity 6 and every other version.
+
+*web (search-result summaries), 2026-10-29* — Epic's own licence page refused the fetch (403):
+
+- Unreal is free until a product passes $1,000,000 of gross lifetime revenue, then a 5% royalty
+  (developers.meta.com Unreal licence docs, updated April 2026; seeles.ai guide). A seat-based price of $1,850
+  a year for non-game work appears in one third-party guide only — unverified; the §6a agent gets Epic's terms.
+
 ## 7 · Building blocks
 
 Not researched yet. Skin and hair rendering, blendshapes, cloth and hair simulation, auto-rigging,

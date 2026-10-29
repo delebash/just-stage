@@ -165,3 +165,8 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
             what may be redistributed, whether an open-source app can ship on it); the FBX SDK, Mixamo and other
             free-but-closed parts back to normal labelled rows. Omniverse and paid-only products stay out. Unreal
             and Unity are decided by the user at the rec list, on those facts.
+        - Then, verbatim: "unreal is ok i use it all the time , i dont know what unity license restrictions are if it
+          doesnt have generous free tier like unreal then it is out, can you check"
+          → checked at Unity's own pages (RESEARCH §6): Unity Personal ends at $200K of revenue plus funding a year,
+            then $2,310 per seat per year — far smaller than Unreal's tier, so by the user's test **Unity is OUT**;
+            **Unreal is IN** as a full candidate. Sent to the §6a agent.
