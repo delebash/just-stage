@@ -87,6 +87,10 @@ SCOPE:  the subjects of [`RESEARCH.md`](RESEARCH.md) §2–§10 — CC5 in depth
         come later, but every later feature gets its place in the first design. Cross-platform: Windows, macOS
         and Linux. Licence: open source, MIT preferred, LGPL-type components acceptable, not limited yet — the
         research shows what licence each route would need.
+        Requirements added 2026-10-29 (the user, verbatim in the APPROVED entries below): characters at "the quality of
+        cc5 and metahuman characters or better" — pass/fail in the rec list; "pull in assest from other programs just
+        like cc5 and unreal engine and daz studio". Out: Omniverse, paid-only products, single-vendor core parts,
+        Unity. In: Unreal; a Blender fork.
 
 ADDITIONS (shown 2026-10-29, approved — "the additions are fine if you recommend them and have thought
         adverserialy about them"); each folds into an existing subject, no new agent, to keep the one round:
@@ -205,6 +209,25 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
           be better than starting from scratch, but we can as https://github.com/storytold did a good job and it
           stratde from scratch i think it i am sure used some prebuilt rust components and stuff"
           → both routes are already in the research (§6a / S5 existing bases; §6b / S6 our own app on libraries).
-            The rec list weighs them, with the user's lean as a criterion: reuse built, tested, maintained software
-            where it exists; from scratch where that is better. The lead adds storytold's repo list (GitHub's API) as
-            evidence for the from-scratch route when it writes the rec list.
+            The lead adds storytold's repo list (GitHub's API) as evidence for the from-scratch route when it writes
+            the rec list. The user's lean here is context, not a criterion (was: "a criterion" until 2026-10-29 —
+            the user, below: "dont let me influence your rec").
+        - Then, verbatim: "make human assests are they the quality we need, one of the main factors is that it has to
+          have the quality of cc5 and metahuman characters or better hopefully even better"
+          → answered from RESEARCH §5: not on their own (artist-made ~13.7k-vertex mesh, no scan detail, ARKit 52 face
+            vs CC5 HD 262 + 128 correctives); scan-based open options and the gaps listed in chat. The bar is now a
+            pass/fail requirement (SCOPE).
+        - Then, verbatim: "its ok to fork blender there is already an artist fork, and are you shure the ui isnt
+          editable withought fork, yea do we make it an epic plugin or standalone i am not sure i will let your
+          research give me a rec.  dont let me influence your rec"
+          → a Blender fork is an allowed route. The UI answer, checked at Blender's manual source and code: an
+            application template reworks most of the UI without a fork; new editor types or core changes need one
+            (RESEARCH §6, corrected). The rec rests on evidence and the hard requirements; the user's leans are
+            context, never criteria.
+        - Then, verbatim: "we need to be able to pull in assest from other programs just like cc5 and unreal engine and
+          daz studio" — my rec shown: a 9th second-pass agent, S9 "Pulling in assets from other programs", its own
+          ~200 searches (folding it into S7/S8 mid-run would stretch their budgets — the way round one got cut).
+          The user: "you have ago" → S9 RUNNING 2026-10-29 (second-pass file, section S9); importing from other
+          programs is a requirement (SCOPE). Then, verbatim: "things like openusd help alot as unreal i think already
+          can export assets in this format" → added to S9's brief before launch: USD import and export per program and
+          what survives each way.

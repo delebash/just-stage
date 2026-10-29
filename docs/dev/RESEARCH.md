@@ -411,8 +411,9 @@ unverified — the second pass (S5) looks for a readable current copy; otherwise
 - Blender 5.2 LTS already has most of CC5 + iClone (sculpting, rigging, animation editors, node-based cloth
   and hair, EEVEE, Cycles, USD/glTF/Alembic/FBX) on every GPU vendor, and is the easiest to drive by AI
   (`-b --python`, `gpu.init()` headless in 5.2, screenshots, an official MCP server). Costs: GPL (published
-  add-ons "shared under a GPL compliant license") and Blender's own UI — a reworked UI means a fork, as
-  Bforartists does.
+  add-ons "shared under a GPL compliant license") and Blender's UI framework — an application template reworks
+  most of the UI; new editor types or core changes need a fork, as Bforartists is (was: "a reworked UI means a
+  fork" until 2026-10-29 — see the *web* entry below).
 - O3DE 26.05 (Apache-2.0 / MIT): TressFX strand hair, EMotionFX, motion matching, hardware ray tracing, a Qt +
   Python editor; its macOS editor is experimental, installs take 40–100+ GB, few shipped titles.
 - Stride 4.4 (MIT) has the best image-test setup, but its editor is WPF — Windows only. Bevy 0.20 (no editor,
@@ -420,6 +421,20 @@ unverified — the second pass (S5) looks for a readable current copy; otherwise
   quarter; editor redistribution and open-sourcing a Flax app aren't stated.
 - Nothing was measured on §1's card; the notes' open list names a per-finalist test (a realistic head with
   strand hair, a skinned body, playback fps).
+
+*web, 2026-10-29* — Blender's UI without a fork, checked by this session at Blender's manual source
+(`projects.blender.org/blender/blender-manual`, `manual/advanced/app_templates.rst`) and code
+(`github.com/blender/blender`, `scripts/startup/bl_ui/space_view3d.py`):
+
+- Application templates "allow you to define a re-usable configuration that can be selected to replace the
+  default configuration"; "people can build their own *applications* on top of Blender that can be easily
+  distributed". A template brings its own startup file, themes, add-ons, keymaps and splash; its Python is for
+  "Modifying and replacing parts of the user interface" and "Defining new menus, keymaps and tools".
+- Blender's headers, menus and panels are Python classes — `space_view3d.py` alone defines 276 — so a template
+  can unregister Blender's and register its own.
+- Not checked at a source (the lead's knowledge, to confirm in S8): Python can't add a new editor type (space
+  type), change the widget toolkit or the window system; it can draw in the viewport (the `gpu` module), add
+  gizmos and custom node editors. The user, 2026-10-29: a Blender fork is an allowed route (TASKS).
 
 *agent, 2026-10-29* — 06b, sources per fact there:
 

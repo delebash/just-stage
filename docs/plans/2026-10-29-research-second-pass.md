@@ -194,7 +194,38 @@ per section, opened by the user). If a section ever needs its own session again,
   bone local axes.
 - Open FBX writers (any); the copy cost of WebAssembly plugins on large meshes (benchmarks or papers).
 
-## After the eight passes (the lead)
+## S9 · Pulling in assets from other programs — new 2026-10-29 → write `2026-10-29-research-09-import.md`
+
+The user, 2026-10-29: "we need to be able to pull in assest from other programs just like cc5 and unreal engine and
+daz studio". No round-one file of its own; read RESEARCH §2 (CC5's import tools), §7 (file readers) and §8
+(importing CC, Daz, MetaHuman and VRM characters), and the import parts of round one's notes 02, 07 and 08.
+
+- **Per source program** — CC5 / CC4 / iClone, Daz Studio (Genesis 8 and 9), Unreal (MetaHuman, Fab assets),
+  Blender, Maya, 3ds Max, Marvelous Designer / CLO, ZBrush, Mixamo, VRoid / VRM, MakeHuman, Substance, mocap
+  tools (BVH, FBX), and stores (Fab, Sketchfab, Poly Haven, CGTrader-type stores): which asset types it exports
+  (characters, clothes, hair, props, motions, materials and textures, cameras, lights, whole scenes), in which
+  formats, and what survives the trip — mesh, UVs, skeleton and weights, morphs including correctives (JCMs),
+  materials, hair (cards or strands), clothes as separate meshes, animation.
+- **How CC5, Unreal and Daz Studio pull in foreign assets** — the user-facing workflows: CC5 (FBX / OBJ / GLB
+  import, Transformer, Body Wrap, AccuRIG and characterization, converting meshes to cloth, accessory or prop,
+  material conversion); Unreal (Interchange for FBX / glTF / USD / Alembic / MaterialX, Datasmith, IK Rig and IK
+  Retargeter, groom import, Mesh to MetaHuman, Fab import); Daz (OBJ / FBX import, Transfer Utility, Morph Loader,
+  its bridges); and how Blender add-ons do it (the open-source Daz importer "Diffeomorphic", the CC / iClone
+  Blender tools).
+- **Open tools for each conversion** — format readers (ufbx, Assimp, OpenUSD, Alembic, glTF libraries, any open
+  reader of Daz's DSON), material converters (Iray / MDL and CC materials to PBR, MaterialX), rig mapping and
+  auto-characterization (retarget maps, HumanIK-style definitions, auto-riggers), refitting clothes to our body,
+  and moving morphs onto our topology (mesh wrapping, deformation transfer).
+- **OpenUSD as the bridge** — the user, 2026-10-29: "things like openusd help alot as unreal i think already can
+  export assets in this format". For Unreal, CC5, Daz, Blender, Maya and Houdini: does each import and export USD,
+  and what survives in each direction — static and skinned meshes, skeletons, blend shapes, materials (UsdPreviewSurface,
+  MaterialX, MDL), grooms / curves, animation, cameras, lights, whole levels or scenes.
+- **One terms line each** (no analysis): using CC / iClone store content in other apps, Daz content outside Daz
+  Studio, MetaHuman outside Unreal, Fab's standard licence, Mixamo, Sketchfab's licences.
+- Output: a table per source program (asset type → formats → what survives), a table of the three reference
+  apps' import workflows, a table of open conversion tools, the terms lines.
+
+## After the passes (the lead)
 
 One lead session reads the eight pass-2 files, distills them into RESEARCH.md, writes the one complete rec list
 (every item researched and argued against, each piece standard with its doc link or NOT STANDARD), and shows it to
