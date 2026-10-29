@@ -38,6 +38,15 @@ GO:     the user, verbatim (2026-10-29, the opening request): "i want to start w
         - "you have a go on your rec" — on the recs below.
         - "also another app might be intereseting MakeHuman https://blender-addons.org/mb-lab-add-on/
           https://blendercharacterproject.org/ i am sure there are others" — added to §5's candidates.
+        - "features i also want z brush ability or clone, things like making clothes metatailor marvelous
+          designor, making props, the whole feature to make anything we need to create character scene animate
+          pass to unreal engine like cc5 has features to push to different software z-weave, we also might want
+          fx creation but this are things we can add later but we need to be able to add them in the orginal
+          design cc5 has popcorn fx, but with ai we might just need character creation prop scene and camera
+          managment then let ai create movie, this is just a thought we need to keep in mide, makesure all of
+          this reaserch and ideas we chat about are saved" — the features in SCOPE and RESEARCH §2–§4, §7–§8;
+          the AI-movie thought in IDEAS.md and §10. OPEN: what "z-weave" is — nothing found under that name
+          (closest: GoZ, R3DS ZWrap); asked the user.
 
 APPROVED RECS (verbatim as shown, 2026-10-29):
         - Method: "Use the deep-research skill: about 8 research agents running at once, one per area listed
@@ -68,7 +77,16 @@ SCOPE:  the subjects of [`RESEARCH.md`](RESEARCH.md) §2–§10 — CC5 in depth
         (scene features included) deep enough to fix the shared standards; CC/iClone treated as an engine plus an
         editor; the routes (a game engine, Blender, our own engine, a mix) with the language chosen per layer and
         nothing ruled out; the feature references; the building blocks; the standards; the legal checks; one app or
-        two (the user's lean above); JustDirect inside JustStage or beside it.
+        two (the user's lean above); JustDirect inside JustStage or beside it. Features the user named
+        2026-10-29: sculpting at ZBrush's level, making clothes (Marvelous Designer, MetaTailor), making props,
+        the pipeline out to Unreal Engine and other software as CC5 has, and FX (PopcornFX in iClone) — FX may
+        come later, but every later feature gets its place in the first design.
+
+NOTES from the chat (2026-10-29): CC5 + iClone 8 + the plugins is years of work for a large team, so delivery
+        is phased and tracked with a parity scorecard; the research sets the phase order. Assets are made
+        through code (meshes, morph targets, rigs, shaders, materials, icons) and AI generators; a realistic base
+        human with production topology and hundreds of morphs comes from an open base if one is good enough
+        (§5) — never promised to match Reallusion's content library.
 
 STATE:  setup DONE 2026-10-29 — this repo and its docs, the global CLAUDE.md edit, the general memories copied
         to the `E:\Dev\3D` project. The research is NOT STARTED: it runs in a session the user opens at
@@ -78,24 +96,20 @@ NEXT:   the research → one complete rec list, every item researched and argued
         standard (with its doc link) or NOT STANDARD → a fresh Fable session writes the synthesis and the
         standards spec → the user approves → code.
 
-MY RECS (shown 2026-10-29), waiting on the user's go:
-        - The trademark check first: before the research agents start, the research session searches USPTO and
+APPROVED 2026-10-29 — the user: "1 and 3 your rec go", then "3 go", then "foget 1 as you said that is in
+        another session":
+        - (3) The global "one way per job" rule keeps its text and gets one sentence appended after "A second
+          way to do a job the kit already has is a bug.": ` In the 3D family (E:\Dev\3D) the table is the one
+          JustStage's standards spec creates; until then there is none.` — DONE 2026-10-29 in
+          `F:\ClaudeCode\config\CLAUDE.md`; the standards spec includes that table.
+MY RECS (shown 2026-10-29), waiting on the user's go in the `E:\Dev\3D` session:
+        - (1) The trademark check first: before the research agents start, the research session searches USPTO and
           EUIPO for JUSTSTAGE / JUST STAGE in classes 9 and 42 and records the result in §12 — a database check,
           not legal clearance. (Was "before anything goes public"; moved up because the name is already in the
           folder, the memories and these docs, and a rename gets dearer every week.)
-        - The research: the user opens a session at `E:\Dev\3D` on Opus 5.5 at xhigh and says go there. One
+        - (2) The research: the user opens a session at `E:\Dev\3D` on Opus 5.5 at xhigh and says go there. One
           round of 8 agents — §2 CC5, §3 iClone, §4 references, §5 bases, §6 routes, §7 building blocks,
           §8 standards, §9 legal; the lead does §10 itself from the web kit's register and the JustDirect note.
           Each brief carries its section, the "don't re-derive" line, the questions and a done-when line. No
           second round of agents without the user's word; gaps after round one are filled by the lead with
           targeted lookups.
-
-## The global "one way per job" rule names the web kit's table — for the user's word [2026-10-29]
-
-FOUND:  the global CLAUDE.md rule "**One way per job** … find its job in the kit's table
-        (`just-core/docs/app-structure.md` §19)" was not part of the approved edit and still points every
-        session, this family's included, at the web kit's table. JustStage has no such table yet. Not changed —
-        waiting on the user's word.
-MY REC (shown 2026-10-29): leave the rule's text as it is and append one sentence after "A second way to do a
-        job the kit already has is a bug.": ` In the 3D family (E:\Dev\3D) the table is the one JustStage's
-        standards spec creates; until then there is none.` — and the standards spec then includes that table.
