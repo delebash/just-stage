@@ -113,8 +113,9 @@ with a send-and-update round trip.
 - Windows only: a DirectX 11 renderer, NVIDIA PhysX, voxel GI based on NVIDIA VXGI, an Autodesk HumanIK-based
   control rig, the PopcornFX runtime. An "RTX Render" path tracer, in open beta since 2026-07-28, needs an
   RTX 3060 or better.
-- One project is one timeline (default 1,800 frames, maximum 54,000); 6,000 ticks a second; Z-up, −Y
-  forward, right-handed. "Sequences inside a project" is an open user request.
+- One project is one timeline (default 1,800 frames, maximum 216,000 since 8.3 — was: "maximum 54,000" until
+  2026-10-29, from an outdated manual page; the second pass found the 8.3 notes of 2023-06-19); 6,000 ticks a
+  second; Z-up, −Y forward, right-handed. "Sequences inside a project" is an open user request.
 - The timeline holds nine data types (transform, parameter, clips, target switch, lip-sync, voice, on/off,
   transition, summary) plus IK/FK blend keys; layer keys live inside clips; project tracks carry camera
   switching, sound, HDR and IBL.
@@ -138,6 +139,29 @@ with a send-and-update round trip.
   app in 8.75; 8.76 added an AI mesh generator.
 - Open: Reddit not reached (the search cap); the Motion LIVE workflow and device protocols; several prices;
   the software EULA and ActorCore licence; whether the Python API can build timeline structure.
+
+Second pass done 2026-10-29: [`../plans/2026-10-29-research-03-iclone-pass2.md`](../plans/2026-10-29-research-03-iclone-pass2.md).
+
+*agent, 2026-10-29* — S2's pass 2, sources per fact there:
+
+- Release history settled: two 8.7 builds (2026-01-26 and 2026-02-12); "8.54" was an announcement (June 2025),
+  never a build.
+- AI output: Reallusion's AI Service EULA (2026-10-29) grants commercial use on its Starter, Standard and Pro
+  plans (Free is for testing); it covers Video Mocap output; Reallusion may train its AI on content set to
+  Public.
+- Prices, from the price data Reallusion's store page loads: mocap profiles — Xsens, Vicon, OptiTrack, Qualisys
+  $1,990 each; Neuron and Rokoko $999; iPhone Live Face $399. Plugins — Unreal Live Link $1,490 (free for indies
+  under $100K a year), PopcornFX $267, popVideo $168, BuildingGen $199; Motion Link free.
+- Motion LIVE: each device's vendor app streams over the local network to an IP and port iClone listens on
+  (Xsens UDP 9763, the iPhone app port 999, AccuFACE 2 its own TCP port); every vendor expects the T-pose to face
+  a different axis.
+- The AI Mesh Generator runs in Reallusion's cloud, $0.12–$1.60 a mesh in AI points.
+- The Python API now covers most of the 2020 "can't do" list (save, undo blocks, viseme keys, re-parenting, mesh
+  vertices, render passes) and has 51 events; it can create clips and keys, not tracks or layers.
+- Hair is simulated as PhysX soft cloth, not by its own solver.
+- The Marketplace lists 60 iClone Python plugins, 45 of them third-party.
+- Still open: Reddit (the search tool refuses the site) and Capterra/G2 (403) — not worked around; a few device
+  protocol names; ActorCore's own licence page (script-only).
 
 ## 4 · Feature references
 
