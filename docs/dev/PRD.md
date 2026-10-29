@@ -2,8 +2,7 @@
 
 > **Status: rewritten 2026-10-29 to the approved recs** (R1–R21 and the Opus review's 1–28 — [`TASKS.md`](TASKS.md);
 > the standards spec: [`../standards/README.md`](../standards/README.md)). **§2 (who it is for) and §7 (what "done"
-> means for the first release) were the Fable session's guess; §2 is now the user's answer (2026-10-29), §7 stays DRAFT
-> until the user answers it** (review
+> means for the first release) were the Fable session's guess; §2 and §7 are now the user's answers (2026-10-29)** (review
 > item 19 — a gap in an approved decision is asked, never filled with our own choice). Why it is built this way:
 > [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
@@ -106,9 +105,13 @@ The scope now is the character creator (R21's order); each row names its proof (
 - Video generation and the AI-film flow — JustDirect's job, linked by the API (R20, IDEAS).
 - Legal clearance of names and terms beyond the USPTO database check (RESEARCH §12; the user's word).
 
-## 7 · What "done" means for the first release — DRAFT, the Fable session's guess, waiting for the user's answer
+## 7 · What "done" means for the first release — the user's word, 2026-10-29
 
-The gate passed; Body, Head & Face, Skin & Materials, Hair, Photo-to-head, Rig & Expressions, Creatures, Clothes
-fitting and Import / Export with the Unreal plugin at `done` on the scorecard with their proofs; the API's contract
-tests green on Windows, macOS and Linux CI; user docs for each workspace; JustStage's installers and the Unreal plugin
-on GitHub — and the family's rule: a release only when nothing is open.
+The user, verbatim: "i agree go code it" (on the rec shown in chat — TASKS). The first release is **R21's steps 1–6**:
+the passed quality gate; Body, Head & Face, Skin & Materials (with makeup layers), eyes, Hair (with beards and
+mustaches); Photo-to-head and photo-to-body; Rig & Expressions with Creatures; Clothes fitting; Import / Export with the
+full Unreal plugin (motion capture through Unreal with it) — each at `done` on the scorecard with its proof; the
+installer and launcher on Windows, macOS and Linux; the Plugins page; the API with its contract tests green on all three
+OSes' CI; user docs for each workspace; JustStage's installers and the Unreal plugin on GitHub — and the family's rule:
+a release only when nothing is open. After it: sculpt extras (step 7), clothes from patterns (step 8), then Animate
+with JustStage's own live capture, Scene, FX and describe-a-person.

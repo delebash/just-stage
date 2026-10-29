@@ -265,8 +265,28 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           the full Unreal plugin (mocap in Unreal with it); the installer on Windows, macOS and Linux; the Plugins page;
           the API with its tests; user docs. After it: sculpt extras (7), clothes from patterns (8), then Animate with
           JustStage's own live capture, Scene, FX and describe-a-person.
-        - Open for the user: PRD §7 (what the first release must hold); Blender is run
-          only once the user says the other session's memory use is over.
+        - Then, verbatim (2026-10-29): "i agree go code it, unless you really need my input just think adversrially on
+          your decisions and take your own recs once you adversarialy thoughts finish, go" → **PRD §7 APPROVED** (steps
+          1–6 as the first release) and **GO ON CODE**: R21 step 1 (the quality gate with a first Unreal plugin) starts,
+          on the approved spec; every choice the spec leaves open is decided here after an adversarial pass, written
+          down with its reason, and built — the user is asked only where their input is really needed. Blender: the
+          GPU had 928 MiB of 8 GiB in use and 18 GiB of RAM free when the work began; headless runs only, GPU-heavy
+          renders re-check first.
+
+STEP 1 — the quality gate (R3), the plan (each line closes when its test passes; the order is the build order):
+        1. Foundation: the repo layout of the spec's README §5; the add-on with a stock manifest, the core API
+           (`register_plugin`, `register_command`, `run`), the command declaration (`Params`/`Result`/`COMMAND`/`main`)
+           and its operator mirror with the match test; the dev run of Blender on JustStage's own folders (System
+           repository junction, own user folder); pytest inside Blender and on plain CPython; REUSE licences.
+        2. The base: MakeHuman's hm08 and its CC0 targets fetched at a pinned MPFB2 commit; the body loaded with its
+           helpers masked; `target.json`/`macro.json` sliders as shape keys; the joint cubes kept.
+        3. The head at levels 1–2 (Multires) with displacement.
+        4. The engine host from the kit's template with `sdcpp`, and the skin generator's first image features.
+        5. The skin material (Principled, subsurface, micro normal), eyes, teeth/gums/tongue, brows, lashes, nails.
+        6. The scalp groom with Blender's hair node groups.
+        7. The first face rig: OpenRigLogic's Python bindings built for Blender 5.3's Python 3.13; three expressions.
+        8. The first Unreal plugin: import the package, build materials and groom, render.
+        9. The gate renders and contact sheets (EEVEE, Cycles, Unreal) beside CC5 and MetaHuman; the user's verdict.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
