@@ -452,6 +452,32 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   150+ facial morphs; reallusion.com free-3d-character-base page) falls under the EULA's CC Base Model clause, which
   bars use "in any character generation system" (§2) — not a base. No source names a cross-app standard human mesh;
   every app has its own (CC, Daz Genesis, MetaHuman, MakeHuman).
+- MetaHuman's face names on disk (`F:\Epic\UE_5.8\Engine\Plugins\MetaHuman\MetaHumanCoreTechLib\Content\ArchetypeDNA\SKM_Face.dna`,
+  11.2 MB, byte scan 2026-10-29, for the spec's item 10): 373 distinct `FACIAL_[CLR]_*` joint names, among them
+  `FACIAL_C_FacialRoot`, `FACIAL_C_Jaw`, `FACIAL_L_Eye`/`FACIAL_R_Eye`, `FACIAL_C_TeethUpper`, `FACIAL_C_TeethLower`,
+  `FACIAL_C_Tongue1`–`4`; mesh names `head`, `teeth`, `saliva`, `eyeLeft`, `eyeRight`, `eyeshell`, `eyelashes`,
+  `eyeEdge`, `cartilage` (each `<name>_lod0_mesh` at LOD0).
+- Reallusion's spine mapping (`soupday/cc_blender_tools` `rigify_mapping_data.py`, read 2026-10-29): Rigify `spine` ↔
+  `CC_Base_Hip`, `spine.001` ↔ `CC_Base_Waist`, `spine.002` ↔ `CC_Base_Spine01`, `spine.003` ↔ `CC_Base_Spine02`,
+  `spine.004` ↔ `CC_Base_NeckTwist01`, `spine.005` ↔ `CC_Base_NeckTwist02`, `spine.006` ↔ `CC_Base_Head`; its
+  `GAME_BASE_BONE_MAPPING` puts `spine.001`–`.003` on UE4's `spine_01`–`spine_03` (UE4 has three spine bones) and splits
+  `spine.004`/`.005` 50/50 onto `neck_01`; Rigify's `chest` control sits on `ORG-spine.002` (= `CC_Base_Spine01`). So
+  by humanoid role CC's `Waist` is spine, `Spine01` chest, `Spine02` upper chest — UE5 `spine_01`, `spine_03`,
+  `spine_05` (the review's first fix had used the UE4 table).
+- Rigging and motion services (the user: "did you look at apps like meshy https://www.meshy.ai/features/ai-animation-generator
+  could that be useful https://mesh2motion.org/ https://www.mixamo.com/#/"), read 2026-10-29:
+  - **Mesh2Motion** (`Mesh2Motion/mesh2motion-app`, 3,622 stars, pushed 2026-10-26; desktop app
+    `mesh2motion-desktop`): "Import a 3D Model and automatically assign and export animations … similar to … Mixamo, but
+    … more flexible so it can support other model and skeleton types"; "The code and platform are all licensed under the
+    very permissive MIT license. The art assets (3d models, rigs, animations) are all licensed under CC0" (README).
+    Its site: "Animation rigs for Birds, Dragons, Spiders, Kaiju, Foxes, Horses, Fishes, Snakes, … and Humans"; "Over 170
+    animations"; import GLB, GLTF, DAE, FBX; export GLB or FBX; an offline version. A TypeScript/Vite web app.
+  - **Meshy**'s animation generator: auto-rigging ("under 30 seconds") plus preset motions ("600+ preset motions"; the
+    page also says "100+"); "humanoids, bipeds, quadrupeds, and stylized figures"; FBX and GLB out; a 100-credit free
+    tier, "Free-plan models use CC BY 4.0; paid plans unlock a Private license"; a web service with an API. No
+    text-to-motion or video capture on that page.
+  - **Mixamo** (Adobe's free web service): auto-rig and motion library; terms forbid AI/ML training (§7); no public API
+    found; already an import profile (`mixamorig:` names, skeleton §1.4).
 - Human Generator, read at its own site (the user: "did you look at https://humgen3d.com/"; round one read only its
   Superhive listing): 100+ body and face adjustments, a face rig with ARKit iPhone capture, particle hairstyles,
   clothes, a pose library, Rigify-compatible rigs, LODs, a batch generator, a Python API, texture baking (home page).

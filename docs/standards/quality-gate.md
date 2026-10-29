@@ -1,6 +1,7 @@
 # The quality gate — procedure (R3)
 
-> **Status: DRAFT, 2026-10-29 — for the user's approval** (see [`README.md`](README.md)). R3: "The bar is a measured
+> **Status: APPROVED recs, written 2026-10-29** (the review's items 2, 3, 4, 16, 21, 23 — TASKS; review file
+> [`../plans/2026-10-29-spec-review-opus.md`](../plans/2026-10-29-spec-review-opus.md)). R3: "The bar is a measured
 > gate, before the features." The user's bar (TASKS): "the quality of cc5 and metahuman characters or better", for
 > "all of the character realism hair the whole human", "like teeth lips". Facts: RESEARCH §5, §7 (S10 §4: no source
 > compares any open asset with CC5 or MetaHuman — only our renders can).
@@ -30,7 +31,7 @@ three-quarter, profile, close-up of the eye and lip corner), the neutral and the
 
 | Renderer | Platform | Who renders |
 |---|---|---|
-| EEVEE (Blender 5.2 LTS) | the user's RTX 2070 Super | the gate script, headless |
+| EEVEE (Blender 5.3, the release the installer ships) | the user's RTX 2070 Super | the gate script, headless |
 | Cycles (256 samples, OIDN) | the same | the gate script |
 | Unreal 5.8 (Lumen, the MetaHuman shaders for the MetaHuman; our plugin's materials for ours; CC5's Auto Setup for CC5's) | the same | the plugin's test map |
 
@@ -45,6 +46,15 @@ is rendered in Blender and Unreal beside ours.
 - The peak VRAM of one skin-generation job on the engine host beside the EEVEE viewport ([`ai-engines.md`](ai-engines.md) §4).
 - The shape-space wrap errors (max, mean, mm) for MHR and GNM onto the base ([`character-data-model.md`](character-data-model.md) §1.2).
 - The face rig's control count and the shapes it drives.
+- **The cost of hm08's helper geometry** (item 2): slider-drag time and memory per morph with the helpers kept and
+  masked (19,158 dots) against the body alone (13,380).
+- **HD slider memory** (item 21, N3): texture memory per active HD slider's displacement map at 2K and 4K, and with the
+  bake-on-release rule.
+- **Materials across the trip** (item 4): the same skin, eye and hair materials rendered in Blender from the `.blend`,
+  from the re-imported USD (Blender's MaterialX `open_pbr_surface` export), and in Unreal from the plugin's OpenPBR
+  mapping — the subsurface and coat that survive are recorded per part.
+- **MakeHuman's free face shapes** (item 3): the CC0 "Faceunits 01" ARKit set on the gate head, judged with the
+  expressions; a part below the bar gets improved shapes under the same names.
 
 ## 5 · The verdict
 

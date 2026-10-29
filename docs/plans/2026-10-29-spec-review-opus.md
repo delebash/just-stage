@@ -505,6 +505,22 @@ interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md
 27 → plugins.md §1–§2, ARCHITECTURE.md §8;
 testing.md (a launcher test), dev/PRD.md, dev/ARCHITECTURE.md §1.
 
+## Item 28 and the rewrite (2026-10-29)
+
+- **28 · Mesh2Motion and Blender Studio's base meshes in the starter library** (the user: "did you look at apps like
+  meshy … mesh2motion … mixamo", then "Bonus Alternative: … use the Blender Studio Asset Bundle", then "you have go on
+  adding those things" — **APPROVED**). Mesh2Motion (MIT code, CC0 art — README): CC0 creature rigs (birds, dragons,
+  spiders, kaiju, foxes, horses, fish, snakes) with their animations start the creature set beside Rigify's metarigs;
+  its human animations are retargeted onto the UE5 skeleton for the starter motions; Blender Studio's CC0 base meshes
+  are sculpting starting points. Its code (TypeScript) is a method reference only. Meshy (paid cloud) and Mixamo (no
+  API, no AI training) stay import sources.
+- **9, corrected again while rewriting.** The review's CC fix (`Waist`/`Spine01`/`Spine02` → `spine_01`/`02`/`03`) had
+  read Reallusion's UE4 table (`GAME_BASE_BONE_MAPPING`, three spine bones). By humanoid role — the same rule as Mixamo,
+  and Reallusion's own Rigify `chest` on `CC_Base_Spine01` — they map to `spine_01`, `spine_03`, `spine_05`
+  (RESEARCH §8); `NeckTwist01/02` → `neck_01/02`.
+- **The rewrite is done**: every file in the blast-radius table below and in the passes' additions, plus the PRD
+  (§2 and §7 kept DRAFT, item 19) and ARCHITECTURE, rewritten to items 1–28 on 2026-10-29.
+
 ## Blast radius (files that change on a go)
 
 | Item | Files |

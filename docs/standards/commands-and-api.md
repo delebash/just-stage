@@ -1,113 +1,116 @@
-# Commands and the API — operators, one JSON Schema per command, the MCP server and its permissions
+# Commands and the API — one declaration per command, four doors, the MCP server and its permissions
 
-> **Status: DRAFT, 2026-10-29 — for the user's approval** (see [`README.md`](README.md)). R19, R20. Facts: RESEARCH §4
-> (Cinema 4D's MCP, Houdini Engine), §6 (Blender Lab's MCP server), §8 (round one §4, S8.1 operator rules, S8.3 MCP
-> 2026-07-28), §11 (PhotoCraft's command registry); Blender Lab's `blender_mcp` readme, read by this session
-> 2026-10-29 (RESEARCH §6).
+> **Status: APPROVED recs, written 2026-10-29** (the review's items 7 and 8, the command registrar approved by name —
+> TASKS; review file [`../plans/2026-10-29-spec-review-opus.md`](../plans/2026-10-29-spec-review-opus.md)). R19 as
+> changed, R20. Facts: RESEARCH §4 (Cinema 4D's MCP, Houdini Engine), §6 and §8 (Blender Lab's `blender_mcp`, the MCP
+> Python SDK), §11 (PhotoCraft's command registry).
 
 ## 1 · The rule
 
-**Every action JustStage can do is one command: a Blender operator with a context-free `execute()`, described by one
-JSON Schema, reachable the same way from the UI, Python, the command line and the MCP server.** The user's words
-(TASKS): "an api that user can connect to so we need to define standards for everything we do before we write code".
+**Every action JustStage can do is one command, declared once, reachable the same way from the UI, Python, the command
+line and the MCP server.** The user's words (TASKS): "an api that user can connect to so we need to define standards
+for everything we do before we write code".
 
-Standards: [Blender operators](https://docs.blender.org/api/current/bpy.types.Operator.html) (`bl_idname`, typed
-properties as arguments, `poll`, `execute`, `REGISTER | UNDO`); [JSON Schema 2020-12](https://json-schema.org/draft/2020-12);
-[MCP 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28); [JSON-RPC 2.0](https://www.jsonrpc.org/specification);
-the registry shape of PhotoCraft (id, label, menu path, shortcut, params doc, enabled, run — §11).
+Standards: [Blender operators](https://docs.blender.org/api/5.3/bpy.types.Operator.html) for the UI door; Blender Lab's
+MCP server's own tool pattern for the declaration and the remote door (§4); the
+[MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) (FastMCP) for the tool schemas; the registry shape
+of PhotoCraft (id, label, menu path, shortcut, params doc, enabled, run — §11).
 
 ## 2 · A command
 
+Blender Lab's server declares each tool as a pair — a FastMCP function with typed arguments, and a `<tool>_toolcode.py`
+with `Params` and `Result` `NamedTuple`s and a `main(params)` that runs inside Blender (`render_viewport_to_path`,
+§8). JustStage follows that convention, with the declaration living in the extension so plugins can add commands:
+
 ```python
-@command(
-    id="juststage.body.set_slider",             # also the operator's bl_idname
-    label="Set body slider",
-    menu="Character > Body",                    # where the UI puts it (optional)
-    schema="schemas/commands/body.set_slider.json",
-    since="2026-11-01",
-)
-class BodySetSlider(bpy.types.Operator):
-    bl_options = {"REGISTER", "UNDO"}
-    # properties are GENERATED from the schema at registration (one source)
-    @classmethod
-    def poll(cls, context): ...                 # explains itself with poll_message_set
-    def execute(self, context):                  # works from its properties alone — never from selection or the mouse
-        ...
-        return {"FINISHED"}
-    def invoke(self, context, event):            # may only FILL properties from the UI, then call execute
+# juststage/commands/body/set_slider.py — inside the extension; pure Python at module level (bpy imported in main)
+from typing import NamedTuple
+
+class Params(NamedTuple):
+    character: str          # the character's assetInfo identifier
+    slider: str             # a slider id from target.json / macro.json
+    value: float
+
+class Result(NamedTuple):
+    status: str
+    value: float
+
+COMMAND = dict(id="juststage.body.set_slider", label="Set body slider", menu="Character > Body",
+               permission="body", undo=True, headless=True, since="2026-11-01")
+
+def main(params: Params) -> Result: ...      # works from params alone — never from selection or the mouse
 ```
 
-Rules (Blender's own words behind them — §8 pass 2):
+Rules:
 
-- `execute()` runs from explicit parameters, never from UI context. Blender: operators without `execute()` "cannot
-  be repeated from a script or macro"; `invoke()` and modal tools only fill parameters. Objects are named by
-  parameter (`character`, `garment`), never "the selection" — Blender's own gotcha list says operators "Can't pass
-  data such as objects … (operators use the context instead)", which is what we avoid.
-- `UNDO` on every command that changes data ("mandatory if the operator modifies Blender data"); `CANCELLED` means no
-  change. Repeated drags use `UNDO_GROUPED`. Undo is Blender's one typed stack (memfile snapshots for general edits,
-  sculpt steps for sculpt — §8 pass 2); JustStage adds no undo system of its own.
-- `poll()` failures carry a message (`poll_message_set`) naming the missing condition.
-- The **schema** (one file per command, JSON Schema 2020-12) is the source of truth: `title`, `description`,
-  `properties` with `description`, `enum`, bounds and defaults, `required`, an `x-juststage` block (`since`,
-  `deprecated`, `permission`, `undo`, `headless: true|false`, `returns` schema). From it the build generates the
-  operator properties, the MCP tool, the CLI help and the reference docs. A command without a schema does not
-  register (a test enforces it).
-- Results: a command returns data through its `returns` schema (written to `context.scene.juststage.last_result` for
-  Python and to the JSON-RPC response for remote callers), not through `report()` alone.
-- Long commands (generation, baking, import) run as **jobs**: `juststage.jobs.start` returns a job id; `jobs.status`,
-  `jobs.events`, `jobs.cancel` follow it; the UI shows Blender's progress cursor and a Jobs panel. Standard: Blender's
-  modal timer for in-process work; `subprocess` for the engine host's HTTP jobs ([`ai-engines.md`](ai-engines.md)).
+- **One declaration** per command: its `Params`, `Result`, `COMMAND` record and `main`. `Params` fields use JSON types
+  only (`str`, `int`, `float`, `bool`, `list[...]` of those, `Literal[...]` for choices), with defaults where optional.
+- **The operator** for the UI and keymaps is a thin wrapper (`JUSTSTAGE_OT_body_set_slider`): its `bpy.props` mirror
+  `Params` in Blender's own declaration style, its `execute()` builds `Params` from them and calls `main`. **One test per
+  command** checks that the operator's properties match `Params` (names, types, defaults) — Blender's declaration stays
+  standard, and the duplicate can't drift.
+- `execute()` and `main` run from explicit parameters, never from UI context — Blender: operators without `execute()`
+  "cannot be repeated from a script or macro"; operators "Can't pass data such as objects … (operators use the context
+  instead)" (§8), which is what we avoid. Objects are named by parameter (`character`, `garment`), never "the selection".
+- **Undo:** a data-changing command run through the operator gets Blender's `REGISTER | UNDO`; run through Python or
+  MCP, `juststage.api.run` pushes one undo step after it (`bpy.ops.ed.undo_push`). Repeated drags use `UNDO_GROUPED`.
+  JustStage adds no undo system of its own (§8).
+- `poll` failures carry a message (`poll_message_set`) naming the missing condition.
+- **Results** are `main`'s return value: Python callers get the `Result`; MCP callers get it as JSON over Blender Lab's
+  socket, as Blender Lab's own tools return theirs. No scene property for results.
+- **Long commands** (generation, baking, import) run as **jobs**: `juststage.jobs.start` returns a job id; `jobs.status`,
+  `jobs.events`, `jobs.cancel` follow it; the UI shows a Jobs panel. Blender's modal timer for in-process work; the
+  engine host's HTTP jobs for models ([`ai-engines.md`](ai-engines.md)).
 
 Namespaces: `juststage.<area>.<verb>_<object>`; areas: `base`, `body`, `head`, `skin`, `eyes`, `mouth`, `hair`,
-`clothes`, `rig`, `face`, `pose`, `import`, `export`, `library`, `gate`, `jobs`, `api`. Plugins register under
-`js_<plugin>.<area>.<verb>` ([`plugins.md`](plugins.md)).
+`clothes`, `rig`, `creature`, `face`, `capture`, `pose`, `import`, `export`, `library`, `gate`, `ai`, `jobs`, `api`.
+Plugins — our built-in modules included — register under their module or plugin id ([`plugins.md`](plugins.md)).
 
 ## 3 · The four doors
 
 | Door | How | Standard |
 |---|---|---|
-| UI | panels, menus and keymaps call the operator; the application template owns the layout (R1) | Blender |
-| Python | `bpy.ops.juststage.body_set_slider(character="Eve", slider="nose-width", value=0.4)`; a thin `juststage.api` module wraps it with typed functions generated from the schemas | Blender `bpy.ops` |
-| Command line | `blender -b file.blend --python-expr "import juststage; juststage.cli(['body.set_slider', '--character', 'Eve', …])"` and a `juststage` console script that wraps that line; `--json` input and output; exit codes | Blender `-b --python` (R16) |
-| Remote (programs and agents alike) | **MCP** — over stdio for clients that launch it, over Streamable HTTP on loopback for programs such as JustDirect (§4). MCP is JSON-RPC 2.0, so there is no second remote protocol | MCP 2026-07-28 |
+| UI | panels, menus and keymaps call the operator; the application template owns the layout | Blender |
+| Python | `juststage.api.run("body.set_slider", character=…, slider="nose-width", value=0.4)` → `Result`; the module is `bl_ext.system.juststage.api` ([`plugins.md`](plugins.md) §2) | Blender extensions |
+| Command line | `blender -b file.blend --python-expr "import bl_ext.system.juststage as js; js.cli([...])"` and a `juststage-cli` script the installer adds; `--json` input and output; exit codes | Blender `-b --python` (R16) |
+| Remote (programs and agents alike) | **MCP** — stdio for clients that launch it, Streamable HTTP on loopback for programs such as JustDirect (§4). MCP is JSON-RPC 2.0, so there is no second remote protocol | MCP 2025-11-25 |
 
-## 4 · The MCP server (R19)
+## 4 · The MCP server
 
-**Base: Blender Lab's `blender_mcp`** (GPL-3.0-or-later, Blender 5.1+ — §6), reused as its readme describes it: "two
-components that communicate over a TCP socket: A Blender add-on that runs inside Blender and executes requests. An
-MCP server that runs as a separate process, launched by the MCP client"; data flow
-`MCP Client ⇐ MCP/stdio ⇒ blender-mcp ⇐ TCP socket ⇒ Blender Add-on`; the add-on has preferences for host, port and
-auto-start, polling intervals, client timeouts, and "background mode requires requests to complete synchronously".
+**Base: Blender Lab's `blender_mcp`, as it is** (GPL-3.0-or-later; latest release v1.0.3, 2026-09-11; depends on
+`mcp[cli]>=1.2.0,<2` — §8): "two components that communicate over a TCP socket: A Blender add-on that runs inside
+Blender and executes requests. An MCP server that runs as a separate process, launched by the MCP client"; data flow
+`MCP Client ⇐ MCP/stdio ⇒ blender-mcp ⇐ TCP socket ⇒ Blender Add-on`. The installer ships both
+([`plugins.md`](plugins.md) §5).
 
-JustStage's shape, built on it:
-
-| Piece | JustStage | Note |
+| Piece | JustStage | Standard |
 |---|---|---|
-| In Blender | Blender Lab's add-on socket server, as it is, inside the JustStage extension's API module: its `{type, params}` wire stays **private** between the two JustStage processes (nothing else speaks it) | reusing Blender Lab's code unchanged, GPL inside GPL |
-| Outside | `juststage-mcp`, Blender Lab's `blmcp` server process with JustStage's tool modules, started by the client over **stdio**, or started by JustStage with **Streamable HTTP** on loopback for programs such as JustDirect; MCP revision 2026-07-28: stateless, version and capabilities in `_meta`, `server/discover`, JSON Schema 2020-12 tool schemas, deterministic `tools/list` | the MCP spec's two transports; the only public protocol |
-| Tools | **generated from the command schemas** — one MCP tool per command whose `x-juststage.headless` is true, `inputSchema` = the command schema, `outputSchema` = `returns`; grouped by area for the permission UI | one schema, four doors |
-| State | an open file, a character, a selection are **explicit handles** in tool arguments (`character_id`), never session state — MCP 2026-07-28 removed sessions (§8 pass 2) | |
-| Resources | read-only views: a character's schema data (as USDA text), the slider list, the scorecard, the gate's last report, the API reference | MCP resources |
-| Port | the MCP HTTP transport on **17480** (loopback only; approved 2026-10-29), registered in the 3D family table ([`README.md`](README.md) §3); the private socket on the port Blender Lab's add-on preferences set; both configurable | — |
+| Protocol version | **2025-11-25**, the version Blender Lab's server speaks through MCP SDK 1.x (`LATEST_PROTOCOL_VERSION`); clients on SDK 2.x speak it too (2.x knows 2026-07-28 "beside the handshake versions" — §8). JustStage moves when Blender Lab moves, and offers them the SDK-2 change upstream — **R19 as changed** (the user: "i agree with your recs"; item 8) | MCP 2025-11-25 |
+| In Blender | Blender Lab's add-on and its socket, unchanged; its wire stays private between the two processes | reuse, GPL inside GPL |
+| Outside | Blender Lab's `blmcp` server process, started by the client over stdio, or by JustStage with Streamable HTTP on loopback | the MCP spec's two transports |
+| **JustStage's tools — the command registrar** | one module, `juststage_commands.py`, placed in Blender Lab's `blmcp/tools/` folder, which the server auto-discovers at startup (`pkgutil.iter_modules`, then each module's `register(mcp)`). Its `register` asks Blender over the socket for every command — ours and plugins' — with its `Params` fields, description and `COMMAND` record, builds a function with that signature (`__signature__`, which FastMCP reads with `inspect.signature`), and adds it with `FastMCP.add_tool`; the tool's JSON Schema is the one FastMCP derives. When plugins are switched on or off, it adds or removes tools (`add_tool` / `remove_tool`) and sends the SDK's tool-list-changed notice (`send_tool_list_changed()`, the SDK's "Dynamic Tools" example) | **NOT STANDARD — APPROVED 2026-10-29** ("your rec on all 1-6 … go", TASKS): our own small module on the SDK's documented calls. Standard option: Blender Lab's hand-written wrapper per tool — it can't follow plugins that come and go |
+| State | an open file, a character, a selection are **explicit handles** in tool arguments (`character`), never session state | — |
+| Resources | read-only views: a character's fields, the slider list, the scorecard, the gate's last report, the API reference | MCP resources |
+| Port | the MCP HTTP transport on **17480** (loopback only; approved 2026-10-29), in the 3D family table ([`README.md`](README.md) §3); the private socket on the port Blender Lab's add-on preferences set | — |
 
-**Permissions** — the attack on Blender Lab's server (it runs model code "without any guards" — §6) and the model
-Cinema 4D ships (off by default, local, an access token, the user picks the tool groups — §4):
+**Permissions** — the attack on Blender Lab's server (its Python tool runs code "without any guards" — §6) and the
+model Cinema 4D ships (off by default, local, an access token, the user picks the tool groups — §4):
 
 | Rule | Detail |
 |---|---|
-| Off by default | the API starts when the user turns it on in preferences or passes `--juststage-api` headless |
+| Off by default | the API starts when the user turns it on in JustStage's preferences, or with `--juststage-api` headless |
 | Loopback only | the socket and HTTP bind 127.0.0.1; a remote host needs an explicit preference and a token |
 | Token | an access token generated by JustStage, shown in preferences, required on HTTP; stdio inherits the user's session |
-| Tool groups | the user ticks areas (`read`, `body`, `head`, …, `import`, `export`, `files`) per client; a tool outside the ticked groups returns a JSON-RPC error naming the group |
-| Python | `juststage.api.run_python` exists (Blender Lab's code-execution tool) but is **its own group, off by default, and asks in the UI on first use per session** (R19: "Python over MCP behind a permission"); headless it needs `--juststage-allow-python` |
-| Files | import/export commands may read and write only inside folders the user listed (project, library, exchange); anything else is refused with the path named |
+| Tool groups | the user ticks areas (`read`, `body`, `head`, …, `import`, `export`, `files`, `ai`) per client; the registrar adds only ticked groups' tools; a call outside them returns an error naming the group |
+| Python | Blender Lab's `execute_blender_code` is **its own group, off by default** — the registrar removes it (`remove_tool`) unless the user turned it on, and JustStage asks in the UI on first use per session (R19: "Python over MCP behind a permission"); headless it needs `--juststage-allow-python` |
+| Files | import/export commands may read and write only inside folders the user listed (project, library, exchange) |
 | Network | the engine host's address only ([`ai-engines.md`](ai-engines.md)); `bpy.app.online_access` respected |
 | Log | every remote call is logged with its client, tool and arguments (secrets redacted) |
 
 ## 5 · What is not a command
 
-Live streams (webcam, VMC, Live Link) feed poses and face controls continuously; they are turned on and off by
-commands (`juststage.face.capture_start`) but their frames are not commands and leave no undo steps
+Live streams (webcam, phone face, VMC, Live Link) feed poses and the face continuously; they are turned on and off by
+commands (`juststage.capture.start`) but their frames are not commands and leave no undo steps
 ([`skeleton-and-face.md`](skeleton-and-face.md) §4). Viewport drawing and gizmos are UI.
 
 ## 6 · The reference apps' lessons kept

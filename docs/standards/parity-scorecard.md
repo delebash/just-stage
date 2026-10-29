@@ -1,6 +1,8 @@
 # The parity scorecard — CC5's inventory, with a floor that only rises
 
-> **Status: DRAFT, 2026-10-29 — for the user's approval** (see [`README.md`](README.md)). R21: "The scorecard is CC5's
+> **Status: APPROVED recs, written 2026-10-29** (the review's items 1–5, 10, 20–22, 25, 26 — TASKS; review file
+> [`../plans/2026-10-29-spec-review-opus.md`](../plans/2026-10-29-spec-review-opus.md)). **The Plan column's keep,
+> improve and drop entries are proposals for the user's look** (item 20), not decisions. R21: "The scorecard is CC5's
 > inventory (§2), with a floor that only rises." Rows come from RESEARCH §2's feature inventory
 > ([`../plans/2026-10-29-research-02-cc5.md`](../plans/2026-10-29-research-02-cc5.md) §2). Method: PhotoCraft's parity
 > scorecard (RESEARCH §11) — the floor is the count of `done` rows, kept in `scorecard.json`, raised and never lowered;
@@ -20,7 +22,7 @@ rows below hold their place.
 | Convert between generations | drop — one base; import wraps instead | — | — | — |
 | Neutral bases and templates | keep (library presets) | 2 | none | library tests |
 | Morph sliders (anatomy groups, favourites, search, −200..200) | keep; improve: three shape spaces incl. scan-based MHR and GNM | 2 | none | slider tests |
-| HD morphs (paid pack in CC5) | keep, free; HD sliders as displacement deltas | 2 | none | golden images |
+| HD morphs (paid pack in CC5) | keep, free; HD sliders as displacement maps faded by the slider (N3) | 2 | none | golden images |
 | Custom morph sliders (OBJ/sculpt → slider) | keep | 2 | none | `body.save_slider` test |
 | Bake morph results | keep | 2 | none | test |
 | ActorMIXER (blend up to six characters) | keep as "Mix" (blend slider states and textures); improve: any number of sources | 2 | none | test |
@@ -35,9 +37,9 @@ rows below hold their place.
 | Headshot AI image generator (cloud) | improve: local image models through the family engine | 3 | none | engine tests |
 | Edit Facial panel (muscle drag, presets, FACS) | keep (control panel on the face rig) | 4 | none | UI test |
 | Facial Profile Editor (edit each shape, batch update) | keep | 4 | none | test |
-| Facial profiles Standard/Extended/Extended+/HD | improve: one rig with the 52 guaranteed and the HD-class set | 4 | none | rig tests |
-| Expression wrinkles | keep (wrinkle layers driven by the rig) | 4 | none | golden images |
-| MetaHuman interop (same skeleton/controls; mesh → MetaHuman; MHA import) | keep via the plugin; MHA curves mapped | 6 | none | round trip |
+| Facial profiles Standard/Extended/Extended+/HD | improve: one DNA face rig by MetaHuman's control names, the ARKit 52 guaranteed | 4 | none | rig tests |
+| Expression wrinkles | keep (the DNA's animated maps, driven by RigLogic) | 4 | none | golden images |
+| MetaHuman interop (same skeleton/controls; mesh → MetaHuman; MHA import) | keep via the plugin; MHA curves drive our faces directly (the same control names) | 6 | none | round trip |
 
 ## Skin and materials
 
@@ -45,7 +47,7 @@ rows below hold their place.
 |---|---|---|---|---|
 | SkinGen layer stack (blend modes, masks, bake; free cap 15 layers) | keep, no cap | 2 | none | test |
 | SkinGen Premium (custom images, dynamic tools) | keep, free | 2 | none | test |
-| Digital Human shader family (skin, head, eye, occlusion, tearline, teeth, tongue, hair) | keep as our node groups | 2 | none | gate |
+| Digital Human shader family (skin, head, eye, occlusion, tearline, teeth, tongue, hair) | keep: Principled-based materials, exported as OpenPBR through MaterialX | 2 | none | gate |
 | HD skin maps (8K, redness, cavity, EXR displacement, per-level normals) | keep | 2 | none | gate |
 | Material tools (unify, merge, batch, tiling) | keep | 6 | none | test |
 | Dynamic Appearance Editor (Substance-based) | improve: procedural node groups + image models; no Substance | 7 | none | test |
@@ -68,8 +70,8 @@ rows below hold their place.
 
 | CC5 feature | Plan | Step | Status | Proof |
 |---|---|---|---|---|
-| Conform (full/partial, rigid detail, shrink wrap, tuck-in) | keep (fit record) | 5 | none | test |
-| Layering / cloth types, reorder, tuck-in preserve outer | keep (layer integers, tuck list) | 5 | none | test |
+| Conform (full/partial, rigid detail, shrink wrap, tuck-in) | keep (MakeHuman's MHCLO fit, refit on body change) | 5 | none | test |
+| Layering / cloth types, reorder, tuck-in preserve outer | keep (MHCLO `z_depth`, `juststage:tuckUnder`) | 5 | none | test |
 | Hide body under cloth | keep | 5 | none | test |
 | Transfer skin weights (presets, picker, vertex mode) | keep (robust transfer) | 5 | none | test |
 | Skin-weight editor | keep (Blender weight paint + our tools) | 5 | none | test |
@@ -91,7 +93,7 @@ rows below hold their place.
 | AccuRIG (auto-rig a static humanoid) | keep (skin-tokens.cpp, Rigify) | 4 | none | test |
 | Characterization (bone-skinned import, profiles for Mixamo, HIK, Biped, Blender, UE4) | keep (profiles: Mixamo, HIK, UE5, VRM, Daz, CC, MPFB2) | 6 | none | import tests |
 | Transformer (Daz → CC) | keep (Daz import, bridges and `.duf`) | 6 | none | import tests |
-| Creatures | later | later | none | — |
+| Creatures | improve: human and creature kinds from the start; creature rigs and animations from Mesh2Motion (CC0) and Rigify's metarigs, automatic weights, sculpted shapes (items 22, 28) | 4 | none | test |
 | Spring bones | keep | 5 | none | test |
 
 ## Poses and animation (CC5's own)
@@ -100,8 +102,8 @@ rows below hold their place.
 |---|---|---|---|---|
 | Edit Pose (IK/FK, lock, gestures, mirror) | keep (Blender pose mode + Rigify) | 4 | none | test |
 | Motions (apply, import FBX/BVH, player, turntable) | keep | 4 | none | test |
-| Face keys / puppet / mocap (iPhone, MHA) | keep (controls, MediaPipe, VMC, Live Link) | 4 | none | test |
-| Video mocap (cloud) | later (open models; labelled) | later | none | — |
+| Face keys / puppet / mocap (iPhone, MHA) | keep: in Unreal now through the plugin (Live Link Face, MetaHuman Animator, Live Link devices — R13); in JustStage the webcam face preview at step 4 (R18), then MediaPipe, the Live Link Face stream and VMC with the Animate workspace (item 26) | 1, 4, later | none | test |
+| Video mocap (cloud) | in Unreal now: MetaHuman Animator's Markerless Motion Capture (5.8, experimental; body Windows-only); in JustStage later, as an AI feature on the engine host (item 25) | later | none | — |
 
 ## Mesh tools and rendering
 

@@ -1,24 +1,27 @@
 # Files, the asset library and versioning
 
-> **Status: DRAFT, 2026-10-29 — for the user's approval** (see [`README.md`](README.md)). Facts: RESEARCH §8 (round
-> one §6–§7, S8.1), §2.
+> **Status: APPROVED recs, written 2026-10-29** (the review's items 6, 16, 17, 24 — TASKS; review file
+> [`../plans/2026-10-29-spec-review-opus.md`](../plans/2026-10-29-spec-review-opus.md)). Facts: RESEARCH §8, §2;
+> Blender facts on the installed 5.3 and its manual.
 
 ## 1 · What a user saves
 
 | Thing | File | Standard |
 |---|---|---|
-| A work session (characters being built, scene, UI layout) | `.blend` — Blender's own file; JustStage's data rides in Blender data-blocks and `juststage` PropertyGroups | [Blender files](https://docs.blender.org/manual/en/latest/files/blend/index.html) |
+| A work session (characters being built, scene, UI layout) | `.blend` — Blender's own file; JustStage's data rides in Blender data-blocks and `juststage` PropertyGroups | [Blender files](https://docs.blender.org/manual/en/5.3/files/blend/index.html) |
 | A finished character for other programs | the USD character package ([`interchange.md`](interchange.md) §2) | OpenUSD |
-| A library asset (character, garment, groom, morph preset, skin preset, pose, expression) | one self-contained `.blend` per asset in a library folder, marked as an asset with Blender's metadata | [Asset libraries](https://docs.blender.org/manual/en/latest/files/asset_libraries/index.html) |
-| App settings | Blender add-on preferences (the extension's `AddonPreferences`, saved by Blender with the user's preferences) | [AddonPreferences](https://docs.blender.org/api/current/bpy.types.AddonPreferences.html) |
+| A library asset (character, garment, groom, morph preset, skin preset, pose, expression) | one self-contained `.blend` per asset in a library folder, marked as an asset with Blender's metadata | [Asset libraries](https://docs.blender.org/manual/en/5.3/files/asset_libraries/index.html) |
+| MakeHuman files (MHM, human presets, MHCLO, targets, expressions) | MakeHuman's own formats, imported and exported as they are ([`import-export.md`](import-export.md) §2) | MPFB2's [`docs/fileformats/`](https://github.com/makehumancommunity/mpfb2/tree/master/docs/fileformats) |
+| App settings | the add-on's `AddonPreferences`, saved by Blender in JustStage's own user folder (`BLENDER_USER_RESOURCES`, set by the launcher — [`plugins.md`](plugins.md) §5), apart from any Blender the user has | [AddonPreferences](https://docs.blender.org/api/5.3/bpy.types.AddonPreferences.html) |
 
 No JustStage-private project format: `.blend` is the working file (R1 puts JustStage inside Blender; a second project
 format would be a second way to do Blender's job).
 
 ## 2 · The asset library
 
-Standard: Blender 5.2 LTS asset libraries, local and **remote** (static HTTP: JSON listings, previews, one `.blend`
-per asset, UUID catalogues — §8), the format Blender's own asset browser reads with no server software.
+Standard: Blender 5.3's asset libraries, local and **remote** (static HTTP: JSON listings, previews ≥ 256 px WebP or
+PNG, independent `.blend` files with packed textures, UUID catalogues — the 5.3 manual's Remote Asset Libraries page),
+the format Blender's own asset browser reads with no server software.
 
 - **Folder layout:** `<library>/blender_assets.cats.txt` (`VERSION 1`, lines `{UUID}:{path}:{simple name}`),
   `<library>/<catalog path>/<asset>.blend`, `<library>/_asset-library-meta.json` + `_v1/asset-index.json` for remote
@@ -33,10 +36,13 @@ per asset, UUID catalogues — §8), the format Blender's own asset browser read
 - **Rule:** an imported or generated asset without `provenance` and `licence_label` can't be saved to a library
   (the command refuses with the missing field named). Licences are shown, never filtered
   ([`README.md`](README.md) §4).
-- **Remote libraries** are plain static hosting; Blender 5.3 adds asset-library extensions and access tokens
-  (§8 pass 2) — JustStage's starter library (the gate head, the base bodies, MakeHuman's CC0 styles) ships as a remote
-  library the extension registers on first run, downloaded on demand, never bundled in the extension (Blender's rule:
-  "Assets can't be bundled with extensions" — §8 pass 2).
+- **Remote libraries** are plain static hosting. JustStage's starter library (the gate head, the base bodies,
+  MakeHuman's CC0 styles, Blender Studio's CC0 base meshes as sculpting starting points, Mesh2Motion's CC0 creature
+  rigs and animations, and its human animations retargeted onto our skeleton — item 28) is a remote library declared by a 5.3 **asset-library extension** (manifest `type =
+  "asset-library"` with `[asset_library] remote_url` — 5.3 manual) that the installer puts in the System repository;
+  assets download on demand and are never bundled in the add-on (Blender's rule: "Assets can't be bundled with
+  extensions" — §8). 5.3's per-version replacement files (`my_asset@b5_3.blend` beside `my_asset.blend`) carry an
+  asset across Blender releases, and its access tokens serve private libraries (§8).
 - **Content from other programs** stays referenced where terms require it: a library `.blend` made from a Daz or CC
   import records the source path and licence label; "pack into file" is a per-asset choice the user makes with the
   licence label in front of them (Daz's EULA bars redistributable extractable forms — §8).
@@ -49,23 +55,23 @@ schema families with `_N` suffixes.
 
 | Layer | Version field | Where | Migration |
 |---|---|---|---|
-| The JustStage USD schemas (`schema.usda`) and the `juststage` PropertyGroups generated from them | the USD family suffix (`JustStageSliderAPI_1` → `_2`); `schema_version` (integer) on the PropertyGroups | `schema.usda`; each PropertyGroup | `juststage/migrations/v<N>.py`, run in order on `load_post` and on package import; tested with a frozen sample package per version ([`testing.md`](testing.md) §6) |
-| The base mesh and parts | `baseVersion` | the body and part meshes' PropertyGroup; `JustStageCharacterAPI` | a vertex map per bump (`data/base/maps/v<old>-to-v<new>.usda`) remaps morphs, weights, fit data |
-| The skeleton | `skeletonVersion` | the armature; `JustStageCharacterAPI` | append-only bone changes between minor versions; a rename table per major |
-| The face control vocabulary | `face_controls_version` | `data/face/controls.json`; the DNA descriptor | additive; renames carry an alias list |
-| USD schemas | `_N` suffix per family | `schema.usda` | a new version is a new schema; readers accept all |
-| Commands | `since` and `deprecated` dates in each command's JSON Schema | the command registry | deprecated commands answer for 12 months at least (MCP's rule, §8), then are removed |
+| The `juststage:` attribute set and the `juststage` PropertyGroups | `juststage:formatVersion` on `/Character`; `schema_version` (integer) on each PropertyGroup | the package; each PropertyGroup | `juststage/migrations/v<N>.py`, run in order on `load_post` and on package import; tested with a frozen sample package per version ([`testing.md`](testing.md) §6) |
+| The base mesh and parts | `juststage:baseVersion` | `/Character`; the body and part meshes' PropertyGroup | a vertex map per bump (`data/base/maps/v<old>-to-v<new>.json`) remaps morphs, weights, fit data |
+| The skeleton | `juststage:skeletonVersion` | `/Character`; the armature | append-only bone changes between minor versions; a rename table per major |
+| The face and body rigs | the DNA's own version fields | `rig/face.dna`, `rig/body.dna` | the DNA format's (OpenRigLogic reads older DNA versions) |
+| Slider definitions | MakeHuman's `target.json` / `macro.json` with our space groups | `data/targets/` | additive; a removed slider keeps an alias so saved values still load |
+| Commands | `since` and `deprecated` dates in each command's `COMMAND` record | the command module | deprecated commands answer for 12 months at least (MCP's rule, §8), then are removed |
 | The library asset | `asset_version` | the asset block | a new version is a new file beside the old one; the catalogue lists both |
 | The Unreal plugin's assets | `juststage:version` asset tag | each generated asset's metadata | the plugin re-imports in place ([`import-export.md`](import-export.md) §5.3) |
 
 Rules:
 
-- A file whose `schema_version` is newer than the running extension knows is **refused with the needed version
-  named** (Blender's behaviour on a newer major, §8), never half-loaded.
-- Unknown applied schemas, attributes and `customData` keys survive load and save untouched (USD keeps them; the
-  Blender side keeps them in ID properties it doesn't interpret).
-- Every change to a schema lands with its migration and its test in the same commit; a schema change without a
-  migration fails the test suite.
+- A file whose `formatVersion` or `schema_version` is newer than the running extension knows is **refused with the
+  needed version named** (Blender's behaviour on a newer major, §8), never half-loaded.
+- Unknown attributes and `customData` keys survive load and save untouched (USD keeps them; the Blender side keeps
+  them in ID properties it doesn't interpret).
+- Every change to the attribute set or a PropertyGroup lands with its migration and its test in the same commit; a
+  change without a migration fails the test suite.
 
 ## 4 · Logging, settings and errors (the plumbing jobs)
 

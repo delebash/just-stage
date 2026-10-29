@@ -241,6 +241,20 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           face-joint and part names on our face rig, names only, an exception to AGENTS.md's clean-room rule; (6)
           **item 15 APPROVED** — the image-job route request goes to the just-core session. The final re-check before
           acting (review file, "Final check before the rewrite") changed no rec.
+        - DONE 2026-10-29: (6) the image-job route request was sent to the `core` session (just-core's own item; the
+          route's shape is theirs); (1) the spec is rewritten — `docs/standards/` (all twelve documents and the index),
+          `PRD.md` (§2 and §7 still DRAFT for the user's answers, item 19) and `ARCHITECTURE.md` — to the review's items
+          1–28. While rewriting, item 9's CC column was corrected again (by humanoid role: `Waist`/`Spine01`/`Spine02` →
+          `spine_01`/`spine_03`/`spine_05`; the review had read Reallusion's UE4 table — RESEARCH §8).
+        - Then, verbatim: "did you look at apps like meshy https://www.meshy.ai/features/ai-animation-generator could
+          that be useful https://mesh2motion.org/ https://www.mixamo.com/#/"; "Bonus Alternative: If you only want a
+          static mesh to sculpt on without procedural sliders, use the Blender Studio Asset Bundle. Its topology is
+          hand-crafted by professional animation artists specifically for film and game production pipeline"; "you
+          have go on adding those things" → **item 28 APPROVED and written into the spec**: Mesh2Motion's CC0 creature
+          rigs and animations, its human animations retargeted, Blender Studio's CC0 base meshes as sculpting starting
+          points — all in the starter library.
+        - Open for the user: PRD §2 (who JustStage is for) and §7 (what the first release must hold); Blender is run
+          only once the user says the other session's memory use is over.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
