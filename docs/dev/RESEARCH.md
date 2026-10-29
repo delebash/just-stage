@@ -680,11 +680,37 @@ motion and content library.
   and T2M-GPT are MIT/Apache code trained on HumanML3D, which comes from AMASS (non-commercial, and it forbids
   training models for commercial use).
 - No open equivalent found for: Marvelous Designer (pattern-and-sew garments), MetaTailor (fitting any
-  garment to any body), Cascadeur's physics tools, a ZBrush-class sculpt library, a texture baker; and no
-  cross-vendor GPU garment-cloth library (was: "… a texture baker, an FBX writer" until 2026-10-29 — open FBX
-  writers exist, above). S7's second pass searches these again.
+  garment to any body — a packaged one), Cascadeur's physics tools, a ZBrush-class sculpt library (was: "… a
+  ZBrush-class sculpt library, a texture baker, an FBX writer; and no cross-vendor GPU garment-cloth library" until
+  2026-10-29 — S7's second pass found a garment-cloth solver, a baker and FBX writers, below).
 - Open: the VRAM of many models is unstated; GPU-vendor support of most PyTorch models beyond "CUDA"; CMU
   mocap's terms; Blender's dyntopo and hair tools not checked; several licences unresolved.
+
+Second pass done 2026-10-29: [`../plans/2026-10-29-research-07-building-blocks-pass2.md`](../plans/2026-10-29-research-07-building-blocks-pass2.md).
+
+*web, 2026-10-29* — re-checked by this session (GitHub's API; ArmorPaint's `license.md` and README):
+`st-tech/ppf-contact-solver` Apache-2.0, last push 2026-10-27, 4,581 stars; `armory3d/armorpaint` source under "The
+zlib/libpng License" ("Distributed binaries are paid"), last push 2026-10-29, 5,435 stars; `pwilkin/trellis.cpp`
+MIT, last push 2026-10-26, 368 stars; `MengZephyr/LoBoFit` BSD-3-Clause, last push 2026-07-04, 7 stars.
+
+*agent, 2026-10-29* — S7's pass 2, sources per fact there:
+
+- Garment cloth on any GPU: ZOZO's Contact Solver (Apache-2.0) does seam stitching on NVIDIA, AMD, Apple and CPU —
+  offline only, and its README says it has never run on real AMD hardware.
+- Texture baking: ArmorPaint's source has 14 bake types, including from a high-poly mesh; Unreal's Geometry
+  Script also bakes. FBX writing: `ufbx_write` writes skinning, blend shapes and animation (work in progress; §8).
+- Garment refit: LoBoFit (BSD-3, SIGGRAPH 2026, a pending-patent notice) and Unreal's Outfit Asset resizing — still
+  no packaged open MetaTailor equivalent.
+- Not NVIDIA-only after all: TRELLIS.2 runs on ROCm, Vulkan and Metal through trellis.cpp and natively in ComfyUI;
+  SkinTokens through skin-tokens.cpp (§5); Audio2Face's weights ship as ONNX, with an Apple MLX port.
+- Terms: Cascadeur's free plan is non-commercial and exports .casc only; Mixamo's terms forbid AI/ML training;
+  Autodesk's FBX SDK licence allows linking and selling a product but not redistributing the SDK, and its
+  open-source clause names GPL and LGPL.
+- Hi3D v1.0 needs an NVIDIA GPU of compute capability 8.0+ — not the RTX 2070 Super (7.5).
+- Still open: sculpting and Cascadeur-type physics have no embeddable open equivalent; CMU mocap's terms page
+  (certificate rejected), the current Mixamo FAQ (403), OptiTrack NatNet's licence (429); VRAM of MagicArticulate,
+  Make-It-Animatable, DiffLocks, GENMO; whether mocopi sends VMC; untested — ufbx_write round trips into Maya,
+  Unreal or Blender, and most AMD and Apple support (unmerged community PRs or single reports).
 
 ## 8 · Standards
 
