@@ -222,6 +222,18 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           act!!!!!"; "think on recs again and give me list, uggh!!!!" → every Blender fact re-checked on the installed
           5.3 (review file, "Re-check on the installed Blender 5.3"); the complete list, 1–27, shown in chat, WAITING on
           the user's word item by item.
+        - Then, verbatim: "so are we mainluy testing quality first bedofre we add things like wrinkels, hair mustache
+          makeup all the cool stuff cc5 has? i agree with your recs" → **the review's recs 1–27 APPROVED 2026-10-29**
+          (the review file, its second and third passes and the 5.3 re-check), including the approved-rec changes
+          they carry: R1's floor → Blender 5.3 onward (item 16), R17 (FBX out through Blender's exporter; correctives
+          in the DNA, no own JSON schema — items 1, 13), R19 (MCP 2025-11-25 through Blender Lab's server — item 8),
+          R21 (creatures in step 4 — item 22); N2 withdrawn (item 2); N5 replaced by the DNA body layers (item 1).
+          Still waiting, because the user's rule says a blanket go never covers a NOT STANDARD piece and an outward
+          step needs its own word: the word **go** for rewriting the spec; by name — **N1** (the names of about ten
+          `juststage:` attributes, item 6), **N3** (the slider-driven fade of the HD detail maps, item 21), **the
+          command registrar** (our own small module that registers every command from its `Params`, item 7), **item
+          10** (MetaHuman's control names — an exception to AGENTS.md's clean-room rule); **item 15** (sending the
+          image-job route request to the just-core session).
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

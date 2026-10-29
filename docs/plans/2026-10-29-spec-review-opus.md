@@ -3,8 +3,9 @@
 The user, verbatim: "fable messed up on the standards by trying to roll its on json file for characters and a bunch of
 other non standard hand rolled stuff when openusd handled it, i dont trust fables synthesis so can you revoiew all of
 fables work". Scope: `docs/standards/` (13 files), `docs/dev/PRD.md`, `docs/dev/ARCHITECTURE.md`, Fable's RESEARCH and
-TASKS entries, its evidence folder and its memory edits. Nothing in the spec is changed by this review; each item waits
-for the user's word. Every fact below was checked at its source or on this machine on 2026-10-29 (RESEARCH §1, §5, §6,
+TASKS entries, its evidence folder and its memory edits. Nothing in the spec is changed by this review. **Recs 1–27 APPROVED 2026-10-29** ("i agree with your recs",
+TASKS); the spec rewrite waits for the word go, and N1, N3, the command registrar, item 10 and item 15 wait for the
+user's word by name. Every fact below was checked at its source or on this machine on 2026-10-29 (RESEARCH §1, §5, §6,
 §8 carry them).
 
 Passes run, each from a new angle: (1) standard-first per piece; (2) every factual claim; (3) against the approved
