@@ -580,6 +580,15 @@ and [`../plans/2026-10-29-research-06b-own-engine-and-layers-pass2.md`](../plans
 - The Forge's README: "We switched to Ray Queries for the common Ray Tracing APIs on all the platforms we
   support", with a "Ray Queries on macOS" screenshot from an M2 Mac.
 
+*web, 2026-10-29* — re-checked by this session for the route recs:
+
+- blender.org/about/license: "Blender is released under the GNU General Public License"; blender.org code is "GNU
+  GPL Version 2 or later"; Python add-ons, "if published", must be "shared under a GPL compliant license"; "What you
+  create with Blender is your sole property." The page doesn't address forks (it links a separate Trademark Policy).
+- Open-source Unreal plugins are common practice: GitHub's search finds 303 MIT-licensed repositories tagged
+  `unreal-engine-plugin` (e.g. `TriAxis-Games/RealtimeMeshComponent`, 1,764 stars; `20tab/UnrealEnginePython`, MIT,
+  2,908 stars). The EULA governs Epic's Engine Code inside them (snippets ≤ 30 lines), not the plugin's own code.
+
 *agent, 2026-10-29* — S5's pass 2, sources per fact there:
 
 - The current Epic EULA, quoted by a third-party tracker (ConductAtlas, the 2026-05-05 text): "If your Product
