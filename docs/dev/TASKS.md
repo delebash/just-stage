@@ -138,8 +138,17 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           (ARKit 52 + ours); N5 the body correctives schema; the kit gap — a generic image-job route in `just-core`
           (`POST /v1/ai/image/jobs`), filled in a just-core session before step 2; the API port 17480; the MetaHuman
           terms reading (the recs' "not recs" item) for "Send to Unreal as a MetaHuman" and DNA import.
-        - gate tasks the spec names for step 1: dump `SK_Mannequin` and a MetaHuman body's bone lists from the user's
-          Unreal; measure VRAM of one skin job beside the EEVEE viewport; the shape-space wrap errors.
+        - gate measurements the spec names for step 1: VRAM of one skin job beside the EEVEE viewport; the shape-space
+          wrap errors. (The UE5 Mannequin bone list was read from the user's UE 5.7 project the same day — RESEARCH §8.)
+        - the user's answers 2026-10-29, verbatim: "4 fine that seems at least based on well known standard" → **N4
+          APPROVED**; "5 ok" → **N5 APPROVED**; "6 core already has open session which it is working" → the kit gap is
+          the open just-core session's; "7 ok" → **port 17480 APPROVED**; "8 any again dont wory we do whatever to make
+          it owrk not worry about license" → the MetaHuman terms item is DROPPED: "Send to Unreal as a MetaHuman" and
+          DNA import ship enabled, terms shown as a label; and "i told you never give me a rec or list you havent
+          verrified like the exact ue5 manaquin stop doing that always do complete job" (memory updated). Questions 1
+          ("so how do we get character in other apps if we use our own custom json instead of usd or aousd?…"),
+          2 ("are you making some non standard skeleton?") and 3 (N3, "i dont even understnad what this means") answered
+          in chat with revised recs; N1, N2, N3 still open.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

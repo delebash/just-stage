@@ -856,8 +856,23 @@ expected"; created 2025-06-22, last push 2026-06-20, 21 stars.
   no face bones. `g8_to_unreal.json`: Genesis 8 names (`abdomenLower/Upper`, `chestLower/Upper`, `neckLower/Upper`,
   `lCollar`, `lShldrBend/Twist`, `lForearmBend/Twist`, `lCarpal1–4`, `lThighBend/Twist`, `lShin`, `lFoot`, `lToe`,
   `lPectoral`, fingers `lThumb1–3`, `lIndex1–3`, `lMid1–3`, `lRing1–3`, `lPinky1–3`) → the same UE5 names, one twist per
-  segment. Whether `metatarsal_*` and `pectoral_*` exist on Epic's `SK_Mannequin` is not shown by any Epic page — the
-  spec makes a dump from the user's Unreal install a gate task.
+  segment.
+
+*measured, 2026-10-29* — the UE5 Mannequin bone names, read by a byte scan of the name tables of
+`SKM_Manny_Simple.uasset` and `SK_Mannequin.uasset` in the user's UE 5.7 project
+(`E:\Dev\Unreal\DeformCPlusTest\Content\Characters\Mannequins\Meshes`; also in `FootprintDeformation`); the lists are
+saved in `../plans/2026-10-29-spec-evidence/ue5-mannequin-bones.json`:
+
+- `SKM_Manny_Simple`: exactly **89** names — the count Reallusion publishes for the UE5 Mannequin: `root`, `pelvis`,
+  `spine_01`–`spine_05`, `neck_01`, `neck_02`, `head`; per side `clavicle`, `upperarm`, `upperarm_twist_01/02`,
+  `lowerarm`, `lowerarm_twist_01/02`, `hand`, `thumb_01–03`, `index/middle/ring/pinky_metacarpal`, `index/middle/ring/
+  pinky_01–03`, `thigh`, `thigh_twist_01/02`, `calf`, `calf_twist_01/02`, `foot`, `ball` (80 deform bones), plus the
+  helpers `ik_foot_root`, `ik_foot_l/r`, `ik_hand_root`, `ik_hand_gun`, `ik_hand_l/r`, `interaction`, `center_of_mass`.
+- `SK_Mannequin` (5.7): **161** names — the 89 plus 72 corrective bones: `*_correctiveRoot_l/r` (thigh, calf, upperarm,
+  lowerarm), `*_twistCor_01/02_l/r`, `thigh_fwd/bck/in/out_l/r`, `thigh_fwd_lwr/bck_lwr_l/r`, `calf_knee/kneeBack_l/r`,
+  `upperarm_fwd/bck/in/out/bicep/tricep_l/r`, `lowerarm_fwd/bck/in/out_l/r`, `wrist_inner/outer_l/r`, `ankle_fwd/bck_l/r`,
+  `clavicle_pec/out/scap_l/r`, `spine_04_latissimus_l/r`, `weapon_l/r`.
+- **Neither has `metatarsal_*` or `pectoral_*`** — Daz's bridge adds those on its side. The calf twists exist.
 
 *agent, 2026-10-29* — S8's pass 2, sources per fact there:
 

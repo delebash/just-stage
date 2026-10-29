@@ -77,12 +77,16 @@ proves it on import.
 
 ### 1.3 Unreal (UE5 Mannequin and MetaHuman body)
 
-Epic publishes no primary bone list for the UE5 Mannequin (§8 pass 2). The names below come from Daz's Apache-2.0
-bridge maps `g9_to_unreal_manny.json` and `g8_to_unreal.json` (fetched 2026-10-29, RESEARCH §8) and from Epic's
-MetaHuman DNA page (the 30 body joints a face DNA must match — §8 pass 2). **Gate task (step 1):** dump the bone list
-of `SK_Mannequin` and of a MetaHuman body from the user's Unreal install with Unreal's Python (`SkeletalMesh` →
-`Skeleton` reference pose) into `data/skeletons/ue5-manny.json` and `metahuman-body.json`, and correct this table from
-them before the first export test.
+Measured 2026-10-29 on this machine (RESEARCH §8; the lists are in
+`../plans/2026-10-29-spec-evidence/ue5-mannequin-bones.json`): the bone names read from `SKM_Manny_Simple.uasset` and
+`SK_Mannequin.uasset` in the user's UE 5.7 projects. Manny Simple has exactly **89** names (the published UE5 Mannequin
+count): 80 deform bones plus 9 helpers (`ik_foot_root`, `ik_foot_l/r`, `ik_hand_root`, `ik_hand_gun`, `ik_hand_l/r`,
+`interaction`, `center_of_mass`). The full `SK_Mannequin` has **161**: the same 89 plus 72 corrective bones
+(`*_correctiveRoot_*`, `*_twistCor_0N_*`, `thigh_fwd/bck/in/out`, `thigh_fwd_lwr/bck_lwr`, `calf_knee/kneeBack`,
+`upperarm_fwd/bck/in/out/bicep/tricep`, `lowerarm_fwd/bck/in/out`, `wrist_inner/outer`, `ankle_fwd/bck`,
+`clavicle_pec/out/scap`, `spine_04_latissimus`, `weapon`). Neither has `metatarsal_*` or `pectoral_*` (Daz's bridge adds
+those on its side). Epic's MetaHuman DNA page names the 30 body joints a face DNA must match (§8 pass 2); they are in the
+161.
 
 | JustStage | UE5 name | Note |
 |---|---|---|
@@ -102,17 +106,16 @@ them before the first export test.
 | `thigh.L` | `thigh_l` | |
 | `thigh_twist.001.L` / `.002` | `thigh_twist_01_l` / `_02_l` | |
 | `calf.L` | `calf_l` | |
-| `calf_twist.001.L` / `.002` | `calf_twist_01_l` / `_02_l` | community lists only; verify in the gate dump |
+| `calf_twist.001.L` / `.002` | `calf_twist_01_l` / `_02_l` | measured: present on both Manny assets |
 | `foot.L` | `foot_l` | |
-| `ball.L` | `ball_l` | Daz's G9 map also has `metatarsal_l`; verify whether Manny has it |
-| `breast.L` | `pectoral_l` | in Daz's map; verify |
-| `eye.L`, `jaw`, teeth, tongue | — | MetaHuman's face joints (`FACIAL_*`) come from the DNA; the export preset names ours from the DNA definition |
-| (added on export) | `ik_foot_root`, `ik_foot_l/r`, `ik_hand_root`, `ik_hand_gun`, `ik_hand_l/r` | non-deform helpers Unreal's animation blueprints expect (community lists); created by the preset, constrained to `foot`/`hand` |
+| `ball.L` | `ball_l` | Manny has no `metatarsal_*` (Daz's map targets its own addition) |
+| `breast.L` | — | Manny has no `pectoral_*`; the Unreal preset exports `breast_l/r` as extra bones when the character has them, or drops them (preset option) |
+| `eye.L`, `jaw`, teeth, tongue | — | MetaHuman's face joints come from the DNA; the export preset names ours from the DNA definition |
+| (added on export) | `ik_foot_root`, `ik_foot_l/r`, `ik_hand_root`, `ik_hand_gun`, `ik_hand_l/r`, `interaction`, `center_of_mass` | the 9 non-deform helpers in `SKM_Manny_Simple` (measured); created by the preset, the IK bones constrained to `foot`/`hand` |
 
-MetaHuman's DNA page also names `clavicle_pec_l/r`, `clavicle_out_l/r`, `clavicle_scap_l/r`, `spine_04_latissimus_l/r`,
-`upperarm_correctiveRoot_l/r`, `upperarm_out/fwd/in/bck_l/r` (§8 pass 2): these are MetaHuman's corrective bones; the
-"Send to Unreal as a MetaHuman" option (R12) lets Epic's pipeline create them, and our own corrective bones (§3)
-export under our names.
+The 72 corrective bones of the full `SK_Mannequin` (and MetaHuman's body) are driven by Epic's RBF and twist setups;
+JustStage's own correctives (§3) export as corrective bones under our names, and the "Send to Unreal as a MetaHuman"
+option (R12) lets Epic's pipeline build Epic's.
 
 ### 1.4 HumanIK, Mixamo, Daz and CC
 
