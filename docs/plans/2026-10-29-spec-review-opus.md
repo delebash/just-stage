@@ -324,12 +324,30 @@ Added (missed by the first pass, or raised by the user during this one):
   human mesh. **Attack:** refitting every garment and re-placing joints is real work — which is why it is the
   fallback, not the plan; Reallusion's free CC base is barred ("in any character generation system").
 
+- **24 · Shipping as its own app** (the user: "i want our app to look like a custom app so user donest have to load
+  plugin it just laucnhe like an app we built"). The spec ships the extension and the template through
+  extensions.blender.org into the user's own Blender — which takes add-ons and themes only, so the template can't go
+  there (5.2 manual). **Rec:** JustStage's own installer per OS holds an unmodified Blender 5.2 LTS, the extension and
+  the application template; a JustStage launcher (our name and icon in the Start menu, Dock or app list) starts it with
+  `--app-template juststage` and `BLENDER_USER_RESOURCES` / `BLENDER_SYSTEM_EXTENSIONS` / `BLENDER_SYSTEM_SCRIPTS`
+  pointing at JustStage's own folders — its own settings, apart from any Blender the user has, nothing to install by
+  hand, Blender's files untouched. The template gives the splash, startup screen, menus, panels, theme and keymaps.
+  Standard: Blender's application templates ("build their own *applications* on top of Blender that can be easily
+  distributed"), its documented flag and variables; the Foundation's own "Blender Apps" proposal describes the same
+  package. **Attack:** the window title still ends "- Blender 5.2" and the running window has Blender's icon (C code,
+  no Python setter) — removing them is a small code change, i.e. a fork with its own builds on three systems and the
+  upstream-merge rule (AGENTS.md), R1's trigger; not worth it for a title bar now. About 1 GB installed. Shipping
+  Blender's binaries means offering its source (GPL) — the extension is GPL already (R2). Blender as a Python module
+  "runs without a user interface", so the pasted text's embed option loses every editor; a game-engine UI is R1's
+  rejected route. R1 holds (stock Blender); the spec's distribution section and the PRD change.
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);
 13 → TASKS (R17); 21 → character-data-model.md §1.4, import-export.md, parity-scorecard.md, README.md (N3 row);
 22 → import-export.md, parity-scorecard.md, README.md, skeleton-and-face.md, character-data-model.md, TASKS (R21);
-23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md.
+23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md; 24 → plugins.md §5, README.md (layout),
+testing.md (a launcher test), dev/PRD.md, dev/ARCHITECTURE.md §1.
 
 ## Blast radius (files that change on a go)
 

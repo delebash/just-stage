@@ -191,6 +191,11 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           changed; three items added — 21 N3 (missed by the first pass), 22 creatures (a new requirement: making
           non-human characters, not only importing them; changes R21's order), 23 the fallback body. Facts in
           RESEARCH §5 and §8. WAITING on the user's word, item by item; the spec is unchanged until then.
+        - Then, verbatim: "did you look at https://humgen3d.com/" (read; RESEARCH §5 — stays out as paid, its assets
+          can't be shared); "i want our app to look like a custom app so user donest have to load plugin it just
+          laucnhe like an app we built even thought it is using blender core features", with a pasted text on Blender
+          as a Python module, application templates and stripping the UI → review item 24 (shipping as its own app),
+          WAITING on the user's word.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

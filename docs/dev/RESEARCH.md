@@ -1098,6 +1098,29 @@ sure you dont change your mind"), at the sources:
   Diffeomorphic importer say the multires modifier "doesn't support morphs other than the base level", so HD morphs go
   in as displacement or normal maps linked in the material (search snippets).
 
+*web, 2026-10-29* — shipping JustStage as its own app on stock Blender (the user: "i want our app to look like a
+custom app so user donest have to load plugin it just laucnhe like an app we built even thought it is using blender
+core features"), at Blender 5.2's sources:
+
+- Extensions are only `type = "add-on"` or `"theme"` (manual `advanced/extensions/getting_started.rst`, 5.2 branch) —
+  an application template can't be published on extensions.blender.org (standards `plugins.md` §5 says it can).
+- `--app-template <template>`: "Set the application template (matching the directory name)" (manual
+  `advanced/command_line/arguments.rst`, 5.2). Environment variables there: `BLENDER_USER_RESOURCES` ("Replace default
+  directory of all user files"), `BLENDER_USER_CONFIG`, `BLENDER_USER_SCRIPTS`, `BLENDER_USER_EXTENSIONS`,
+  `BLENDER_SYSTEM_SCRIPTS` ("Directories to add extra scripts"), `BLENDER_SYSTEM_EXTENSIONS` ("Directory for system
+  extensions repository"), `BLENDER_SYSTEM_DATAFILES`, `BLENDER_SYSTEM_PYTHON`. A `portable` folder next to the
+  executable (inside `Blender.app/Contents/Resources` on macOS) keeps preferences, startup file and extensions there
+  (`advanced/blender_directory_layout.rst`, 5.2).
+- The main window's title is built in C: `<file> … - Blender <version>` (`wm_window_title_text` in
+  `source/blender/windowmanager/intern/wm_window.cc`, 5.2); Python's window-manager API has no title setter (only
+  popup and dialog titles, `rna_wm_api.cc`). Hiding "Blender" there and in the window icon takes a code change.
+- Blender as a Python module (`bpy`, 5.2.3 on PyPI) "runs without a user interface, like running regular Blender in
+  background mode" (`WITH_PYTHON_MODULE` in `CMakeLists.txt`, 5.2) — no viewport or editors to embed.
+- The Blender Foundation's 2022 "Blender Apps" proposal (cgchannel, 2022-11-07, "still an early-stage proposal"):
+  apps built on application templates, the "fully portable" kind an archive "that include[s] the Blender executable
+  itself"; no sign it shipped was found.
+- Size: Blender 5.3 beta's folder on this machine is 956 MB.
+
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:
 
