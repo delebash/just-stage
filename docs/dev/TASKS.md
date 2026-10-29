@@ -129,7 +129,8 @@ NEXT:   the rec list, version 2, is WRITTEN and SHOWN (2026-10-29): [`../plans/2
         mesh cant we use methuman mesh now that it is mit?"; "what if we just focus on cc5 features for now and either
         worry about iclone later or essentially use unreas as iclne replacement"; "how can quality be metahuman if the
         mesh is not exaclty methauma?"; "ok think on your recs again and go for character creation for now and not
-        iclone," → version 2. Was: the second pass → the lead
+        iclone," → version 2. Then, verbatim: "i definelty want headshot" → R10 (photo-to-head) moved from step 7 to
+        step 3 of R21, right after the base and the generators. Was: the second pass → the lead
         distills it → one complete rec list, every item researched and argued against, each piece marked
         standard (with its doc link) or NOT STANDARD → a fresh Fable session writes the synthesis and the
         standards spec → the user approves → code.
