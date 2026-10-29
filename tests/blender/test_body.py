@@ -104,3 +104,19 @@ def test_operator_door_creates_a_human():
     new = set(bpy.data.objects) - before
     assert len(new) == 1
     bpy.data.objects.remove(new.pop())
+
+
+def test_two_hd_levels_on_the_body_only(human):
+    result, obj = human
+    out = api.run("juststage.body.subdivide", character=result.character, levels=2, viewport_level=2)
+    assert obj.modifiers[0].name == build.LEVELS  # first, before the helper mask
+    assert obj.modifiers[0].total_levels == 2
+    assert out.visible_faces == 13378 * 16  # the body's quads, ×4 per level; the helpers stay masked
+
+
+def test_levels_can_go_down(human):
+    result, obj = human
+    api.run("juststage.body.subdivide", character=result.character, levels=2, viewport_level=1)
+    out = api.run("juststage.body.subdivide", character=result.character, levels=1, viewport_level=1)
+    assert obj.modifiers[build.LEVELS].total_levels == 1
+    assert out.visible_faces == 13378 * 4

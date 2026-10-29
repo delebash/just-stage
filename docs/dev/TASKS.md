@@ -280,7 +280,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (`tools/fetch_data.py`); `juststage.body.create` builds a human on the whole hm08 (helpers and joint cubes
            kept, masked), MPFB2's vertex groups, MakeHuman's macro blending ported from MPFB2 with its shape-key names;
            joint cubes move with the body. Next in this line: the detail sliders of `target.json` (step 2 proper).
-        3. The head at levels 1–2 (Multires) with displacement.
+        3. DONE 2026-10-29: levels 1–2 — `juststage.body.subdivide` puts Blender's Multires (Catmull-Clark) first in the
+           stack, before the helper mask; level 2 shows 214,048 faces (the body's 13,378 × 16). Displacement maps come
+           with the skin generator (4).
+        3b. Decided 2026-10-29 (adversarial pass): the gate head carries Google's GNM scan-based head shape wrapped onto
+           hm08 (R4: "realism comes from MHR's and GNM's scan spaces"), so the gate judges the approach R4 chose rather
+           than hm08's artist-made face alone — the attack (more work before the first render) loses to a gate round
+           wasted on a face R4 already said would read stylised. Wrap: offline non-rigid registration (trimesh's
+           Amberg optimal-step NICP, MIT) in the MIT `libs/`, the result shipped as MakeHuman targets (`gnm` space).
         4. The engine host from the kit's template with `sdcpp`, and the skin generator's first image features.
         5. The skin material (Principled, subsurface, micro normal), eyes, teeth/gums/tongue, brows, lashes, nails.
         6. The scalp groom with Blender's hair node groups.

@@ -22,6 +22,7 @@ from ...core import makehuman
 
 MACRO_PREFIX = "makehuman."
 HELPER_MASK = "JustStage helpers"
+LEVELS = "JustStage levels"
 BASE_VERSION = 1
 
 
@@ -113,5 +114,32 @@ def visible_vertex_count(obj: bpy.types.Object) -> int:
     mesh = evaluated.to_mesh()
     try:
         return len(mesh.vertices)
+    finally:
+        evaluated.to_mesh_clear()
+
+
+def set_levels(obj: bpy.types.Object, levels: int, viewport_level: int) -> None:
+    """The Multires levels (Catmull-Clark), first in the modifier stack so they sit on the unchanged base."""
+    mod = obj.modifiers.get(LEVELS)
+    if mod is None:
+        mod = obj.modifiers.new(LEVELS, "MULTIRES")
+        obj.modifiers.move(obj.modifiers.find(LEVELS), 0)
+    with bpy.context.temp_override(object=obj, active_object=obj):
+        while mod.total_levels < levels:
+            bpy.ops.object.multires_subdivide(modifier=LEVELS, mode="CATMULL_CLARK")
+        if mod.total_levels > levels:
+            mod.levels = mod.sculpt_levels = levels
+            bpy.ops.object.multires_higher_levels_delete(modifier=LEVELS)
+    mod.render_levels = levels
+    mod.levels = mod.sculpt_levels = viewport_level
+
+
+def visible_face_count(obj: bpy.types.Object) -> int:
+    """Faces left after the modifiers, at the viewport level — what the user sees."""
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    evaluated = obj.evaluated_get(depsgraph)
+    mesh = evaluated.to_mesh()
+    try:
+        return len(mesh.polygons)
     finally:
         evaluated.to_mesh_clear()

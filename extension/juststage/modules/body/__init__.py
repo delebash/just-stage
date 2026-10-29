@@ -11,10 +11,11 @@ def register(api_range: str):
     import bpy
 
     from ... import api
-    from . import body_create, operators
+    from . import body_create, body_subdivide, operators
 
     api.register_plugin(PLUGIN, api=api_range, needs=NEEDS, provides=("commands",), builtin=True)
     api.register_command(body_create, PLUGIN)
+    api.register_command(body_subdivide, PLUGIN)
     for cls in operators.CLASSES:
         bpy.utils.register_class(cls)
 

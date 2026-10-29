@@ -34,4 +34,17 @@ class JUSTSTAGE_OT_body_create(CommandOperator, bpy.types.Operator):
     african: _macro("African", 0.33)
 
 
-CLASSES = (JUSTSTAGE_OT_body_create,)
+class JUSTSTAGE_OT_body_subdivide(CommandOperator, bpy.types.Operator):
+    """Levels 1 and 2 on the base (Multires), for HD detail"""
+
+    bl_idname = "juststage.body_subdivide"
+    bl_label = "Subdivide (HD levels)"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.body.subdivide"
+
+    character: bpy.props.StringProperty(name="Character")
+    levels: bpy.props.IntProperty(name="Levels", default=2, min=0, max=2)
+    viewport_level: bpy.props.IntProperty(name="Viewport level", default=2, min=0, max=2)
+
+
+CLASSES = (JUSTSTAGE_OT_body_create, JUSTSTAGE_OT_body_subdivide)
