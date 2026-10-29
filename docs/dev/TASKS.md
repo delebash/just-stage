@@ -90,7 +90,8 @@ SCOPE:  the subjects of [`RESEARCH.md`](RESEARCH.md) §2–§10 — CC5 in depth
         Requirements added 2026-10-29 (the user, verbatim in the APPROVED entries below): characters at "the quality of
         cc5 and metahuman characters or better" — pass/fail in the rec list; "pull in assest from other programs just
         like cc5 and unreal engine and daz studio"; "the best of the best" — "meet or exceed character mesh skin eyes
-        ect of cc5 and unreal", and where nothing existing meets the bar (texture baking, garment cloth and the rest)
+        ect of cc5 and unreal" for "all of the character realism hair the whole human" ("like teeth lips"), and where
+        nothing existing meets the bar (texture baking, garment cloth and the rest)
         "we need to do are own" — "if we can reuse if not build"; character assets interoperable with MetaHuman and
         CC5. Out: Omniverse, paid-only products, single-vendor core parts, Unity. In: Unreal; a Blender fork.
 
@@ -247,4 +248,6 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
           assets. Then, verbatim: "i bet there are large datasets that exist for 1-3 and of course i know there are
           current ai that generate human images with all sorts of options, i think you can find a way if need be, but
           if we can reuse if not build" → folded into S10's brief. Then, verbatim: "your rec go on all"
-          → S10 RUNNING 2026-10-29 (second-pass file, section S10); the requirement is in SCOPE.
+          → S10 RUNNING 2026-10-29 (second-pass file, section S10); the requirement is in SCOPE. Then, verbatim: "not
+          just mesh skin eys, i mean all of the character realism hair the whole human", "like teeth lips" → the bar
+          covers the whole human; S10's brief widened and sent to the running agent.

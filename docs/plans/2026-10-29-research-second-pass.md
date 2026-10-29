@@ -252,6 +252,12 @@ standards, MetaHuman DNA).
   reuse if it meets the bar, otherwise build.
 - **Working with both** — outputs in CC5's six-tile UDIM layout and MetaHuman's texture set and DNA (OpenRigLogic),
   ARKit face names, Unreal's groom import.
+- **The whole human** (widened 2026-10-29 — the user: "not just mesh skin eys, i mean all of the character realism hair
+  the whole human", "like teeth lips"): skin; eyes (iris, sclera, cornea, wetness, occlusion and tearline); lips
+  (texture, wetness, the lip rig and lip-sync shapes); the mouth interior (teeth, gums, tongue); every kind of hair
+  (scalp, brows, lashes, beard and stubble, body hair, peach fuzz); nails; and how the whole human moves — face rig,
+  wrinkle maps, body correctives, skin deformation (muscle and jiggle). Each part: datasets, generators, open code,
+  quality evidence, reuse or build.
 
 ## After the passes (the lead)
 
