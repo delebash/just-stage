@@ -5,12 +5,15 @@
 
 import bpy
 
-from . import api
+from . import api, character
 from .commands import api_status
+from .modules import body
 from .ui import operators
 
 CORE = "core"
 _CORE_COMMANDS = (api_status,)
+#: Built-in modules in dependency order; each registers through the same `register_plugin` outside plugins use.
+MODULES = (body,)
 
 
 def _api_range() -> str:
@@ -19,15 +22,21 @@ def _api_range() -> str:
 
 
 def register():
+    character.register()
     api.register_plugin(CORE, api=_api_range(), builtin=True)
     for module in _CORE_COMMANDS:
         api.register_command(module, CORE)
     for cls in operators.CLASSES:
         bpy.utils.register_class(cls)
+    for module in MODULES:
+        module.register(_api_range())
 
 
 def unregister():
+    for module in reversed(MODULES):
+        module.unregister()
     for cls in reversed(operators.CLASSES):
         bpy.utils.unregister_class(cls)
     for plugin in reversed(api.plugins()):
         api.unregister_plugin(plugin.id)
+    character.unregister()

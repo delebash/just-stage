@@ -73,7 +73,7 @@ on top (CC5 HD's method); three shape spaces are wrapped onto it.
 |---|---|---|
 | Topology | hm08: all quads, "completely triangles free", poles ≤ 5 edges, made for subdivision | §5 |
 | Dots (vertices), level 0 | 19,158 in the whole mesh: 13,380 in the `body` group (the skin) and 5,778 in the helper geometry and joint cubes | §5 |
-| Faces, level 0 | 14,766 for the whole mesh | §5 |
+| Faces, level 0 | 18,486 quads in the whole mesh (no triangles), 13,378 of them in the body — measured in MPFB2's `base.obj` at the pinned commit (was: "14,766 for the whole mesh" until 2026-10-29) | §5 |
 | Licence | CC0 1.0 (MPFB2's assets) — the base, the 1,258 targets, the 7 hair styles | §5 |
 | Levels | 0 (editing, shape keys, skinning), 1 and 2 (Catmull-Clark through Blender's Multires modifier, which stores per-level displacement; 5.3 shows textures and attributes while sculpting on it) | [Multiresolution](https://docs.blender.org/manual/en/5.3/modeling/modifiers/generate/multiresolution.html), §8 |
 | Expected counts | ×4 faces per level (CC5 HD: 70,732 at SubD 1, 282,928 at SubD 2 from 17,683) | §2 |

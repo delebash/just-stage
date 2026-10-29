@@ -274,12 +274,12 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           renders re-check first.
 
 STEP 1 — the quality gate (R3), the plan (each line closes when its test passes; the order is the build order):
-        1. Foundation: the repo layout of the spec's README §5; the add-on with a stock manifest, the core API
-           (`register_plugin`, `register_command`, `run`), the command declaration (`Params`/`Result`/`COMMAND`/`main`)
-           and its operator mirror with the match test; the dev run of Blender on JustStage's own folders (System
-           repository junction, own user folder); pytest inside Blender and on plain CPython; REUSE licences.
-        2. The base: MakeHuman's hm08 and its CC0 targets fetched at a pinned MPFB2 commit; the body loaded with its
-           helpers masked; `target.json`/`macro.json` sliders as shape keys; the joint cubes kept.
+        1. DONE 2026-10-29 (`a540fe7`): the foundation — add-on, core API, command declaration with its operator mirror
+           and match test, the dev run on JustStage's own folders (`tools/dev.py`), pytest on CPython and in Blender.
+        2. DONE 2026-10-29: the base — MakeHuman's CC0 data fetched and checked at MPFB2 `6ff1eb35`
+           (`tools/fetch_data.py`); `juststage.body.create` builds a human on the whole hm08 (helpers and joint cubes
+           kept, masked), MPFB2's vertex groups, MakeHuman's macro blending ported from MPFB2 with its shape-key names;
+           joint cubes move with the body. Next in this line: the detail sliders of `target.json` (step 2 proper).
         3. The head at levels 1–2 (Multires) with displacement.
         4. The engine host from the kit's template with `sdcpp`, and the skin generator's first image features.
         5. The skin material (Principled, subsurface, micro normal), eyes, teeth/gums/tongue, brows, lashes, nails.

@@ -392,7 +392,12 @@ The user's bar since 2026-10-29 (TASKS): characters at "the quality of cc5 and m
 - GNM Head: 17,821 vertices, shipped as quads and as triangles, 253 identity and 383 expression parameters, 4
   joints, 7 UDIM tiles; its weights are Apache-2.0.
 - MakeHuman's hm08 is all quads, made for subdivision: 14,766 faces; the raw mesh has 19,158 vertices (body
-  alone 13,380, including helper geometry in the rest).
+  alone 13,380, including helper geometry in the rest). *Measured 2026-10-29 in MPFB2's `base.obj` (commit 6ff1eb35):
+  19,158 vertices, 21,334 UVs, 18,486 faces, all quads, 13,378 of them in the body (vertices 0–13,379); 144 vertex groups
+  in `basemesh_vertex_groups.json` (`body` 13,380, `HelperGeometry` 4,778, `JointCubes` 1,000, 125 `joint-*`); 1,258
+  `.target.gz` files, 20 of them empty on purpose (the "average" macro targets — the base already is that shape); Blender
+  5.3's OBJ importer keeps the vertex order. MakeHuman's units are decimetres (MPFB2's METER scale is 0.1); a target row is
+  "index dx dy dz" in Y-up, read as (x, −z, y). The 14,766 above was wrong for the whole mesh.*
 - MHR and SOMA-X are triangle meshes as their code evaluates them; SOMA-X's docs admit linear-blend-skinning
   "candy-wrapper" artefacts at the elbow and shoulder.
 - Humanizer (Godot) went Unlicense → CC0 (2025-01) → AGPL-3.0 (2025-08); the Godot asset listing shows the CC0
