@@ -69,8 +69,10 @@ send-and-update round trip.
 
 ## 4 · Feature references
 
-Not researched yet. Only the parts that overlap CC5 and iClone. What to study in each (from the chat,
-not checked):
+Round one done 2026-10-29: [`../plans/2026-10-29-research-04-references.md`](../plans/2026-10-29-research-04-references.md)
+(20 apps, a section and a summary-table row each; distilled below). Only the parts that overlap CC5 and
+iClone. What to study in each (from the chat; round one confirmed Houdini's Solaris, KineFX and Engine,
+Cinema 4D's C++ SDK, Cascadeur's two tools and HumanIK retargeting — its "Checks of §4 leads" table):
 
 - Houdini — node-based procedural design and native USD (Solaris); KineFX for rigging and animation,
   Vellum for cloth and hair; Python + C++ SDK; Houdini Engine runs Houdini tools inside Unreal, Unity and
@@ -86,9 +88,10 @@ not checked):
 
 *web (search-result summaries), 2026-10-29* — cgchannel.com, MetaTailor 2.0 (2024-10) and 2.5 (2026-02):
 
-- MetaTailor (Hologress) is a Unity-based tool that fits third-party garments to humanoid avatars,
-  handling layering and skin weights itself; sculpt brushes refine the fit; it exports FBX. 2.0 added
-  clothing physics and an asset marketplace; 2.5 took its Unity and UE5 bridge plugins out of beta.
+- MetaTailor (Hologress) is a tool that fits third-party garments to humanoid avatars, handling layering
+  and skin weights itself; sculpt brushes refine the fit; it exports FBX. 2.0 added clothing physics and an
+  asset marketplace; 2.5 took its Unity and UE5 bridge plugins out of beta. (was: "a Unity-based tool"
+  until 2026-10-29 — round one found both articles name Unity only as an export and bridge target.)
 
 Added 2026-10-29: Z-Weave (clothing, with cloth simulation); mocap apps — Rokoko Studio, Move.ai,
 DeepMotion, Plask; AI-film references for the AI-movie idea — Autodesk Flow Studio (formerly Wonder
@@ -107,10 +110,54 @@ Studio), ArtCraft; Blender's own character tools — Rigify, hair curves.
 - Founder Dongsoo Han, a former AMD graphics researcher whose hair simulation work became TressFX.
 - No integration with CC, iClone or Reallusion found.
 
+*web, 2026-10-29* — re-checked by this session (GitHub's API):
+
+- MetaHuman's face-rig runtime and rig file format (RigLogic, DNA) are open source as
+  `EpicGames/OpenRigLogic`: MIT, created 2026-06-05, last push 2026-10-23, 304 stars. Released with
+  MetaHuman 5.8 (June 2026, GamesBeat — *agent*). The licence files inside were not opened.
+
+*agent, 2026-10-29* — round one's references notes, sources per fact there (page read unless marked snippet):
+
+- MetaHuman Creator runs inside the Unreal editor since UE 5.6 (June 2025). Since 5.6 its EULA allows
+  MetaHumans in "any engine or creative software"; 5.8 added full-body mesh-to-MetaHuman for any topology
+  and the Animator on Linux and macOS.
+- Cinema 4D 2026.4+ ships an official MCP server: off by default, local, an access token, and the user picks
+  which tool groups an assistant may use — a reference for MCP over JustStage's commands, with permissions.
+- Houdini Engine runs Houdini tools inside other apps in-process, out-of-process or on a remote server, with
+  plug-ins for Unreal, Unity, Maya and 3ds Max — the reference for "our tools inside other apps". Houdini 22's
+  APEX rigs are reusable components that a template moves onto a new character.
+- Cascadeur: AutoPosing, AutoPhysics, AI Inbetweening, AI Root Motion and an Unreal Live Link (2026.1,
+  snippet); its Python API is thin (Python 3.8, snippet).
+- Marvelous Designer converts Character Creator, Daz, Mixamo and MetaHuman avatars itself (2025.0,
+  snippet), imports MetaHuman DNA (2025.2, snippet), exports Alembic, FBX, USD and glTF (2026.1).
+- Fitting existing clothes (MetaTailor) and making clothes from patterns (Marvelous Designer, Z-Weave) are
+  separate jobs.
+- ZBrush's stored selection sets (polygroups, masks, polypaint, UVs, morph targets) break when DynaMesh,
+  ZRemesher or Sculptris Pro change the topology — the sculpt data-model problem of state tied to one
+  topology.
+- Maya 2027 built in layered skin weights (ngSkinTools) and shot tools; 2027.1 added OpenTimelineIO
+  (snippet).
+- HumanIK-style character definitions are the common retargeting interchange: MotionBuilder needs one per
+  character (snippet); Rokoko and Flow Studio export HumanIK presets.
+- Mocap apps share a feature set: multi-person capture from one video (DeepMotion up to 8 people), cleanup
+  filters (root lock, foot lock, knee-pop smoothing), live streaming to many hosts (Rokoko to 8 apps,
+  iClone among them).
+- Blender's extension format is a .zip plus a TOML manifest: SPDX licence, platforms, bundled Python wheels
+  and declared permissions with reasons (files, network, clipboard, camera, microphone); the manual doesn't
+  say permissions are enforced.
+- Autodesk Flow Studio turns video into 3D scenes (mocap, camera track, clean plate) with Maya, USD, Unreal
+  and Blender exports; 2026-08 added a browser 3D editor and a node canvas.
+- Daz is still on Genesis 9 (2022); Daz Studio 6 is in preview with an alpha C++ SDK on Qt 6.10; its
+  content format DSON (.duf, .dsf) is published JSON (snippet).
+- Nomad Sculpt runs a ZBrush-class sculpt loop on phone-class GPUs (snippets).
+- Not reached (the session's 200-search budget ran out): 3DCoat, Style3D, Unreal's Control Rig and Sequencer
+  as an iClone-timeline reference, Ready Player Me, Avaturn, and several API details — the notes' open list.
+
 ## 5 · Existing bases to build on
 
-Not researched yet. Open human models, character add-ons and creators, auto-riggers: what each covers,
-its licence, how healthy it is. Candidates named so far, not a limit: MakeHuman and MPFB2, MB-Lab,
+Round one done 2026-10-29: [`../plans/2026-10-29-research-05-bases.md`](../plans/2026-10-29-research-05-bases.md)
+(26 candidates, a comparison table and a ranked short-list; distilled below). Open human models, character
+add-ons and creators, auto-riggers: what each covers, its licence, how healthy it is. Candidates named so far, not a limit: MakeHuman and MPFB2, MB-Lab,
 CharMorph, Human Generator, Anny, VRoid Studio, Auto-Rig Pro, Rigify, UniRig — the research finds the rest.
 
 *web, 2026-10-29* — GitHub's API (`repos/<name>` and `releases/latest`) and the projects' pages:
@@ -126,6 +173,51 @@ CharMorph, Human Generator, Anny, VRoid Studio, Auto-Rig Pro, Rigify, UniRig —
   2025-05-29, latest release v0.4.0-3 on 2025-03-27, 576 stars.
 - GitHub reports no single licence for any of the four ("NOASSERTION") — read each repo's licence files
   for code and assets separately.
+
+*web, 2026-10-29* — re-checked by this session at the source (GitHub's API; MPFB2's `LICENSE.md`; Anny's
+`LICENSE` and README):
+
+- MPFB2: code GPLv3; its bundled assets CC0 1.0 — "anyone can do whatever they want with it" — and MakeHuman
+  claims nothing over what users make with it. That code/asset split is why GitHub says NOASSERTION.
+- Anny (naver/anny): code Apache-2.0; its body data is MPFB2's MakeHuman assets under CC0, its facial
+  actions a CC0 face-units pack, plus a "soma" topology from SOMA-X (Apache-2.0); an SMPL-X topology is a
+  separate non-commercial download. Created 2025-10-27, last push 2026-10-26, 612 stars.
+- Meta's MHR (facebookresearch/MHR): Apache-2.0, last push 2026-10-26, 885 stars. Google's GNM (google/GNM):
+  Apache-2.0, created 2026-03-23, last push 2026-10-29, 1,612 stars. NVIDIA's SOMA-X (NVlabs/SOMA-X):
+  Apache-2.0, created 2026-03-03, last push 2026-10-09, 847 stars. ICT-FaceKit (USC-ICT/ICT-FaceKit): MIT,
+  last push 2020-12-01. MakeHuman 2 (makehumancommunity/makehuman2): last push 2026-10-07, 88 stars.
+
+*agent, 2026-10-29* — round one's bases notes, sources per fact there:
+
+- MPFB2 ships 1,258 morph target files (the agent's count), 52 ARKit face units, 22 + 15 visemes, and 8
+  standard rigs plus Rigify, infant to elder; it runs only inside Blender. The notes' rank 1.
+- Anny is a PyTorch body model on the MakeHuman mesh (13,718 verts, 13,710 quads, eyes and tongue), with
+  163- and 104-bone rigs, up to 267 phenotype parameters and ARKit-named facial actions (v0.6.1,
+  2026-09-28) — the MakeHuman data working outside Blender, without its GPL code.
+- MHR is scan-trained: 7 LODs (73,639 down to 595 verts), 127 joints, 72 FACS-based expressions, neural
+  pose correctives, an FBX per LOD; no eyeballs, mouth interior or textures; 45 identity parameters. The
+  notes' rank 2.
+- SOMA-X puts MHR, Anny and SMPL on one 77-joint UsdSkel rig (mid LOD 18,056 verts); its fast path is
+  NVIDIA Warp (NVIDIA-only), with a PyTorch CPU path at 12.1 ms per mesh.
+- GNM Head (Google, 2026) is a scan-based head with eyeballs, teeth, tongue and neck, identities sampled by
+  gender and ethnicity; body models are on its roadmap.
+- ICT-FaceKit: a light-stage-scanned face with ARKit-named expressions and eye, teeth, gum and eyelash
+  geometry; unmaintained since 2020.
+- FLAME 2023 Open is CC-BY-4.0; earlier FLAME, SMPL-X, STAR and SUPR carry non-commercial research licences.
+- MB-Lab (archived) and CharMorph carry AGPL-3 mesh and morph data; CharMorph also has CC-BY bases; its
+  last release was 2025-03.
+- MakeHuman 2 is a standalone Python app (PySide6 + OpenGL): AGPL code, CC0 assets, alpha.
+- Microsoft Rocketbox (MIT, archived 2022): 115 rigged, textured, low-poly avatars with clothes baked in —
+  library content, not a creator base. Blender Studio's Human Base Meshes: CC0 clean quad meshes with
+  multires detail and UDIM UVs, no morphs, no rig.
+- Open auto-riggers: UniRig (MIT, ≥ 8 GB), SkinTokens/TokenRig (MIT, ≥ 14 GB), Puppeteer and MagicArticulate
+  (Apache-2.0), Make-It-Animatable (MIT) — most need CUDA (NVIDIA only). Rigify (GPL-2.0+) is a core
+  Blender add-on.
+- Out as paid only (the user, 2026-10-29): Human Generator, Auto-Rig Pro. Free but closed: MetaHuman (free
+  under the UE EULA below $1M revenue, usable in other engines, no AI training) and VRoid Studio — at most
+  something a user imports.
+- Gaps: no source compares any open base's realism with CC5 or MetaHuman; mesh quality (edge loops,
+  subdivision) is undocumented for every candidate; Mutable, Bevy, Daz, Mixamo and VRoid terms unchecked.
 
 ## 6 · Routes: engine and editor layers, languages
 
