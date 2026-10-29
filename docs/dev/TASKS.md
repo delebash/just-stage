@@ -206,7 +206,11 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
         - Then, verbatim: "we want features like unreal has where you can do mocap face with iphone and other motion
           capture stuff unreal just added new motion caputre stuff in the last few releases" → review item 26 (motion
           capture: in Unreal now per R13; live capture doors inside JustStage with the Animate workspace). The
-          complete list, 1–26, WAITS on the user's word, item by item.
+          complete list, 1–27, WAITS on the user's word, item by item.
+        - Then, verbatim: "just to check our app will have main app with plugins that add features like headshot and
+          skingen or is this just built into the app, i like the modular design idea, what do you think?" → review
+          item 27; "1 you say game enine cant carry so they are baked is this how cc5 works?" → item 1's wording
+          corrected (review file).
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

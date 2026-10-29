@@ -1153,6 +1153,11 @@ core features"), at Blender 5.2's sources:
   The VMC protocol repo `sh-akira/VirtualMotionCaptureProtocol`: MIT, pushed 2026-10-09. XR Animator
   (`ButzYung/SystemAnimatorOnline`, "AI-based Full Body Motion Capture", pushed 2026-10-17; no licence detected by
   GitHub).
+- Extensions importing each other (review item 27): "For add-ons to be bundled as extensions, they must be
+  self-contained"; "Bundle other add-ons together. This is recommended if an add-on depends on another add-on"; an
+  extension's module name is `bl_ext.{repository_module_name}.<id>` (manual `advanced/extensions/addons.rst`, 5.2).
+  The System repository is added as name "System", module "system" (`BKE_preferences_extension_repo_add_default_system`,
+  `source/blender/blenkernel/intern/preferences.cc`, 5.2).
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:

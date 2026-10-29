@@ -409,6 +409,28 @@ A fourth angle — this pass's own claims, each re-read at its source above — 
   app update could break it; VMC is the published door beside it. MetaHuman Animator stays Unreal-only. MediaPipe has
   no Intel-Mac wheel (item 25). Standard: Unreal's own tools (R13), an existing open receiver, MediaPipe, the VMC spec.
 
+- **27 · Built-in features as modules, plugins beside them** (the user: "just to check our app will have main app with
+  plugins that add features like headshot and skingen or is this just built into the app, i like the modular design
+  idea"). The spec: one extension whose feature modules the user turns on and off; third-party plugins are their own
+  extensions that `import juststage`. That import can't work as written: an extension's module is
+  `bl_ext.{repository_module_name}.<id>` (5.2 manual, `extensions/addons.rst`), and Blender's own guidance for add-ons
+  that depend on each other is "Bundle other add-ons together". **Rec:** keep the shape and make it real — each of our
+  features (photo-to-head, skin generator, hair, clothes, rig, capture, …) is a module of the one JustStage add-on that
+  registers through the same public plugin API third parties use, so it is a plugin that ships in the box (Unreal's
+  built-in plugins, Blender's bundled add-ons), each switchable off; third-party plugins stay Blender extensions (R19),
+  installed and updated with Blender's own extension tools from a JustStage plugin repository, and they import
+  `bl_ext.system.juststage` — stable because the installer puts JustStage in Blender's System repository (module
+  `system`, `BKE_preferences_extension_repo_add_default_system`, 5.2) (item 24). **Attack:** separate extensions for
+  our own features — no dependency field and no lockstep versions, against Blender's "bundle together"; a larger
+  download for users who want part of it — modules switch off, and the large AI models download on demand through the
+  host. Changed: the spec's import line.
+- **1, wording corrected** (the user: "1 you say game enine cant carry so they are baked is this how cc5 works?"). The
+  shapes travel as ordinary blend shapes in glTF and FBX; what no file carries is the rule that turns them on from
+  joint angles. Unreal gets the rule live — our plugin's DNA through RigLogic, as MetaHuman does, and as Daz's bridge
+  rebuilds its `JointLinks` into a `_JCMAnim` Anim Blueprint (§8, S9); engines without such a plugin get the rule's
+  result baked into each animation as morph-weight curves. CC5 has no body joint correctives to send — a top user
+  complaint (§2, round one) — only face correctives (HD: 262 + 128) as blend shapes.
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);
@@ -417,6 +439,7 @@ interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md
 23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md; 24 → plugins.md §5, ai-engines.md, commands-and-api.md, README.md (layout),
 25 → ai-engines.md, README.md (the one-way table), skeleton-and-face.md (capture); IDEAS.md (described person);
 26 → animation-and-later-features.md, import-export.md (Unreal mocap, takes), skeleton-and-face.md;
+27 → plugins.md §1–§2, ARCHITECTURE.md §8;
 testing.md (a launcher test), dev/PRD.md, dev/ARCHITECTURE.md §1.
 
 ## Blast radius (files that change on a go)
