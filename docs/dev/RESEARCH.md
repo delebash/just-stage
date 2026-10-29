@@ -88,6 +88,27 @@ didn't reach it).
   full bone list and the UDIM mapping are unpublished; several prices; the EULA and content licences
   (JavaScript-only pages); about 60% of the manual-sourced rows rest on topic titles only.
 
+Second pass done 2026-10-29: [`../plans/2026-10-29-research-02-cc5-pass2.md`](../plans/2026-10-29-research-02-cc5-pass2.md).
+
+*agent, 2026-10-29* — S1's pass 2, sources per fact there:
+
+- Mesh counts reconciled: CC3+ is 17,683 polygons (14,046 for the body); CC5 HD is 70,732 at SubD 1 and 282,928
+  at SubD 2 — ×4 per level; "60K" is a dressed character. The Level Table's polygon columns: actorBUILD 20K, LOD1
+  7K, LOD2 0.8K (round one's reading of that table was off; the 101 / 54 / 22 bone templates stand). Vertex and
+  per-mesh counts are published nowhere.
+- Bones: Reallusion gives 100, 101 and 108 for CC3+; a 101-name list taken from Reallusion's GPL Blender add-on
+  reduces exactly to the published 54 and 22; CC5 adds "ten bones" in the spine and head, names unpublished.
+- UDIM tiles 1001–1006: head, body, arm, leg, nails, eyelash.
+- The viewport is DirectX 11 (staff post). The RTX Render path tracer (free open beta since July 2026) needs
+  DirectX 12 and NVIDIA RTX. Iray is not supported in CC5 (staff, 2025-04; the manual's menu is out of date).
+- Builds: 5.07.1705.1, 5.11.1823.1, 5.12.1925.1 and 5.12.1928.1 (no 5.12 release post), 5.13.2031.1. CC 365 Pro
+  costs $33.25 a month billed yearly (~$399). The MetaTailor plugin works with CC5.
+- Licence: the CC Base Model clause bars use "in any character generation system" and for AI training — one
+  line, no analysis; it bears on importing CC characters (S9).
+- Still open: Reddit refused search and fetch, Polycount 403 (not worked around); CC5's Python version (3.8 per
+  Reallusion's iClone 8 docs vs 3.10 per a third party); prices for Iray, FashionGen and SkinGen Premium; the 5.2
+  build number; the native files' structure (the EULA forbids reverse engineering); no link between Z-Weave and CC.
+
 ## 3 · iClone 8 and its plugins
 
 Round one done 2026-10-29: [`../plans/2026-10-29-research-03-iclone.md`](../plans/2026-10-29-research-03-iclone.md)
