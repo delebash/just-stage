@@ -89,8 +89,10 @@ SCOPE:  the subjects of [`RESEARCH.md`](RESEARCH.md) §2–§10 — CC5 in depth
         research shows what licence each route would need.
         Requirements added 2026-10-29 (the user, verbatim in the APPROVED entries below): characters at "the quality of
         cc5 and metahuman characters or better" — pass/fail in the rec list; "pull in assest from other programs just
-        like cc5 and unreal engine and daz studio". Out: Omniverse, paid-only products, single-vendor core parts,
-        Unity. In: Unreal; a Blender fork.
+        like cc5 and unreal engine and daz studio"; "the best of the best" — "meet or exceed character mesh skin eyes
+        ect of cc5 and unreal", and where nothing existing meets the bar (texture baking, garment cloth and the rest)
+        "we need to do are own" — "if we can reuse if not build"; character assets interoperable with MetaHuman and
+        CC5. Out: Omniverse, paid-only products, single-vendor core parts, Unity. In: Unreal; a Blender fork.
 
 ADDITIONS (shown 2026-10-29, approved — "the additions are fine if you recommend them and have thought
         adverserialy about them"); each folds into an existing subject, no new agent, to keep the one round:
@@ -234,3 +236,15 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
         - Then, verbatim: "your reec on all go make sure you keep thinking about your recs adverserialy" → the plan runs
           on: the nine passes land → the lead distills them into RESEARCH.md → the one complete rec list, each rec
           attacked before it is shown, with what the attack changed.
+        - Then, verbatim: "i want the best of the best in this app if that means none of the existing stuff meets the
+          quality bar like texture baking grament cloth ect, then we need to do are own, we need to meet or exceed
+          character mesh skin eyes ect of cc5 and unreal, cant you make your own skin textures and stuff if need be
+          that meat or beat the quality of cc5, cant you make your own asset generator for skin texture, hair eyes ect.
+          maybe based on metahuman or cc5 or better but interoperable with both?" — answered: the generators are
+          buildable; skin realism rests on scan data, not code; eyes and hair generate more readily; interop by design
+          (the UE5/MetaHuman skeleton CC5 aligned to, MetaHuman DNA through OpenRigLogic, ARKit names, CC5's UDIM
+          layout; CC's base-model clause means interop by export). My rec: an S10 agent on making our own character
+          assets. Then, verbatim: "i bet there are large datasets that exist for 1-3 and of course i know there are
+          current ai that generate human images with all sorts of options, i think you can find a way if need be, but
+          if we can reuse if not build" → folded into S10's brief. Then, verbatim: "your rec go on all"
+          → S10 RUNNING 2026-10-29 (second-pass file, section S10); the requirement is in SCOPE.

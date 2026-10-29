@@ -225,6 +225,34 @@ daz studio". No round-one file of its own; read RESEARCH §2 (CC5's import tools
 - Output: a table per source program (asset type → formats → what survives), a table of the three reference
   apps' import workflows, a table of open conversion tools, the terms lines.
 
+## S10 · Making our own skin, eyes, hair and teeth — new 2026-10-29 → write `2026-10-29-research-10-character-assets.md`
+
+The user, 2026-10-29: "i want the best of the best in this app … we need to meet or exceed character mesh skin eyes
+ect of cc5 and unreal … cant you make your own asset generator for skin texture, hair eyes ect. maybe based on
+metahuman or cc5 or better but interoperable with both?", then "i bet there are large datasets that exist … i know
+there are current ai that generate human images with all sorts of options … if we can reuse if not build". Read
+RESEARCH §2 (CC5's skin, UDIM layout, facial profiles), §5 (bases), §7 (texture generation, hair) and §8 (face
+standards, MetaHuman DNA).
+
+- **Datasets** — face, body and close-up skin scan or capture datasets (light-stage, photogrammetry, multi-view):
+  what each holds (geometry, albedo, specular, normal or displacement maps, resolution, subjects, diversity), how
+  to get it, and a one-line licence label. Names to check, not a limit: ICT-FaceKit's scans, FaceScape, Multiface,
+  NeRSemble, RenderMe-360, Ava-256, FaceVerse, FFHQ-UV, hair datasets (USC-HairSalon and others). Paid-only sets are
+  out (one line each).
+- **AI generators** — open-weight human image models and research models that output UV-space textures or PBR maps
+  for faces and bodies (albedo, normal, displacement, roughness, specular, translucency), texture super-resolution
+  to 8K, and models that turn an image into a strand groom: quality evidence, VRAM (does it fit 8 GB, or run through
+  the family's stable-diffusion.cpp), GPU vendors, licence label.
+- **Building blocks for our own generators** — physically based skin colour (melanin and haemoglobin layers),
+  procedural pores and wrinkles, wrinkle-map authoring; iris, sclera and cornea generation and eye shading; teeth,
+  tongue, lashes and brows (cards vs strands); strand-groom generation (guides, interpolation, clumping) and groom
+  formats (Alembic, USD BasisCurves) — open code and papers.
+- **Against the bar** — what results look like next to CC5 and MetaHuman (renders, comparisons in papers); for each
+  asset type (skin, eyes, hair, teeth), whether something reusable meets the bar or we build — the user's order:
+  reuse if it meets the bar, otherwise build.
+- **Working with both** — outputs in CC5's six-tile UDIM layout and MetaHuman's texture set and DNA (OpenRigLogic),
+  ARKit face names, Unreal's groom import.
+
 ## After the passes (the lead)
 
 One lead session reads the eight pass-2 files, distills them into RESEARCH.md, writes the one complete rec list
