@@ -36,6 +36,8 @@ GO:     the user, verbatim (2026-10-29, the opening request): "i want to start w
           like two apps but in one system so easy to distingush but this is part of research"
         - "justStage it is"
         - "you have a go on your rec" — on the recs below.
+        - "also another app might be intereseting MakeHuman https://blender-addons.org/mb-lab-add-on/
+          https://blendercharacterproject.org/ i am sure there are others" — added to §5's candidates.
 
 APPROVED RECS (verbatim as shown, 2026-10-29):
         - Method: "Use the deep-research skill: about 8 research agents running at once, one per area listed
@@ -76,9 +78,24 @@ NEXT:   the research → one complete rec list, every item researched and argued
         standard (with its doc link) or NOT STANDARD → a fresh Fable session writes the synthesis and the
         standards spec → the user approves → code.
 
+MY RECS (shown 2026-10-29), waiting on the user's go:
+        - The trademark check first: before the research agents start, the research session searches USPTO and
+          EUIPO for JUSTSTAGE / JUST STAGE in classes 9 and 42 and records the result in §12 — a database check,
+          not legal clearance. (Was "before anything goes public"; moved up because the name is already in the
+          folder, the memories and these docs, and a rename gets dearer every week.)
+        - The research: the user opens a session at `E:\Dev\3D` on Opus 5.5 at xhigh and says go there. One
+          round of 8 agents — §2 CC5, §3 iClone, §4 references, §5 bases, §6 routes, §7 building blocks,
+          §8 standards, §9 legal; the lead does §10 itself from the web kit's register and the JustDirect note.
+          Each brief carries its section, the "don't re-derive" line, the questions and a done-when line. No
+          second round of agents without the user's word; gaps after round one are filled by the lead with
+          targeted lookups.
+
 ## The global "one way per job" rule names the web kit's table — for the user's word [2026-10-29]
 
 FOUND:  the global CLAUDE.md rule "**One way per job** … find its job in the kit's table
         (`just-core/docs/app-structure.md` §19)" was not part of the approved edit and still points every
         session, this family's included, at the web kit's table. JustStage has no such table yet. Not changed —
         waiting on the user's word.
+MY REC (shown 2026-10-29): leave the rule's text as it is and append one sentence after "A second way to do a
+        job the kit already has is a bug.": ` In the 3D family (E:\Dev\3D) the table is the one JustStage's
+        standards spec creates; until then there is none.` — and the standards spec then includes that table.

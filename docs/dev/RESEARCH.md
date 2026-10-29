@@ -52,7 +52,22 @@ ZBrush, Marvelous Designer, Substance 3D Painter, Mixamo — only the parts that
 ## 5 · Existing bases to build on
 
 Not researched yet. Open human models, character add-ons and creators, auto-riggers: what each covers,
-its licence, how healthy it is.
+its licence, how healthy it is. Candidates named so far, not a limit: MakeHuman and MPFB2, MB-Lab,
+CharMorph, Human Generator, Anny, VRoid Studio, Auto-Rig Pro, Rigify, UniRig — the research finds the rest.
+
+*web, 2026-10-29* — GitHub's API (`repos/<name>` and `releases/latest`) and the projects' pages:
+
+- MPFB2 (makehumancommunity/mpfb2), MakeHuman's Blender add-on: last push 2026-10-24, latest release
+  v2.0.18 on 2026-10-11, 671 stars — the active one of these four.
+- MakeHuman, the standalone app (makehumancommunity/makehuman): last push 2024-08-19, latest release
+  v1.3.0 on 2024-05-15, 1,621 stars.
+- MB-Lab (animate1978/MB-Lab), the community continuation of ManuelBastioniLAB after its developer stopped:
+  **archived** (last push 2024-07-21), latest release 1_8_1 on 2024-06-08, 2,030 stars. Its page lists
+  phenotypes, age, mass, tone, body measures, face rig, expressions, poses and BVH files.
+- blendercharacterproject.org is CharMorph (Upliner/CharMorph), "100% Free & Open Source": last push
+  2025-05-29, latest release v0.4.0-3 on 2025-03-27, 576 stars.
+- GitHub reports no single licence for any of the four ("NOASSERTION") — read each repo's licence files
+  for code and assets separately.
 
 ## 6 · Routes: engine and editor layers, languages
 
