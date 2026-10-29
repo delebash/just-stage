@@ -808,6 +808,33 @@ expected"; created 2025-06-22, last push 2026-06-20, 21 stars.
   713 joints, 669 blend shapes); refused, not worked around — the Mixamo help page, the Fab EULA, metahuman.com,
   two Epic licence pages; no benchmark of WebAssembly copy cost on large meshes (to measure on our data).
 
+**Pulling in assets from other programs** — a requirement since 2026-10-29 (TASKS). Second pass S9 done
+2026-10-29: [`../plans/2026-10-29-research-09-import.md`](../plans/2026-10-29-research-09-import.md) (a table per
+source program, the import workflows of CC5, Unreal, Daz and the Blender add-ons, open conversion tools, a USD
+survival table, terms lines).
+
+*web, 2026-10-29* — re-checked by this session (GitHub's API): `daz3d/DazBridgeUtils` and `daz3d/DazToUnreal` are
+Apache-2.0 (last push 2026-01-01); `daz3d/DazToBlender` shows no single licence ("NOASSERTION").
+
+*agent, 2026-10-29* — S9's notes, sources per fact there:
+
+- Unreal and USD: export is Beta — static and skeletal meshes, animations, levels and sequences, materials baked to
+  UsdPreviewSurface; its USD import is the widest of any app checked (blend shapes, grooms, MaterialX, MDL).
+  Not found: whether its USD export writes morph targets; any way to export grooms out of Unreal.
+- CC5 and Daz don't help through USD: Daz Studio has no USD exporter; CC / iClone write USD only for Omniverse,
+  with MDL materials Reallusion says Blender can't read.
+- No app's USD carries correctives: Daz's JCMs, MetaHuman's RigLogic, CC's wrinkles and cloth cross only in a
+  companion file beside the FBX — Daz's `.dtu`, CC's JSON plus `.fbxkey`, MetaHuman's DNA.
+- Daz's bridge code is open (Apache-2.0, above), including Genesis 8/9 bone maps to MetaHuman, Mixamo and UE; the
+  Diffeomorphic Blender importer (GPL) reads Daz's native `.duf` files directly.
+- Mesh to MetaHuman runs its solve in Epic's cloud. Sketchfab now belongs to KitBash (sale announced 2026-08-10).
+- Terms, one line each: Reallusion's content licence allows export to "any other software", but its EULA asks that
+  exported models "cannot be opened or imported into a publicly available software application"; with §2's CC
+  Base Model clause, importing CC characters into JustStage is a terms question for the user to read.
+- Open: the Fab EULA, metahuman.com, VRoid Studio help, Marvelous Designer's format table (refused scripted access);
+  CC5's current USD materials, the structure of CC's JSON sidecar, 3ds Max USD import, how plain Daz FBX export
+  carries JCMs and hair (not found).
+
 ## 9 · Legal
 
 Not researched yet. Trademarks — never "Character Creator", "iClone" or "Reallusion" in our names; the
