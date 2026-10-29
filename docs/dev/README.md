@@ -8,6 +8,8 @@ Read in this order:
    researching anything.
 4. **`IDEAS.md`** — ideas not yet scheduled.
 
-`PRD.md` (what the app is for) and `ARCHITECTURE.md` (why it is built the way it is) come after the
-research and the standards spec. Plans and their evidence go in `../plans/YYYY-MM-DD-<subject>.md`,
-each one linked from `RESEARCH.md`.
+`PRD.md` (what the app is for) and `ARCHITECTURE.md` (why it is built the way it is) are the synthesis of
+the research; the standards spec is `../standards/` (start at its `README.md`: the documents, the NOT
+STANDARD list, the 3D family's "one way per job" table). All three are drafts until `TASKS.md` records
+the user's approval. Plans and their evidence go in `../plans/YYYY-MM-DD-<subject>.md`, each one linked
+from `RESEARCH.md`.

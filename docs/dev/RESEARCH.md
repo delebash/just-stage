@@ -459,6 +459,19 @@ The "to verify" above — MetaHuman Creator in the Unreal editor since 5.6 — i
 - Blender Lab hosts an MCP server repo, `lab/blender_mcp` on projects.blender.org (created 2026-02-21,
   updated 2026-09-29). Its README didn't load by raw URL; its version and licence come from the agent.
 
+*web, 2026-10-29* — read by the standards-spec session (Gitea API `repos/lab/blender_mcp` and the raw `readme.md`;
+the HTML page returns 403 to scripts; excerpt saved in `../plans/2026-10-29-spec-evidence/README.md`):
+
+- `lab/blender_mcp` is Python, 33 stars, 6 releases, 23 open issues; top level `addon/blender_mcp_addon/`, `mcp/blmcp/`
+  (with `pyproject.toml` and `manifest.json`), `chat_client/`, `tests/`, `readme_tools.rst`, `readme_local_llm.rst`.
+- Its readme: "two components that communicate over a TCP socket: A Blender add-on that runs inside Blender and
+  executes requests. An MCP server that runs as a separate process, launched by the MCP client"; data flow
+  `MCP Client ⇐ MCP/stdio ⇒ blender-mcp ⇐ TCP socket ⇒ Blender Add-on`; the add-on has preferences for host, port and
+  auto-start, configurable polling intervals, client-timeout eviction; "background mode requires requests to complete
+  synchronously and rejects deferred results"; tools are one module each, auto-discovered; `_toolcode` modules hold
+  code "that runs inside Blender (sent to the add-on for execution)". The lowercase `readme.md` is the file; a
+  `README.md` fetch is 404.
+
 *web, 2026-10-29* — Epic's own "Unreal Engine End User License Agreement for Publishing", **version 15**,
 downloaded by this session from Epic's CDN (`cdn2.unrealengine.com/…/UnrealEngineEULA_for_Publishing_v15-….pdf`,
 147,624 bytes; read as text). It names the store "Marketplace", not Fab, so it predates the current text; the
@@ -826,6 +839,26 @@ Second pass done 2026-10-29: [`../plans/2026-10-29-research-08-standards-pass2.m
 source file FBX exporter", MIT or Unlicense, "still a work-in-progress, and issues/breaking changes are to be
 expected"; created 2025-06-22, last push 2026-06-20, 21 stars.
 
+*web, 2026-10-29* — fetched at the source by the standards-spec session for the mapping tables
+(`../standards/skeleton-and-face.md`); the Daz files are saved verbatim in `../plans/2026-10-29-spec-evidence/`:
+
+- VRM 1.0 `humanoid.md`: the 55 bone names (torso `hips`, `spine`, `chest`, `upperChest`, `neck`; head `head`,
+  `leftEye`, `rightEye`, `jaw`; legs `upperLeg`, `lowerLeg`, `foot`, `toes` per side; arms `shoulder`, `upperArm`,
+  `lowerArm`, `hand` per side; fingers `thumbMetacarpal/Proximal/Distal` and `{index,middle,ring,little}
+  {Proximal,Intermediate,Distal}` per side); required: `hips`, `spine`, `head`, both `upperLeg`, `lowerLeg`, `foot`,
+  `upperArm`, `lowerArm`, `hand`; rules: "Humanoid bones must be unique in VRM", "upperChest can exist only when chest
+  exists", scale "MUST have positive values".
+- Apple's `ARFaceAnchor.BlendShapeLocation` JSON: the 52 names, grouped left eye 7, right eye 7, mouth and jaw 27,
+  brows/cheeks/nose 10, tongue 1 (the list is in the skeleton doc §2.1).
+- Daz `DazBridgeUtils/Extras/g9_to_unreal_manny.json` (Apache-2.0): Genesis 9 → UE5 names, including `spine1–4` →
+  `spine_01, _02, _03, _05` (no `spine_04`), `neck1/2` → `neck_01/02`, twist bones `*_twist_01/02`, metacarpals, `l_toes`
+  → `ball_l`, `l_metatarsal` → `metatarsal_l`, `l_pectoral` → `pectoral_l`, `l_hand_anchor` → `weapon_l`; no calf twists,
+  no face bones. `g8_to_unreal.json`: Genesis 8 names (`abdomenLower/Upper`, `chestLower/Upper`, `neckLower/Upper`,
+  `lCollar`, `lShldrBend/Twist`, `lForearmBend/Twist`, `lCarpal1–4`, `lThighBend/Twist`, `lShin`, `lFoot`, `lToe`,
+  `lPectoral`, fingers `lThumb1–3`, `lIndex1–3`, `lMid1–3`, `lRing1–3`, `lPinky1–3`) → the same UE5 names, one twist per
+  segment. Whether `metatarsal_*` and `pectoral_*` exist on Epic's `SK_Mannequin` is not shown by any Epic page — the
+  spec makes a dump from the user's Unreal install a gate task.
+
 *agent, 2026-10-29* — S8's pass 2, sources per fact there:
 
 - FBX export without Autodesk's SDK: ufbx-write and Assimp's FBX exporter (BSD-style, "experimental") both write
@@ -927,6 +960,24 @@ table) and `just-core/docs/plans/2026-10-24-just-direct-feasibility.md` (§A, §
 - ArtCraft's 3D stage — the part of JustDirect that overlaps JustStage — is Three.js 0.171 run locally:
   GLB/glTF, PMX, Gaussian splats, a camera controller, a timeline, snapshots, a posed mannequin guiding the
   final character (feasibility §A). That is a small subset of JustStage's scene and animation workspace.
+
+*code, 2026-10-29* — read by the standards-spec session in `just-core/packages/core/src` for
+`../standards/ai-engines.md` (R14 "name the exact service"):
+
+- `runner/runtimes.js` `RUNTIMES` ids: `llamacpp` (kind llm), `sdcpp`, `onnx`, `audiocpp`. The template server
+  (`template/server/src/app.js`) ships with `runtimes: []` — an app turns a runtime on in `installLlm`.
+- HTTP routes for runtimes (`llm/runtimes_api.js`): `GET /v1/ai/runtimes`, `GET|POST /v1/ai/runtimes/:id/engine/
+  {status,install,update,check,install/cancel}`, `DELETE …/engine`, `PUT …/settings`, `GET …/models`,
+  `POST …/models/:modelId/download[/cancel]`, `DELETE …/models/:modelId`. Jobs (`platform/jobs_api.js`): `GET
+  /v1/jobs`, `GET /v1/jobs/:id`, `GET /v1/jobs/:id/events`. `POST /v1/ai/run` (`llm/prompts.js`) runs a **chat**
+  action. **No kit route runs an image feature over HTTP**: `runImageFeature` (`llm/image_dispatch.js`) is called
+  in-process (just-house-paint's `aiphoto_service.js`, `runtime_service.js`, `sdcpp.js`) — the kit gap the spec names.
+- `runner/arbiter.js`: "each app process holds its OWN instance (cross-APP arbitration is out of scope, design §7.2)".
+- `platform/auth.js`: "OFF by default: an empty token list means no auth (the normal local-loopback case)"; with tokens,
+  loopback bypasses auth unless `requireForLoopback`; a proxied request is never the loopback door.
+- Ports (`scripts/check-family.js` `APP_PORTS`): JustWrite 17495, JustVoice 17494, docgen 8742, template 17490,
+  just-house-paint 17499. The spec takes **17480** for JustStage's API socket (not in the kit's list; recorded in the
+  3D family's table).
 
 The assessment of this section (one app or two; JustDirect inside or beside) waits for §2, §3 and §6.
 

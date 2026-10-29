@@ -126,8 +126,20 @@ REPO:   public at https://github.com/delebash/just-stage since 2026-10-29 — th
         push", then "create public go" (my rec was private until the spec's LICENSE files land). It has no LICENSE
         file yet; the approved licences (R2: GPL-3.0-or-later for the extension, MIT for the libraries) land with the
         standards spec.
-NEXT:   the standards spec — WAITING on the user to open the Fable session; its brief and launch line:
-        [`../plans/2026-10-29-standards-spec-brief.md`](../plans/2026-10-29-standards-spec-brief.md).
+NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (its brief:
+        [`../plans/2026-10-29-standards-spec-brief.md`](../plans/2026-10-29-standards-spec-brief.md)); WAITING on the
+        user's approval, which goes here verbatim before any code:
+        - the spec: [`../standards/README.md`](../standards/README.md) (index, the NOT STANDARD list N1–N5, the 3D
+          family's "one way per job" table, the repo layout) and its twelve documents; the synthesis:
+          [`PRD.md`](PRD.md), [`ARCHITECTURE.md`](ARCHITECTURE.md); evidence fetched while writing:
+          [`../plans/2026-10-29-spec-evidence/`](../plans/2026-10-29-spec-evidence/README.md) (RESEARCH §6, §8, §10).
+        - open for the user's word, by name: N1 the character JSON schema (+ its USD applied-schema mirror); N2 hm08
+          without MakeHuman's helper geometry; N3 HD morphs as displacement deltas; N4 the face control vocabulary
+          (ARKit 52 + ours); N5 the body correctives schema; the kit gap — a generic image-job route in `just-core`
+          (`POST /v1/ai/image/jobs`), filled in a just-core session before step 2; the API port 17480; the MetaHuman
+          terms reading (the recs' "not recs" item) for "Send to Unreal as a MetaHuman" and DNA import.
+        - gate tasks the spec names for step 1: dump `SK_Mannequin` and a MetaHuman body's bone lists from the user's
+          Unreal; measure VRAM of one skin job beside the EEVEE viewport; the shape-space wrap errors.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
