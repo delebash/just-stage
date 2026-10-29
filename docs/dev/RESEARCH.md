@@ -1172,6 +1172,12 @@ core features"), at Blender 5.2's sources:
   item is Cycles' "new DLSS denoiser … for the viewport" on NVIDIA GPUs (`cycles.md`); no assistant or MCP feature.
   Blender Lab's MCP server is separate from Blender: latest release v1.0.3 (2026-09-11; v1.0.2 2026-09-08, v1.0.0
   2026-04-27, Gitea releases API), and `main` still depends on `mcp[cli]>=1.2.0,<2` (`mcp/pyproject.toml`).
+- Re-checked on the installed 5.3 beta (`E:lender-5.3.0-beta`, files read, not run) and the `blender-v5.3-release`
+  branches, 2026-10-29 — the 5.2 facts above hold on 5.3, except: extension types "add-on", "asset-library", "theme"
+  (manual `getting_started.rst`); USD 26.08, MaterialX 1.39.4, Python 3.13.13 (`versions.cmake`); the main window title
+  appends " - <project name>" when a Blender project is active, then " — Blender <version>"
+  (`wm_window_title_project_append`, `wm_window.cc`). On disk: `blender.exe`, `blender-launcher.exe`, `python313.dll`;
+  system app templates 2D_Animation, Sculpting, Storyboarding, VFX, Video_Editing.
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:

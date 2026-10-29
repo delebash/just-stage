@@ -217,6 +217,11 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           2026-11-04), move with each new release; R1's floor "5.2 LTS onward" → "5.3 onward", on the user's word.
           Still in force: "dont run just now anothe session is using memory" — Blender is run only once the user says
           the memory is free.
+        - Then, verbatim: "serioulsy how did you get blender version wrong 18 says blend installed the only version
+          installed is beta and yet you built your recs on non installed version, uggh you need to think before you
+          act!!!!!"; "think on recs again and give me list, uggh!!!!" → every Blender fact re-checked on the installed
+          5.3 (review file, "Re-check on the installed Blender 5.3"); the complete list, 1–27, shown in chat, WAITING on
+          the user's word item by item.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

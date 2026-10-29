@@ -455,6 +455,28 @@ A fourth angle — this pass's own claims, each re-read at its source above — 
   version, since it ships inside JustStage. Was: "stay on 5.2 LTS" (second pass), wrong — it ignored why the user
   installed 5.3.
 
+## Re-check on the installed Blender 5.3 (2026-10-29, the user: "serioulsy how did you get blender version wrong 18
+says blend installed the only version installed is beta and yet you built your recs on non installed version")
+
+The second and third passes checked Blender facts at 5.2's sources while only 5.3 beta is installed. Every such fact
+was re-read on `E:lender-5.3.0-beta` (files on disk, Blender not run) and on the `blender-v5.3-release` source and
+manual branches:
+
+- Same on 5.3: app templates found through `BLENDER_SYSTEM_SCRIPTS` (`bpy/utils/__init__.py` on disk); the folder
+  variables, `--app-template`, the portable folder, `blender --command extension install-file … -r REPO [-e]`; the System
+  repository's module `system`; Blender as a Python module "runs without a user interface"; extensions
+  "self-contained", "Bundle other add-ons together", module `bl_ext.{repository_module_name}.<id>`; no hook in the FBX
+  exporter, `gather_node_hook` in the glTF exporter (on disk); Rigify's bird, cat, horse, shark, wolf (on disk); the
+  hair node assets and MaterialX's `open_pbr_surface.mtlx` (on disk); MaterialX 1.39.4; Python 3.13.13
+  (`python313.dll` on disk); remote asset libraries.
+- Different on 5.3: extension types are "add-on", "asset-library", "theme" (still no application template, item 24
+  holds); USD is 26.08 (5.2: 26.03) — 26.08 is the release with OpenUSD's experimental OpenExec rig schemas (RESEARCH
+  §8), experimental, so item 1 keeps the DNA; the window title is `<file> - <project name> — Blender 5.3` when a Blender
+  project is active (`wm_window_title_project_append`, `wm_window.cc`) — "Blender 5.3" still shows, item 24's attack
+  holds, and the project name can read "JustStage".
+- Item 16's blast radius: the spec files naming 5.2 — `animation-and-later-features.md` (1), `import-export.md` (2),
+  `project-files.md` (1), `quality-gate.md` (1), `testing.md` (2), `dev/ARCHITECTURE.md` (2) (grep).
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);
