@@ -885,6 +885,19 @@ summary:
 - It forbids webview UIs: "Never add Tauri (or any webview/JS UI framework)".
 - Its file format adds new fields with `#[serde(default)]` so older files still load.
 
+*web, 2026-10-29* — storytold's repos, read by this session through GitHub's API (`orgs/storytold/repos`), as
+evidence for the from-scratch route (TASKS):
+
+- About twenty "Craft" apps, every one "written by scratch in pure Rust" or "an open-source, clean-room
+  reimplementation of" a named app, Apache-2.0 on GitHub, nearly all created between 2026-09-30 and 2026-10-14 and
+  all pushed 2026-10-29: PhotoCraft (74,735 stars), PdfCraft (18,591), FilmCraft (16,827, a non-linear video
+  editor), WordCraft (16,557), LightCraft (15,041), VectorCraft (10,981), EffectCraft (8,139, motion graphics and
+  compositing), CADCraft (7,167, AutoCAD-style), GridCraft (6,784), DesignCraft (4,922), DeckCraft (4,406),
+  SoundCraft (3,888, a Pro Tools-style app), FigCraft (3,804), AniCraft (61, 2D animation).
+- Shared parts: `craft-libs`, `craft-ai-integrations` (an AI layer with egui widgets), `craft-fonts`,
+  `craft-i18n`, a launcher, and their own forks of `egui` and `winit`.
+- None of them is a real-time 3D character, scene or animation app; ArtCraft's 3D stage is Three.js (§10).
+
 ## 12 · The name
 
 *web, 2026-10-29* — search-engine checks, npm (`registry.npmjs.org/<name>`) and GitHub's repository
