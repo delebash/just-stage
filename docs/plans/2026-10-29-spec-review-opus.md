@@ -424,6 +424,12 @@ A fourth angle — this pass's own claims, each re-read at its source above — 
   our own features — no dependency field and no lockstep versions, against Blender's "bundle together"; a larger
   download for users who want part of it — modules switch off, and the large AI models download on demand through the
   host. Changed: the spec's import line.
+  Explained to the user ("are the actuall plugins that you can enable disable or have you desinged it another way"),
+  with two additions to the rec: each built-in module names the modules it needs (photo-to-head needs the head
+  module), the way Unreal's plugin descriptors list theirs, and switching one off asks about the ones that need it; a
+  core (the body, the character data, the commands) is always on. JustStage's preferences show one Plugins page —
+  the built-in modules and the installed outside plugins, each with an on/off switch; for outside plugins the switch
+  is Blender's own add-on switch (`addon_utils.enable` / `disable`), so Blender's list and ours always agree.
 - **1, wording corrected** (the user: "1 you say game enine cant carry so they are baked is this how cc5 works?"). The
   shapes travel as ordinary blend shapes in glTF and FBX; what no file carries is the rule that turns them on from
   joint angles. Unreal gets the rule live — our plugin's DNA through RigLogic, as MetaHuman does, and as Daz's bridge
