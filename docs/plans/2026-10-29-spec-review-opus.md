@@ -373,12 +373,30 @@ Angle: how the second pass's changes and additions (7, 11, 13, 19, 21–24) meet
 A fourth angle — this pass's own claims, each re-read at its source above — found nothing more. Unchanged: 1–6,
 8–20, 23.
 
+- **25 · AI features, one way to add them** (the user: "we are definitly adding lots of good ai features to this app
+  like cc5 and we will come of with more"; then "i want user to be able to descibe a person and the app creates that
+  person mesh" — not now, in IDEAS.md). **Rec:** every AI feature is a command (item 7) that runs as a job on
+  JustStage's local AI host (item 14) on an engine the family kit runs — llama.cpp (text), stable-diffusion.cpp
+  (images, video), ONNX Runtime (in the host's own process: the kit's `onnx` runtime, "vision", `inProcess: true`),
+  audio.cpp (speech both ways) (`just-core/packages/core/src/runner/runtimes.js`). A feature that needs a new engine
+  program (skin-tokens.cpp for auto-rigging, trellis.cpp for image-to-3D) gets it added to the kit first, in the
+  just-core session on the user's word, so every family app can use it. Models carry their licence label, never
+  filtered. Because every feature is a command, assistants can call it too, and a description-to-character feature
+  is a text model choosing slider values through those commands. The one exception is **live capture** (webcam face
+  and body tracking every frame): a stream, not a job, so it runs inside Blender with MediaPipe (Apache-2.0, R18's
+  pick; 1.2.0 wheels for Windows, Apple-silicon Macs and Linux, tagged `py3`), the way BlendArMocap (GPL-3.0, pushed
+  2025-12-01) "Run[s] Mediapipe within Blender"; its row goes into the 3D family's one-way table. **Attack:** jobs
+  return files, not a live feed — right for generation, wrong for capture, hence the exception; the 8 GB card queues
+  jobs while JustStage lowers its own load (spec §4); MediaPipe has no Intel-Mac wheel, so webcam capture is labelled
+  unavailable there. Standard: our own kit code (R14) and MediaPipe as BlendArMocap uses it.
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);
 13 → TASKS (R17); 21 → character-data-model.md §1.4, import-export.md, parity-scorecard.md, README.md (N3 row);
 22 → import-export.md, parity-scorecard.md, README.md, skeleton-and-face.md, character-data-model.md, TASKS (R21);
 23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md; 24 → plugins.md §5, ai-engines.md, commands-and-api.md, README.md (layout),
+25 → ai-engines.md, README.md (the one-way table), skeleton-and-face.md (capture); IDEAS.md (described person);
 testing.md (a launcher test), dev/PRD.md, dev/ARCHITECTURE.md §1.
 
 ## Blast radius (files that change on a go)

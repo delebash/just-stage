@@ -1136,6 +1136,12 @@ core features"), at Blender 5.2's sources:
 - glTF exporter hooks: `class glTF2ExportUserExtension` with `gather_node_hook(self, gltf2_object, blender_object,
   export_settings)` (KhronosGroup/glTF-Blender-IO `example-addons/example_gltf_exporter_extension`). Blender's FBX
   exporter has no hook code (`scripts/addons_core/io_scene_fbx/export_fbx_bin.py`, 5.2).
+- AI features (review item 25): the kit's runtimes (`just-core/packages/core/src/runner/runtimes.js`, read 2026-10-29) —
+  `onnx`: kind "vision", "ONNX Runtime", MIT, `inProcess: true`; `audiocpp`: kinds `tts` and `stt`, placements `gpu` and
+  `cpu`, models registered into a running server; plus `llamacpp` and `sdcpp`. MediaPipe on PyPI: 1.2.0, Apache 2.0,
+  wheels `py3` for win_amd64, win_arm64, macosx_11_0_arm64, manylinux_2_28 x86_64 and aarch64 — no Intel-Mac wheel.
+  BlendArMocap (cgtinker, GPL-3.0, pushed 2025-12-01): "Run Mediapipe within Blender to detect pose, hand, face or
+  holistic features", dependencies installed from its preferences.
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:

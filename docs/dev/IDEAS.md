@@ -10,6 +10,17 @@ it moves to a plan and gets a link here (or is struck through).
 
 ---
 
+## 2026-10-29 — Describe a person, get the character
+
+The user, verbatim: "we are definitly adding lots of good ai features to this app like cc5 and we will come of with
+more", then "well we dont have to do it now but i want user to be able to descibe a person and the app creates that
+person mesh, or creates stuff like that that". Rough shape, on pieces the plan already has: a local text model (the
+kit's llama.cpp) reads the description and picks values for our named sliders (MakeHuman's 234 labelled slider
+categories, review item 3) through the same commands an assistant calls (item 7); the image model makes the skin and
+hair textures; a picture can go through photo-to-head (R10); or an image-to-3D model's mesh (trellis.cpp, RESEARCH §7)
+is wrapped onto our base, CC5's way (its cloud AI 3D generator plus Body Wrap, RESEARCH §2). The same pattern fits
+props and clothes. The rule every AI feature follows is review item 25.
+
 ## 2026-10-29 — AI makes the movie
 
 The user, verbatim: "with ai we might just need character creation prop scene and camera managment then let

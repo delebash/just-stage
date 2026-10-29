@@ -198,7 +198,11 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           WAITING on the user's word.
         - Then, verbatim: "since you change your rec should you rethink again?" → the third pass (review file, "Third
           pass"): 7 refined (commands registered at runtime so plugins reach assistants); 21, 22, 24 extended; a fourth
-          angle found nothing more. The complete list, 1–24, WAITS on the user's word, item by item.
+          angle found nothing more. The complete list, 1–25, WAITS on the user's word, item by item.
+        - Then, verbatim: "we are definitly adding lots of good ai features to this app like cc5 and we will come of with
+          more"; "well we dont have to do it now but i want user to be able to descibe a person and the app creates
+          that person mesh, or creates stuff like that that" → review item 25 (one way to add AI features) and an
+          IDEAS.md entry (describe a person, get the character — not scheduled).
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
