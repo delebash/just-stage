@@ -148,3 +148,13 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
             engine's parts and the layers every route needs (render libraries, editor UI toolkits, language per
             layer, scripting and plugin embedding, AI-agent testing). Still 8 agents, Opus 5.5 at xhigh. The
             lead still checks at its source every claim a recommendation depends on.
+        - Then, verbatim (2026-10-29, while round one ran): "omnivers is out it only works on nvidia cards we dont
+          want restricsions anything that is commercial cost money we dont want either you cna remove from resear
+          and realocate agents to other researh or a second pass"
+          → sent at once to the running agents for §5, §6a, §6b, §7 and §8: Omniverse out everywhere; anything
+            that costs money out as a base or a part; anything that runs on one GPU vendor only out of the core,
+            and optional parts (AI models, mocap) labelled with the GPU vendors they run on; free-but-proprietary
+            options (Unreal, Unity, Flax, Autodesk's FBX SDK, Mixamo) held at one short row each while the user
+            decides (asked 2026-10-29); the saved effort goes into the open-source candidates. CC5, iClone and
+            the reference apps stay in §2–§4 — they are studied for features, not built on (my reading). A
+            second pass, if needed, runs after round one's results, on its gaps.
