@@ -36,8 +36,9 @@ Subjects: [1 · The machine](#1--the-machine) ·
 
 ## 2 · CC5 and its plugins
 
-Not researched yet. Every feature from Reallusion's own docs and release notes; per feature: keep,
-improve, drop, or new. The user named (2026-10-29): sculpting at ZBrush's level "or clone", making
+Round one done 2026-10-29: [`../plans/2026-10-29-research-02-cc5.md`](../plans/2026-10-29-research-02-cc5.md)
+(inventory table, plugins and prices, data model, Python API, praise and complaints; distilled below).
+Every feature from Reallusion's own docs and release notes; per feature: keep, improve, drop, or new. The user named (2026-10-29): sculpting at ZBrush's level "or clone", making
 clothes (as Marvelous Designer and MetaTailor do), making props, and CC5's pipeline that pushes
 characters, scenes and animation to Unreal Engine and other software.
 
@@ -47,14 +48,50 @@ characters, scenes and animation to Unreal Engine and other software.
 - A free MetaTailor plugin for CC (2025) sends a character to MetaTailor in one click and brings it back
   clothed, keeping its own clothing as separate parts (cgchannel.com/2025/04/character-creator-gets-new-metatailor-plugin/).
 
-Leads from the chat, not checked — names to confirm in the inventory: Headshot, SkinGen, Hair Builder,
-Smart Gallery, Transformer, InstaLOD, Auto Setup for Unreal/Unity/Blender, Unreal Live Link. "z-weave",
-from the user's list, is Z-Emotion's Z-Weave, a separate clothing design tool (§4); no link to CC found.
+Leads from the chat — all now rows of round one's inventory: Headshot, SkinGen, Hair Builder, Smart
+Gallery, Transformer, InstaLOD, Auto Setup for Unreal/Unity/Blender, Unreal Live Link. "z-weave", from the
+user's list, is Z-Emotion's Z-Weave, a separate clothing design tool (§4); no link to CC found (round one
+didn't reach it).
+
+*agent, 2026-10-29* — round one's CC5 notes, sources per fact there (page read unless marked):
+
+- Latest is CC 5.2, released 2026-10-29: a cloud AI 3D generator (Tripo / Hunyuan, paid in points), Body
+  Wrap (any humanoid mesh becomes a rigged CC base), eight cloth types with tuck-in, a rebuilt skin-weight
+  editor, GLB import, Quad Remesher, high-to-low baking. CC5 launched 2025-08-27.
+- Over CC4, CC5 added the HD base (two extra subdivision levels, 8K skin, displacement and cavity maps), HD
+  morphs, reworked eyes and lashes, the Extended Plus and HD facial profiles, ActorMIXER, and MetaHuman's
+  skeleton structure and facial controls (the manual: "same skeleton structure as MetaHuman").
+- Windows 10/11 only; minimum 16 GB RAM and 8 GB VRAM; a 30 GB install plus a 200 GB DDS cache.
+- One topology family underlies everything: CC3 Base+ at SubD 0/1/2, reduced for LODs with 101 / 54 /
+  22-bone templates; bones are `CC_Base_*`, and export can rename them to the UE4/UE5 skeleton.
+- Facial profiles: Standard 75 sliders (the ARKit-compatible set), Extended 160, Extended Plus 160 + 26,
+  HD 262 + 128 correctives; lip-sync uses 15 visemes.
+- CC and iClone share one in-process Python API (RLPy; PySide2 / Qt 5.15; the docs stop at iClone 8.0).
+  There is no outside API — a third party built an HTTP + MCP bridge.
+- Paid add-ons around a $299 core: ActorMIXER PRO $199, HD Ultimate Morphs $149, Headshot 3 $199;
+  subscriptions from $29 a month.
+- The pipeline is one free plugin per target: Auto Setup for Unreal (with Control Rig and Live Link, UE
+  5.8+), Unity, Blender, Maya, 3ds Max, Marmoset; GoZ for ZBrush; USD.
+- AI features run on cloud credits (Tripo, Hunyuan, Google image models; video models in AI Studio);
+  FashionGen runs a bundled local ComfyUI.
+- Clothing is fit-and-layer (conform, cloth types, tuck-in, auto-hide, weight transfer, PhysX soft
+  cloth); garments are designed elsewhere. Sculpting inside CC is light; deep sculpting goes to ZBrush
+  (GoZ, the paid Face Tools).
+- Rendering is a real-time viewport only (TAA, voxel GI, IBL); whether the Iray path-tracer plugin works
+  in CC5 conflicts (the manual vs a staff post).
+- Complaints: launch bugs and regressions, paid content the tutorials assume, non-refundable
+  subscriptions, no joint-corrective (JCM) system, JCMs lost on FBX export. Praise: HD skin and mesh, the
+  number of facial blendshapes, ActorMIXER, an Unreal pipeline that needs no retargeting.
+- Open (the notes' §10): Reddit and independent forums not reached (the search cap); vertex counts, the
+  full bone list and the UDIM mapping are unpublished; several prices; the EULA and content licences
+  (JavaScript-only pages); about 60% of the manual-sourced rows rest on topic titles only.
 
 ## 3 · iClone 8 and its plugins
 
-Not researched yet. Scene features included (sets, props, terrain and sky, lights, cameras, particles,
-physics, timeline, render) as well as characters and animation. FX can come later, but its place goes
+Round one done 2026-10-29: [`../plans/2026-10-29-research-03-iclone.md`](../plans/2026-10-29-research-03-iclone.md)
+(about 100 features in 12 areas from the manual's full contents, release notes 8.0–8.76, plugins and
+prices, data model and Python API; distilled below). Scene features included (sets, props, terrain and
+sky, lights, cameras, particles, physics, timeline, render) as well as characters and animation. FX can come later, but its place goes
 into the first design (the user, 2026-10-29).
 
 *web (search-result summaries), 2026-10-29* — reallusion.com/iclone/vfx/popcornfx and 2017 launch coverage:
@@ -63,9 +100,42 @@ into the first design (the user, 2026-10-29).
   timeline: billboard, ribbon and mesh emitters; particles can light the scene and feed its GI; collisions
   through NVIDIA PhysX; the free PopcornFX Editor is bundled for making effects.
 
-Leads from the chat, not checked: AccuLips, AccuFace, Motion LIVE, the Curve Editor, Motion Director,
-physics, Live Link; iClone calls characters "actors"; CC and iClone move characters between them with a
-send-and-update round trip.
+Leads from the chat — confirmed by round one: AccuLips, AccuFACE, Motion LIVE, the Curve Editor, Motion
+Director, physics, Live Link; iClone calls characters "actors"; CC and iClone move characters between them
+with a send-and-update round trip.
+
+*agent, 2026-10-29* — round one's iClone notes, sources per fact there (page read unless marked):
+
+- Latest is iClone 8.76 (2026-10-29). iClone 9 is only previewed (bones on any model, custom control rigs,
+  squash and stretch, springs with collision): "Development is in early stages", no date.
+- Windows only: a DirectX 11 renderer, NVIDIA PhysX, voxel GI based on NVIDIA VXGI, an Autodesk HumanIK-based
+  control rig, the PopcornFX runtime. An "RTX Render" path tracer, in open beta since 2026-07-28, needs an
+  RTX 3060 or better.
+- One project is one timeline (default 1,800 frames, maximum 54,000); 6,000 ticks a second; Z-up, −Y
+  forward, right-handed. "Sequences inside a project" is an open user request.
+- The timeline holds nine data types (transform, parameter, clips, target switch, lip-sync, voice, on/off,
+  transition, summary) plus IK/FK blend keys; layer keys live inside clips; project tracks carry camera
+  switching, sound, HDR and IBL.
+- The editing core is layered editing over mocap and library clips: motion layers with IK/FK effectors,
+  per-body-part animation layers, Reach Target, Motion Correction (foot and hand contact), Motion
+  Direction. The Curve Editor can't edit morph or facial keys.
+- Crowds and game-style control: Motion Director (WASD, gamepad, waypoints, NPC behaviours), 8.4's crowd
+  system (NavMesh, walkways, crowd generator), a paid node-graph Motion Planning plugin.
+- Mocap: Motion LIVE takes face, body and hand devices at once, with paid per-device profiles (Vicon
+  $1,990); Timecode is a paid plugin; cloud video mocap is billed per second.
+- Face: AccuLips (speech-to-text, word alignment, visemes, TTS), Face Puppet, the Face Key editor, AccuFACE 2
+  (webcam and video).
+- CC↔iClone: "Send Character to iClone" replaces the character, and users report that an update bakes
+  keyframes and wipes lip-sync data.
+- Python API: Python 3.8 + Qt 5.15.2 (PySide2), a subset of the C++ SDK; in-process plugins only.
+- Top requests by votes (the feedback tracker): turn off auto-keying with every animated property visible
+  on the timeline (33), Sony mocopi (29), export an animated rig without its mesh (19), clip size (16),
+  animation on selected bones only (13), expression animation layers (13), a Cascadeur bridge (10),
+  autosave and undo kept on save (5).
+- The 2026 direction is AI and cloud: AI Studio (third-party video models on cloud points) became a separate
+  app in 8.75; 8.76 added an AI mesh generator.
+- Open: Reddit not reached (the search cap); the Motion LIVE workflow and device protocols; several prices;
+  the software EULA and ActorCore licence; whether the Python API can build timeline structure.
 
 ## 4 · Feature references
 
@@ -272,9 +342,84 @@ page dates shown):
   (developers.meta.com Unreal licence docs, updated April 2026; seeles.ai guide). A seat-based price of $1,850
   a year for non-game work appears in one third-party guide only — unverified; the §6a agent gets Epic's terms.
 
+Round one done 2026-10-29: [`../plans/2026-10-29-research-06a-engine-routes.md`](../plans/2026-10-29-research-06a-engine-routes.md)
+(a score table, 10 criteria × every base in scope, and route-and-language pairs) and
+[`../plans/2026-10-29-research-06b-own-engine-and-layers.md`](../plans/2026-10-29-research-06b-own-engine-and-layers.md)
+(render libraries, UI toolkits, languages, embedding, AI testing, how professional apps are built, effort).
+The "to verify" above — MetaHuman Creator in the Unreal editor since 5.6 — is confirmed (below).
+
+*web, 2026-10-29* — re-checked by this session (GitHub's API, O3DE's `LICENSE.txt`, projects.blender.org's API):
+
+- Godot (godotengine/godot): MIT, latest 4.7.2-stable (2026-08-18), 119,262 stars. O3DE: Apache-2.0, or MIT
+  at the user's option; latest 2605.0 (2026-05-27); 9,802 stars. Flax: latest 1.13.7012 (2026-10-21), 7,094
+  stars. Bforartists: latest v5.2.0 (2026-07-29), 812 stars.
+- Blender Lab hosts an MCP server repo, `lab/blender_mcp` on projects.blender.org (created 2026-02-21,
+  updated 2026-09-29). Its README didn't load by raw URL; its version and licence come from the agent.
+
+*agent, 2026-10-29* — 06a, sources per fact there:
+
+- Unreal 5.8 (2026-06-17), likely the last 5.x; UE6 previews expected late 2027. The best real-time human
+  out of the box (MetaHuman: skin, strand groom, eyes, rig) and the fullest feature set (Sequencer,
+  Control Rig, Chaos cloth, hair and flesh, Movie Render Graph, Live Link).
+- Epic's EULA, from search snippets only (Epic's pages return 403): "The Product may not contain … any
+  Engine Tools" — the editor and its code go only to other Unreal licensees (Fab, the Epic store, a GitHub
+  fork). So JustStage on Unreal is either an editor plugin for people who install Unreal (~60–190 GB), or a
+  packaged app that rebuilds the authoring tools itself. Pricing (snippets): games pay 5% above $1M per
+  product; non-game companies above $1M a year pay $1,850 a seat a year — a model that excludes apps
+  licensed to end users that use Unreal at runtime.
+- MetaHuman Creator, Mesh to MetaHuman and the Animator moved into the Unreal editor in 5.6 (cgchannel,
+  2025-06-04); auto-rigging and texture synthesis run on Epic's cloud; Epic recommends an RTX 3070 / RX 6800
+  XT for Creator; the Animator is Windows/DX12 only.
+- Godot 4.7 (MIT) is the most "ours" base: its editor is itself a Godot app in C++, LibGodot (since 4.6)
+  embeds the engine in another app, glTF saves at runtime, GDExtension takes C++ and Rust. But a realistic
+  human is ours to build: subsurface scattering only in Forward+, card hair, no strand hair, no eye shader;
+  image tests need a GPU (no RenderingDevice headless).
+- Blender 5.2 LTS already has most of CC5 + iClone (sculpting, rigging, animation editors, node-based cloth
+  and hair, EEVEE, Cycles, USD/glTF/Alembic/FBX) on every GPU vendor, and is the easiest to drive by AI
+  (`-b --python`, `gpu.init()` headless in 5.2, screenshots, an official MCP server). Costs: GPL (published
+  add-ons "shared under a GPL compliant license") and Blender's own UI — a reworked UI means a fork, as
+  Bforartists does.
+- O3DE 26.05 (Apache-2.0 / MIT): TressFX strand hair, EMotionFX, motion matching, hardware ray tracing, a Qt +
+  Python editor; its macOS editor is experimental, installs take 40–100+ GB, few shipped titles.
+- Stride 4.4 (MIT) has the best image-test setup, but its editor is WPF — Windows only. Bevy 0.20 (no editor,
+  a breaking release every ~3 months) and Fyrox 1.0 (OpenGL, no GI) are early. Flax charges 4% above $250k a
+  quarter; editor redistribution and open-sourcing a Flax app aren't stated.
+- Nothing was measured on §1's card; the notes' open list names a per-finalist test (a realistic head with
+  strand hair, a skinned body, playback fps).
+
+*agent, 2026-10-29* — 06b, sources per fact there:
+
+- No open, cross-vendor render library ships CC5-class humans: Filament's subsurface is "approximated",
+  Wicked's hair is vegetation, The Forge carries a TressFX port. NVIDIA's RTX Character Rendering does skin
+  and strand hair but is proprietary and Windows/Vulkan only. On any own-engine route, skin, strand hair and
+  eyes are ours to build.
+- macOS narrows the field: native Metal in wgpu, bgfx, Filament, The Forge, Wicked, Ogre-Next; Diligent's
+  native Metal backend is commercial (out); MoltenVK has no Vulkan ray-tracing extensions; wgpu's ray
+  tracing is experimental and Vulkan-only.
+- The apps we copy are C++ cores with Qt UIs and embedded Python (Maya on Qt6/PySide6, Houdini 21 on Qt
+  6.5.3, Daz Studio 6 on Qt 6.10 under LGPL, iClone's API on Qt 5.15.2). Blender, Cinema 4D, Unreal (Slate)
+  and Godot draw their own UI.
+- Qt's free line: Base (Core, GUI, Widgets, RHI) and Declarative (QML/Quick) are LGPL-3; Quick 3D, Quick
+  Timeline, Graphs and Charts are GPL-3 or commercial only. QRhiWidget (Qt 6.7+) can host our own D3D12,
+  Vulkan or Metal renderer.
+- Dear ImGui is in shipped 3D tools (Substance 3D Modeler, Nomad Sculpt, MoonRay's GUI) but has no
+  accessibility tree. egui (kittest) and Avalonia (headless) are the most AI-testable UI stacks, with no
+  professional DCC behind them.
+- C++ is the only language where every key 3D library is native (OpenUSD, PhysX, Jolt, ufbx, Embree, OIDN,
+  OpenVDB, MaterialX, Manifold, meshoptimizer). Evidence on how well AI agents write each language is thin
+  and conflicting (2025 benchmarks; none on graphics code).
+- Python is the DCC scripting standard; nanobind is the lighter binding (Stable ABI). WebAssembly plugins are
+  standardised (WASI 0.3, 2026-06-11; Wasmtime; Extism) but no DCC uses them yet.
+- AI testing has standard parts: golden-image tests on software rasterizers (Filament on Mesa/SwiftShader,
+  Bevy, wgpu with FLIP, Blender with oiiotool; Windows' WARP runs D3D12 including ray-tracing stages), a
+  JSON-RPC/MCP control channel, UI tests through accessibility trees.
+- Effort: years and many hands (Godot: 3,990 contributors, open since 2014); no public figures for Maya,
+  Houdini or Unreal's editor.
+
 ## 7 · Building blocks
 
-Not researched yet. Skin and hair rendering, blendshapes, cloth and hair simulation, auto-rigging,
+Round one done 2026-10-29: [`../plans/2026-10-29-research-07-building-blocks.md`](../plans/2026-10-29-research-07-building-blocks.md)
+(33 job tables; distilled at the end of this section). Skin and hair rendering, blendshapes, cloth and hair simulation, auto-rigging,
 photo-to-head, texture generation, video and webcam mocap, lip-sync, motion generation — open models
 that fit §1's machine. Added 2026-10-29: sculpting, making and fitting clothes, prop modelling, and FX
 (particles).
@@ -289,9 +434,47 @@ live mocap streams (Live Link, VMC, OSC) and devices (iPhone, Rokoko, Xsens, web
 asset libraries and their licences (CMU mocap, AMASS, LAFAN1, Poly Haven, Mixamo's terms) for a built-in
 motion and content library.
 
+*web, 2026-10-29* — re-checked by this session (GitHub's API; Jolt's `Docs/ReleaseNotes.md`):
+
+- Jolt Physics (jrouwe/JoltPhysics): MIT, latest v5.6.0 (2026-07-11), 11,831 stars. v5.6.0 "Added a strand
+  based hair simulation running on GPU" — guide and render hairs, grid-based hair-to-hair collision, roots
+  skinned to the scalp — "still work in progress".
+- Cycles (blender/cycles): Apache-2.0, last push 2026-10-26. Momentum (facebookresearch/momentum): MIT,
+  v0.1.114 (2026-07-16).
+
+*agent, 2026-10-29* — round one's building-blocks notes, sources per fact there:
+
+- Jolt's GPU work runs on a compute layer with DX12, Vulkan, Metal and CPU back-ends; Jolt also has soft
+  bodies (Cosserat rods since 5.4), ragdolls and deterministic simulation.
+- Meta's MHR (Apache-2.0) is the one permissive alternative to SMPL (non-commercial; commercial terms through
+  Meshcapade). SAM 3D Body outputs MHR from one photo; Momentum adds FK/IK and body-tracking solvers.
+- FLAME 2023 Open is CC-BY-4.0; FLAME 2017–2023 are non-commercial.
+- MPFB2's CC0 assets include clothes in the MHCLO fitting format, rigs, poses and expressions (§5).
+- FBX: ufbx (MIT or public domain) reads it, and Blender 5.x's C++ FBX importer uses it, but there is no
+  writer; writing needs Autodesk's free closed FBX SDK (EULA not read) or Assimp's exporter (BSD-3).
+- Cycles builds standalone or as a Hydra render delegate on CPU, CUDA, OptiX, HIP, Metal and oneAPI — the
+  embeddable cross-vendor path tracer.
+- Webcam face: MediaPipe Face Landmarker (Apache-2.0) — 52 blendshape scores, 478 landmarks. Live mocap
+  interchange: the VMC protocol (OSC over UDP; the spec is MIT), spoken by SlimeVR, XR Animator, VSeeFace,
+  Waidayo.
+- Lip-sync: NVIDIA Audio2Face-3D is open (SDK MIT; models under NVIDIA's Open Model License, commercial use
+  allowed) and fits 8 GB, but needs CUDA/TensorRT — NVIDIA only, so an optional part.
+- Image-to-3D on 8 GB: Hunyuan3D-2 shape (6 GB; its licence excludes the EU, UK and South Korea), TripoSR (6
+  GB, MIT), TripoSG and PartCrafter (≥ 8 GB, MIT). TRELLIS (16 GB) and TRELLIS.2 (24 GB) don't fit.
+- Auto-rigging: UniRig (MIT, ≥ 8 GB), SkinTokens/TokenRig (MIT, 14 GB) — both CUDA.
+- Text-to-motion: HY-Motion 1.0 needs 24–26 GB (its licence excludes the EU, UK and South Korea); MoMask, MDM
+  and T2M-GPT are MIT/Apache code trained on HumanML3D, which comes from AMASS (non-commercial, and it forbids
+  training models for commercial use).
+- No open equivalent found for: Marvelous Designer (pattern-and-sew garments), MetaTailor (fitting any
+  garment to any body), Cascadeur's physics tools, a ZBrush-class sculpt library, a texture baker, an FBX
+  writer; and no cross-vendor GPU garment-cloth library.
+- Open: the VRAM of many models is unstated; GPU-vendor support of most PyTorch models beyond "CUDA"; CMU
+  mocap's terms; Blender's dyntopo and hair tools not checked; several licences unresolved.
+
 ## 8 · Standards
 
-Not researched yet. Scene and data model, skeleton naming, face standard, the command and API layer,
+Round one done 2026-10-29: [`../plans/2026-10-29-research-08-standards.md`](../plans/2026-10-29-research-08-standards.md)
+(nine topics, each with a table, facts and an assessment; distilled at the end of this section). Scene and data model, skeleton naming, face standard, the command and API layer,
 the plugin contract and sandbox, our own file format and its versions; the import rules of Unreal,
 Unity, Godot and Blender.
 
@@ -314,6 +497,49 @@ Candidates from the chat, not checked:
 - Added 2026-10-29: the asset library (how characters, clothes, props and motions are stored, tagged and
   shared — what CC's Smart Gallery and content store do); importing existing characters from CC, Daz,
   MetaHuman and VRM — what's allowed (§9) and how.
+
+*web, 2026-10-29* — re-checked by this session (GitHub's API): OpenUSD's latest release is v26.11.1
+(2026-10-21); the MCP specification repo's latest release is `2026-07-28`; WASI's latest is v0.3.2
+(2026-10-13); MediaPipe is Apache-2.0, v1.2.0 (2026-10-28).
+
+*agent, 2026-10-29* — round one's standards notes, sources per fact there:
+
+- OpenUSD is the only open format with layers, composition, variants and skinned characters in one model.
+  AOUSD Core Spec 1.0 (December 2025) makes composition and USDA/USDC/USDZ normative, but not the domain
+  schemas. UsdSkel covers skeletons, linear blend skinning and blend shapes with in-betweens — not
+  corrective combinations, rig behaviour, wrinkle maps or cloth — so JustStage needs schemas of its own.
+- glTF 2.0 (+Y up, +Z forward, metres) is the exchange format the open engines prefer (Godot recommends it;
+  Blender ships Khronos' add-on). Its limits: 4 joints per weight set, only 8 morphed attributes guaranteed,
+  morph names by convention only, no hair extension.
+- The open humanoid vocabulary has converged: VRM 1.0 (55 bones, 15 required), Unity's HumanBodyBones (55)
+  and Godot's SkeletonProfileHumanoid (56 with root) share names (Unity names the thumbs differently); VRM
+  1.0 and Godot agree on a T-pose facing +Z, Y up, metres.
+- The commercial side has converged on Epic's skeleton and face: CC5 added ten bones to line up with
+  UE5/MetaHuman and shares MetaHuman's facial controls. Bone counts: CC3+ 108, UE5 Mannequin 89, MetaHuman
+  342.
+- ARKit's 52 blendshape names are the public face-interchange set (0.0–1.0, left and right are the face's
+  own sides); MediaPipe outputs 51 of them (no `tongueOut`); FACS's manual is paid. MetaHuman's DNA layers
+  controls → raw controls → correctives, joints, blend-shape and wrinkle-map weights — the proven internal
+  face design (open under MIT as OpenRigLogic, §4). MetaHuman's terms conflict across sources ("any engine"
+  vs the DNA Calibration licence's Unreal/Twinmotion limit).
+- Undo and commands: Qt's QUndoStack and Godot's UndoRedo agree — a named command with serializable
+  arguments, do and undo on one instance, macros, merging of repeated edits. Blender's lesson: an operator
+  without a context-free `execute()` can't be repeated from a script.
+- MCP 2026-07-28: JSON-RPC 2.0, stateless (version and capabilities in each request's `_meta`), JSON Schema
+  2020-12 tool schemas, date versions, deprecations kept at least 12 months — so one schema per command can
+  serve the UI, the CLI, a JSON channel and MCP. Today's 3D-app MCP servers mostly bridge to scripting
+  (blender-mcp exposes "execute arbitrary Python").
+- Plugins: native binaries break across host releases (Maya; Godot 4.1, whose `.gdextension` now declares a
+  compatibility range). WebAssembly components give typed interfaces (WIT) and enforced capabilities
+  (Extism: memory, allowed hosts, allowed paths); Blender's manifest permissions are disclosure only. The
+  agent's assessment: sandboxed WebAssembly plugins plus native built-ins.
+- Old files keep loading two proven ways: Blender writes its struct catalogue (SDNA) into every file with
+  writer and minimum-reader versions and runs ordered versioning code (snippets); USD versions schemas by
+  family (`SphereLight_2`).
+- Blender 5.2 LTS remote asset libraries are plain static HTTP: JSON listings, previews, one .blend per asset.
+- Open: Blender's docs refused scripted access (operators, undo internals, asset metadata, USD skeleton import,
+  Rigify bones); not reached — gRPC, Live Link, the HumanIK and Mixamo bone lists, the UE5 Mannequin bones,
+  MetaHuman's control counts, CC's Smart Gallery, Fab; no open cloth standard and no open FBX writer found.
 
 ## 9 · Legal
 
@@ -437,3 +663,13 @@ service from this session, every class, live and dead; the query was proven firs
   2026-10-29* (the same skill).
 - CLAUDE.md files at and above the working directory load at launch; one in a subdirectory loads when
   Claude reads or edits a file there — *record* (the web kit's register §6, *web, 2026-10-09*).
+- **The WebSearch cap** — *web, 2026-10-29* (code.claude.com/docs/en/tools-reference.md, "Session search limit";
+  env-vars.md), on Claude Code 2.1.312 here (*measured*): "An interactive terminal session has a limit of 200
+  WebSearch calls. Searches from the main conversation and from subagents … count against the same limit."
+  It refills at about 100 calls an hour (v2.1.290+; `CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR` sets the rate);
+  `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises it with no upper bound but can't turn it off (v2.1.212+);
+  a new conversation or `/clear` resets the count, unless work that can still spawn subagents survives the
+  clear; with `-p` and the Agent SDK it counts per turn. At the cap, searches return a notice to carry on
+  with what was gathered. Round one's 8 agents ran it out (each notes file says so).
+- WebFetch reads up to 100,000 characters a call and caches 15 minutes; 20 subagents can run at once by
+  default (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`), with no total limit — *agent, 2026-10-29* (the same docs).
