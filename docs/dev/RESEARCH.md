@@ -465,6 +465,67 @@ unverified — the second pass (S5) looks for a readable current copy; otherwise
 - Effort: years and many hands (Godot: 3,990 contributors, open since 2014); no public figures for Maya,
   Houdini or Unreal's editor.
 
+Second pass done 2026-10-29: [`../plans/2026-10-29-research-06a-engine-routes-pass2.md`](../plans/2026-10-29-research-06a-engine-routes-pass2.md)
+and [`../plans/2026-10-29-research-06b-own-engine-and-layers-pass2.md`](../plans/2026-10-29-research-06b-own-engine-and-layers-pass2.md).
+
+*web, 2026-10-29* — re-checked by this session at the source:
+
+- Epic's merged "Unreal Engine End User License Agreement" with its Royalty Addendum (Epic's CDN,
+  `cdn1.epicgames.com/eulatracking-download/unreal_engine/en/v2/r1/…pdf`, fetched by S5, read here as text): "If your
+  Product includes Engine Tools, it may only be Distributed pursuant to (C) above" — (C) being other licensees;
+  the Engine Tools definition as in v15; North Carolina law, so it predates change-log update 20.
+- O3DE's development branch holds `Skin.materialtype` (with `Skin_WrinkleMaps.lua`) and `Eye.materialtype` in
+  `Gems/Atom/Feature/Common/Assets/Materials/Types` (GitHub's API).
+- The Forge's README: "We switched to Ray Queries for the common Ray Tracing APIs on all the platforms we
+  support", with a "Ray Queries on macOS" screenshot from an M2 Mac.
+
+*agent, 2026-10-29* — S5's pass 2, sources per fact there:
+
+- The current Epic EULA, quoted by a third-party tracker (ConductAtlas, the 2026-05-05 text): "If your Product
+  includes Engine Tools, you may only Distribute it through either the Fab Marketplace or through a fork of Epic's
+  GitHub UnrealEngine Network"; a seat per developer unless "you, together with any entities in your corporate
+  group, have generated less than $1,000,000 USD in gross revenue over the last 12 months"; a 3.5% rate; New York
+  law; bans on generative-AI training input and on MetaHuman AI databases; cloud-data terms. Still unread at
+  Epic: the live text, the seat-purchase terms, the Content License (the user can download them from their Epic
+  account's legal history, or read them in a browser).
+- Unreal's runtime export is narrow: glTF export works at runtime without material baking; no built-in runtime
+  FBX export (the FBX factory needs `UnrealEd`; only paid Fab plugins); USD stages load at runtime, no runtime
+  export documented. Unreal's Python is editor-only. Unreal 5.8's MCP is an experimental editor plugin at
+  `127.0.0.1:8000/mcp` with no authentication, running tool calls one at a time on the game thread.
+- Flax's EULA (2023-10-31, read in full): no Engine Tools in a Product, no sublicensing of the source, and GPL,
+  LGPL (except dynamic linking) and CC-BY-SA prohibited — so a Flax-based app can't be fully open source.
+- O3DE: the Skin type has subsurface and transmission, dual specular and up to 4 wrinkle layers driven by vertex
+  colour; the Eye type has refraction, iris, sclera and limbus. O3DE has no exporter (FBX is its main source
+  format; glTF through Assimp is in development).
+- Blender: Vulkan becomes the default in 5.3 (in beta until 2026-11-04) on Windows (not ARM) and Linux; no GPU
+  skinning upstream (PR #149020 open, unmerged); 5.1 sped up shape-key playback (158.7 vs 39.2 fps in one
+  chart). Bforartists 5.2.0 is a full release.
+- Godot: Uniform, a commercial 3D sculpt-and-paint app, is built as a Godot 4 C++ module; no official MCP
+  server, many community ones. Stride 4.4's editor runs on Linux through Proton/Wine and is being rewritten to be
+  cross-platform. Fyrox's master branch has a wgpu backend.
+- Open: Unreal's morph-target cap; whether its glTF exporter works in a Shipping build.
+
+*agent, 2026-10-29* — S6's pass 2, sources per fact there:
+
+- Ray tracing on macOS: only The Forge has working ray queries on Metal. Wicked Engine does inline ray tracing
+  only on Apple-silicon Macs with macOS 26; Diligent has none (MoltenVK's ray-tracing change is unmerged);
+  wgpu's ray tracing is Vulkan-only. Ray queries are the cross-platform path.
+- Image tests on all three OSes: Mesa's lavapipe (CPU Vulkan) does Vulkan 1.4 including ray tracing, and wgpu
+  runs it in CI on Linux and Windows; Metal has no CPU fallback, but GitHub's `macos-14` runner runs Metal
+  (Bevy and wgpu use it).
+- An AI agent can drive a Qt app with free tools: Qt's OS accessibility with pywinauto, Appium Mac2,
+  QTest/PySide6 and Spix. Squish is paid-only (out).
+- WebAssembly plugins in shipped apps (Flight Simulator, Figma, Zed, Helm 4): a real sandbox, but no threads, no
+  exceptions, no native libraries, no GPU or UI access.
+- Toolkits: GTK 4 is a weak fit (no Vulkan widget; Windows/macOS accessibility is a new build option, off by
+  default); Flutter's multi-window and GPU layer are experimental; Slint has no docking; wxAUI docks but is
+  accessible only on Windows.
+- Corrections to round one: PEP 779 sets 15% speed and 20% memory limits for free-threaded Python, and Stable
+  ABI support is undecided; "Cinema 4D on PySide6" came from a user, not Maxon; Marvelous Designer 2026.1 has a
+  headless mode.
+- Open: no controlled Rust-vs-C++ build-time comparison; no team sizes for Maya, Houdini or Unreal's editor;
+  Marvelous Designer's UI toolkit; Cascadeur's core language (a job-ad snippet only).
+
 ## 7 · Building blocks
 
 Round one done 2026-10-29: [`../plans/2026-10-29-research-07-building-blocks.md`](../plans/2026-10-29-research-07-building-blocks.md)
