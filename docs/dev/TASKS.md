@@ -231,3 +231,6 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
           programs is a requirement (SCOPE). Then, verbatim: "things like openusd help alot as unreal i think already
           can export assets in this format" → added to S9's brief before launch: USD import and export per program and
           what survives each way.
+        - Then, verbatim: "your reec on all go make sure you keep thinking about your recs adverserialy" → the plan runs
+          on: the nine passes land → the lead distills them into RESEARCH.md → the one complete rec list, each rec
+          attacked before it is shown, with what the attack changed.
