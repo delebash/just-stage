@@ -215,6 +215,11 @@ acceptable, not limited yet. For each route the research states the licence it w
 including whether Blender treats add-ons that use its Python API as GPL. The family apps checked are MIT
 (`just-house-paint/LICENSE`, `justwrite-app/LICENSE` — *code, 2026-10-29*).
 
+The user, 2026-10-29: "dont worry about trademark research or to much on lincese research, i am more
+interested in getting the correct app design tools engine ect than leagal stuff" — so round one has no
+legal agent; each research doc gives every product, library, model and asset set a one-line licence label,
+and the licence a route forces on JustStage is one line in §6 (TASKS).
+
 ## 10 · Fit: the web kit's engines, JustDirect, one app or two
 
 Not researched yet. Questions from the chat:
@@ -254,7 +259,8 @@ summary:
 ## 12 · The name
 
 *web, 2026-10-29* — search-engine checks, npm (`registry.npmjs.org/<name>`) and GitHub's repository
-search; **no trademark search (USPTO, EUIPO) done yet**:
+search (was: "no trademark search (USPTO, EUIPO) done yet" until 2026-10-29 — the USPTO search is the
+next entry):
 
 - `just-stage`: no product named JustStage; npm free; 22 GitHub repos carry the name. "Stage" is a
   real-time 3D rendering and collaboration platform on Unreal Engine 5 by Trapdoor Creative
@@ -269,6 +275,22 @@ search; **no trademark search (USPTO, EUIPO) done yet**:
 - JustCast is an active podcast hosting service (podnews.net/directory/company/justcast).
 - Galatea is Inkitt's "Galatea: Books & Audiobooks" app, about 256K App Store reviews
   (apps.apple.com/app/id1380362212); Sinew turned up no 3D product.
+
+*web, 2026-10-29* — USPTO's trademark search (tmsearch.uspto.gov), queried through the site's own search
+service from this session, every class, live and dead; the query was proven first on a known mark (ICLONE:
+4 records). A database check, not legal clearance:
+
+- No US application or registration, live or dead, for JUSTSTAGE, JUST STAGE or JUST-STAGE, and none
+  starting JUSTSTAG. The only marks holding both words: STAGE IS JUST A NUMBER (live; classes 18, 21, 25,
+  35) and THE WORLD IS A STAGE...JUST PRESS PLAY (dead; class 42).
+- Nearest spellings (fuzzy match): JUSTSTONE (live, class 9 — MP3 players and recorders; serial 99444663),
+  JUSTSTAND (live, classes 41 and 44; Ergotron), JUSTSTART (dead, class 9).
+- Live STAGE marks whose goods name 3D, animation, avatar, virtual-production, rendering or character
+  software, in classes 9 or 42, all lead with a strong word: UNREAL STAGE (Epic Games; one registration in
+  class 9, one in 42), NUKE STAGE (Foundry; 9 and 42), E-STAGE (Materialise; 9, 40, 42), POLYMOTION STAGE
+  (Mark Roberts Motion Control; 41, 42), SET STAGE (Set Point; 41, 42).
+- EUIPO not searched: its search sites refuse scripted requests, the Chrome extension wasn't connected, and
+  the user then dropped the trademark check — "dont worry about trademark research" (TASKS, 2026-10-29).
 
 ## 13 · Working method: models and sessions
 

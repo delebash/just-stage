@@ -112,8 +112,9 @@ NOTES from the chat (2026-10-29): CC5 + iClone 8 + the plugins is years of work 
         (§5) — never promised to match Reallusion's content library.
 
 STATE:  setup DONE 2026-10-29 — this repo and its docs, the global CLAUDE.md edit, the general memories copied
-        to the `E:\Dev\3D` project. The research is NOT STARTED: it runs in a session the user opens at
-        `E:\Dev\3D`, on the user's go there.
+        to the `E:\Dev\3D` project. The research is RUNNING since 2026-10-29 in the `E:\Dev\3D` session (recs
+        (1) and (2) below): 8 agents, each writing `docs/plans/2026-10-29-research-<subject>.md`; each lands in
+        RESEARCH.md as it arrives.
 
 NEXT:   the research → one complete rec list, every item researched and argued against, each piece marked
         standard (with its doc link) or NOT STANDARD → a fresh Fable session writes the synthesis and the
@@ -125,14 +126,25 @@ APPROVED 2026-10-29 — the user: "1 and 3 your rec go", then "3 go", then "foge
           way to do a job the kit already has is a bug.": ` In the 3D family (E:\Dev\3D) the table is the one
           JustStage's standards spec creates; until then there is none.` — DONE 2026-10-29 in
           `F:\ClaudeCode\config\CLAUDE.md`; the standards spec includes that table.
-MY RECS (shown 2026-10-29), waiting on the user's go in the `E:\Dev\3D` session:
+APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-stage research, recs 1 and 2 in
+        TASKS.md", then, after the USPTO half of (1) was done: "dont worry about trademark research or to much on
+        lincese research, i am more interested in getting the correct app design tools engine ect than leagal
+        stuff". The recs as shown:
         - (1) The trademark check first: before the research agents start, the research session searches USPTO and
           EUIPO for JUSTSTAGE / JUST STAGE in classes 9 and 42 and records the result in §12 — a database check,
           not legal clearance. (Was "before anything goes public"; moved up because the name is already in the
           folder, the memories and these docs, and a rename gets dearer every week.)
+          → USPTO DONE 2026-10-29 (RESEARCH §12). EUIPO not searched — dropped on the user's word above.
         - (2) The research: the user opens a session at `E:\Dev\3D` on Opus 5.5 at xhigh and says go there. One
           round of 8 agents — §2 CC5, §3 iClone, §4 references, §5 bases, §6 routes, §7 building blocks,
           §8 standards, §9 legal; the lead does §10 itself from the web kit's register and the JustDirect note.
           Each brief carries its section, the "don't re-derive" line, the questions and a done-when line. No
           second round of agents without the user's word; gaps after round one are filled by the lead with
           targeted lookups.
+          → RUNNING 2026-10-29, changed on the user's word above (my call on the how): no §9 agent — every agent
+            gives each product, library, model and asset set a one-line licence label (licence, commercial use
+            yes / conditional / no / unclear, link), no legal analysis; the freed slot goes to the engine
+            question, so §6 runs as two agents — (6a) existing engines and 3D apps as the base, (6b) our own
+            engine's parts and the layers every route needs (render libraries, editor UI toolkits, language per
+            layer, scripting and plugin embedding, AI-agent testing). Still 8 agents, Opus 5.5 at xhigh. The
+            lead still checks at its source every claim a recommendation depends on.
