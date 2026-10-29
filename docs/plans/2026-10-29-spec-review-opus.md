@@ -271,6 +271,66 @@ garment's tuck-under list and cloth settings, a lip-sync take's audio and phonem
 - Memory: Fable's rewrite of `just-stage-project.md` dropped "USPTO done, EUIPO dropped, no legal agent; Omniverse,
   paid-only, single-vendor core parts and Unity out; Unreal in" — restored with this review.
 
+## Second pass over these recs (2026-10-29, the user: "rethink on all your recs again just to make sure you dont change your mind")
+
+Every rec above was attacked again at its source (RESEARCH §5, §8, the re-check entries). Held and re-verified: 1
+(OpenRigLogic *evaluates* RBF and twist-swing — `src/riglogic/rbf/`, `joints/cpu/twistswing/` — with SWIG Python
+bindings for DNA and RigLogic), 2, 3, 4 (Blender 5.2 builds MaterialX 1.39.4 and its Principled BSDF export writes
+`open_pbr_surface`), 5 (Blender 5.2's manual has the hair node groups), 6, 8, 9, 10, 12, 14, 15, 16 (5.2's manual has
+remote asset libraries), 17, 18, 20. Changed:
+
+- **7 · Commands.** The MCP server runs in its own process and can't import the extension, so "one Python function
+  wrapped by both doors" can't hold literally. Blender Lab's own pattern, per tool: a FastMCP function with typed
+  arguments (MCP side) and a `<tool>_toolcode.py` with `Params`/`Result` `NamedTuple`s and `main(params)` run inside
+  Blender. **Rec:** follow it as-is — each command has its `Params`/`Result` and function in `juststage.api` (inside
+  Blender), a thin FastMCP tool of the same arguments (its JSON Schema is the command's schema, R19), and a thin
+  operator with matching properties for the UI; one test per command checks the three agree. No schema generator,
+  no hand-written schema files, no `last_result` scene property (results return over the socket, as Blender Lab's do).
+- **11 · glTF.** The glTF standard's own place for an application's data is `extras` ("Application-specific data",
+  Khronos schema), and Blender's glTF exporter writes custom properties there. A vendor extension is for data other
+  programs are meant to read; nobody but JustStage reads ours. **Rec:** JustStage data in glTF goes in `extras` under
+  one `juststage` key, written by the glTF exporter's hook; no Khronos prefix registration (the outward step goes).
+  The sidecar stays for FBX only.
+- **13 · R17** also says correctives go in "MetaHuman DNA and our own JSON schema". With item 1, body correctives are
+  DNA too, so the "own JSON schema" part goes — part of the same R17 change for the user's word.
+- **19 · PRD.** The reason given (`just-core/docs/app-structure.md` §13) is a web-family convention, and AGENTS.md says
+  the web family's rules don't apply here. The reason that stands is the global rule: a gap in an approved decision is
+  asked, never filled with my own choice. Rec unchanged.
+
+Added (missed by the first pass, or raised by the user during this one):
+
+- **21 · N3, HD detail sliders** (missed). Blender's multires modifier holds sculpted detail but can't hold sliders
+  above the base level (Daz-to-Blender users' finding); the existing Blender practice for Daz's HD morphs is a
+  tangent-space displacement map per morph (`edolstra/dhdm`, GPL-3.0, with a strength per morph); CC5 uses per-level
+  displacement maps. **Rec:** keep N3 as the spec writes it — one displacement map per HD slider, faded in by the
+  slider; only the live fade is ours; exports bake the faded result into one map per level. **Attack:** texture memory
+  per active HD slider on an 8 GB card — the gate measures it; a bake when the slider is released keeps one map live.
+- **22 · Creatures** (the user: "we need to create non human body as well like creatures just like cc5 allows"). The
+  spec covers importing one (a "foreign character" with its own skeleton, import step 2 — CC5's Creature); making one is
+  "later" in the scorecard, set by Fable without the user's word; the skeleton spec is human only. **Rec:** the data
+  model has two kinds of character from the start — human (our base, the UE5 skeleton, ARKit 52) and creature (any
+  mesh with its own skeleton; no face set, shape keys of its own); creatures are rigged from Rigify's creature metarigs
+  (basic quadruped, bird, cat, horse, shark, wolf), weighted with Blender's automatic weights, shaped by sculpting;
+  humanoid creatures (orcs, elves, aliens) stay human characters with sculpted sliders. USD, glTF and FBX carry any
+  skeleton; the Unreal plugin makes a skeleton asset per creature. Built in step 4 (rig) beside the human rig, since the
+  tools are the same. **Attack:** no open creature body with sliders exists (RESEARCH §5), so creatures start from a
+  sculpt or an import — as in CC5; human motions don't play on a creature without retargeting (Unreal's IK Rig does
+  that on the Unreal side). Changes R21's order and the scorecard — the user's word.
+- **23 · The fallback body** (the user: "if makehuman doesne work could you Custom / Clean Quad Base Mesh …"). **Rec:**
+  hm08 stays for the gate; if it fails on topology, the fallback is Blender Studio's Human Base Meshes (CC0, quads made
+  for subdividing, realistic bodies, UDIM UVs; no sliders, no rig), with MakeHuman's CC0 sliders moved onto it by
+  wrapping (CharMorph's "alternative topology" transfer as the code reference) and the clothes refitted. Sharing with
+  other programs depends on the formats, skeleton names and ARKit names, not on the mesh — no app shares a standard
+  human mesh. **Attack:** refitting every garment and re-placing joints is real work — which is why it is the
+  fallback, not the plan; Reallusion's free CC base is barred ("in any character generation system").
+
+Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
+7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
+interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);
+13 → TASKS (R17); 21 → character-data-model.md §1.4, import-export.md, parity-scorecard.md, README.md (N3 row);
+22 → import-export.md, parity-scorecard.md, README.md, skeleton-and-face.md, character-data-model.md, TASKS (R21);
+23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md.
+
 ## Blast radius (files that change on a go)
 
 | Item | Files |
