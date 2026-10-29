@@ -45,8 +45,12 @@ GO:     the user, verbatim (2026-10-29, the opening request): "i want to start w
           design cc5 has popcorn fx, but with ai we might just need character creation prop scene and camera
           managment then let ai create movie, this is just a thought we need to keep in mide, makesure all of
           this reaserch and ideas we chat about are saved" — the features in SCOPE and RESEARCH §2–§4, §7–§8;
-          the AI-movie thought in IDEAS.md and §10. OPEN: what "z-weave" is — nothing found under that name
-          (closest: GoZ, R3DS ZWrap); asked the user.
+          the AI-movie thought in IDEAS.md and §10. "z-weave" is Z-Emotion's Z-Weave (the next answer).
+        - "needs to be crossplatform the additions are fine if you recommend them and have thought adverserialy
+          about them, 3 it will be open source i prefer mit but if we have to use some components that are lgpl
+          ect then thats ok, dont limit the license yet but it will be open source. z-weave https://z-emotion.com/
+          https://z-emotion.com/z-weave snd it has cloth sim" — cross-platform and the licence in SCOPE; the
+          additions below approved; Z-Weave in RESEARCH §4.
 
 APPROVED RECS (verbatim as shown, 2026-10-29):
         - Method: "Use the deep-research skill: about 8 research agents running at once, one per area listed
@@ -80,7 +84,26 @@ SCOPE:  the subjects of [`RESEARCH.md`](RESEARCH.md) §2–§10 — CC5 in depth
         two (the user's lean above); JustDirect inside JustStage or beside it. Features the user named
         2026-10-29: sculpting at ZBrush's level, making clothes (Marvelous Designer, MetaTailor), making props,
         the pipeline out to Unreal Engine and other software as CC5 has, and FX (PopcornFX in iClone) — FX may
-        come later, but every later feature gets its place in the first design.
+        come later, but every later feature gets its place in the first design. Cross-platform: Windows, macOS
+        and Linux. Licence: open source, MIT preferred, LGPL-type components acceptable, not limited yet — the
+        research shows what licence each route would need.
+
+ADDITIONS (shown 2026-10-29, approved — "the additions are fine if you recommend them and have thought
+        adverserialy about them"); each folds into an existing subject, no new agent, to keep the one round:
+        - Routes (§6): platforms and graphics APIs (Windows, macOS, Linux; DirectX 12, Vulkan, Metal); editor
+          UI toolkits (Qt, Dear ImGui, egui, Avalonia, WPF, Slint); more engine candidates (NVIDIA Omniverse
+          Kit; Wicked Engine and The Forge as bases for our own engine); how AI agents test a 3D app (a
+          headless mode, image snapshots, a control channel).
+        - Building blocks (§7): a path tracer beside the real-time viewport; hair grooming tools; live mocap
+          streams (Live Link, VMC, OSC; iPhone, Rokoko, Xsens, webcams); open motion and asset libraries and
+          their licences (CMU mocap, AMASS, LAFAN1, Poly Haven, Mixamo's terms).
+        - Feature references (§4): mocap apps (Rokoko Studio, Move.ai, DeepMotion, Plask); AI-film references
+          (Autodesk Flow Studio, formerly Wonder Studio; ArtCraft); Blender's own character tools (Rigify,
+          hair curves).
+        - Standards (§8): the asset library (how characters, clothes, props and motions are stored, tagged and
+          shared); importing existing characters from CC, Daz, MetaHuman and VRM — what's allowed and how.
+        - Legal (§9): JustStage's own licence per route; whether Blender treats add-ons that use its Python API
+          as GPL.
 
 NOTES from the chat (2026-10-29): CC5 + iClone 8 + the plugins is years of work for a large team, so delivery
         is phased and tracked with a parity scorecard; the research sets the phase order. Assets are made

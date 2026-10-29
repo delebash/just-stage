@@ -48,8 +48,8 @@ characters, scenes and animation to Unreal Engine and other software.
   clothed, keeping its own clothing as separate parts (cgchannel.com/2025/04/character-creator-gets-new-metatailor-plugin/).
 
 Leads from the chat, not checked — names to confirm in the inventory: Headshot, SkinGen, Hair Builder,
-Smart Gallery, Transformer, InstaLOD, Auto Setup for Unreal/Unity/Blender, Unreal Live Link. Unknown:
-"z-weave" (the user's word) — nothing found under that name; closest are GoZ and R3DS ZWrap; asked the user.
+Smart Gallery, Transformer, InstaLOD, Auto Setup for Unreal/Unity/Blender, Unreal Live Link. "z-weave",
+from the user's list, is Z-Emotion's Z-Weave, a separate clothing design tool (§4); no link to CC found.
 
 ## 3 · iClone 8 and its plugins
 
@@ -89,6 +89,23 @@ not checked):
 - MetaTailor (Hologress) is a Unity-based tool that fits third-party garments to humanoid avatars,
   handling layering and skin weights itself; sculpt brushes refine the fit; it exports FBX. 2.0 added
   clothing physics and an asset marketplace; 2.5 took its Unity and UE5 bridge plugins out of beta.
+
+Added 2026-10-29: Z-Weave (clothing, with cloth simulation); mocap apps — Rokoko Studio, Move.ai,
+DeepMotion, Plask; AI-film references for the AI-movie idea — Autodesk Flow Studio (formerly Wonder
+Studio), ArtCraft; Blender's own character tools — Rigify, hair curves.
+
+*web, 2026-10-29* — z-emotion.com/z-weave (page summary), plus search-result summaries (businesswire.com
+2021-04-01 launch; Pi Europe 2025 exhibitor listings):
+
+- Z-Weave (Z-Emotion) is "3D clothing design tool for fashion designers, game studios and content
+  creators": 2D patterns placed and sewn in 3D on a default avatar, with real-time cloth simulation.
+- Free tier: DXF/OBJ/FBX import; DXF/OBJ/FBX/glTF/glb export. Pro ($40/month): its own format, animation
+  export (FBX+mc, Alembic, USD), fashion grading and colorways. Enterprise: custom.
+- Its own formats: rozy (2D patterns with 3D placement, sewing, textures), zbp (body parameters), zpose,
+  zcam. Plugins: z-maya (garments and simulation into Maya) and z-unreal (ML-based cloth simulation in
+  Unreal).
+- Founder Dongsoo Han, a former AMD graphics researcher whose hair simulation work became TressFX.
+- No integration with CC, iClone or Reallusion found.
 
 ## 5 · Existing bases to build on
 
@@ -136,6 +153,13 @@ tools, GPL for Blender); a Python and C++/Rust API and plugins; clean export int
 Blender; performance on §1's machine; how much of the CC5 and iClone feature list it gives for free. The
 route and the language mostly decide each other, so they are compared as pairs.
 
+Added 2026-10-29: JustStage must be cross-platform — Windows, macOS and Linux (the user) — so each route
+is scored on its graphics APIs (DirectX 12, Vulkan, Metal) too. Also: editor UI toolkits (Qt, Dear ImGui,
+egui, Avalonia, WPF, Slint); more engine candidates (NVIDIA Omniverse Kit; Wicked Engine and The Forge as
+bases for our own engine); how AI agents test a 3D app (a headless mode, image snapshots, a control
+channel) — every family app is built by AI, so this is scored for every route; and the licence each route
+would force on JustStage (§9).
+
 ## 7 · Building blocks
 
 Not researched yet. Skin and hair rendering, blendshapes, cloth and hair simulation, auto-rigging,
@@ -147,6 +171,11 @@ Leads, not checked: face capture with MediaPipe or ARKit (Live Link Face); lip-s
 Audio2Face or Rhubarb; video mocap with FreeMoCap, WHAM or GVHMR; motion generation (MoMask); auto-rigging
 with UniRig; image-to-3D with Hunyuan3D or TRELLIS; physics with Jolt, PhysX or XPBD cloth; FBX reading
 with ufbx.
+
+Added 2026-10-29: a path tracer beside the real-time viewport for final renders; hair grooming tools;
+live mocap streams (Live Link, VMC, OSC) and devices (iPhone, Rokoko, Xsens, webcams); open motion and
+asset libraries and their licences (CMU mocap, AMASS, LAFAN1, Poly Haven, Mixamo's terms) for a built-in
+motion and content library.
 
 ## 8 · Standards
 
@@ -170,6 +199,9 @@ Candidates from the chat, not checked:
 - The file format adds fields so older files still load (§11).
 - A parity scorecard against CC5 and iClone, feature by feature, with a floor that only rises (§11).
 - The jobs table ("one way per job"): the standards spec creates it (TASKS).
+- Added 2026-10-29: the asset library (how characters, clothes, props and motions are stored, tagged and
+  shared — what CC's Smart Gallery and content store do); importing existing characters from CC, Daz,
+  MetaHuman and VRM — what's allowed (§9) and how.
 
 ## 9 · Legal
 
@@ -177,6 +209,11 @@ Not researched yet. Trademarks — never "Character Creator", "iClone" or "Reall
 JustStage trademark check (TASKS). Reallusion's EULA on their file formats, their content-store terms,
 the licence of every candidate (code and assets apart). Clean-room: behaviour and public docs only
 (`AGENTS.md`).
+
+JustStage's own licence (the user, 2026-10-29): open source, MIT preferred, LGPL-type components
+acceptable, not limited yet. For each route the research states the licence it would force on JustStage,
+including whether Blender treats add-ons that use its Python API as GPL. The family apps checked are MIT
+(`just-house-paint/LICENSE`, `justwrite-app/LICENSE` — *code, 2026-10-29*).
 
 ## 10 · Fit: the web kit's engines, JustDirect, one app or two
 
