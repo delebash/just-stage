@@ -112,11 +112,11 @@ NOTES from the chat (2026-10-29): CC5 + iClone 8 + the plugins is years of work 
         (§5) — never promised to match Reallusion's content library.
 
 STATE:  setup DONE 2026-10-29 — this repo and its docs, the global CLAUDE.md edit, the general memories copied
-        to the `E:\Dev\3D` project. The research is RUNNING since 2026-10-29 in the `E:\Dev\3D` session (recs
-        (1) and (2) below): 8 agents, each writing `docs/plans/2026-10-29-research-<subject>.md`; each lands in
-        RESEARCH.md as it arrives.
+        to the `E:\Dev\3D` project. Research round one DONE 2026-10-29 (8 agents, `docs/plans/2026-10-29-research-*.md`,
+        distilled into RESEARCH.md); the second pass is WAITING on the user to open its eight sessions (below).
 
-NEXT:   the research → one complete rec list, every item researched and argued against, each piece marked
+NEXT:   the second pass (eight sessions, `docs/plans/2026-10-29-research-second-pass.md`) → the lead distills it →
+        one complete rec list, every item researched and argued against, each piece marked
         standard (with its doc link) or NOT STANDARD → a fresh Fable session writes the synthesis and the
         standards spec → the user approves → code.
 
@@ -170,3 +170,20 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
           → checked at Unity's own pages (RESEARCH §6): Unity Personal ends at $200K of revenue plus funding a year,
             then $2,310 per seat per year — far smaller than Unreal's tier, so by the user's test **Unity is OUT**;
             **Unreal is IN** as a full candidate. Sent to the §6a agent.
+        - Round one DONE 2026-10-29: all 8 notes in `docs/plans/2026-10-29-research-*.md`, distilled into RESEARCH
+          §2–§8 (commits c2d88e3, a6c966a). The session's 200 WebSearch calls ran out partway, so each notes file has
+          a "Couldn't verify / open" list.
+        - Then, verbatim: "can i open a new session and get around that limit?", "i dont want to search to be
+          truncated and give us limited data". My rec shown: (1) let the two running agents finish; (2) save round
+          one and write one gap list, area by area; (3) find out how the cap works from Claude Code's docs; (4) a
+          second pass in fresh sessions, sized to the budget — the rec list waits until every gap is closed or
+          marked not findable. The user: "your rec go", then "once you verify how it works if each session has new
+          limit then we open 1 session per agent".
+          → (1)–(3) DONE 2026-10-29. The cap (RESEARCH §13, Claude Code's docs, verified): 200 per interactive
+            conversation, shared with subagents; refills ~100 an hour; a new conversation or `/clear` resets it;
+            `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises it. So (4) is one session per area: the eight briefs,
+            the shared rules and the launch line are in
+            [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md) — S1 CC5,
+            S2 iClone, S3 references, S4 bases, S5 engine routes, S6 own engine and layers, S7 building blocks,
+            S8 standards. Each session researches itself (no subagents), writes its own `-pass2.md` and commits
+            only that file; the lead distills all eight at once. WAITING on the user to open the sessions.

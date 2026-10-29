@@ -671,5 +671,8 @@ service from this session, every class, live and dead; the query was proven firs
   a new conversation or `/clear` resets the count, unless work that can still spawn subagents survives the
   clear; with `-p` and the Agent SDK it counts per turn. At the cap, searches return a notice to carry on
   with what was gathered. Round one's 8 agents ran it out (each notes file says so).
+- So the second pass runs one session per area, each with its own 200:
+  [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md) (the user's
+  word, TASKS).
 - WebFetch reads up to 100,000 characters a call and caches 15 minutes; 20 subagents can run at once by
   default (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`), with no total limit — *agent, 2026-10-29* (the same docs).
