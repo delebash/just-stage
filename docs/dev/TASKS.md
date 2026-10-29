@@ -158,3 +158,10 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
             decides (asked 2026-10-29); the saved effort goes into the open-source candidates. CC5, iClone and
             the reference apps stay in §2–§4 — they are studied for features, not built on (my reading). A
             second pass, if needed, runs after round one's results, on its gaps.
+        - Then, verbatim, on the question about free-but-closed options: "unreal may be ok as it does have generous
+          free tier, not sure about unity"
+          → sent to the agents: Unreal, Unity and Flax back as full candidates in §6a, each with its terms in plain
+            lines (the free tier and its revenue line, royalties or seat fees after it including non-game uses,
+            what may be redistributed, whether an open-source app can ship on it); the FBX SDK, Mixamo and other
+            free-but-closed parts back to normal labelled rows. Omniverse and paid-only products stay out. Unreal
+            and Unity are decided by the user at the rec list, on those facts.
