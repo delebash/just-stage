@@ -251,3 +251,7 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
           → S10 RUNNING 2026-10-29 (second-pass file, section S10); the requirement is in SCOPE. Then, verbatim: "not
           just mesh skin eys, i mean all of the character realism hair the whole human", "like teeth lips" → the bar
           covers the whole human; S10's brief widened and sent to the running agent.
+        - Then, verbatim, on the Reallusion terms S9 found (RESEARCH §8): "it will be ok to import cc model if unreal can
+          do it we can" → DECIDED: JustStage imports characters users export from CC5, as Unreal and Blender do.
+          Using CC's base mesh as the base JustStage generates characters from stays out — the clean-room rule
+          (`AGENTS.md`) and CC's base-model clause both bar it.
