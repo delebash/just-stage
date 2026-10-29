@@ -640,8 +640,10 @@ motion and content library.
   Meshcapade). SAM 3D Body outputs MHR from one photo; Momentum adds FK/IK and body-tracking solvers.
 - FLAME 2023 Open is CC-BY-4.0; FLAME 2017–2023 are non-commercial.
 - MPFB2's CC0 assets include clothes in the MHCLO fitting format, rigs, poses and expressions (§5).
-- FBX: ufbx (MIT or public domain) reads it, and Blender 5.x's C++ FBX importer uses it, but there is no
-  writer; writing needs Autodesk's free closed FBX SDK (EULA not read) or Assimp's exporter (BSD-3).
+- FBX: ufbx (MIT or public domain) reads it, and Blender 5.x's C++ FBX importer uses it. Writing: ufbx's own
+  `ufbx-write` (MIT or Unlicense, "still a work-in-progress" — *web*, its README, 2026-10-29), Assimp's FBX exporter
+  (BSD-3, "experimental"), or Autodesk's free closed FBX SDK (was: "there is no writer" in ufbx until 2026-10-29 —
+  S8's second pass, §8).
 - Cycles builds standalone or as a Hydra render delegate on CPU, CUDA, OptiX, HIP, Metal and oneAPI — the
   embeddable cross-vendor path tracer.
 - Webcam face: MediaPipe Face Landmarker (Apache-2.0) — 52 blendshape scores, 478 landmarks. Live mocap
@@ -651,13 +653,15 @@ motion and content library.
   allowed) and fits 8 GB, but needs CUDA/TensorRT — NVIDIA only, so an optional part.
 - Image-to-3D on 8 GB: Hunyuan3D-2 shape (6 GB; its licence excludes the EU, UK and South Korea), TripoSR (6
   GB, MIT), TripoSG and PartCrafter (≥ 8 GB, MIT). TRELLIS (16 GB) and TRELLIS.2 (24 GB) don't fit.
-- Auto-rigging: UniRig (MIT, ≥ 8 GB), SkinTokens/TokenRig (MIT, 14 GB) — both CUDA.
+- Auto-rigging: UniRig (MIT, ≥ 8 GB), SkinTokens/TokenRig (MIT, 14 GB on CUDA); SkinTokens also runs on CPU or
+  Vulkan through the GGML port `skin-tokens.cpp` (was: "both CUDA" until 2026-10-29 — §5's second pass).
 - Text-to-motion: HY-Motion 1.0 needs 24–26 GB (its licence excludes the EU, UK and South Korea); MoMask, MDM
   and T2M-GPT are MIT/Apache code trained on HumanML3D, which comes from AMASS (non-commercial, and it forbids
   training models for commercial use).
 - No open equivalent found for: Marvelous Designer (pattern-and-sew garments), MetaTailor (fitting any
-  garment to any body), Cascadeur's physics tools, a ZBrush-class sculpt library, a texture baker, an FBX
-  writer; and no cross-vendor GPU garment-cloth library.
+  garment to any body), Cascadeur's physics tools, a ZBrush-class sculpt library, a texture baker; and no
+  cross-vendor GPU garment-cloth library (was: "… a texture baker, an FBX writer" until 2026-10-29 — open FBX
+  writers exist, above). S7's second pass searches these again.
 - Open: the VRAM of many models is unstated; GPU-vendor support of most PyTorch models beyond "CUDA"; CMU
   mocap's terms; Blender's dyntopo and hair tools not checked; several licences unresolved.
 
@@ -729,7 +733,33 @@ Candidates from the chat, not checked:
 - Blender 5.2 LTS remote asset libraries are plain static HTTP: JSON listings, previews, one .blend per asset.
 - Open: Blender's docs refused scripted access (operators, undo internals, asset metadata, USD skeleton import,
   Rigify bones); not reached — gRPC, Live Link, the HumanIK and Mixamo bone lists, the UE5 Mannequin bones,
-  MetaHuman's control counts, CC's Smart Gallery, Fab; no open cloth standard and no open FBX writer found.
+  MetaHuman's control counts, CC's Smart Gallery, Fab; no open cloth standard found (was: "… and no open FBX
+  writer found" until 2026-10-29 — below).
+
+Second pass done 2026-10-29: [`../plans/2026-10-29-research-08-standards-pass2.md`](../plans/2026-10-29-research-08-standards-pass2.md).
+
+*web, 2026-10-29* — re-checked by this session (GitHub's API and the README): `ufbx/ufbx-write` is a "Single
+source file FBX exporter", MIT or Unlicense, "still a work-in-progress, and issues/breaking changes are to be
+expected"; created 2025-06-22, last push 2026-06-20, 21 stars.
+
+*agent, 2026-10-29* — S8's pass 2, sources per fact there:
+
+- FBX export without Autodesk's SDK: ufbx-write and Assimp's FBX exporter (BSD-style, "experimental") both write
+  FBX 7.5 with skins and blend shapes; neither has been tested against Unreal, Unity or Maya.
+- MCP: the spec's changelog confirms `initialize` and sessions are removed and `server/discover` is required.
+  Unity now ships a first-party MCP server.
+- USD and characters: an AOUSD character interest group was chartered 2026-03-02 (it may not publish schemas;
+  review March 2027); a cloth-and-hair physics proposal (OpenUSD PR #111) is open; OpenExec added experimental rig
+  schemas in 26.08; UsdSkel blend shapes do carry `normalOffsets`.
+- Blender, from its manual and code sources: one typed undo stack, general edits as deduplicated snapshots;
+  extension permissions are not enforced; no asset versions; the default (ufbx-based) FBX importer dropped the
+  axis and bone options.
+- Export targets: Unity's and Unreal's axes confirmed on their docs pages; VRM 1.0 defines no bone local axes.
+- MetaHuman terms, both readings dated: Epic 2025-06-03, "any engine"; the DNA Calibration licence (Unreal and
+  Twinmotion only) dates from 2022 and was never updated — the user decides.
+- Open: no primary public UE5 Mannequin bone list (count 89 only); MetaHuman control counts aren't public (LOD0:
+  713 joints, 669 blend shapes); refused, not worked around — the Mixamo help page, the Fab EULA, metahuman.com,
+  two Epic licence pages; no benchmark of WebAssembly copy cost on large meshes (to measure on our data).
 
 ## 9 · Legal
 
