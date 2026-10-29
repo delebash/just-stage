@@ -437,6 +437,24 @@ A fourth angle — this pass's own claims, each re-read at its source above — 
   result baked into each animation as morph-weight curves. CC5 has no body joint correctives to send — a top user
   complaint (§2, round one) — only face correctives (HD: 262 + 128) as blend shapes.
 
+- **16 · REVERSED: build on Blender 5.3** (the user: "why not build on better blender? tjhat is waht i downloaded for
+  you to test on, it will probe be production soon", then "why do you think i donwloaded beta for you to use, i did not
+  do it for my health you made bad decisiion again"). The user installed 5.3 so JustStage is built and tested on it.
+  Facts (Blender's developer docs repo): 5.3 is "in **Beta** until November 4, 2026"; "A new Blender version is
+  targeted to be released every 4 months"; an LTS gets "bug fixes throughout a 2-year time span", a regular release a
+  corrective release only "if high severity bugs are found". 5.3 adds, for this plan: online asset libraries with
+  access tokens and extension integration, and per-version replacement assets (`my_asset@b5_3.blend`) — Fable's
+  starter-library design works as written; Alembic export of arbitrary mesh, curve and point attributes and curve
+  velocities — Unreal's groom attributes (item 5) without our own exporter; Multires sculpting that shows textures and
+  attributes (item 21); project asset libraries and custom splash artwork; read-only access to the undo stack; GPU
+  storage buffers. **Rec:** develop and test on the 5.3 beta now, 5.3 final from November 4; JustStage's installer
+  bundles the newest Blender release (item 24) and moves to each new one after our tests pass on it. R1's "5.2 LTS
+  onward" becomes "5.3 onward". **Attack:** a regular release gets fixes only for severe bugs and is replaced in about
+  four months, so we commit to one update round per Blender release, checked by the test suite (R16); the Python API
+  changes between releases (5.3's notes list compatibility changes) — the tests catch them. Users never choose a
+  version, since it ships inside JustStage. Was: "stay on 5.2 LTS" (second pass), wrong — it ignored why the user
+  installed 5.3.
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);

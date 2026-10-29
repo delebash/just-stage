@@ -211,6 +211,12 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           skingen or is this just built into the app, i like the modular design idea, what do you think?" → review
           item 27; "1 you say game enine cant carry so they are baked is this how cc5 works?" → item 1's wording
           corrected (review file).
+        - Then, verbatim: "why not build on better blender? tjhat is waht i downloaded for you to test on, it will probe
+          be production soon"; "why do you think i donwloaded beta for you to use, i did not do it for my health you
+          made bad decisiion again" → review item 16 REVERSED: build and test on Blender 5.3 (beta now, final
+          2026-11-04), move with each new release; R1's floor "5.2 LTS onward" → "5.3 onward", on the user's word.
+          Still in force: "dont run just now anothe session is using memory" — Blender is run only once the user says
+          the memory is free.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

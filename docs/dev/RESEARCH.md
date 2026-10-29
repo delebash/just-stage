@@ -1158,6 +1158,16 @@ core features"), at Blender 5.2's sources:
   extension's module name is `bl_ext.{repository_module_name}.<id>` (manual `advanced/extensions/addons.rst`, 5.2).
   The System repository is added as name "System", module "system" (`BKE_preferences_extension_repo_add_default_system`,
   `source/blender/blenkernel/intern/preferences.cc`, 5.2).
+- Blender's release rhythm (`blender/blender-developer-docs`, `docs/handbook/release_process/release_cycle.md`,
+  `lts.md`): "A new Blender version is targeted to be released every 4 months"; an LTS "will provide bug fixes
+  throughout a 2-year time span"; "for non-LTS releases, Blender only has a corrective release if high severity bugs
+  are found". 5.3: "currently in **Beta** until November 4, 2026" (`docs/release_notes/5.3/index.md`). 5.3 notes, for
+  JustStage: assets — online-library access tokens, extension integration, per-version replacement files
+  (`my_asset@b5_3.blend` beside `my_asset.blend`); Alembic — "Arbitrary attributes on meshes, curves, and pointclouds,
+  are now exported", curve velocities, subdivision parameters; USD — normals written in Blender's own representation,
+  Matrix4d primvars, Gaussian-splat import; sculpt — textures and generic attributes shown on Multires meshes in Sculpt
+  Mode; core — projects with project asset libraries and custom splash artwork; Python — read-only undo-stack access,
+  `UILayout.label_multiline()`, `gpu.types.GPUStorageBuf`; EEVEE — light-evaluation shader nodes, panoramic cameras.
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:
