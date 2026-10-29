@@ -237,6 +237,30 @@ Not researched yet. Questions from the chat:
 The shared web stack's facts (llama.cpp, stable-diffusion.cpp, audio.cpp, the
 memory arbiter) are in `E:\Dev\Web\just-core\docs\dev\RESEARCH.md` — read them there, don't copy them.
 
+*record, 2026-10-29* — read by this session from the web kit's register (`just-core/docs/dev/RESEARCH.md` §2
+"stable-diffusion.cpp video on this PC", §11 "Long server jobs"), its `docs/app-structure.md` (§Q.3 and the jobs
+table) and `just-core/docs/plans/2026-10-24-just-direct-feasibility.md` (§A, §D). Pointers, not copies:
+
+- The kit's engines are separate local programs that the kit's Node server installs, starts and books memory
+  for: llama-server (llama.cpp), sd-server (stable-diffusion.cpp — image and video as HTTP jobs) and audio.cpp
+  (a run of CLI processes for the voice swap) — `runner/runtimes.js` `RUNTIMES` + `runner/runtime_service.js`
+  `RuntimeService`. A family app's server also runs headless, on its own launcher (§Q.3). So a non-web app
+  can reach the engines in two ways: call a family server over local HTTP, or start the same engine programs
+  itself — which would be a second way to do a job the kit already does.
+- On §1's 8 GB card, a local video clip (LTX-2.3 22B Q4, 1280×704 × 121 frames) is a 410–419 s job that peaks at
+  7.3 GB on the card and 23.3 GB of private RAM, and needs a fresh sd-server per clip — so a live 3D viewport
+  and local video generation can't hold the card at the same time; video is a queued job.
+- Two apps sharing the card agree on it by Claude messages today; the kit's `EngineBusyError` covers one app
+  only (kit register §11, 2026-10-28).
+- The JustDirect answer (feasibility §D, 2026-10-24/27): buildable on the kit; images, voice, music, the LLM,
+  a 3D stage and the editor run well on this PC; video is a queue, not interactive; "Unreal: no integration" —
+  glTF in and out instead, since Unreal beside a video model on one 8 GB card isn't possible.
+- ArtCraft's 3D stage — the part of JustDirect that overlaps JustStage — is Three.js 0.171 run locally:
+  GLB/glTF, PMX, Gaussian splats, a camera controller, a timeline, snapshots, a posed mannequin guiding the
+  final character (feasibility §A). That is a small subset of JustStage's scene and animation workspace.
+
+The assessment of this section (one app or two; JustDirect inside or beside) waits for §2, §3 and §6.
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
