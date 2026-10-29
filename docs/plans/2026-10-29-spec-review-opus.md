@@ -390,6 +390,25 @@ A fourth angle — this pass's own claims, each re-read at its source above — 
   jobs while JustStage lowers its own load (spec §4); MediaPipe has no Intel-Mac wheel, so webcam capture is labelled
   unavailable there. Standard: our own kit code (R14) and MediaPipe as BlendArMocap uses it.
 
+- **26 · Motion capture** (the user: "we want features like unreal has where you can do mocap face with iphone and
+  other motion capture stuff unreal just added new motion caputre stuff in the last few releases"). Unreal's recent
+  additions (Epic's MetaHuman release notes and docs): 5.7 — real-time facial animation through Live Link Face on iPad
+  and Android, up to 60 fps on top devices; 5.8 — the experimental MetaHuman Animator Markerless Motion Capture plugin
+  (body, or body and face, from one camera — webcams and phones; an offline solve; Fab; body Windows-only; needs Live
+  Link Hub and Capture Manager), MetaHuman Animator's face side on Linux and macOS, a batch API. **Rec:** (a) now, per
+  R13, mocap happens in Unreal on our characters through the plugin — Live Link Face, MetaHuman Animator and Live Link
+  devices — which works because our faces carry ARKit's 52 names, and with item 10's MetaHuman names MetaHuman
+  Animator's own output drives them too; (b) inside JustStage, live capture runs in Blender (item 25's exception) with
+  three doors: phone face from Live Link Face's stream, the way the open receiver `shun126/livelinkface_arkit_receiver`
+  does it (GPL-3.0, pushed 2026-09-15 — its code is reusable in our GPL extension); webcam face and body with MediaPipe
+  (R18); every other device and app through the VMC protocol (MIT spec, OSC over UDP, pushed 2026-10-09 — SlimeVR, XR
+  Animator, VSeeFace, Waidayo send it); recorded takes come in as files (BVH and FBX, and Live Link Face's CSV) and are
+  recorded as Blender actions. Built with the Animate workspace (R21's "later"), except R18's webcam face preview.
+  Video-to-motion inside JustStage is an AI feature under item 25 for when the Animate workspace is planned — not in
+  this item. **Attack:** Epic doesn't publish Live Link Face's network format — the open receivers decoded it, so an
+  app update could break it; VMC is the published door beside it. MetaHuman Animator stays Unreal-only. MediaPipe has
+  no Intel-Mac wheel (item 25). Standard: Unreal's own tools (R13), an existing open receiver, MediaPipe, the VMC spec.
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);
@@ -397,6 +416,7 @@ interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md
 22 → import-export.md, parity-scorecard.md, README.md, skeleton-and-face.md, character-data-model.md, TASKS (R21);
 23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md; 24 → plugins.md §5, ai-engines.md, commands-and-api.md, README.md (layout),
 25 → ai-engines.md, README.md (the one-way table), skeleton-and-face.md (capture); IDEAS.md (described person);
+26 → animation-and-later-features.md, import-export.md (Unreal mocap, takes), skeleton-and-face.md;
 testing.md (a launcher test), dev/PRD.md, dev/ARCHITECTURE.md §1.
 
 ## Blast radius (files that change on a go)

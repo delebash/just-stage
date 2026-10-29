@@ -203,6 +203,10 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           more"; "well we dont have to do it now but i want user to be able to descibe a person and the app creates
           that person mesh, or creates stuff like that that" → review item 25 (one way to add AI features) and an
           IDEAS.md entry (describe a person, get the character — not scheduled).
+        - Then, verbatim: "we want features like unreal has where you can do mocap face with iphone and other motion
+          capture stuff unreal just added new motion caputre stuff in the last few releases" → review item 26 (motion
+          capture: in Unreal now per R13; live capture doors inside JustStage with the Animate workspace). The
+          complete list, 1–26, WAITS on the user's word, item by item.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal

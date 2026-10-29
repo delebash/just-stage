@@ -1142,6 +1142,17 @@ core features"), at Blender 5.2's sources:
   wheels `py3` for win_amd64, win_arm64, macosx_11_0_arm64, manylinux_2_28 x86_64 and aarch64 — no Intel-Mac wheel.
   BlendArMocap (cgtinker, GPL-3.0, pushed 2025-12-01): "Run Mediapipe within Blender to detect pose, hand, face or
   holistic features", dependencies installed from its preferences.
+- Mocap (review item 26), from Epic's MetaHuman docs via search: 5.7 release notes — real-time animation "from an
+  external camera using Live Link Face on iPad or Android", "60FPS on top end devices"; 5.8 — the experimental
+  "MetaHuman Animator Markerless Motion Capture" plugin captures "body, or both body and face performance, from a
+  single camera", works with "webcams and supported smartphones", an offline solve, on Fab, body capture Windows-only,
+  needs Live Link Hub and Capture Manager; MetaHuman Animator's facial side on Linux and macOS; a batch-processing API
+  (dev.epicgames.com MetaHuman 5.7 and 5.8 release notes, "metahuman-animation-from-mono-video-capture"). Blender
+  receivers for Live Link Face: `shun126/livelinkface_arkit_receiver` (GPL-3.0, pushed 2026-09-15, 89 stars),
+  `nmfisher/blender_livelinkface` (MIT, 2024-03; a paid tier records) — Epic publishes no network format for the app.
+  The VMC protocol repo `sh-akira/VirtualMotionCaptureProtocol`: MIT, pushed 2026-10-09. XR Animator
+  (`ButzYung/SystemAnimatorOnline`, "AI-based Full Body Motion Capture", pushed 2026-10-17; no licence detected by
+  GitHub).
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:
