@@ -14,6 +14,11 @@ yet. The research comes first, then the standards spec, then code (`docs/dev/TAS
   "Character Creator", "iClone" or "Reallusion".
 - **Standards before code.** The data model, the command API, the plugin contract and the file format
   are specified and approved before any code is written.
+- **A fork is brought up to date before we work on it.** Before any work on a fork this app keeps,
+  merge its upstream into our branch, build it, and test the merged build in this app on its real data
+  — then start the work. (The user, 2026-10-29, for every app's forks: "before we do any work on audio
+  cpp nextime we should update the fork and test it in our app … this should be true for any forks for
+  futre apps that we may use".)
 - **Decisions and facts are written down as they happen.** A decision goes into `docs/dev/TASKS.md` as
   the exact text the user approved; a researched fact goes into `docs/dev/RESEARCH.md` in the same change.
 
