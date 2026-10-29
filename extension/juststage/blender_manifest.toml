@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2026 JustStage contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+schema_version = "1.0.0"
+
+id = "juststage"
+version = "0.1.0"
+name = "JustStage"
+tagline = "Characters, scenes, animation"
+maintainer = "JustStage contributors"
+type = "add-on"
+
+website = "https://github.com/delebash/just-stage"
+tags = ["Character", "Rigging", "Modeling"]
+
+blender_version_min = "5.3.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+copyright = ["2026 JustStage contributors"]

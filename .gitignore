@@ -1,1 +1,14 @@
 .claude/settings.local.json
+
+# the dev run's own Blender folders, test dependencies and outputs (tools/dev.py)
+.dev/
+
+# data fetched at a pinned commit by tools/fetch_data.py (MakeHuman's CC0 assets, …)
+extension/juststage/data/fetched/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+build/
+dist/

@@ -1,0 +1,15 @@
+version = 1
+
+# The repo carries more than one licence (R2): the add-on and its template are GPL-3.0-or-later (Blender's rule for
+# add-ons), the libraries and the Unreal plugin MIT, fetched data under its own licence. Source files carry SPDX
+# headers; this file covers what can't.
+
+[[annotations]]
+path = ["docs/**", "AGENTS.md", "CLAUDE.md", ".gitignore", "REUSE.toml"]
+SPDX-FileCopyrightText = "2026 JustStage contributors"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ["extension/juststage/data/fetched/makehuman/**"]
+SPDX-FileCopyrightText = "MakeHuman Community (MPFB2 assets)"
+SPDX-License-Identifier = "CC0-1.0"

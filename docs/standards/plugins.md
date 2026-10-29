@@ -101,8 +101,8 @@ built even thought it is using blender core features".
   (Blender 5.3 beta's folder is 956 MB).
 - **A JustStage launcher** (our name and icon in the Start menu, Dock or app list) starts Blender with
   `--app-template juststage` and environment variables pointing at JustStage's own folders: `BLENDER_USER_RESOURCES`
-  (its own preferences and user extensions, apart from any Blender the user has), `BLENDER_SYSTEM_EXTENSIONS` (the
-  System repository holding `juststage` and Blender Lab's add-on, pre-installed — system repositories "are managed
+  (its own preferences and user extensions, apart from any Blender the user has), `BLENDER_SYSTEM_EXTENSIONS` (whose
+  `system` folder is the System repository — measured on 5.3 — holding `juststage` and Blender Lab's add-on, pre-installed — system repositories "are managed
   outside of Blender and are considered read-only"), `BLENDER_SYSTEM_SCRIPTS` (where the template sits, under
   `startup/bl_app_templates_system/` — `bpy.utils.app_template_paths`). Blender's own files are not touched. Every
   flag, variable and path above is in the 5.3 manual and on disk (§8).

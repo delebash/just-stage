@@ -1204,6 +1204,12 @@ core features"), at Blender 5.2's sources:
   appends " - <project name>" when a Blender project is active, then " — Blender <version>"
   (`wm_window_title_project_append`, `wm_window.cc`). On disk: `blender.exe`, `blender-launcher.exe`, `python313.dll`;
   system app templates 2D_Animation, Sculpting, Storyboarding, VFX, Video_Editing.
+- Measured on the installed 5.3 beta, headless (2026-10-29): with `BLENDER_USER_RESOURCES`, `BLENDER_SYSTEM_EXTENSIONS`
+  and `BLENDER_SYSTEM_SCRIPTS` set, the repositories are `blender_org` and `user_default` under the user folder's
+  `extensions/`, and **System (`system`, source SYSTEM) at `<BLENDER_SYSTEM_EXTENSIONS>\system`**; an extension placed
+  there loads as `bl_ext.system.<id>` (JustStage's foundation tests, `tools/dev.py test`); an app template under
+  `<BLENDER_SYSTEM_SCRIPTS>/startup/bl_app_templates_system/` is listed by `bpy.utils.app_template_paths()`; Blender's
+  bundled Python 3.13.13 has pip 26.2.2.
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:

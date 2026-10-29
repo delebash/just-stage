@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 JustStage contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[project]
+name = "juststage"
+version = "0.1.0"
+description = "JustStage — characters, scenes, animation: a free character creator on Blender"
+requires-python = ">=3.12"
+license = "GPL-3.0-or-later"
+
+[tool.juststage]
+# The Blender release JustStage is built and tested on, and the one the installer ships (R1 as changed, item 16).
+blender = "5.3.0"
+# The local install the dev run uses unless JUSTSTAGE_BLENDER points elsewhere.
+blender_path_windows = "E:/blender-5.3.0-beta/blender.exe"
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
