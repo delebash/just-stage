@@ -1168,6 +1168,10 @@ core features"), at Blender 5.2's sources:
   Matrix4d primvars, Gaussian-splat import; sculpt — textures and generic attributes shown on Multires meshes in Sculpt
   Mode; core — projects with project asset libraries and custom splash artwork; Python — read-only undo-stack access,
   `UILayout.label_multiline()`, `gpu.types.GPUStorageBuf`; EEVEE — light-evaluation shader nodes, panoramic cameras.
+- AI in Blender 5.3 itself (the user: "doens the beta give us latest ai and more features?"): the 5.3 notes' only AI
+  item is Cycles' "new DLSS denoiser … for the viewport" on NVIDIA GPUs (`cycles.md`); no assistant or MCP feature.
+  Blender Lab's MCP server is separate from Blender: latest release v1.0.3 (2026-09-11; v1.0.2 2026-09-08, v1.0.0
+  2026-04-27, Gitea releases API), and `main` still depends on `mcp[cli]>=1.2.0,<2` (`mcp/pyproject.toml`).
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:
