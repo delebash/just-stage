@@ -998,6 +998,8 @@ service from this session, every class, live and dead; the query was proven firs
 - EUIPO not searched: its search sites refuse scripted requests, the Chrome extension wasn't connected, and
   the user then dropped the trademark check — "dont worry about trademark research" (TASKS, 2026-10-29).
 
+The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md).
+
 ## 13 · Working method: models and sessions
 
 - Fable 5.1 costs $10 / $50 per million input / output tokens, Opus 5.5 $4 / $20; Fable 5.1 is

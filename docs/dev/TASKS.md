@@ -119,11 +119,12 @@ NOTES from the chat (2026-10-29): CC5 + iClone 8 + the plugins is years of work 
         (§5) — never promised to match Reallusion's content library.
 
 STATE:  setup DONE 2026-10-29 — this repo and its docs, the global CLAUDE.md edit, the general memories copied
-        to the `E:\Dev\3D` project. Research round one DONE 2026-10-29 (8 agents, `docs/plans/2026-10-29-research-*.md`,
-        distilled into RESEARCH.md); the second pass is WAITING on the user to open its eight sessions (below).
+        to the `E:\Dev\3D` project. Research DONE 2026-10-29: round one (8 agents) and the second pass (S1–S10), all
+        in `docs/plans/2026-10-29-research-*.md` and distilled into RESEARCH.md. The rec list is written (NEXT).
 
-NEXT:   the second pass (eight sessions, `docs/plans/2026-10-29-research-second-pass.md`) → the lead distills it →
-        one complete rec list, every item researched and argued against, each piece marked
+NEXT:   the rec list is WRITTEN and SHOWN (2026-10-29): [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md),
+        R1–R17 plus two items for the user to read — WAITING on the user's go. Was: the second pass → the lead
+        distills it → one complete rec list, every item researched and argued against, each piece marked
         standard (with its doc link) or NOT STANDARD → a fresh Fable session writes the synthesis and the
         standards spec → the user approves → code.
 
