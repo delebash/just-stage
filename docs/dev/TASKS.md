@@ -253,6 +253,10 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           have go on adding those things" → **item 28 APPROVED and written into the spec**: Mesh2Motion's CC0 creature
           rigs and animations, its human animations retargeted, Blender Studio's CC0 base meshes as sculpting starting
           points — all in the starter library.
+        - The kit gap is FILLED: the `core` session shipped the image-job route on just-core's main (`333ac9e3`,
+          2026-10-29 — `makeImageJobsRouter`, `POST /v1/ai/image/jobs`, the result fetched once as PNG); checked in the
+          kit's code and written into `ai-engines.md` §2–§3 and RESEARCH §10. PNG only: float channels are converted
+          to EXR inside Blender.
         - Open for the user: PRD §2 (who JustStage is for) and §7 (what the first release must hold); Blender is run
           only once the user says the other session's memory use is over.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":

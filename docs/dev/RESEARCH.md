@@ -1292,6 +1292,16 @@ table) and `just-core/docs/plans/2026-10-24-just-direct-feasibility.md` (§A, §
 - `runner/arbiter.js`: "each app process holds its OWN instance (cross-APP arbitration is out of scope, design §7.2)".
 - `platform/auth.js`: "OFF by default: an empty token list means no auth (the normal local-loopback case)"; with tokens,
   loopback bypasses auth unless `requireForLoopback`; a proxied request is never the loopback door.
+- The image-job route, shipped by the just-core session for JustStage (main `333ac9e3`, 2026-10-29; read in
+  `packages/core/src/llm/image_jobs_api.js` and `platform/csrf.js`): `makeImageJobsRouter(jobs, { resultDir })`;
+  `POST /v1/ai/image/jobs` `{feature, request: {prompt?, width?, height?, seed?, init?, mask?, refs?}}` (width and height
+  64–4096; pictures as base64 PNG) → 202 with the job snapshot; a feature that can't run yet → 409 with its `need`
+  (engine-not-installed, model-not-downloaded, engine-cant-run-here, engine-not-on, model-unknown), nothing started;
+  progress on `/v1/jobs/:id` and `/events`, cancel by DELETE; `GET /v1/ai/image/jobs/:id/result` → the PNG once ("fetched
+  once, then the job is forgotten and its file deleted"; a repeat 410 `result-gone`; 409 `job-running` / `job-<state>`);
+  an unfetched picture goes with its job (10 min, the core session's report); PNG only. The CSRF middleware rejects a
+  mutating `/v1` request only when an `Origin` header is present and not allowed; resource isolation passes a request
+  without `Sec-Fetch-Site` — a non-browser client sends neither.
 - Ports (`scripts/check-family.js` `APP_PORTS`): JustWrite 17495, JustVoice 17494, docgen 8742, template 17490,
   just-house-paint 17499. The spec takes **17480** for JustStage's API socket (not in the kit's list; recorded in the
   3D family's table).

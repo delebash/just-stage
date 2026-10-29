@@ -43,26 +43,22 @@ runs one host and one arbiter. Its port is registered in the kit's family regist
 kit's rule). Before the package exists (the gate), the kit's own template server run from source (`npm run server` in
 `just-core/template`) with `sdcpp` on stands in — the same code.
 
-**Kit gap — requested 2026-10-29** (item 15; the user: "your rec on all 1-6 … go"; the request went to the `core`
-session as that repo's work): the kit runs image features in-process (`llm/image_dispatch.js`
-`runImageFeature`, used by just-house-paint's own routes) and exposes runtime management over HTTP
-(`/v1/ai/runtimes`, `/v1/ai/runtimes/:id/engine/status`, `/v1/ai/runtimes/:id/models`), but **no generic HTTP route
-runs an image feature as a job**. JustStage needs one: `POST /v1/ai/image/jobs` (feature key, request) → a kit
-`JobRegistry` job (`/v1/jobs/:id`, `/v1/jobs/:id/events`, DELETE to cancel — the kit's standard long-job door,
-§19), mounted by `installLlm` when an image runtime is on. Route name and shape are the kit's to decide; this spec
-names whatever ships. Until it lands, the gate's generator runs against the template server's existing in-process path
-by a short script on that side — a stopgap named as such in TASKS.
+**The image-job route — the kit gap, filled 2026-10-29** (item 15: requested of the `core` session; shipped on
+just-core's main, `333ac9e3` "… an image feature over HTTP", read in `packages/core/src/llm/image_jobs_api.js`):
+`makeImageJobsRouter(jobs, { resultDir })` from `@delebash/core/llm`, running on the app's `JobRegistry` beside
+`makeJobsRouter`; the template mounts both, so a host built from the template has them (the core session's report).
+No stopgap is needed.
 
 ## 3 · The client contract (JustStage's side, `juststage.engines`)
 
 | Step | How | Source |
 |---|---|---|
 | Discovery | host `127.0.0.1`, port from preferences (default: the family registry's port for JustStage's host — the template's `17490` while the template stands in), overridable headless with `--juststage-engine-host` | the kit's port registry (`app-structure.md` §1; `check-family.js` `APP_PORTS`) |
-| Auth | none on loopback by default (the kit's `bearerAuth`: "an empty token list means no auth (the normal local-loopback case)"); a token from preferences when the host requires it | `platform/auth.js` |
-| Readiness | `GET /v1/ai/runtimes` → the `sdcpp` row's engine status and models; `imageFeatureReadiness` semantics (engine installed, model present, fits) before a generator offers itself in the UI | `llm/runtimes_api.js`, `image_dispatch.js` |
+| Auth | none on loopback by default (the kit's `bearerAuth`: "an empty token list means no auth (the normal local-loopback case)"); a token from preferences when the host requires it. The route runs under the kit's usual `/v1` checks: the CSRF check rejects only a request whose `Origin` header is present and not allowed, and resource isolation passes a request with no `Sec-Fetch-Site` — so Blender's Python client, which sends neither, passes | `platform/auth.js`, `platform/csrf.js` |
+| Readiness | `GET /v1/ai/runtimes` → the `sdcpp` row's engine status and models before a generator offers itself in the UI; a feature that can't run yet is refused at submit with `409` problem+json naming its `need` — `engine-not-installed`, `model-not-downloaded`, `engine-cant-run-here`, `engine-not-on` or `model-unknown` — and nothing starts | `llm/runtimes_api.js`, `llm/image_jobs_api.js` |
 | Install and models | the host's own AI page (the kit's `LuRuntimeTab`); JustStage opens it and never installs engines itself; models download on demand | §19 |
-| Run | `POST /v1/ai/image/jobs` (§2's gap) with the feature key and request → `202` + job id; `GET /v1/jobs/:id/events` (server-sent events) for progress; `DELETE /v1/jobs/:id` to cancel | `platform/jobs_api.js` |
-| Results | PNG/EXR bytes returned by the job, written into the character's `textures/` with a provenance record in the `juststage` `customData` (generator preset, model id, seed, prompt, host version) | [`character-data-model.md`](character-data-model.md) §3.1 |
+| Run | `POST /v1/ai/image/jobs` with `{feature, request: {prompt?, width?, height?, seed?, init?, mask?, refs?}}` (sizes 64–4096; pictures in as base64 PNG) → `202` with the job snapshot `{id, kind: "image", state, progress, …}`; `GET /v1/jobs/:id` or `GET /v1/jobs/:id/events` (server-sent events) for progress; `DELETE /v1/jobs/:id` to cancel | `llm/image_jobs_api.js`, `platform/jobs_api.js` |
+| Results | `GET /v1/ai/image/jobs/:id/result` → the PNG (`image/png`), **once** — then the job is forgotten and its file deleted (a repeat gets `410`); `409 job-running` before it's done, `409 job-error` / `job-cancelled` for a failed or cancelled job; an unfetched picture goes with its job after 10 minutes. **PNG only** (`runImageFeature` returns PNG): a channel that needs float (`displacement`) is converted to EXR inside Blender, at the precision the model produced. Written into the character's `textures/` with a provenance record in the `juststage` `customData` (generator preset, model id, seed, prompt, host version) | `llm/image_jobs_api.js`; [`character-data-model.md`](character-data-model.md) §3.1 |
 | Features | JustStage's image features are kit **feature-catalog** rows owned by the host app's seed (`installLlm` `featureCatalog` / `enginePresets` / `featurePresets`, §19): `juststage.skin_albedo`, `juststage.skin_detail`, `juststage.iris`, `juststage.hair_texture`, `juststage.photo_head_complete`; JustStage ships their prompt templates and preset params as data the host's seed includes | §19 "A feature's model and settings" |
 | Failure | the kit's error envelope (`ApiError` codes: `engine-not-ready` 503, `provider-unreachable` 502); JustStage shows the host's words and a link to its AI page | `llm/prompts.js` `aiRunHttpError` |
 
