@@ -198,3 +198,13 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
             find, else the user's to read. The 2070's performance is the user's word (RESEARCH §1) — the
             "measure the finalists" item is dropped. The second pass RUNS as 8 agents in this session, one per
             section of the second-pass file, ~200 searches each, Opus 5.5 at xhigh.
+        - Then, verbatim (2026-10-29, while the second pass ran): "just a note the https://github.com/storytold built all
+          those adobe apps film photo ect from scratch i think so if you think it is better to actaully build the cc5
+          clone and iclone and plugins from scratch that is an option we dont have to use an exisitng piece of
+          software, but i thought if something is out there that is already built and tested and maintained it would
+          be better than starting from scratch, but we can as https://github.com/storytold did a good job and it
+          stratde from scratch i think it i am sure used some prebuilt rust components and stuff"
+          → both routes are already in the research (§6a / S5 existing bases; §6b / S6 our own app on libraries).
+            The rec list weighs them, with the user's lean as a criterion: reuse built, tested, maintained software
+            where it exists; from scratch where that is better. The lead adds storytold's repo list (GitHub's API) as
+            evidence for the from-scratch route when it writes the rec list.
