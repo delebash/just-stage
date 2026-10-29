@@ -122,8 +122,10 @@ STATE:  setup DONE 2026-10-29 — this repo and its docs, the global CLAUDE.md e
         to the `E:\Dev\3D` project. Research DONE 2026-10-29: round one (8 agents) and the second pass (S1–S10), all
         in `docs/plans/2026-10-29-research-*.md` and distilled into RESEARCH.md. The rec list is written (NEXT).
 
-NEXT:   the rec list, version 2, is WRITTEN and SHOWN (2026-10-29): [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md),
-        R1–R21 plus two items for the user to read — WAITING on the user's go. Version 1 (R1–R17, CC5 + iClone on a
+NEXT:   the standards spec — WAITING on the user to open the Fable session; its brief and launch line:
+        [`../plans/2026-10-29-standards-spec-brief.md`](../plans/2026-10-29-standards-spec-brief.md).
+        The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
+        [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
         plugin isnt there exisng blender metahuman plugin i dont understand that and reason for fork"; "why makehuman
         mesh cant we use methuman mesh now that it is mit?"; "what if we just focus on cc5 features for now and either
