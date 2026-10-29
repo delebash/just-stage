@@ -249,6 +249,32 @@ Studio), ArtCraft; Blender's own character tools — Rigify, hair curves.
 - Not reached (the session's 200-search budget ran out): 3DCoat, Style3D, Unreal's Control Rig and Sequencer
   as an iClone-timeline reference, Ready Player Me, Avaturn, and several API details — the notes' open list.
 
+Second pass done 2026-10-29: [`../plans/2026-10-29-research-04-references-pass2.md`](../plans/2026-10-29-research-04-references-pass2.md).
+
+*web, 2026-10-29* — re-checked by this session (GitHub's API): OpenRigLogic's `LICENSE` is "MIT License,
+Copyright (c) 2026 Epic Games, Inc."; the repo holds code only (`include`, `src`, `python`, `docs`, `tests`,
+`examples`, `benchmarks`). Its `TRADEMARKS.md`: the MIT licence "covers code only"; "You may not use … any Marks
+as part of your own … product name"; a fork says "[Your Software] is based on OpenRigLogic".
+
+*agent, 2026-10-29* — S3's pass 2, sources per fact there:
+
+- MetaHuman's auto-rigging and texture synthesis run on Epic's servers (Epic's docs list the service hosts);
+  nothing in 5.8 does them offline. OpenRigLogic is the C++ DNA and RigLogic libraries with Python bindings — no
+  meshes; MetaHuman sample content is on Fab under Fab's licence. The MetaHuman licence pages need an Epic login
+  or return 403 — the user's to read.
+- Move AI: Vicon's parent bought its assets on 2026-10-09; Move Live is gone; the line is Genesis (real time since
+  July 2026, optional fingers, NVIDIA GPU) and Move One. Ready Player Me shut down on 2026-01-31 after Netflix
+  bought it; Avaturn still runs.
+- Style3D's cloth simulation runs only on NVIDIA (CUDA) on Windows — a labelled reference, not a base.
+- Newer versions: Cascadeur 2026.2 (animation layers; AI inbetweening up to 120 frames); Daz Studio 6, released
+  2026-06-04 (the former "Daz Studio 2025").
+- Unreal's Sequencer and Control Rig have the layer and mixer pieces an iClone-type timeline needs, but recent
+  (5.5–5.8) and partly experimental.
+- Settled: ArtCraft is dual MIT or Apache-2.0; MetaTailor's free tier is 5 exports a month (v2.6); Houdini 22
+  shipped 2026-07-15. Whether MetaTailor is built on Unity: not findable.
+- Open: ZBrush GoZ for the 2027 Maya and 3ds Max and Marvelous Designer's Personal-licence terms (blocked pages);
+  Mixamo's official skeleton options, Avaturn's terms, Style3D's 2026 prices (not found).
+
 ## 5 · Existing bases to build on
 
 Round one done 2026-10-29: [`../plans/2026-10-29-research-05-bases.md`](../plans/2026-10-29-research-05-bases.md)
