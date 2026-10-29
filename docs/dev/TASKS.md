@@ -172,6 +172,25 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           Lab's server speaks MCP 2025-11-25, not 2026-07-28), and the Blender floor of **R1** (kept at 5.2 LTS). The
           user, mid-review: "blender 5.3 beta is installed but dont run just now anothe session is using memory
           E:\blender-5.3.0-beta" and "unreal 5.8 is on f drive under epic" (RESEARCH §1 corrected).
+        - Then, verbatim (2026-10-29), in order: "1 i dont understand does this mean we are using unreal keep
+          explantiatons simple as what we are doing or what you are sugesting rethink on all your recs again just to
+          make sure you dont change your mind"; "like what is MPFB2 you have to explain in simple short terms what each
+          is for and why we are using and if it is standard"; "what does omniverse use it seems it has a lot of oepn
+          standars whatr do it use for materials and hair and other things"; "is there another better body we can use,
+          can we make one, can we use cc5 or is ther eanother blender body pluginkl i feel you ddint reasearch well";
+          "one addition we need to create non human body as well like creatures just like cc5 allows and i think
+          another app i listed as example, is that include in specs"; "if makehuman doesne work could you Custom /
+          Clean Quad Base Mesh: Sculpt or commission a clean, neutral androgynous base mesh with standard quad topology
+          (often inspired by Blender/ZBrush anatomy standards) and write your own blendshapes or skeletal deformation.
+          maybe there are free ones on the web, i dont know but i want standard if we can so we can share with other 3d
+          engines blender autodesk ect"; "these things might be good to look at CharMorph for code features or how to
+          do something just to n0ote"; "you are using google for head but it doesnt have eyes mouth how are you fixing
+          that"; "ok think on your recs again and give me a list of what you are doing, explain simply what each is for
+          and why so try not to use just acronyms"; "finish what you are doing before you give me recs again" → the
+          second pass over the review's recs is in the review file ("Second pass over these recs"): 7, 11, 13 and 19
+          changed; three items added — 21 N3 (missed by the first pass), 22 creatures (a new requirement: making
+          non-human characters, not only importing them; changes R21's order), 23 the fallback body. Facts in
+          RESEARCH §5 and §8. WAITING on the user's word, item by item; the spec is unchanged until then.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
