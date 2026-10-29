@@ -122,6 +122,10 @@ STATE:  setup DONE 2026-10-29 — this repo and its docs, the global CLAUDE.md e
         to the `E:\Dev\3D` project. Research DONE 2026-10-29: round one (8 agents) and the second pass (S1–S10), all
         in `docs/plans/2026-10-29-research-*.md` and distilled into RESEARCH.md. The rec list is written (NEXT).
 
+REPO:   public at https://github.com/delebash/just-stage since 2026-10-29 — the user, verbatim: "go ahead and make repo and
+        push", then "create public go" (my rec was private until the spec's LICENSE files land). It has no LICENSE
+        file yet; the approved licences (R2: GPL-3.0-or-later for the extension, MIT for the libraries) land with the
+        standards spec.
 NEXT:   the standards spec — WAITING on the user to open the Fable session; its brief and launch line:
         [`../plans/2026-10-29-standards-spec-brief.md`](../plans/2026-10-29-standards-spec-brief.md).
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
