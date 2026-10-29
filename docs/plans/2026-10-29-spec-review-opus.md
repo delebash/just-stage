@@ -1,0 +1,293 @@
+# Review of the Fable session's standards spec, PRD and ARCHITECTURE (2026-10-29, Opus 5.5)
+
+The user, verbatim: "fable messed up on the standards by trying to roll its on json file for characters and a bunch of
+other non standard hand rolled stuff when openusd handled it, i dont trust fables synthesis so can you revoiew all of
+fables work". Scope: `docs/standards/` (13 files), `docs/dev/PRD.md`, `docs/dev/ARCHITECTURE.md`, Fable's RESEARCH and
+TASKS entries, its evidence folder and its memory edits. Nothing in the spec is changed by this review; each item waits
+for the user's word. Every fact below was checked at its source or on this machine on 2026-10-29 (RESEARCH §1, §5, §6,
+§8 carry them).
+
+Passes run, each from a new angle: (1) standard-first per piece; (2) every factual claim; (3) against the approved
+recs R1–R21 and the user's decisions; (4) how the pieces interact; (5) attacks on this review's own recs; (6) the
+untouched neighbours (TASKS, RESEARCH, memory, evidence files). A seventh pass over the list found nothing new.
+
+## What holds
+
+- The Daz evidence files are byte-equal to Daz's source (`g9_to_unreal_manny.json`, `g8_to_unreal.json`).
+- The UE5 Mannequin lists hold: a second scan of `SK_Mannequin.uasset` finds no side-suffixed bone outside Fable's
+  161, and `SKM_Manny_Simple` has the published 89.
+- VRM's 55 roles, Apple's 52 names, Blender's bone-naming rule, the USD hook API, slotted Actions, UsdShade render
+  contexts, `usd-core`, the kit-code facts and EEVEE's true displacement ("Displacement and Bump") are correct.
+- The skeleton's names (UE5 verbatim), ARKit 52 as the guaranteed set, DNA + OpenRigLogic for the face, one extension
+  with modules, MCP as the only remote door and pytest as the only runner are right.
+
+## Findings, most severe first
+
+Each: the fact and its source → the rec → the attack on the rec → what the attack changed.
+
+### 1 · Body correctives already have an open standard: the DNA format (N5's premise was false)
+
+- **Fact.** OpenRigLogic (MIT, the library the spec already uses for the face) defines DNA behaviour layers for body
+  correctives: `include/dna/layers/RBFBehaviorReader.h` (RBF poses → joint outputs, blend-shape channels, animated
+  maps; solver types additive/interpolative; quaternion and twist-axis distances) and `TwistSwingBehaviorReader.h`
+  (twist and swing setups → output joints with blend weights). MetaHuman's archetype DNA in the user's UE 5.8
+  (`F:\Epic\UE_5.8\Engine\Plugins\MetaHuman\MetaHumanCoreTechLib\Content\ArchetypeDNA\body_head_combined.dna`)
+  holds one RBF solver per joint (`calf_l_UERBFSolver`, `clavicle_l_UERBFSolver`, `index_l_01_UERBFSolver`, …) and
+  the UE corrective bones. Fable wrote "none exists" and invented `JustStageCorrectiveAPI`; the user approved N5 ("5
+  ok") on that premise.
+- **Rec.** Body correctives live in a body DNA file (`rig/body.dna`) beside the face DNA — MetaHuman's own split (head
+  and body are separate DNA files, RESEARCH §7) — evaluated by OpenRigLogic in Blender and by Unreal's RigLogic plugin.
+  `JustStageCorrectiveAPI` and the N5 schema go.
+- **Attack.** (a) Blender has no RigLogic evaluator, so the extension drives bones and shape keys from OpenRigLogic's
+  Python bindings — the face needs exactly that already. (b) glTF and FBX can't carry DNA — bake, as before. (c)
+  Authoring RBF poses needs DNA writing — OpenRigLogic ships `RBFBehaviorWriter` and `TwistSwingBehaviorWriter`. (d)
+  In Unreal, RigLogic evaluates a body DNA natively, which is simpler than the plugin building Control Rig nodes.
+- **Changed.** Nothing; a NOT STANDARD piece disappears.
+
+### 2 · hm08's helper geometry and joint cubes are how joints and clothes follow the body (N2's premise was false)
+
+- **Fact.** Every MPFB2 rig places its joints from the joint cubes: `rig.game_engine.json` bones carry
+  `"strategy": "CUBE", "cube_name": "joint-l-foot-1"` for head and tail. MHCLO garments fit to helper vertices
+  (RESEARCH §5: deleting helpers "stops most clothes fitting"). MPFB2 masks helpers while editing and deletes them at
+  export (its "Delete helpers" operation; export options `mask_modifiers`). The spec has **no** rule for moving joints
+  when sliders change the body; the joint cubes are that rule. Fable called the 5,778 vertices "dead".
+- **Rec.** Keep helpers and joint cubes while editing, masked; delete them at export — MPFB2's own workflow. Joint
+  placement = MPFB2's `CUBE` strategy (the mean of a joint cube's vertices, which every morph moves). N2 is withdrawn.
+- **Attack.** Memory and time per morph with 19,158 instead of 13,380 vertices — MakeHuman and MPFB2 carry it on
+  ordinary machines; the gate measures it. A joint regressor (SMPL's method) avoids helpers but is new work and new
+  data. Anny dropped helpers, but Anny has its own rig and no garment system.
+- **Changed.** Nothing.
+
+### 3 · MPFB2 already has the formats for this base: sliders, character state, garments, face units, visemes, rig, weights
+
+R4 adopted MakeHuman's hm08 and its CC0 targets. MPFB2 (GPL-3.0 code, CC0 assets — reusable inside our GPL extension,
+R2/R11) is the maintained MakeHuman for Blender (push 2026-10-24) and already defines, for exactly this mesh:
+
+| Job | MPFB2's existing format (read 2026-10-29) | What Fable invented instead |
+|---|---|---|
+| Slider definitions | `data/targets/target.json`: 23 groups, 234 slider categories, each with `label`, `targets`, `has_left_and_right`, `opposites`; `data/targets/macrodetails/macro.json`: macro targets (gender, age, muscle, weight, …) with ranges and combinations | `JustStageSliderAPI` per character |
+| A character's slider state | MakeHuman's `.mhm` modifier values; in USD the shape weights are `UsdSkelAnimation.blendShapeWeights` | slider prims inside every package |
+| Garment fit | MHCLO (`docs/fileformats/mhclo.md`): per vertex 3 base vertices + 3 weights + xyz offset, or an exact match; `z_depth` (layer order); `delete_verts` (body faces hidden); `x/y/z_scale`; author and licence header; used for clothes, eyes, hair and proxies | `fitTriangle`/`fitBary`/`fitOffset` primvars, `layer`, a `juststage:hide` GeomSubset |
+| ARKit 52 on hm08 | "Faceunits 01" pack, CC0 ("Functional asset packs", static.makehumancommunity.org); MPFB2's `faceservice.py` `ARKIT_FACEUNITS` (52) | "the gate's rig-generation work" |
+| Visemes | "Visemes 02" (Meta/Oculus 15: `viseme_aa … viseme_U`) and "Visemes 01" (Microsoft 22), both CC0 | Meta's names from a search snippet |
+| Expressions | MPFB2's expression JSON: `format_version`, `name`, `face_units` keyed by ARKit names, licence fields | — |
+| A UE-named rig with weights | `rig.game_engine.json` (53 bones in UE4-Mannequin names: `pelvis`, `spine_01–03`, `neck_01`, `clavicle_l`, `upperarm_l`, `lowerarm_l`, `hand_l`, fingers `_01–_03`, `thigh_l`, `calf_l`, `foot_l`, `ball_l`) + `weights.game_engine.json`; also `game_engine_with_breast` | no source for body skin weights at all |
+
+- **Rec.** JustStage's body, head and garment layer is built on MPFB2's data formats and, where code helps, its GPL
+  services: sliders from `target.json`/`macro.json` (the same format extended for the MHR, GNM and user spaces);
+  character state as shape weights (USD) and MHM-style modifier values; garments as MHCLO (LoBoFit, R8, refits on top);
+  the CC0 face-unit and viseme packs as the first ARKit 52 and visemes; the `game_engine` rig and weights as the start of
+  the UE5 skeleton, extended by the 27 bones UE5 adds (`spine_04/05`, `neck_02`, twists, metacarpals) with their own
+  joint-cube rules and weights.
+- **Attack.** MPFB2's formats are MakeHuman's, not an industry standard — but they are the existing format for the
+  data R4 chose; a new format for the same data is the second way the rules forbid. MHCLO lacks tuck-under relations and
+  cloth settings — two small fields remain ours (§6 below). The CC0 face units may not reach the bar — the gate (R3)
+  judges, and improved shapes replace them under the same names. The game_engine rig is UE4-era — extending it is less
+  work than authoring 80 bones and their weights from nothing.
+- **Changed.** Sliders: the per-character slider prims were dropped once it was clear definitions are app data and only
+  values belong to a character.
+
+### 4 · Materials: OpenPBR and MaterialX cover skin, eyes and hair; the `juststage` shader network is hand-rolled
+
+- **Fact.** MaterialX's OpenPBR Surface has subsurface (colour, radius, scale, anisotropy), coat, fuzz (for vellus),
+  specular and transmission (cornea); `pbrlib` has `chiang_hair_bsdf` and `deon_hair_absorption_from_melanin`
+  (melanin-based hair colour). Blender's USD exporter writes MaterialX networks itself (manual `usd.rst`); Unreal 5.8
+  imports MaterialX OpenPBR into Substrate (RESEARCH §8, S9). Fable added a third network with `info:id =
+  "juststage:skin"`, a shader no program knows.
+- **Rec.** Materials export through Blender's own USD exporter as UsdPreviewSurface + MaterialX (OpenPBR for skin,
+  eyes, teeth, cloth; Chiang hair with the melanin node for hair). The generator inputs (melanin, haemoglobin, age,
+  pores) belong to the generator preset that made the textures, not to the material. No `juststage` render context.
+- **Attack.** Whether Blender's MaterialX export carries Principled's subsurface and coat fully is not tested here
+  (the manual lists caveats; displacement is not exported to MaterialX). Whether OpenPBR → Substrate reaches
+  MetaHuman-grade skin in Unreal is unknown — the plugin maps the OpenPBR values onto its own skin material either way,
+  and the gate judges. Both are test items for step 1, not reasons to invent a format.
+- **Changed.** Two test items added to the gate.
+
+### 5 · Grooms: Blender's own hair node groups are the generator; `JustStageGroomAPI` duplicates them
+
+- **Fact.** Blender 5.3 ships `datafiles/assets/nodes/procedural_hair_node_assets.blend` (on disk at
+  `E:\blender-5.3.0-beta`); the manual lists them: Generate, Interpolate, Duplicate Hair Curves; Clump, Curl, Braid
+  Hair Curves, Create Guide Index Map; Blend, Displace, Frizz, Noise, Roll, Rotate, Shrinkwrap, Smooth, Straighten,
+  Trim Hair Curves. Fable's groom schema stored "guide count, interpolation, clumping, noise, length maps".
+- **Rec.** A groom is a Curves object with Blender's hair node-group modifiers; its settings are their inputs in the
+  `.blend` and the library asset. USD carries the baked curves with Epic's `GroomAPI` and the `groom_*` primvars;
+  Alembic 1.5 for Unreal, as the spec says.
+- **Attack.** Generator settings then don't travel in USD — that is industry practice (studios bake; RESEARCH S10), and
+  JustStage-to-JustStage transfer uses the library `.blend`. **Changed:** nothing.
+
+### 6 · With 1–5, N1's USD schemas are no longer needed
+
+What remains of Fable's applied-schema families after 1–5: a character id and versions, the HD-morph map link, a
+garment's tuck-under list and cloth settings, a lip-sync take's audio and phonemes.
+
+- **Rec.** No JustStage applied API schemas and no `usdGenSchema`. Character id, name and version go in USD's native
+  `assetInfo`; the rest are a handful of custom attributes and relationships in the `juststage:` namespace (the way
+  Blender's own exporter writes custom properties — `userProperties` by default, namespace configurable, `usd.rst`),
+  written from the extension's PropertyGroups by the USD hook; lip-sync audio as `UsdMediaSpatialAudio` (Blender's
+  bundled `pxr` has `UsdMedia`). N1 shrinks to "the names of about ten `juststage:` attributes".
+- **Attack.** Untyped attributes aren't validated by other readers — those readers ignore them anyway; JustStage and
+  the Unreal plugin validate. Applied schemas would give `HasAPI()` and docs — worth it only with many fields, which
+  1–5 removed. Blender 5.0 stores `bpy.props` values apart from custom properties (5.0 Python notes), so the native
+  custom-property export doesn't see PropertyGroups — hence the hook, which the spec already has.
+- **Changed.** The hook stays; schema generation goes.
+
+### 7 · Commands: the schema source should be the typed Python function, as in the MCP server we build on
+
+- **Fact.** Blender Lab's MCP server declares each tool as a FastMCP function (`@mcp.tool(...)` in
+  `mcp/blmcp/tools/get_objects_summary.py`), and the MCP SDK derives the JSON Schema from its type hints; it depends on
+  `mcp[cli]>=1.2.0,<2`. Blender's own gotcha page says scripts should prefer API functions to operators (operators
+  return only success/cancel). Fable made hand-written schema files the source, generated operator properties from them,
+  and returned results through a scene property (`last_result`).
+- **Rec.** One source per command: a typed Python function in `juststage.api`. FastMCP derives the tool and its JSON
+  Schema from it; the operator wraps it for the UI and the keymap; Python callers call the function and get its return
+  value. R19 holds: one operator and one JSON Schema per command, the same command at every door.
+- **Attack.** Operator properties then duplicate the function's arguments — generated from the signature by a small
+  helper, or written once per command; both beat a third source. **Changed:** nothing.
+
+### 8 · R19 can't hold both "built from Blender Lab's server" and "the 2026-07-28 spec" today
+
+- **Fact.** The MCP Python SDK 1.x line's `LATEST_PROTOCOL_VERSION` is `2025-11-25` (with the `initialize`
+  handshake); `2026-07-28` (stateless) arrives in SDK 2.x (2.3.0 lists both). Blender Lab pins `<2`.
+- **Rec.** Use Blender Lab's server as it is (2025-11-25) and move to 2026-07-28 when it moves; offer the SDK-2 bump
+  upstream. The spec's "stateless, `server/discover`" lines become "per Blender Lab's SDK".
+- **Attack.** R19's text names 2026-07-28 — this changes an approved rec, so it waits for the user's word. Patching the
+  pin ourselves now is the other option; it forks a dependency for a protocol no client needs yet. **Changed:**
+  marked as an R19 change.
+
+### 9 · Two mapping-table columns are wrong
+
+- **Mixamo.** three-vrm's map (MIT): `mixamorigSpine` → spine, `Spine1` → chest, `Spine2` → upperChest. With the spec's
+  role map (spine_01 = spine, spine_03 = chest, spine_05 = upperChest) Mixamo `Spine1` ↔ `spine_03` and `Spine2` ↔
+  `spine_05`; the table has them at `spine_02` and `spine_03`.
+- **CC3+/CC4.** Reallusion's GPL Blender tools (`rigify_mapping_data.py`, names only): `CC_Base_Waist` ↔ Rigify
+  `spine.001` ↔ UE `spine_01`; `Spine01` ↔ `spine.002` ↔ `spine_02`; `Spine02` ↔ `spine.003` ↔ `spine_03`;
+  `NeckTwist01` ↔ `neck_01`. The table maps `Spine01` → `spine_01` and `Spine02` → `spine_02` and leaves `Waist` out.
+- **Rec.** Fix both columns from these sources. **Attack:** none; they are lookups.
+
+### 10 · MetaHuman's face control names and joint names are on this machine (new fact under the approved N4)
+
+- **Fact.** `SKM_Face.dna` in the user's UE 5.8 holds about 420 GUI control channels (`CTRL_C_jaw`,
+  `CTRL_L_mouth_cornerPull`, `CTRL_L_brow_lateral`, `CTRL_C_mouth_stickyU`, `CTRL_C_tongue_roll`, …), `FACIAL_*`
+  joints, and part names `head`, `teeth`, `eyeLeft`, `eyeRight`, `eyeshell`, `eyelashes`, `eyeEdge`. Fable's reason for
+  inventing our own control names ("Epic's content, not public as a list") was wrong; the user approved N4 on ARKit's
+  merit, which stands.
+- **Rec.** Keep ARKit 52 as the guaranteed interchange set (N4) and name the DNA rig's GUI controls, face joints and
+  face parts with MetaHuman's names, so MetaHuman Animator curves and MetaHuman tools drive a JustStage face with no
+  mapping table. Only the names are taken; every shape, joint position and weight stays ours.
+- **Attack.** AGENTS.md's clean-room rule: "Never copy their code, shaders, base meshes, morphs, content or assets."
+  Reading names out of Epic's DNA files is reading their content. Counter: the UE5 bone names the user accepted came out
+  of `SK_Mannequin.uasset` the same way; names are the interface a pipeline must speak, like the `groom_*` attributes.
+  **Changed:** this is the user's call against their own clean-room rule, not mine; the rec is shown with that conflict
+  named.
+
+### 11 · glTF carries vendor data in a vendor extension, not a sidecar
+
+- **Fact.** Khronos' extension registry: vendor extensions use a registered vendor prefix (VRM's `VRMC_*` is one);
+  `EXT_` for multi-vendor, `KHR_` for ratified. The spec writes a `.juststage.json` beside glTF.
+- **Rec.** Inside glTF, JustStage data is a vendor extension under a prefix registered with Khronos (a pull request
+  to the registry); the sidecar stays for FBX only (CC5, Daz, MetaHuman pattern). **Attack:** a registry PR is a small
+  outward step — it waits for the user's word when the exporter is built. **Changed:** nothing.
+
+### 12 · Unreal: share Epic's animations through compatible skeletons
+
+- **Fact.** Unreal skeletons have a "Compatible Skeletons" list that lets one skeleton use another's animation data,
+  one way (Epic's Python API `Skeleton` class; the Skeletons page); importing onto an existing skeleton merges new bones
+  into it. The spec builds `SK_JustStage_<version>` with no link to Epic's skeletons, so Epic, Fab and MetaHuman body
+  animations would need retargeting despite identical bone names.
+- **Rec.** The plugin keeps its own skeleton asset (so the user's `SK_Mannequin` is never modified) and lists
+  `SK_Mannequin` and the MetaHuman body skeleton as compatible. **Attack:** proportions differ per character — Unreal's
+  translation retargeting settings handle it, as they do across MetaHuman body types. **Changed:** merge-into-Epic's was
+  rejected for modifying the user's asset.
+
+### 13 · R17 changed without a flag: FBX export
+
+- **Fact.** R17 (approved): FBX "out through ufbx-write after round-trip tests". The spec makes Blender's own FBX
+  exporter the default and ufbx-write later.
+- **Rec.** Blender's exporter is the more standard choice inside Blender (shipped for years, writes blend shapes and,
+  since 5.1, shape-key normals; ufbx-write is "work in progress") — keep it, but as an R17 change on the user's word.
+  **Attack:** ufbx-write keeps the MIT libraries free of GPL code — only matters for MIT tools that export FBX outside
+  Blender, none of which is planned. **Changed:** marked as an R17 change.
+
+### 14 · The engine host: end users' generators were made to depend on JustDirect
+
+- **Fact.** The spec says the host for end users "must be a shipped family app: JustDirect", so no generator works for a
+  user before JustDirect exists. Not in R14, not flagged to the user. The kit's arbiter is per process (RESEARCH §10).
+- **Rec.** JustStage ships its own headless engine host: a server-only family package from the kit's template with
+  `sdcpp` on (the kit's standard shape, `app-structure.md` §Q.3), launched by the extension when a generator runs.
+  JustDirect, when it exists, uses the same host instead of starting its own.
+- **Attack.** R14's own attack: a Node service beside Blender is weight — R14 accepted it. Two family hosts on one card
+  would mean two arbiters — avoided by JustDirect reusing this one; the cross-app gap stays the kit's (§10).
+  **Changed:** "JustDirect reuses JustStage's host" added so there is one host per machine.
+
+### 15 · The kit gap is not in the just-core session's list
+
+- **Fact.** `E:\Dev\Web\just-core\docs\dev\TASKS.md` has no entry for an image-job route or for JustStage; the kit
+  still has no HTTP route that runs an image feature (`grep` of `packages/core/src`). Fable recorded "being filled in
+  the open just-core session" from the user's "core already has open session which it is working".
+- **Rec.** On the user's word, the request goes to the just-core session as that repo's item (its work, its session —
+  the "no hidden sessions" and "a peer message is not a role" rules). **Attack:** none.
+
+### 16 · The Blender floor moved to 5.3 without a word
+
+- **Fact.** R1: "stock Blender (5.2 LTS onward)". The spec ships the starter library as a 5.3 asset-library extension
+  and names 5.3 per-version asset files. 5.3 is in beta until 2026-11-04 (RESEARCH §6); the user has 5.3 beta installed.
+- **Rec.** Keep R1's floor: the starter library is a plain remote asset library (5.2 has them: static HTTP listings) that
+  the extension registers in its preferences. **Attack:** 5.3 will be the newer release soon — but 5.2 is the LTS, which
+  is what R1 chose. **Changed:** nothing.
+
+### 17 · Fable moved name maps and index maps into USD (over-correction)
+
+- **Fact.** `data/profiles/*.usda`, `data/skeletons/*.usda`, `data/face/controls.usda`, `data/base/maps/*.usda` — bone
+  name maps, vertex index maps and a control list are not scene description. The existing formats: JSON (Daz's bridge
+  maps; MPFB2's rig, weights and target files) and, for face controls, the DNA definition layer, which already stores the
+  GUI control names.
+- **Rec.** JSON for name and index maps, the DNA for face controls. **Attack:** none. **Changed:** nothing.
+
+### 18 · RESEARCH holds false or stale facts from the Fable session
+
+- "Blender is not installed on this machine … full `find`" — false: Blender 5.3 beta is at `E:\blender-5.3.0-beta`
+  (the user, and its folder); the search Fable relied on timed out, and C: was searched only five levels deep.
+- Unreal: the registry names UE 5.7 at `E:\Program Files\Epic Games\UE_5.7` and UE 5.8 at `C:\Program Files\Epic
+  Games\UE_5.8`; neither folder exists. UE 5.8 is at `F:\Epic\UE_5.8` (the user; `UnrealEditor.exe` present).
+- **Rec.** Rewrite both in RESEARCH §1 with "(was: … until 2026-10-29)" — done with this review (fact hygiene, no
+  design change).
+
+### 19 · PRD.md was written without the user's interview
+
+- **Fact.** The family's convention (`just-core/docs/app-structure.md` §13): the PRD "is written from an interview with
+  the user". Fable wrote its users ("indie filmmaker and developer", "indie game and film makers") and "done for the
+  first release" from inference.
+- **Rec.** PRD §2 and §7 stay draft until the user answers who it is for and what the first release must hold.
+  **Attack:** the user has said much of it already (TASKS) — the answers can be offered as a draft for the user to
+  correct, in chat, not filled in.
+
+### 20 · Smaller cleanups
+
+- Testing names Windows' WARP for D3D12 — Blender has no D3D12 back end; drop it. A Node script for the Godot round
+  trip in a Python repo — call Godot's headless import from pytest instead (one runner, one language).
+- The scorecard's keep, improve and drop plans per row are Fable's proposals, not decisions; they need the user's
+  look at approval.
+- Fable's closing claim to the user, "two full angles now find nothing", was wrong: this review found the items above.
+- Memory: Fable's rewrite of `just-stage-project.md` dropped "USPTO done, EUIPO dropped, no legal agent; Omniverse,
+  paid-only, single-vendor core parts and Unity out; Unreal in" — restored with this review.
+
+## Blast radius (files that change on a go)
+
+| Item | Files |
+|---|---|
+| 1 | standards/README.md, character-data-model.md, interchange.md, skeleton-and-face.md, import-export.md |
+| 2, 3 | standards/README.md, character-data-model.md, skeleton-and-face.md, import-export.md, project-files.md, parity-scorecard.md; TASKS (N2) |
+| 4 | standards/README.md, character-data-model.md, interchange.md, import-export.md, quality-gate.md |
+| 5 | standards/README.md, character-data-model.md, interchange.md, animation-and-later-features.md |
+| 6 | standards/README.md, character-data-model.md, interchange.md, project-files.md, animation-and-later-features.md, plugins.md, dev/ARCHITECTURE.md |
+| 7, 8 | standards/commands-and-api.md, plugins.md, testing.md, README.md; dev/ARCHITECTURE.md; TASKS (R19) |
+| 9 | standards/skeleton-and-face.md |
+| 10 | standards/skeleton-and-face.md, character-data-model.md; TASKS (N4) |
+| 11 | standards/interchange.md, import-export.md, README.md |
+| 12 | standards/import-export.md |
+| 13 | standards/interchange.md, README.md, testing.md; TASKS (R17) |
+| 14, 15 | standards/ai-engines.md, README.md; dev/PRD.md; TASKS |
+| 16 | standards/project-files.md |
+| 17 | standards/README.md, skeleton-and-face.md, import-export.md, project-files.md |
+| 19 | dev/PRD.md |
+| 20 | standards/testing.md, parity-scorecard.md |

@@ -36,9 +36,16 @@ Subjects: [1 · The machine](#1--the-machine) ·
   DeformationSystem, FootprintDeformation, GlobalEnvironmentalSystem, UE_GlobalEnvironmentalSystem) —
   *measured (listed), 2026-10-29*. `DeformCPlusTest` is on UE **5.7** (its `.uproject`) and holds the Mannequin
   meshes (§8).
-- **Blender is not installed on this machine** — *measured, 2026-10-29*: no `blender.exe` on C:, D:, E: or F: (full
-  `find`), no `BlenderFoundation` registry key, no Start Menu shortcut. So Blender-side facts in this register come
-  from Blender's sources and docs, not from a run here, until the user installs it.
+- **Blender 5.3 beta is installed at `E:\blender-5.3.0-beta`** (the user, 2026-10-29; the folder read, not run): its
+  bundled Python is 3.13 and `5.3/python/lib/site-packages` holds `pxr` (Usd, UsdSkel, UsdShade, UsdMtlx, UsdMedia,
+  UsdPhysics, ExecIr, …) and `MaterialX`; `5.3/datafiles/assets/nodes/procedural_hair_node_assets.blend` ships the
+  procedural hair node groups — *measured (listed), 2026-10-29*. (was: "Blender is not installed on this machine … full
+  `find`" until 2026-10-29 — that search timed out and C: was searched only five levels deep.)
+- **Unreal 5.8 is at `F:\Epic\UE_5.8`** (the user; `Engine\Binaries\Win64\UnrealEditor.exe` present). The registry's
+  `HKLM\SOFTWARE\EpicGames\Unreal Engine` still lists 5.7 at `E:\Program Files\Epic Games\UE_5.7` and 5.8 at
+  `C:\Program Files\Epic Games\UE_5.8`; neither folder exists — *measured, 2026-10-29*. Its MetaHuman plugin ships DNA
+  files: `MetaHumanCoreTechLib\Content\ArchetypeDNA\` (`body_head_combined.dna`, `SKM_Body.dna`, `SKM_Face.dna`) and
+  `MetaHumanCharacter\Content\Body\…` (`body_model.dna`, 18 fixed-compatibility bodies) — *measured (listed)*.
 
 ## 2 · CC5 and its plugins
 
@@ -395,6 +402,30 @@ The user's bar since 2026-10-29 (TASKS): characters at "the quality of cc5 and m
   depends on non-commercial Sapiens and SMPL-X.
 - Still open: no source compares any open base's realism with CC5 or MetaHuman; no source documents edge loops
   for any base; MB-Lab's vertex counts (~18.2k / 18.0k) are the agent's estimate from file sizes.
+
+*web, 2026-10-29* — read by the Opus review of the standards spec (`../plans/2026-10-29-spec-review-opus.md`) at
+MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw files) and MakeHuman's asset-pack page:
+
+- MPFB2's data for hm08: `data/targets/target.json` — 23 groups, **234 slider categories**, each with `label`,
+  `targets`, `has_left_and_right`, `opposites`; `data/targets/macrodetails/macro.json` — macro targets (gender, age with
+  baby/child/young/old parts, muscle, weight, …) and their combinations; `data/rigs/standard/` — rigs `default`,
+  `default_no_toes`, `game_engine`, `game_engine_with_breast`, `mixamo`, `mixamo_unity`, `cmu_mb`, `openpose` with
+  matching `weights.*.json`, plus Rigify rigs; `data/uv_layers/` (14 alternative UV layers); `data/node_trees/` (skin,
+  enhanced skin, procedural eyes).
+- `rig.game_engine.json`: **53 bones in UE4-Mannequin names** (`Root`, `pelvis`, `spine_01–03`, `neck_01`, `head`,
+  `clavicle_*`, `upperarm_*`, `lowerarm_*`, `hand_*`, `thumb/index/middle/ring/pinky_01–03_*`, `thigh_*`, `calf_*`,
+  `foot_*`, `ball_*`). Each bone's head and tail is placed by `"strategy": "CUBE"` with a `cube_name` (e.g.
+  `joint-l-foot-1`) — the joint cubes of the helper geometry.
+- MHCLO (`docs/fileformats/mhclo.md`): MakeHuman's format for every mesh fitted to the base — "clothes … hair and eyes
+  to full body proxy meshes"; per asset vertex an exact base vertex or `<v1> <v2> <v3> <w1> <w2> <w3> <dx> <dy> <dz>`;
+  `z_depth` (render/layer order, default 50); `delete_verts` (base vertices hidden when worn); `x/y/z_scale` references;
+  author, licence and description header lines.
+- MPFB2's `faceservice.py`: `ARKIT_FACEUNITS` (the 52 ARKit names), `MICROSOFT_VISEMES` (22), `META_VISEMES` (15:
+  `viseme_aa`, `viseme_CH`, `viseme_DD`, `viseme_E`, `viseme_FF`, `viseme_I`, `viseme_kk`, `viseme_nn`, `viseme_O`,
+  `viseme_PP`, `viseme_RR`, `viseme_sil`, `viseme_SS`, `viseme_TH`, `viseme_U`); an expression JSON format keyed by ARKit
+  face-unit names (`docs/fileformats/expression.md`). The shapes come from asset packs: MakeHuman's asset-pack page lists
+  **Faceunits 01** (ARKit-style), **Visemes 01** (Microsoft) and **Visemes 02** (Meta/Oculus) as CC0 "functional asset
+  packs" (static.makehumancommunity.org/assets/assetpacks.html).
 
 ## 6 · Routes: engine and editor layers, languages
 
@@ -918,6 +949,47 @@ saved in `../plans/2026-10-29-spec-evidence/ue5-mannequin-bones.json`:
   `upperarm_fwd/bck/in/out/bicep/tricep_l/r`, `lowerarm_fwd/bck/in/out_l/r`, `wrist_inner/outer_l/r`, `ankle_fwd/bck_l/r`,
   `clavicle_pec/out/scap_l/r`, `spine_04_latissimus_l/r`, `weapon_l/r`.
 - **Neither has `metatarsal_*` or `pectoral_*`** — Daz's bridge adds those on its side. The calf twists exist.
+
+*web and measured, 2026-10-29* — read by the Opus review of the standards spec:
+
+- **DNA carries body correctives.** OpenRigLogic's headers (`include/dna/layers/`): `RBFBehaviorReader.h` (RBF poses
+  with joint outputs, blend-shape channel outputs, animated-map outputs, pose scales, pose controls; `RBFBehavior.h`:
+  additive and interpolative solvers, quaternion and twist-axis distance methods), `TwistSwingBehaviorReader.h` (twist
+  and swing setups: input controls, output joints, blend weights), `JointBehaviorMetadata.h`, `MachineLearnedBehavior.h`;
+  matching writers exist. The archetype DNA in the user's UE 5.8 (`body_head_combined.dna`) holds one RBF solver per
+  body joint (`calf_l_UERBFSolver`, `clavicle_l_UERBFSolver`, `foot_l_UERBFSolver`, `hand_l_UERBFSolver`,
+  `index_l_01_UERBFSolver`, `index_l_01_half_UERBFSolver`, …) and the UE corrective bones — *measured* (names read from
+  the file).
+- **MetaHuman's face vocabulary** in `SKM_Face.dna` (UE 5.8): about 420 GUI control channels named `CTRL_<C|L|R>_<area>_
+  <action>.<tx|ty>` (`CTRL_C_jaw.ty`, `CTRL_L_mouth_cornerPull.ty`, `CTRL_L_brow_lateral.ty`, `CTRL_C_mouth_stickyU.ty`,
+  `CTRL_C_tongue_roll.ty`, `CTRL_L_eye_blink.ty`, …), `FACIAL_*` joint names, and part names `head`, `teeth`, `eyeLeft`,
+  `eyeRight`, `eyeshell`, `eyelashes`, `eyeEdge` — *measured* (names read from the file).
+- **Mapping lookups.** three-vrm's `mixamoVRMRigMap.js` (MIT): `mixamorigSpine` → `spine`, `mixamorigSpine1` → `chest`,
+  `mixamorigSpine2` → `upperChest`. Reallusion's Blender tools (`soupday/cc_blender_tools`, `rigify_mapping_data.py`,
+  GPL; names only): `CC_Base_Hip` ↔ Rigify `spine`, `CC_Base_Pelvis` ↔ `pelvis`, `CC_Base_Waist` ↔ `spine.001`,
+  `CC_Base_Spine01` ↔ `spine.002`, `CC_Base_Spine02` ↔ `spine.003`, `CC_Base_NeckTwist01` ↔ `spine.004`; its game-base
+  map: `spine.001` ↔ `spine_01`, `spine.002` ↔ `spine_02`, `spine.003` ↔ `spine_03`, `spine.004/005` ↔ `neck_01`.
+- **Materials.** MaterialX `libraries/pbrlib/pbrlib_defs.mtlx`: `ND_chiang_hair_bsdf` ("Chiang hair shading model") and
+  `deon_hair_absorption_from_melanin`; `libraries/bxdf/open_pbr_surface.mtlx` inputs include `subsurface_color`,
+  `subsurface_radius`, `subsurface_radius_scale`, `subsurface_scatter_anisotropy`, `coat_*`, `fuzz_color`,
+  `fuzz_roughness`, `fuzz_weight`, `specular_*`, `transmission_*`, `thin_walled`.
+- **Blender's USD I/O** (manual `files/import_export/usd.rst`, main): export writes Custom Properties as USD attributes
+  in the `userProperties` namespace by default (a Namespace option changes it); import reads them back (None / User /
+  All Custom); mesh attributes export as primvars and "Mesh Attributes — Read USD Primvars as mesh attributes";
+  MaterialX networks are written ("supports most of the shader nodes … a few caveats"); displacement exports only in the
+  Preview Surface network; Convert Orientation sets forward and up axes. Blender 5.0's Python notes: properties defined
+  with `bpy.props` "are no longer stored in the same container as user-defined Custom Properties".
+- **EEVEE** (manual `render/eevee/material_settings.rst`): Displacement "Displacement and Bump" moves vertices ("true
+  displacement"); "Displacement Only" falls back to it.
+- **glTF vendor extensions** (KhronosGroup/glTF `extensions/README.md`): `KHR_` is reserved for Khronos, `EXT_` for
+  multi-vendor extensions; vendor extensions carry a vendor prefix (VRM's `VRMC_*`).
+- **MCP Python SDK.** PyPI `mcp` latest 2.3.0; the 1.x line's `LATEST_PROTOCOL_VERSION` is `"2025-11-25"` (supported
+  2024-11-05, 2025-03-26, 2025-06-18, 2025-11-25); the 2.x line's `mcp_types/version.py` knows `2026-07-28` beside the
+  handshake versions. Blender Lab's `blender_mcp` (`mcp/pyproject.toml`, v1.0.2) depends on `mcp[cli]>=1.2.0,<2` and
+  declares tools with FastMCP's `@mcp.tool` decorator (`mcp/blmcp/tools/*.py`).
+- **Unreal skeletons** (search summaries of Epic's "Skeletons in Unreal Engine" page and Python API `Skeleton` class):
+  importing a mesh onto an existing skeleton merges new bones into it; a skeleton's Compatible Skeletons list lets it use
+  another skeleton's animation data, one way.
 
 *agent, 2026-10-29* — S8's pass 2, sources per fact there:
 

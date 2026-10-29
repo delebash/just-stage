@@ -161,6 +161,17 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           map per HD morph; every "verify later" item verified at the source or on this machine — RESEARCH §1, §6, §8).
           Still open for the user's word, by name: **N1** (the fields of the USD schemas), **N2** (hm08 without
           helpers), **N3** (HD morphs as displacement blends). N4, N5 and the port stand approved.
+        - Then, verbatim (2026-10-29, after switching the session to Opus 5.5): "fable messed up on the standards by
+          trying to roll its on json file for characters and a bunch of other non standard hand rolled stuff when
+          openusd handled it, i dont trust fables synthesis so can you revoiew all of fables work" → the review is
+          [`../plans/2026-10-29-spec-review-opus.md`](../plans/2026-10-29-spec-review-opus.md): 20 findings with recs,
+          WAITING on the user's word; the spec is unchanged until then. Two approvals rest on premises the review shows
+          false — **N5** (DNA's RBF and twist-swing layers already carry body correctives) and **N4**'s reason for our own
+          control names (MetaHuman's control names are in the user's UE 5.8 DNA files); they stand until the user says
+          otherwise. Three approved recs would change: **R17** (FBX out through Blender's exporter), **R19** (Blender
+          Lab's server speaks MCP 2025-11-25, not 2026-07-28), and the Blender floor of **R1** (kept at 5.2 LTS). The
+          user, mid-review: "blender 5.3 beta is installed but dont run just now anothe session is using memory
+          E:\blender-5.3.0-beta" and "unreal 5.8 is on f drive under epic" (RESEARCH §1 corrected).
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
