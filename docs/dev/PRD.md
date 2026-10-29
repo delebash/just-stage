@@ -2,7 +2,8 @@
 
 > **Status: rewritten 2026-10-29 to the approved recs** (R1–R21 and the Opus review's 1–28 — [`TASKS.md`](TASKS.md);
 > the standards spec: [`../standards/README.md`](../standards/README.md)). **§2 (who it is for) and §7 (what "done"
-> means for the first release) are the Fable session's guess and stay DRAFT until the user answers them** (review
+> means for the first release) were the Fable session's guess; §2 is now the user's answer (2026-10-29), §7 stays DRAFT
+> until the user answers it** (review
 > item 19 — a gap in an approved decision is asked, never filled with our own choice). Why it is built this way:
 > [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
@@ -18,15 +19,17 @@ then Unreal, reached through JustStage's own plugin, and Blender's animation too
 AI agents against written standards, with a measured quality gate before the features and a parity scorecard whose
 floor only rises.
 
-## 2 · Who it is for — DRAFT, the Fable session's guess, waiting for the user's answer
+## 2 · Who it is for — the user's answer, 2026-10-29
 
-| User | What they come for | What they must get |
-|---|---|---|
-| The user (indie filmmaker and developer; Unreal, Blender, CC5 and iClone on an RTX 2070 Super, 8 GB) | CC5's results without CC5's prices, Windows-only install, cloud credits and content lock-in; characters that go to Unreal with no retargeting | the quality bar, the Unreal pipeline, import of what they already own |
-| Indie game and film makers on Unreal, Unity or Godot | rigged, textured humans with faces that take iPhone, webcam or MetaHuman Animator capture | glTF/VRM/FBX/USD out, ARKit-compatible faces, free licences shown |
-| Blender artists | a character creator inside Blender that sculpts, grooms and clothes with Blender's own tools | the template's workspaces, Blender's data-blocks underneath |
-| Pipeline developers and AI agents | a scriptable, remote-controllable app | one command, four doors: the UI, Python, the command line, MCP |
-| JustDirect (the family's AI-film app, planned) | characters, scenes and render passes | the API and the USD package |
+The user, verbatim: "as with all my apps they are for anyone to use open source on any computer crossplatform and any
+grpahics". So JustStage is for **anyone**: free and open source, on Windows, macOS and Linux, on any graphics card —
+NVIDIA, AMD, Intel or Apple. Every core part runs on every vendor; a part that runs on one vendor only (NVIDIA's
+Audio2Face, UniRig's weight stage) is an optional plugin with its vendor shown, and a part missing on one platform (the
+webcam capture library on Intel Macs) is labelled there, never hidden.
+
+What anyone must get, from the requirements below: characters at the quality bar; import of what they already own;
+export into the engine or program they use (Unreal through the plugin, Unity, Godot, Blender, Maya and others); an API
+for scripts and AI assistants; licences shown on everything.
 
 ## 3 · Hard requirements (the user's words, TASKS)
 

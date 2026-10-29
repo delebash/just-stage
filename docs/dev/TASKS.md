@@ -257,7 +257,15 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           2026-10-29 — `makeImageJobsRouter`, `POST /v1/ai/image/jobs`, the result fetched once as PNG); checked in the
           kit's code and written into `ai-engines.md` §2–§3 and RESEARCH §10. PNG only: float channels are converted
           to EXR inside Blender.
-        - Open for the user: PRD §2 (who JustStage is for) and §7 (what the first release must hold); Blender is run
+        - Then, verbatim: "1 as with all my apps they are for anyone to use open source on any computer crossplatform
+          and any grpahics 2 what do you think?" → PRD §2 written from answer 1 (anyone, open source, every OS, every
+          graphics vendor); for 2 (what the first release holds) my rec was shown in chat, WAITING on the user's word:
+          R21's steps 1–6 — the passed gate; body, head and face, skin with makeup layers, eyes, hair with beards;
+          photo-to-head and photo-to-body; rig and expressions with creatures; clothes fitting; import and export with
+          the full Unreal plugin (mocap in Unreal with it); the installer on Windows, macOS and Linux; the Plugins page;
+          the API with its tests; user docs. After it: sculpt extras (7), clothes from patterns (8), then Animate with
+          JustStage's own live capture, Scene, FX and describe-a-person.
+        - Open for the user: PRD §7 (what the first release must hold); Blender is run
           only once the user says the other session's memory use is over.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
