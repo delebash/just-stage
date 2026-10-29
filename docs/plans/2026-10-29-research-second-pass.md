@@ -5,15 +5,13 @@ ran out partway (RESEARCH §13), so every notes file has gaps the cap cut. The u
 truncated and give us limited data", then "once you verify how it works if each session has new limit then we
 open 1 session per agent" — verified: a new conversation gets a fresh 200 (TASKS).
 
-## How to start a session (the user)
+## How it runs
 
-1. Open a terminal at `E:\Dev\3D` and run `claude`. Use Opus 5.5 at xhigh (`/model`, `/effort`) — the approved
-   research setup (TASKS, "Model").
-2. Paste one line, with that session's number:
+Changed 2026-10-29 on the user's word (TASKS): the search cap is raised to 2000 in the user settings, so the
+lead session runs the eight sections as eight research agents at once, about 200 searches each (was: one session
+per section, opened by the user). If a section ever needs its own session again, the launch line is:
 
-   `go: run second-pass session S<N> — read E:\Dev\3D\just-stage\docs\plans\2026-10-29-research-second-pass.md and follow its rules and section S<N>`
-
-The eight sessions don't depend on each other and can run at the same time.
+`go: run second-pass session S<N> — read E:\Dev\3D\just-stage\docs\plans\2026-10-29-research-second-pass.md and follow its rules and section S<N>`
 
 ## Rules for every second-pass session
 
@@ -26,9 +24,9 @@ The eight sessions don't depend on each other and can run at the same time.
   is out; Unreal is in; free-but-closed options get normal rows with their terms in plain words. Licences are
   one line each — licence, commercial use (yes / conditional / no / unclear), link — never legal analysis; the
   trademark check is dropped. A licence is a label, never a reason to drop an option.
-- **Do the research yourself in this session — no subagents.** The 200-search budget is per conversation and
-  shared with subagents; it refills at about 100 calls an hour. Spend searches on discovery; read pages with
-  WebFetch, GitHub's API and raw files, Hugging Face's API, arXiv abstract pages and docs source repos.
+- **Do the research yourself — spawn no subagents.** Your allowance is about 200 WebSearch calls (the session's
+  cap is shared by all eight). Spend searches on discovery; read pages with WebFetch, GitHub's API and raw files,
+  Hugging Face's API, arXiv abstract pages and docs source repos.
 - **Never work around a block or a bot check** (no spoofed user agents, no archive copies of a page that refused
   you). If a page refuses scripted access, use another source, or list it as blocked.
 - **Clean-room:** behaviour and public docs only; never copy code, shaders, meshes, morphs or assets; short quotes
@@ -38,12 +36,11 @@ The eight sessions don't depend on each other and can run at the same time.
 - **Output:** write `docs/plans/2026-10-29-research-<area>-pass2.md` (the name is in your section) in round
   one's format — "Top findings" (at most 15, each with its source), then one heading per gap item with one fact
   per bullet (source URL, the source's date, *page read* / *search snippet only*), "Assessment:" lines kept apart
-  from facts, and "Couldn't verify / open" last. Commit **only that file** (if `index.lock` is in use, wait and
-  retry; never delete it). Don't edit RESEARCH.md or TASKS.md — the lead distills all eight passes at once, so
-  parallel sessions never conflict.
+  from facts, and "Couldn't verify / open" last. Write **only that file**; don't commit (the lead commits), and
+  don't edit RESEARCH.md, TASKS.md or any other file — the lead distills all eight passes at once.
 - **Done when** every gap item in your section is answered with a source, or marked "not findable" with what was
-  tried. Then tell the user, in under 250 words: your file, the findings that change the picture, what is still
-  open.
+  tried. Then reply to the lead in under 250 words: your file, the findings that change the picture, what is
+  still open.
 
 ## S1 · CC5 — round one: `2026-10-29-research-02-cc5.md` → write `2026-10-29-research-02-cc5-pass2.md`
 
@@ -122,9 +119,12 @@ The eight sessions don't depend on each other and can run at the same time.
 
 ## S5 · Engine routes — round one: `2026-10-29-research-06a-engine-routes.md` → write `2026-10-29-research-06a-engine-routes-pass2.md`
 
-- Epic's own terms: try Epic pages that serve text (dev.epicgames.com documentation, epicgames.com legal pages).
-  Round one's EULA wording ("may not contain … any Engine Tools") and pricing are search snippets only. If every
-  Epic page refuses, list it — the user, who uses Unreal daily, reads it.
+- Epic's own terms: the lead read EULA **v15** from Epic's CDN (RESEARCH §6 — Engine Tools, distribution,
+  royalty). Find the **current** text — after change-log updates 20 (Publishing and Creator EULAs merged, a
+  Royalty Addendum, a separate Content License) and 21 (MetaHuman and AI) — at any Epic page or Epic-hosted file
+  that serves text (dev.epicgames.com, epicgames.com legal pages, cdn*.unrealengine.com PDFs); say whether the v15
+  Engine Tools and distribution wording survives, and read the Royalty Addendum and the seat-pricing terms. If
+  every copy refuses scripted access, list it — the user reads it.
 - Unreal: runtime exporters (glTF, USD, FBX) in a packaged app; morph-target limits; the 5.8 MCP plugin; what a
   packaged Unreal app may include (runtime only vs editor modules).
 - Godot: MCP servers and other control channels; products built on Godot that are tools, not games (beyond
@@ -201,6 +201,6 @@ One lead session reads the eight pass-2 files, distills them into RESEARCH.md, w
 the user. Then the fresh Fable session writes the synthesis and the standards spec (TASKS, NEXT).
 
 Not search gaps — these need something else:
-- Measuring the route finalists on the RTX 2070 Super (a realistic head with strand hair, a skinned body,
-  playback fps) — after the rec list names the finalists.
 - Any terms page that refuses every scripted read (Epic's, MetaHuman's) — the user reads it.
+- (Dropped 2026-10-29: measuring the route finalists on the RTX 2070 Super — the user: "my 2070 runs unreal and
+  blend and cc5 and iclone well enough", RESEARCH §1.)

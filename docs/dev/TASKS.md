@@ -186,4 +186,15 @@ APPROVED 2026-10-29 in the `E:\Dev\3D` session — the user: "go on the just-sta
             [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md) — S1 CC5,
             S2 iClone, S3 references, S4 bases, S5 engine routes, S6 own engine and layers, S7 building blocks,
             S8 standards. Each session researches itself (no subagents), writes its own `-pass2.md` and commits
-            only that file; the lead distills all eight at once. WAITING on the user to open the sessions.
+            only that file; the lead distills all eight at once.
+        - Then my rec shown: raise `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` so one session can run all eight
+          passes as agents. The user, verbatim: "CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION do that so you can run it
+          like you orignally planned, my 2070 runs unreal and blend and cc5 and iclone well enough. i am sure you
+          can find a way to download epic licnese use another fetch or search method, your rec go"
+          → DONE 2026-10-29: the cap is "2000" in the user settings' `env` (`F:\ClaudeCode\config\settings.json`;
+            my call on the file — the only settings file this running session watches; it took effect without a
+            restart, RESEARCH §13). Epic's EULA v15 downloaded from Epic's own CDN and read (RESEARCH §6); the live
+            EULA and change log still refuse scripted reads (403, not worked around), so the current text is S5's to
+            find, else the user's to read. The 2070's performance is the user's word (RESEARCH §1) — the
+            "measure the finalists" item is dropped. The second pass RUNS as 8 agents in this session, one per
+            section of the second-pass file, ~200 searches each, Opus 5.5 at xhigh.

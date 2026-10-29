@@ -30,6 +30,8 @@ Subjects: [1 · The machine](#1--the-machine) ·
 
 - GPU RTX 2070 Super with 8 GB, 32 GB RAM — *record, 2026-10-24* (the JustDirect memory note); not
   measured from this repo yet.
+- The user, 2026-10-29: "my 2070 runs unreal and blend and cc5 and iclone well enough" — *record* (the
+  user's word; not measured from this repo).
 - The user has Unreal Engine C++ projects on this machine (`E:\Dev\Unreal`: DeformCPlusTest,
   DeformationSystem, FootprintDeformation, GlobalEnvironmentalSystem, UE_GlobalEnvironmentalSystem) —
   *measured (listed), 2026-10-29*.
@@ -356,6 +358,38 @@ The "to verify" above — MetaHuman Creator in the Unreal editor since 5.6 — i
 - Blender Lab hosts an MCP server repo, `lab/blender_mcp` on projects.blender.org (created 2026-02-21,
   updated 2026-09-29). Its README didn't load by raw URL; its version and licence come from the agent.
 
+*web, 2026-10-29* — Epic's own "Unreal Engine End User License Agreement for Publishing", **version 15**,
+downloaded by this session from Epic's CDN (`cdn2.unrealengine.com/…/UnrealEngineEULA_for_Publishing_v15-….pdf`,
+147,624 bytes; read as text). It names the store "Marketplace", not Fab, so it predates the current text; the
+live EULA and its change log (unrealengine.com) refuse scripted reads (403, not worked around):
+
+- §1(A)(a): the Licensed Technology goes to end users "in object code format only as an inseparable part of a
+  Product"; "The Product may not contain any Paid Content Distributed in uncooked source format or any Engine
+  Tools."
+- §25: "Engine Tools" means "(a) editors and other tools included in the Engine Code; (b) any code and modules
+  in either the Developer or Editor folders, including in object code format, whether statically or dynamically
+  linked; and (c) other software that may be used to develop standalone products based on the Licensed
+  Technology." "Product" means anything made using the Licensed Technology, "regardless of how much or little …
+  is used".
+- §1(A)(b): Engine Code may go to other Engine Licensees; a public Distribution that includes Engine Tools "must
+  take place either through the Marketplace (e.g., for distributing a Product's modding tool or editor to end
+  users) or through a fork of Epic's GitHub UnrealEngine Network".
+- §1(A): "There is no restriction on your Distribution of a Product … that does not include any Engine Code …
+  and does not require any Licensed Technology … to run" ("Unrestricted Products") — e.g. exported files.
+- §1(A)(f): an integration of a language other than C++ "must be Distributed free of charge to all Engine
+  Licensees, must be available in source code form … and must permit Distribution free of charge, on all
+  platforms, in any Product".
+- §5: a royalty of 5% of worldwide gross revenue, with "The first $1,000,000 in lifetime gross revenue for each
+  Product" exempt.
+
+*web (search-result summaries), 2026-10-29* — Epic's EULA change log, through search snippets only: update 20
+merged the Publishing and Creator agreements into one, moved royalties into a Royalty Addendum (adding a 3.5%
+rate for "Launch Everywhere with Epic Release"), and put Content under a separate Epic Content License
+Agreement; update 21 restricts using MetaHuman characters and animation curves with AI technologies and defines
+cloud features. A third-party tracker (conductatlas.com) dates the current EULA 2026-05-05 and quotes the Engine
+Tools clause with "the Fab Marketplace". Whether the v15 wording above survives unchanged in the current text is
+unverified — the second pass (S5) looks for a readable current copy; otherwise the user reads the live page.
+
 *agent, 2026-10-29* — 06a, sources per fact there:
 
 - Unreal 5.8 (2026-06-17), likely the last 5.x; UE6 previews expected late 2027. The best real-time human
@@ -671,8 +705,10 @@ service from this session, every class, live and dead; the query was proven firs
   a new conversation or `/clear` resets the count, unless work that can still spawn subagents survives the
   clear; with `-p` and the Agent SDK it counts per turn. At the cap, searches return a notice to carry on
   with what was gathered. Round one's 8 agents ran it out (each notes file says so).
-- So the second pass runs one session per area, each with its own 200:
-  [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md) (the user's
-  word, TASKS).
+- The cap is raised: `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` = "2000" in the user settings' `env`
+  (`F:\ClaudeCode\config\settings.json`), on the user's word 2026-10-29 (TASKS). It took effect in the running
+  session without a restart: a fresh shell saw the variable and WebSearch answered again — *measured,
+  2026-10-29*. So the second pass runs as 8 agents in one session (was: one session per area, until
+  2026-10-29): [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md).
 - WebFetch reads up to 100,000 characters a call and caches 15 minutes; 20 subagents can run at once by
   default (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`), with no total limit — *agent, 2026-10-29* (the same docs).
