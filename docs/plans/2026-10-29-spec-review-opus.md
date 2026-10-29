@@ -478,6 +478,22 @@ manual branches:
 - Item 16's blast radius: the spec files naming 5.2 — `animation-and-later-features.md` (1), `import-export.md` (2),
   `project-files.md` (1), `quality-gate.md` (1), `testing.md` (2), `dev/ARCHITECTURE.md` (2) (grep).
 
+## Final check before the rewrite (2026-10-29, the user: "your rec on all 1-6 as long as you think on it again and make
+sure you dont change your mind go")
+
+- **N1.** Each remaining field was checked for a standard slot once more: id, name and version → `assetInfo`; lip-sync
+  audio → `UsdMediaSpatialAudio`; tuck-under → a USD relationship (standard type, our name); human or creature, cloth
+  settings, HD-map links → `juststage:` attributes — no standard has them (AOUSD's character group has published
+  nothing; the cloth-and-hair physics proposal, OpenUSD PR #111, is open). Holds.
+- **N3.** Checked against DNA's animated maps (`src/riglogic/animatedmaps/`, OpenRigLogic): RigLogic blends maps by rig
+  controls — the standard for *expression* wrinkles (scorecard row "Expression wrinkles", step 4, now on the DNA's
+  animated maps), not for identity sliders such as age, whose detail is edited, then baked on export. Holds.
+- **Registrar.** Blender Lab's server discovers its own tool modules once at startup and never removes them; the MCP
+  SDK's low-level server would be more code of ours, not less. Holds.
+- **Item 10.** OpenRigLogic's `TRADEMARKS.md` restricts Epic's marks in product names; control names are not marks.
+  Holds, as the user's exception to the clean-room rule.
+- **Item 15.** The request goes to the just-core session as that repo's work (no hidden sessions). Holds.
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);

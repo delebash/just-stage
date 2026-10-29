@@ -234,6 +234,13 @@ NEXT:   the standards spec — DRAFT WRITTEN 2026-10-29 by the Fable session (it
           command registrar** (our own small module that registers every command from its `Params`, item 7), **item
           10** (MetaHuman's control names — an exception to AGENTS.md's clean-room rule); **item 15** (sending the
           image-job route request to the just-core session).
+        - Then, verbatim: "your rec on all 1-6 as long as you think on it again and make sure you dont change your mind
+          go" → **GO 2026-10-29** on the six: (1) rewrite the spec to the 27 approved items; (2) **N1 APPROVED** — about
+          ten `juststage:` attributes; (3) **N3 APPROVED** — the slider-driven fade of HD detail maps; (4) **the command
+          registrar APPROVED** (NOT STANDARD, our own small module); (5) **item 10 APPROVED** — MetaHuman's control,
+          face-joint and part names on our face rig, names only, an exception to AGENTS.md's clean-room rule; (6)
+          **item 15 APPROVED** — the image-job route request goes to the just-core session. The final re-check before
+          acting (review file, "Final check before the rewrite") changed no rec.
         The rec list, version 2, is APPROVED 2026-10-29 — the user, verbatim: "go your rec all":
         [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md), R1–R21, plus two items for the user to read. Version 1 (R1–R17, CC5 + iClone on a
         Blender fork, `64f47a4`) was shown first; the user's questions and word since, verbatim: "1 what is the unreal
