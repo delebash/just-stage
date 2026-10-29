@@ -291,6 +291,36 @@ CharMorph, Human Generator, Anny, VRoid Studio, Auto-Rig Pro, Rigify, UniRig —
 - Gaps: no source compares any open base's realism with CC5 or MetaHuman; mesh quality (edge loops,
   subdivision) is undocumented for every candidate; Mutable, Bevy, Daz, Mixamo and VRoid terms unchecked.
 
+Second pass done 2026-10-29: [`../plans/2026-10-29-research-05-bases-pass2.md`](../plans/2026-10-29-research-05-bases-pass2.md).
+The user's bar since 2026-10-29 (TASKS): characters at "the quality of cc5 and metahuman characters or better".
+
+*web, 2026-10-29* — re-checked by this session (GitHub's API and the repo's README):
+
+- `localai-org/skin-tokens.cpp`: Apache-2.0, "A C++23/GGML port of" SkinTokens — "automatic skeleton and
+  skin-weight generation on CPU or Vulkan" (Vulkan can be switched off); created 2026-08-28, last push 2026-10-19,
+  232 stars. GGML is the library under the web kit's llama.cpp and stable-diffusion.cpp (§10).
+
+*agent, 2026-10-29* — S4's pass 2, sources per fact there:
+
+- Auto-rigging is no longer NVIDIA-only: besides the C++ port above, ONNX and Apple ports of SkinTokens exist
+  (the Apple one says it isn't ready); UniRig's skeleton stage runs anywhere through third-party ONNX/WebGPU
+  ports, its skin-weight stage stays CUDA-only. Checkpoint licences: UniRig and SkinTokens MIT; Puppeteer,
+  MagicArticulate and Make-It-Animatable Apache-2.0. Make-It-Animatable trains on 95 Mixamo characters and 2,453
+  Mixamo motions (a non-staff Mixamo FAQ post says no ML training).
+- GNM Head: 17,821 vertices, shipped as quads and as triangles, 253 identity and 383 expression parameters, 4
+  joints, 7 UDIM tiles; its weights are Apache-2.0.
+- MakeHuman's hm08 is all quads, made for subdivision: 14,766 faces; the raw mesh has 19,158 vertices (body
+  alone 13,380, including helper geometry in the rest).
+- MHR and SOMA-X are triangle meshes as their code evaluates them; SOMA-X's docs admit linear-blend-skinning
+  "candy-wrapper" artefacts at the elbow and shoulder.
+- Humanizer (Godot) went Unlicense → CC0 (2025-01) → AGPL-3.0 (2025-08); the Godot asset listing shows the CC0
+  v2.2.0. Rocketbox: 53 body and 28 facial bones (the agent's count of a Headbox file).
+- Unreal's Mutable is production-ready in UE 5.8 (Unreal only). ATLAS was merged into MHR. SMPL's commercial use
+  is paid only. The only open (CC0) strand hair found is MakeHuman's 7 hair-editor styles. LHM is NVIDIA-only and
+  depends on non-commercial Sapiens and SMPL-X.
+- Still open: no source compares any open base's realism with CC5 or MetaHuman; no source documents edge loops
+  for any base; MB-Lab's vertex counts (~18.2k / 18.0k) are the agent's estimate from file sizes.
+
 ## 6 · Routes: engine and editor layers, languages
 
 Not researched yet. A game engine, Blender, our own engine on rendering libraries, or a mix; the
