@@ -1120,6 +1120,22 @@ core features"), at Blender 5.2's sources:
   apps built on application templates, the "fully portable" kind an archive "that include[s] the Blender executable
   itself"; no sign it shipped was found.
 - Size: Blender 5.3 beta's folder on this machine is 956 MB.
+- Third pass (the user: "since you change your rec should you rethink again?"), at the sources: app templates are found
+  in `<BLENDER_SYSTEM_SCRIPTS>/startup/bl_app_templates_system` (`bpy.utils.app_template_paths`, 5.2);
+  `blender --command extension install-file [-h] -r REPO [-e] [--no-prefs]` installs and enables a package, system
+  repositories "are managed outside of Blender and are considered read-only" (manual
+  `advanced/command_line/extension_arguments.rst`, 5.2); Blender 5.2's Python is 3.13.13 (`versions.cmake`);
+  OpenRigLogic has no wheels (PyPI `openriglogic`, `riglogic`, `dna-riglogic` 404; no GitHub release assets).
+- Blender Lab's MCP server auto-discovers `blmcp/tools` modules with `pkgutil.iter_modules` and calls each
+  `register(mcp)` — "they are never un-registered" (`mcp/blmcp/__init__.py`). The MCP SDK 1.x: `FastMCP.add_tool(fn,
+  name, title, description, annotations, …)` and `remove_tool(name)` (`src/mcp/server/fastmcp/server.py`);
+  `ctx.session.send_tool_list_changed()` for "When your server dynamically adds or removes tools at runtime"
+  (`docs/server.md`, "Dynamic Tools" example registering a plugin's tools); tool arguments read with
+  `inspect.signature(func, eval_str=True)` (`utilities/func_metadata.py`); a low-level `Server` with `@server.list_tools()`
+  returning explicit `inputSchema`s (`docs/low-level-server.md`).
+- glTF exporter hooks: `class glTF2ExportUserExtension` with `gather_node_hook(self, gltf2_object, blender_object,
+  export_settings)` (KhronosGroup/glTF-Blender-IO `example-addons/example_gltf_exporter_extension`). Blender's FBX
+  exporter has no hook code (`scripts/addons_core/io_scene_fbx/export_fbx_bin.py`, 5.2).
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:

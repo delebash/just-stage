@@ -341,12 +341,44 @@ Added (missed by the first pass, or raised by the user during this one):
   "runs without a user interface", so the pasted text's embed option loses every editor; a game-engine UI is R1's
   rejected route. R1 holds (stock Blender); the spec's distribution section and the PRD change.
 
+## Third pass (2026-10-29, the user: "since you change your rec should you rethink again?")
+
+Angle: how the second pass's changes and additions (7, 11, 13, 19, 21–24) meet the other items. Found and changed:
+
+- **7 · Commands, refined.** A fresh angle — third-party plugins (R19) — breaks the second pass's "a thin MCP tool per
+  command": Blender Lab's server auto-discovers the modules in its `blmcp/tools` package at startup (`pkgutil`, "never
+  un-registered"), so a plugin's commands would never reach an assistant. The MCP SDK documents tools added at runtime
+  (`FastMCP.add_tool` / `remove_tool`, and `send_tool_list_changed()` in its "Dynamic Tools" example, which registers
+  a plugin's tools); FastMCP reads a tool's arguments with `inspect.signature`, which honours a built `__signature__`.
+  **Rec now:** each command — ours or a plugin's — declares its `Params` and `Result` once (pure Python, Blender Lab's
+  toolcode convention) beside its `main` inside Blender; one JustStage module in Blender Lab's tools folder (we ship
+  the server, item 24) registers every command from its `Params` with `add_tool`, and refreshes the list with the
+  tool-list-changed notice when plugins change; the operator keeps Blender's own property declarations for the UI, with
+  a test per command that they match `Params`. **Attack:** the registrar is our own code (small, on documented SDK
+  calls); hand-written wrappers per command are Blender Lab's way for its fixed 21 tools, and can't follow plugins.
+- **11 vs FBX, checked.** Blender's FBX exporter has no hook (no hook code in `io_scene_fbx/export_fbx_bin.py`, 5.2)
+  and our data isn't custom properties since 5.0 — so FBX keeps the sidecar while glTF uses `extras` through its
+  exporter hook (`glTF2ExportUserExtension.gather_node_hook`, the glTF add-on's example). Consistent; nothing changes.
+- **21 + 4.** Blender's MaterialX export doesn't carry displacement (item 4's caveat), so HD detail reaches Unreal and
+  game engines as baked normal maps, with the displacement maps kept for programs that read them (CC5's per-level
+  normal and displacement maps, §2). Added to 21.
+- **24 + 1, 7, 14.** The installer also carries Blender Lab's MCP server (item 7) and the engine host with its Node
+  runtime (item 14). Pre-installing uses Blender's own command, `blender --command extension install-file -r <repo>
+  -e` (5.2 manual; system repositories "are managed outside of Blender and are considered read-only"); the template
+  is found through `BLENDER_SYSTEM_SCRIPTS` (`bpy.utils.app_template_paths`, 5.2). Blender 5.2's Python is 3.13.13 and
+  OpenRigLogic publishes no wheels (PyPI 404, no release assets), so we build its Python bindings per OS — needed for
+  the approved face rig already, not new to item 1. Added to 24.
+- **22 + 6.** A character's kind (human or creature) is one of item 6's `juststage:` attributes. Added to 22.
+
+A fourth angle — this pass's own claims, each re-read at its source above — found nothing more. Unchanged: 1–6,
+8–20, 23.
+
 Blast radius of the changes and additions (greps of `docs/standards`, `docs/dev/ARCHITECTURE.md`, `docs/dev/PRD.md`):
 7 → commands-and-api.md, plugins.md, testing.md; 11 → character-data-model.md (sidecar row, l.18/23/231),
 interchange.md (l.40/90/140/145), README.md (l.66/167/179), skeleton-and-face.md (l.231), ARCHITECTURE.md (l.64);
 13 → TASKS (R17); 21 → character-data-model.md §1.4, import-export.md, parity-scorecard.md, README.md (N3 row);
 22 → import-export.md, parity-scorecard.md, README.md, skeleton-and-face.md, character-data-model.md, TASKS (R21);
-23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md; 24 → plugins.md §5, README.md (layout),
+23 → character-data-model.md §1, ARCHITECTURE.md §3, quality-gate.md; 24 → plugins.md §5, ai-engines.md, commands-and-api.md, README.md (layout),
 testing.md (a launcher test), dev/PRD.md, dev/ARCHITECTURE.md §1.
 
 ## Blast radius (files that change on a go)
