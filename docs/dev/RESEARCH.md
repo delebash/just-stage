@@ -721,6 +721,34 @@ MIT, last push 2026-10-26, 368 stars; `MengZephyr/LoBoFit` BSD-3-Clause, last pu
   Make-It-Animatable, DiffLocks, GENMO; whether mocopi sends VMC; untested — ufbx_write round trips into Maya,
   Unreal or Blender, and most AMD and Apple support (unmerged community PRs or single reports).
 
+**Making our own character assets** — the user's bar since 2026-10-29: the whole human (skin, eyes, lips, mouth,
+every kind of hair, nails, deformation) at CC5 and MetaHuman quality or better; reuse if it meets the bar, else build
+(TASKS). Second pass S10 done 2026-10-29: [`../plans/2026-10-29-research-10-character-assets.md`](../plans/2026-10-29-research-10-character-assets.md).
+
+*web, 2026-10-29* — re-checked by this session (Hugging Face's model API, `cardData.license`): Z-Image-Turbo
+apache-2.0 (2026-01-30), Qwen-Image apache-2.0 (2025-08-18), FLUX.2-klein-4B apache-2.0 (2026-02-24),
+HiDream-O1-Image-Dev mit (2026-06-22), none gated; Qwen-Image-2.1 is "other" (its LICENSE is the non-commercial Qwen
+Research License, per S10).
+
+*agent, 2026-10-29* — S10's notes, sources per fact there:
+
+- The big datasets exist but don't reach the bar: FFHQ-UV, FaceScape, FaceVerse, RenderMe-360, HairCS (53K) and
+  DiffLocks (40K) are almost all non-commercial and mostly 1K, some forbid training a commercial product; no free
+  textured head-scan set that allows commercial use was found.
+- No released, permissively licensed face UV / PBR texture generator meets the bar (FreeUV non-commercial;
+  AvatarMe++ commercialised; MoSAR and USC ICT's generator released nothing). The reusable AI is general: the image
+  models above, all run by stable-diffusion.cpp (MIT; CPU, CUDA, Vulkan, Metal, OpenCL, SYCL — the family's image
+  engine, §10), which says Z-Image runs "on GPUs with 4GB of VRAM — or even less".
+- Every image-to-strand hair model is non-commercial or unlicensed, CUDA-only, tested on A100s.
+- Unreal imports USD BasisCurves grooms (a custom GroomAPI schema) and Alembic grooms (schema 1.5). MetaHuman's
+  texture set is documented, and its Texture Override takes outside face and body textures.
+- Reuse or build, per part — build: the skin generator, eyes (shader and iris), hair groom and card generators,
+  wrinkle maps, nails, lips; reuse: OpenRigLogic (face-rig runtime), GNM / ICT teeth and tongue geometry, Dem Bones,
+  complementary dynamics and Jolt for deformation, MIT shader references (Galacean, O3DE).
+- Open: no source compares any open asset with CC5 or MetaHuman — the bar needs our own side-by-side renders;
+  licences unread (FLUX 3 Image Klein and Fibo 2.0 — gated; USC-HairSalon; Teeth3DS); FFHQ-UV's and ATLAS's labels
+  conflict; no VRAM measured on 8 GB; MetaHuman's wrinkle-map count and lash type unclear; ~50 facts snippet-only.
+
 ## 8 · Standards
 
 Round one done 2026-10-29: [`../plans/2026-10-29-research-08-standards.md`](../plans/2026-10-29-research-08-standards.md)
