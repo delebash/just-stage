@@ -452,6 +452,14 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   150+ facial morphs; reallusion.com free-3d-character-base page) falls under the EULA's CC Base Model clause, which
   bars use "in any character generation system" (§2) — not a base. No source names a cross-app standard human mesh;
   every app has its own (CC, Daz Genesis, MetaHuman, MakeHuman).
+- Human Generator, read at its own site (the user: "did you look at https://humgen3d.com/"; round one read only its
+  Superhive listing): 100+ body and face adjustments, a face rig with ARKit iPhone capture, particle hairstyles,
+  clothes, a pose library, Rigify-compatible rigs, LODs, a batch generator, a Python API, texture baking (home page).
+  "The add-on and its Python source code are licensed under the GNU General Public License"; its textures and 3D models
+  are under the separate "Human Generator Digital Asset License": no sharing or selling of the assets, customised
+  models included, and no sharing of "`.fbx` files of 3D models created with Human Generator" (license FAQ). $68
+  personal / $128 commercial, lifetime, one user; the trial has "limited functionality and content" and watermarked
+  4K textures (pricing page). Stays out as paid; its body can't be shipped or used as a base; its GPL code is readable.
 
 ## 6 · Routes: engine and editor layers, languages
 
