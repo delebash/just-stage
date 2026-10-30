@@ -307,6 +307,13 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            responsibliyt, you are overthinking and complicating things" — no cross-app memory rules (ai-engines.md §4
            rule 3 dropped). And on reuse: "we do what full ai in just stage so yeah reusing the kit is good idea its just
            sucjs we have to have node installed now" — Node ships inside JustStage's installer (plugins.md §5).
+           PARKED 2026-10-29 — the user, verbatim: "we will just use what we need now if we need jv we will do it later
+           for now just keep on going with what your are doing on character creator". Found before parking (kit
+           `75d3cb01`): the kit's generator places a new app beside the kit only (`scripts/new-app.js`
+           `repointKitPaths`: "both live in the family folder: <family>/app/<file> and <family>/<kit>/<target>"), so
+           JustStage's AI program made the standard way is its own family app in E:\Dev\Web (its own repo and session),
+           registered by the generator itself; chat and images already run over the kit's routes, speech has none (its
+           request shaping is JustVoice's `engines/audiocpp/slot.js`, 1,013 lines — moving it into the kit is later).
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
