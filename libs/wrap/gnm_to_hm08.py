@@ -56,6 +56,12 @@ HELPERS = {
     "helper-r-eyelashes-2": "skin",
     "helper-hair": "skin",
 }
+# GNM's own vertex groups each part keeps, so its regions take their own materials
+PART_GROUPS = {
+    "eyeLeft": ["eye_interiors", "eye_exteriors", "scleras", "irises", "pupils"],
+    "eyeRight": ["eye_interiors", "eye_exteriors", "scleras", "irises", "pupils"],
+    "teeth": ["teeth", "gums", "tongue", "upper_teeth_and_gums", "lower_teeth_and_gums"],
+}
 # part → (GNM components, the hm08 helper groups its MHCLO binds to); names are MetaHuman's (item 10)
 PARTS = {
     "eyeLeft": (["left_eye"], ["helper-l-eye"]),
@@ -193,6 +199,9 @@ def main() -> int:
             "vertices": int(len(verts)),
             "quads": int(len(quads)),
         }
+        groups = {g: [local[v] for v in verts if comp[group_names.index(g)][v] > 0.5] for g in PART_GROUPS[part]}
+        (parts_out / f"{part}.groups.json").write_text(json.dumps(groups), encoding="utf-8")
+        parts_meta[part]["groups"] = {g: len(v) for g, v in groups.items()}
     (parts_out / "parts.json").write_text(json.dumps(parts_meta, indent=2), encoding="utf-8")
 
     # 4 · GNM's head identity directions, carried across and faded, as MakeHuman targets — the skin and the helpers

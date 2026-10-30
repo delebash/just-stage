@@ -17,6 +17,7 @@ from mathutils import Matrix
 from ... import paths
 from ...core import mhclo
 from ..body import build
+from . import part_materials
 
 TOOL = ".dev/venv-tools/Scripts/python libs/wrap/gnm_to_hm08.py, then tools/bind_parts.py"
 
@@ -64,6 +65,8 @@ def add(character: bpy.types.Object) -> list[str]:
         obj.parent = character
         obj.juststage.part = part
         obj.juststage.part_of = character.juststage.character_id
+        groups = json.loads((_folder() / f"{part}.groups.json").read_text(encoding="utf-8"))
+        part_materials.assign(obj, part, groups)
         added.append(part)
     refit(character)
     return added

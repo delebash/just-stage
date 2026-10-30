@@ -101,3 +101,19 @@ def test_eyes_and_teeth_fit_in_the_head_and_follow_it(human):
     assert max(moved) > 0.0005  # the parts followed the new head
     again = api.run("juststage.head.add_parts", character=result.character)
     assert again.added == [] and len(obj.children) == 3  # running it again refits, never duplicates
+
+
+def test_each_part_region_has_its_material(human):
+    result, obj = human
+    api.run("juststage.head.add_parts", character=result.character)
+    parts = {o.juststage.part: o for o in obj.children}
+    eye = parts["eyeLeft"]
+    names = [m.name.split(" (")[0] for m in eye.data.materials]
+    assert names == ["JustStage Cornea", "JustStage Pupil", "JustStage Iris", "JustStage Sclera"]
+    used = {eye.data.materials[p.material_index].name.split(" (")[0] for p in eye.data.polygons}
+    assert used == set(names)
+    cornea = next(n for n in eye.data.materials[0].node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    assert cornea.inputs["Transmission Weight"].default_value == 1.0
+    assert cornea.inputs["IOR"].default_value == pytest.approx(1.376)
+    teeth = {parts["teeth"].data.materials[p.material_index].name.split(" (")[0] for p in parts["teeth"].data.polygons}
+    assert teeth == {"JustStage Teeth", "JustStage Gums", "JustStage Tongue"}
