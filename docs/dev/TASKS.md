@@ -422,6 +422,26 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            on the back of the scalp carried onto the head (next prompt: completely bald, no stubble), and the mouth is
            open showing teeth. Round 5's pictures kept in `.dev/facetest/round5/`. Next: rec 1's second half — each next
            view painted on a render of the paint already projected, for one person across views.
+           Then the user, verbatim: "keep going until you get a photo realistic version, if cc5 can do it and metahuman
+           can do it you can, so keep testing keep researching you have permision to do whatever research you need but i
+           need photo realism, can you keep going without stoping unitl you figure out how to get it to photo reaslism?";
+           "dont worry about rules you can run or do whatever you want" (auto mode still blocks some downloaded code —
+           not worked around); on pores: "so we test all approaches and can do this too to find what works best for our
+           setup". JustDirect goes on in its own session (the user's main goal is movies); the card is shared by message.
+           ROUNDS 8–11 2026-10-30 — the scan studios' way (shape to a normal map, light-free colour to the albedo):
+           repainted with "completely bald … mouth closed" (FLUX 3 still paints a shaved-stubble cap on the back of the
+           scalp); Sapiens2 normals per view (`view_normals.py`), only their detail under 15 mm kept over our mesh's
+           shape; each painting's light fitted as an even part plus one soft direction and divided out with our mesh's
+           occlusion (`delight_views.py`); full albedo and relief projected two-band, each view's brightness levelled
+           by a global gain; an object-space normal map; lashes as strands (the brow groom was huge and doubled the
+           painted brows — removed); the lips closed by a shape key; iris and sclera projected onto the eyeballs; the
+           render in Standard view; calibration from linear EXR renders (8-bit renders clipped red and ran the colour
+           away — round 9); the light fit chooses the fill too (the photo is lit evenly: fill 1.0, a 3 m key). Round 11
+           (`.dev/facetest/compare11fixed_face.png` — the 16-bit PNG trap: Blender reads 16-bit PNGs as linear, so
+           `compare10/11_*` show the render too dark): tone, light and background match the photo; eye bags, smile
+           lines and forehead creases are relief; the skin carries the photo's colour variation. Still CG: grey, milky
+           irises without the dark limbal ring or wet look; brows and pores washed faint by blending misaligned views;
+           one flat skin roughness, no sheen; a thin gap between the lips.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

@@ -94,13 +94,28 @@ def main() -> int:
         occlusion = np.clip(clay_l / np.median(clay_l[inner]), 0.2, 1.2)
         lum = (painted @ LUMA) / occlusion
         skin = inner & (lum > np.percentile(lum[inner], 15)) & (lum < np.percentile(lum[inner], 97))  # no eyes, brows
-        A = np.concatenate([np.ones((skin.sum(), 1)), n_rel[skin]], axis=1)
-        y, w = lum[skin], np.ones(skin.sum())
-        for _ in range(5):  # robust: freckles and lips shouldn't pull the light
-            coef = np.linalg.lstsq(A * w[:, None], y * w, rcond=None)[0]
-            r = y - A @ coef
-            w = 1.0 / np.maximum(np.abs(r) / (1.4826 * np.median(np.abs(r)) + 1e-9), 1.0)
-        shade = np.concatenate([np.ones(dist.shape + (1,)), n_rel], axis=2) @ coef
+        # a soft light: an even part plus one direction, the direction searched over the camera's half (its world-space
+        # normals in camera space), its strength between 0 and the even part — an unconstrained fit trades the even
+        # part against a frontal light (on a face both look alike) and drifts to lights from behind
+        ns = n_rel[skin]
+        y = lum[skin]
+        best = None
+        for el in np.radians(np.arange(-60, 61, 10)):
+            for az in np.radians(np.arange(-80, 81, 10)):
+                d = np.array([np.sin(az) * np.cos(el), np.sin(el), np.cos(az) * np.cos(el)])
+                A = np.stack([np.ones(len(ns)), ns @ d], axis=1)
+                w = np.ones(len(ns))
+                for _ in range(4):  # robust: freckles and lips shouldn't pull the light
+                    c = np.linalg.lstsq(A * w[:, None], y * w, rcond=None)[0]
+                    c[1] = np.clip(c[1], 0.0, max(c[0], 1e-6))
+                    r = y - A @ c
+                    w = 1.0 / np.maximum(np.abs(r) / (1.4826 * np.median(np.abs(r)) + 1e-9), 1.0)
+                err = np.median(np.abs(r))
+                if best is None or err < best[0]:
+                    best = (err, c, d)
+        _err, c, d = best
+        coef = np.array([c[0], *(c[1] * d)])
+        shade = c[0] + c[1] * (n_rel @ d)
         shade = np.maximum(shade, 0.25 * np.median(shade[inner])) * occlusion
         albedo = painted / shade[..., None]
         albedo[~covered] = 0.0
@@ -108,8 +123,8 @@ def main() -> int:
         vis = albedo / np.percentile(albedo[inner], 99)
         vis = np.where(vis <= 0.0031308, vis * 12.92, 1.055 * np.clip(vis, 0, None) ** (1 / 2.4) - 0.055)
         cv2.imwrite(str(DIR / f"albedo_{view}.png"), (vis[..., ::-1] * 255).clip(0, 255).astype(np.uint8))
-        print(f"{view}: {mm_per_px:.2f} mm a pixel, relief below {sigma:.0f} px; light a₀ {coef[0]:.3f}, "
-              f"a {np.round(coef[1:], 3).tolist()}", flush=True)
+        print(f"{view}: {mm_per_px:.2f} mm a pixel, relief below {sigma:.0f} px; light: even {c[0]:.3f}, directional {c[1]:.3f} from "
+              f"{np.round(d, 2).tolist()}", flush=True)
     return 0
 
 
