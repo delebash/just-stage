@@ -1630,6 +1630,25 @@ diffusion re-texturing). Checked against: commercial use, 8 GB, any graphics car
 - All of the above run in PyTorch, mostly CUDA-only: the family's engine (stable-diffusion.cpp) runs none of them as
   they are. TRELLIS.2 is MIT (12.5k ★) but needs ~24 GB (§7).
 
+*measured + web, 2026-10-30* — the image model that paints each view (the realism recs' first step, and the user's
+questions on FLUX 3 and Krea 2:
+[`../plans/2026-10-30-research-image-models.md`](../plans/2026-10-30-research-image-models.md), every search logged):
+- **refcontrol on our engine, measured** (stable-diffusion.cpp master-1024-77b72a2 CUDA, RTX 2070 Super 8 GB): image 1
+  our head's depth at the left40 view (rendered in Blender; nearest 0.5th percentile to 0.22 m behind it, near = light),
+  image 2 the approved painted front, prompt `<lora:flux2_klein_4b_refcontrol_depth:1.0> refcontrol`, 1024², seed 1,
+  `--offload-to-cpu`. On FLUX.2 klein 4B distilled (4 steps, CFG 1): 44 s; a photoreal picture of the same person
+  turned to our head's pose; its face points (MediaPipe) sit 11.3 px from the clay view's (median 12.1, worst 30)
+  against 14.5 px (median 14.7, worst 33) for the painting without depth — 22% closer. On klein base 4B Q8_0 (the
+  model it was trained on, `leejet/FLUX.2-klein-base-4B-GGUF`, 28 steps, CFG 4): 468 s; not scored yet.
+- FLUX 3 Image Klein (2026-10-15, 5.6B; FLUX Kommunity licence, free under US$5M revenue — secondary source): one model
+  for text-to-image, editing with up to 10 references and layout boxes; **no depth, pose or structure input** in its
+  README; needs its 9B prompt upsampler; testers call it "a strong editor and a weak generator of people". No depth
+  LoRA for it found. Failed to load on this card in stable-diffusion.cpp without a `--max-vram` budget (just-core
+  RESEARCH, 2026-10-27).
+- Krea 2 Raw / Turbo (2026-06-22, 12B; Krea 2 Community License, free under US$1M revenue — search snippet):
+  text-to-image only; runs in stable-diffusion.cpp; add-ons for identity (V2 non-commercial) and pose (Apache), a
+  depth ControlNet card unread; no reference + depth add-on found.
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
