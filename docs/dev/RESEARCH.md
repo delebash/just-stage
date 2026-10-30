@@ -1487,6 +1487,30 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
+*agent, 2026-10-30* — every JustStage function surveyed for what is new since 2026-10-29, plus Blender 5.0–5.3 (notes,
+tables ranked by quality, training buckets, apps and how they work, every search logged:
+[`../plans/2026-10-30-research-all-functions.md`](../plans/2026-10-30-research-all-functions.md); facts to re-check
+before the rec list):
+- Motion: NVIDIA's stack on SOMA (the body layer in §5) — GEM-X (video → body, hands, world-space motion; NVIDIA Open
+  Model License), Kimodo (text and keyframes → motion, 282M parameters, 700 h of mocap; its card says "ready for
+  commercial use"; under 3 GB with the text encoder on the CPU), MotionBricks (real-time motion from keyframes), SOMA
+  Retargeter — each ported to C++/GGML by `localai-org` (Apache-2.0). Any-skeleton motion: UniMate (code MIT, weights
+  CC-BY-NC-4.0), MoCapAnything V2, TopX (paper only).
+- Rigging: SkinTokens still the best released; Armature, a new free AI rigging app (under $100k revenue) exporting USD;
+  Rigel3D and AniGen (generate a mesh already rigged) — papers without code.
+- Clothing: NGL-Prompter — sewing patterns from one image with a stock vision-language model and GarmentCode, no
+  fine-tuning (code not found).
+- Image to 3D: Pixal3D (MIT), SUPRA-Tex (MIT, relightable textures); Meshy T2's repo has no licence; Hunyuan3D 3.x
+  looks API-only.
+- Faces: no released model makes a full ARKit-52 set for any head; the training-free route is transferring the shapes
+  from a CC0/MIT template (MPFB2 Faceunits, ICT-FaceKit); NFR has MIT code, its weights' licence unstated.
+- Blender: 5.2 experimental XPBD cloth and hair dynamics; 5.3 EEVEE Material Lighting nodes, Gaussian splats,
+  world-space animation copy/paste, Vulkan the default.
+- LoRA on 8 GB (trainers' documented minimums): a vision-language model up to ~11B by QLoRA (Unsloth); FLUX.2 klein-4B
+  borderline at ~8 GB in int8; Z-Image (10–12 GB) and Qwen-Image (24 GB) don't fit; no trainer documents LoRA for 3D or
+  motion models.
+- Not verified: AccuRIG, Cascadeur and Mixamo internals; GEM-X's VRAM; MetaHuman 5.8's notes; nothing run here.
+
 *agent, 2026-10-30* — photo to a 3D head on our base, the research the user asked for (notes, every search logged:
 [`../plans/2026-10-30-research-ai-photo-to-head.md`](../plans/2026-10-30-research-ai-photo-to-head.md); facts to be
 re-checked before the rec list):
