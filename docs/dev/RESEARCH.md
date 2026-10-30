@@ -1656,6 +1656,14 @@ questions on FLUX 3 and Krea 2:
   the whole card's peak 1,995 MiB with the desktop's 588. All keys load; four 512² maps out (2-channel UV correspondence
   and three 1-channel maps). Its `flame_assets.npz` holds FLAME's UVs and faces only (5,023 vertex UVs, 9,976 faces) —
   the mesh itself is `flame2023.pkl`, whose download page shows only a sign-in form (flame.is.tue.mpg.de, 2026-10-30).
+- **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
+  Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
+  `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.
+  DAViD ViT-L (`normal-model-vitl16_384.onnx`, MIT, ONNX Runtime 1.31 on the CPU — its CUDA provider didn't load): 1.6 s
+  a view at 512². Against our mesh's own normals (from the views' depth pictures, the face's inner part, 6 px blur):
+  Sapiens2 8.5–12.7° mean (left40 8.5, front 9.1, faceleft30 10.4, face 12.7); DAViD 9.6–15.9°; a flat card 31–34°. Both
+  agree with the mesh along the forehead within ~0.1 per axis. Sapiens2 kept. (The first comparison counted the clay
+  world's background, which the view-distance picture stores as 1.0, as head — fixed.)
 - Krea 2 Raw / Turbo (2026-06-22, 12B; Krea 2 Community License, free under US$1M revenue — search snippet):
   text-to-image only; runs in stable-diffusion.cpp; add-ons for identity (V2 non-commercial) and pose (Apache), a
   depth ControlNet card unread; no reference + depth add-on found.
