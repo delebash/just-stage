@@ -1650,6 +1650,12 @@ questions on FLUX 3 and Krea 2:
   views where FLUX.2 klein drifts 39 and 44 px; front 5.6 (FLUX.2 4.5). Photoreal skin. With the front photo as a
   second reference it drew the front's pose (177 px) — one face across views comes from painting each next view on a
   render of the paint already projected.
+- **RealDenseFace's network measured** (code `LinzhouLi/RealDenseFace` 4dbdf1de, MIT; weights from its HF repo, sha256
+  checked; PyTorch 2.6.0+cu124 in `.dev/venv-rdf`; one 512² picture, no FLAME, no solver): ViT-B 224.5M parameters —
+  1,098 MiB allocated, 104 ms (fp32), 1,394 MiB, 54 ms (fp16 autocast); ViT-S 67.8M — 481 MiB, 54 ms / 600 MiB, 33 ms;
+  the whole card's peak 1,995 MiB with the desktop's 588. All keys load; four 512² maps out (2-channel UV correspondence
+  and three 1-channel maps). Its `flame_assets.npz` holds FLAME's UVs and faces only (5,023 vertex UVs, 9,976 faces) —
+  the mesh itself is `flame2023.pkl`, whose download page shows only a sign-in form (flame.is.tue.mpg.de, 2026-10-30).
 - Krea 2 Raw / Turbo (2026-06-22, 12B; Krea 2 Community License, free under US$1M revenue — search snippet):
   text-to-image only; runs in stable-diffusion.cpp; add-ons for identity (V2 non-commercial) and pose (Apache), a
   depth ControlNet card unread; no reference + depth add-on found.

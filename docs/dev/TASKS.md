@@ -409,7 +409,10 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            views from painting each next view on a render of the paint already projected (rec 1's second half). The
            refcontrol LoRA and the kit LoRA request are dropped. FLUX.2 klein 4B stays beside it as a choice, each
            model labelled (FLUX 3: FLUX Kommunity License, gated at BFL, free under US$5M revenue — secondary source).
-           Next: RealDenseFace's memory on this card.
+           RealDenseFace measured 2026-10-30 (RESEARCH §10): its network takes 1.1 GB (ViT-B, 0.1 s a picture) or 0.5 GB
+           (ViT-S) on the card — fits beside anything. STEP 1 DONE. Rec 4 needs the FLAME 2023 Open file, whose download
+           needs a sign-in at flame.is.tue.mpg.de — the user's account. Next: rec 1 — face test round 6, all views
+           painted by FLUX 3 Image Klein.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
