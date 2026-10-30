@@ -359,6 +359,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            colour (renders `.dev/facetest/render_*_painted.png` beside `_plain`). Open: the painted brows double the
            strand brows; a soft band on the shoulders; resolution soft; no specular/roughness map yet; the eye shells;
            studio HDRI lighting (Poly Haven, CC0); the MetaHuman and CC5 references for the side-by-side.
+           ROUND 2 2026-10-29 (the user: "keep going if you think you can get the model to look real"; "it has to be
+           as good as the real photo or there is no point in this project"): three close face views, a bump map and a
+           shine map from the painted skin, Poly Haven's CC0 "Studio Small 09" HDRI, each render beside the AI photo
+           from its camera (`.dev/facetest/compare_*.png`). WORSE than round 1: the AI moves the face a little when it
+           paints (its eyes lower, its mouth shifted), so projected eyelids and irises land below the 3D eyeballs
+           (doubled eyes) and the lips misregister; the close views' edge shows as a ring on the forehead (their
+           weight ×(0.78/d)⁴ too strong); the calibrated skin colour renders darker and browner than the AI's skin.
+           Next: align each painted view to its clay view by facial landmarks before projecting (warp the painting
+           so its eyes, nose, mouth and jaw sit on the mesh's), softer close-view weights, and the skin tone taken
+           from the AI's painting.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
