@@ -1487,6 +1487,31 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
+*agent, 2026-10-30* — AI texturing of our own mesh, the methods (notes, ranked by quality — the papers' own claims, no
+independent comparison exists — training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-ai-texturing.md`](../plans/2026-10-30-research-ai-texturing.md); facts to re-check
+before the rec list):
+- The drift fix that needs no training: before projecting a view, warp it onto a render of the paint already on the
+  mesh where they overlap (ConsistenTex, ECCV 2024, no code), face landmarks as the backstop for eyes, nose and lips.
+- Painting all views of a given mesh: Hunyuan3D-Paint 2.1 is the reference others compare to (21 GB; its licence
+  doesn't apply in the EU, UK or South Korea); 2026 methods claiming better — LumiTex, NaTex, UniTEX, TRELLIS.2, MatLat
+  — mostly on non-commercial bases, 24 GB+, or unreleased. Runs here today: MV-Adapter, an ONNX conversion of its SD2.1
+  image+mesh model (2026-10-29; CPU, CUDA, WebGPU; weights Apache, the SD2.1 base OpenRAIL++) — 512 px per view, so base
+  colour only.
+- Reference + depth per view on our engine: an Apache LoRA for FLUX.2 klein (`refcontrol`) keeps a reference picture's
+  identity while following a depth map; runs on stable-diffusion.cpp; trained on klein base, not the 4B we run;
+  untested.
+- Removing baked light: Marigold V2 albedo (2026; code and weights Apache; a LoRA on Qwen-Image-Edit-2509; 17 GB in
+  PyTorch; stable-diffusion.cpp untested); the no-model way first — fit the light from the mesh's known normals and
+  divide it out, with a baked crease-shadow map.
+- Seams: one view per mesh face, colours levelled across seams, then blended (Waechter et al. 2014, `mvs-texturing`,
+  BSD-3).
+- Face UV generators: OMGTex (CVPR 2026, MIT code, on non-commercial FLUX.1-dev) the best released; TOPOS describes
+  our target exactly, no code.
+- Small training on 8 GB: an SDXL LoRA fits (kohya: "8GB GPU memory (10GB recommended)"); a FLUX.2 klein 4B LoRA is
+  borderline (SimpleTuner: ~8 GB at int8, 16 GB recommended).
+- Open for the user: whether OpenRAIL weights (SD2.1, Marigold IID) are acceptable. Nothing measured this session.
+
 *agent, 2026-10-30* — every JustStage function surveyed for what is new since 2026-10-29, plus Blender 5.0–5.3 (notes,
 tables ranked by quality, training buckets, apps and how they work, every search logged:
 [`../plans/2026-10-30-research-all-functions.md`](../plans/2026-10-30-research-all-functions.md); facts to re-check
