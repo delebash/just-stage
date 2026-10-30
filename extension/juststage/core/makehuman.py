@@ -22,6 +22,7 @@ from pathlib import Path
 
 #: MakeHuman's base is in decimetres; MPFB2's "METER" scale.
 SCALE_TO_METRES = 0.1
+BODY_VERTICES = 13380  # hm08's body is vertices 0–13379; the helpers and joint cubes follow (MPFB2's own bound)
 
 MACROS = ("gender", "age", "muscle", "weight", "proportions", "height", "cupsize", "firmness")
 RACES = ("asian", "caucasian", "african")

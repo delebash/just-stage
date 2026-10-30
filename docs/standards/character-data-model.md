@@ -74,7 +74,7 @@ on top (CC5 HD's method); three shape spaces are wrapped onto it.
 | Topology | hm08: all quads, "completely triangles free", poles ≤ 5 edges, made for subdivision | §5 |
 | Dots (vertices), level 0 | 19,158 in the whole mesh: 13,380 in the `body` group (the skin) and 5,778 in the helper geometry and joint cubes | §5 |
 | Faces, level 0 | 18,486 quads in the whole mesh (no triangles), 13,378 of them in the body — measured in MPFB2's `base.obj` at the pinned commit (was: "14,766 for the whole mesh" until 2026-10-29) | §5 |
-| Licence | CC0 1.0 (MPFB2's assets) — the base, the 1,258 targets, the 7 hair styles | §5 |
+| Licence | CC0 1.0 (MPFB2's assets) — the base, the 1,258 targets; MakeHuman's hair-editor pack — the 16 styles MPFB2 lists | §5 |
 | Levels | 0 (editing, shape keys, skinning), 1 and 2 (Catmull-Clark through Blender's Multires modifier, which stores per-level displacement; 5.3 shows textures and attributes while sculpting on it) | [Multiresolution](https://docs.blender.org/manual/en/5.3/modeling/modifiers/generate/multiresolution.html), §8 |
 | Expected counts | ×4 faces per level (CC5 HD: 70,732 at SubD 1, 282,928 at SubD 2 from 17,683) | §2 |
 
@@ -93,7 +93,8 @@ Rules:
   licences (GNM Apache-2.0, ICT MIT — §5, §7). Parts are fitted to the body as MakeHuman fits its eyes — by MHCLO
   (MakeHuman's format covers "clothes … hair and eyes", §5). Part names follow MetaHuman's face-part names where one
   exists (item 10, [`skeleton-and-face.md`](skeleton-and-face.md) §2.3).
-- **Units and axes inside Blender:** metres, Z up, −Y front. Interchange converts ([`interchange.md`](interchange.md) §1).
+- **Units and axes inside Blender:** metres, Z up, −Y front, standing on the floor (the body's lowest vertex at
+  z = 0 — MPFB2's `feet_on_ground`). Interchange converts ([`interchange.md`](interchange.md) §1).
 - **Rest pose:** A-pose (arms about 45° down), facing −Y. MetaHuman conforming required A-pose in 5.6 and takes A to T
   since 5.7 (§8); A-pose binds keep shoulder deformation. Exports that need a T-pose re-pose through the retarget pose,
   never the bind pose ([`skeleton-and-face.md`](skeleton-and-face.md) §1.4).
@@ -252,6 +253,10 @@ texture with no record is a build error ([`testing.md`](testing.md)).
   Interpolate and Duplicate Hair Curves; Clump, Curl, Braid; Frizz, Noise, Roll, Rotate, Shrinkwrap, Smooth, Straighten,
   Trim, …) as modifiers on the Curves object. **A groom's settings are those node groups' inputs**, saved in the
   `.blend` and the library asset — no groom schema of ours.
+- **Styles:** MakeHuman's CC0 hair-editor pack (`hair/haireditor/hair.blend`, by Tomáš Klecer) — the 16 styles MPFB2's
+  hair editor lists (scalp, eyebrows, beards, moustaches, eyelashes) — attached as MPFB2 attaches them: the body as the
+  Curves surface, an identity parent; each style carries its own copies of Blender's hair node groups, Surface Deform
+  (Deform Curves on Surface) first, which follows the body's shape keys through Blender's rest position.
 - **Groom types:** `scalp`, `eyebrows`, `eyelashes`, `beard`, `mustache`, `body`, `vellus` — MetaHuman's public groom
   types plus body hair (S10 §4a), a property of the Curves object.
 - **Per-curve attributes** named after Unreal's groom schema so export is a copy: `groom_root_uv`, `groom_guide`,

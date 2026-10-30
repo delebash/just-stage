@@ -301,11 +301,25 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
            character and refits them when the head shape changes; the head helpers now follow GNM shapes. Still in 5:
-           eye and teeth materials, the eye occlusion and tearline shells, brows, lashes, nails, the skin's
-           micro normal and texture layers. DONE in 5 on 2026-10-29: the skin material — `juststage.skin.set_tone`
+           the eye occlusion and tearline shells, the card lashes (`eyelash.L/R`), nails, the skin's micro normal
+           and texture layers. DONE in 5 on 2026-10-29: the part materials (`389619b`) — one Principled BSDF per
+           GNM region, the cornea's 1.376 and enamel's 1.63 measured, the rest starting values for the gate; strand
+           brows and lashes are grooms (step 6); the skin material — `juststage.skin.set_tone`
            builds Principled BSDF with Random Walk (Skin) subsurface from `core/skin_optics.py` (Donner & Jensen's
            chromophores, calibrated on NIST's 100 measured skins: mean RMS 0.0098), IOR 1.4, the paper's roughness.
-        6. The scalp groom with Blender's hair node groups.
+        6. The scalp groom with Blender's hair node groups. DONE 2026-10-29: `juststage.hair.add` attaches one of
+           MakeHuman's CC0 hair-editor styles (`hair.blend` by Tomáš Klecer; the pack fetched and SHA-256-checked by
+           `tools/fetch_data.py`) the way MPFB2's hair editor attaches it — MPFB2's 16 listed styles: 8 scalp, 2
+           eyebrows, 4 beards and moustaches, 2 eyelashes — each a Curves object shaped by the Blender hair node
+           groups it carries. Colour is Principled Hair BSDF by melanin, per strand (`melanin` and `redness` curve
+           attributes; Blender's defaults 0.8 and 1.0). The body now stands on the floor (MPFB2's `feet_on_ground`,
+           where the styles were groomed) with Blender's rest position on, so the strands follow its shape keys:
+           roots 0.1–1.4 mm from the skin (median, all 15 styles with strands), the same on a baby's head. My decision under the go ("take your
+           own recs"), attacked first: a procedural groom (Generate Hair Curves inside a scalp mask) was built and
+           dropped — no standard source marks the hairline (MakeHuman's hair helper and MPFB2's scalp makeup region
+           both take in the forehead, measured), and artist-made grooms are what CC5 and MetaHuman ship; one way per
+           job, so the procedural command is gone. Open for later steps: the `groom_*` export attributes (step 8),
+           body hair (the pack's `fur.blend`, 15 regions), hair cards (`hair.bake_cards`).
         7. The first face rig: OpenRigLogic's Python bindings built for Blender 5.3's Python 3.13; three expressions.
         8. The first Unreal plugin: import the package, build materials and groom, render.
         9. The gate renders and contact sheets (EEVEE, Cycles, Unreal) beside CC5 and MetaHuman; the user's verdict.

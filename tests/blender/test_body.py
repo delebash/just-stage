@@ -76,6 +76,7 @@ def test_a_standing_adult_in_metres_z_up(human):
     co = _shaped_coords(obj)[:13380]  # the body group is vertices 0–13,379
     height = co[:, 2].max() - co[:, 2].min()
     assert 1.4 < height < 2.0  # an adult, in metres, standing along Z
+    assert co[:, 2].min() == pytest.approx(0.0, abs=1e-5)  # on the floor (MPFB2's feet_on_ground)
 
 
 def test_joint_cubes_follow_the_body(human):

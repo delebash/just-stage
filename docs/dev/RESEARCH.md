@@ -403,7 +403,8 @@ The user's bar since 2026-10-29 (TASKS): characters at "the quality of cc5 and m
 - Humanizer (Godot) went Unlicense → CC0 (2025-01) → AGPL-3.0 (2025-08); the Godot asset listing shows the CC0
   v2.2.0. Rocketbox: 53 body and 28 facial bones (the agent's count of a Headbox file).
 - Unreal's Mutable is production-ready in UE 5.8 (Unreal only). ATLAS was merged into MHR. SMPL's commercial use
-  is paid only. The only open (CC0) strand hair found is MakeHuman's 7 hair-editor styles. LHM is NVIDIA-only and
+  is paid only. The only open (CC0) strand hair found is MakeHuman's hair-editor pack (16 styles MPFB2 lists — was "7": that
+  was its scalp list alone; read below, 2026-10-29). LHM is NVIDIA-only and
   depends on non-commercial Sapiens and SMPL-X.
 - Still open: no source compares any open base's realism with CC5 or MetaHuman; no source documents edge loops
   for any base; MB-Lab's vertex counts (~18.2k / 18.0k) are the agent's estimate from file sizes.
@@ -513,6 +514,45 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   models included, and no sharing of "`.fbx` files of 3D models created with Human Generator" (license FAQ). $68
   personal / $128 commercial, lifetime, one user; the trial has "limited functionality and content" and watermarked
   4K textures (pricing page). Stays out as paid; its body can't be shipped or used as a base; its GPL code is readable.
+
+*measured, 2026-10-29* — hair for step 1.6, on Blender 5.3 beta and MPFB2 `6ff1eb35`:
+- **MakeHuman's hair-editor pack** ([haireditor.html](https://static.makehumancommunity.org/assets/assetpacks/haireditor.html),
+  *page read*): "This pack contains two blend files ("hair.blend" and "fur.blend"), both by Tomáš Klecer"; the packs
+  page's functional section: "The assets are shared under CC0" ([assetpacks.html](https://static.makehumancommunity.org/assets/assetpacks.html)).
+  `files2.makehumancommunity.org/functional/haireditor.zip` (mirror `files.`): 18,251,712 bytes, Last-Modified
+  2026-10-24, SHA-256 `e47ade8e…cbe72`; `hair.blend` 27,310,677 bytes (`8566a128…f080`), `fur.blend` 19,207,241.
+  MPFB2 tells an old pack from the current one by `hair.blend`'s size (`is_hair_pack_outdated`).
+- **What `hair.blend` holds** (listed in Blender 5.3): 28 objects. MPFB2's lists (`haireditorpanel/properties/*.json`)
+  name 16: scalp `short_hedgehog` (42,504 curves), `hair_to_shoulder`, `short_crown`, `short_cap`, `short_ponnytail`,
+  `back_pigtail` (+ a `_brace` hair-tie mesh), `tail_base`, `empty_hair` (0 curves, the template for grooming by hand);
+  eyebrows `wild_eyebrow`, `wild_thick_eyebrow`; facial `wild_thick_beard`, `wild_thick_moustache`, `wild_beard`,
+  `wild_moustache`; other `basic_lashes_upper`, `basic_lashes_lower`. Not listed: `straight_hair_to_shoulder`,
+  `hedgehog`, `basic_short_hair` and `*_cards` meshes. `fur.blend`'s 15 (`fur_assets.json`): full body, hands, forearms,
+  arms, chest, back, neck, belly, thighs, lower legs, feet, mane, face, head, inner arms. Every style is a Curves object
+  (`surface` empty, `surface_uv_map` "UVMap", a `surface_uv_coordinate` attribute) whose modifiers are the pack's own
+  copies of Blender's hair node groups — Surface Deform (one Deform Curves on Surface node) first, then Set Hair Curve
+  Profile, Curl, Hair Curves Noise, Frizz, Roll, Clump, and Duplicate, Braid or Attach Hair Curves to Surface in some;
+  materials are "Hair shader EEVEE" groups on Principled BSDF. No text blocks, no drivers.
+- **How MPFB2 attaches a style** (`apply_hair_operator.py`, `haireditorservices.attach_curves_to_basemesh`): load the
+  object (and `<style>_brace`), set the Curves `surface` to the body, parent to it with an identity inverse ("The asset
+  was groomed on a character standing at the origin"), and first add Blender's empty hair (`ensure_hair_setup`: "or the
+  hair asset wont behave correctly"). Without the body's rest position Surface Deform reports "Evaluated surface
+  missing attribute: "rest_position"" and leaves the strands where they were groomed; `Object.add_rest_position_attribute`
+  turns it on.
+- **The floor:** MPFB2's `create_human(feet_on_ground=True)` lifts the mesh by its lowest body vertex (index < 13,380,
+  shape keys mixed) and applies it — 0.8177 m at the default macros. hm08's `base.obj` is centred on the origin, so a
+  body left there sits 0.8 m below the styles. Lifted, with rest position on: roots to the skin median 0.1–1.4 mm, 95th
+  percentile 0.3–3.8 mm (the beards highest), worst 5.6 mm, over the 15 styles with strands; the same after age 0 (a baby). `tail_base` alone stayed at
+  5.5 mm median / 16.6 mm p95 until its Attach Hair Curves to Surface modifier's empty `Surface` input was set to the
+  body: 0.3 / 0.8 mm. Blender 5.3's Principled Hair BSDF defaults: Chiang model, Melanin 0.8, Melanin Redness 1.0.
+- **Scalp masks tried and dropped** (a procedural groom: Generate Hair Curves inside a mask): MakeHuman's hair helper
+  (`helper-hair`, 428 vertices, y 0.201–0.85 m in MakeHuman's axes — it runs to the shoulders for long hair — a median
+  15 mm, p90 39 mm, above the skin) and MPFB2's `uv_layers/scalp_solid.json.gz` (its MakeUp "scalp" focus region: 520
+  faces, 567 vertices) both reach the forehead: rays along the skin's normals into the helper reach the front midline
+  9 mm below the eye's centre, `scalp_solid` from 23 mm above it; the pack's own `short_hedgehog` hairline is 56 mm
+  above it (front midline, measured on the attached style).
+- Lead for the face rig (step 7), contents not yet read: MakeHuman's functional packs also list "Faceunits 01: ARKit
+  style face units" and "Visemes 01/02" (Microsoft and Meta/Oculus style), CC0.
 
 ## 6 · Routes: engine and editor layers, languages
 

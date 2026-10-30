@@ -82,7 +82,7 @@ Paths are inside the `juststage` add-on unless they say otherwise.
 | The texture set | the master set, channels of data model §3.1, UDIM 1001–1006, 8K on disk, 2K/4K working resolution; every target is a bake from it | a second authored set per target; 8K in the viewport |
 | A material | Principled BSDF / Principled Hair BSDF in Blender; in USD what Blender's exporter writes — UsdPreviewSurface + MaterialX `open_pbr_surface` (`chiang_hair_bsdf` for hair) | a shader network of our own; MDL |
 | A generator's inputs (melanin, age, pores, …) | the generator preset, recorded in provenance | parameters stored on the material |
-| Hair | Blender Curves with Blender's hair node groups; their inputs are the groom's settings; `groom_*` attributes; cards by `hair.bake_cards` | a groom schema of our own; cards as the source |
+| Hair | Blender Curves with Blender's hair node groups; their inputs are the groom's settings; styles from MakeHuman's CC0 hair-editor pack, attached MPFB2's way (`juststage.hair.add`); `groom_*` attributes; cards by `hair.bake_cards` | a groom schema of our own; cards as the source |
 | A garment's fit | MakeHuman's MHCLO (`garments/*.mhclo`), refit on body change (LoBoFit on top) | fit arrays of our own |
 | Garment layering | MHCLO `z_depth` / `juststage:layer`; `juststage:tuckUnder` | parenting a mesh to the body |
 | Faces hidden under a garment | MHCLO `delete_verts`; a `UsdGeomSubset` (family `juststage:hide`) | a vertex-list blob |

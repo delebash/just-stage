@@ -104,7 +104,17 @@ def create_human(name: str, values: dict) -> bpy.types.Object:
     props.kind = "HUMAN"
     props.base_version = BASE_VERSION
     apply_macros(obj, values)
+    stand_on_floor(obj)
     return obj
+
+
+def stand_on_floor(obj: bpy.types.Object) -> float:
+    """MPFB2's `feet_on_ground` (its default): lift the mesh, shape keys too, so the shaped body's lowest vertex is at
+    z = 0 — the floor every character tool stands on, and where MakeHuman's hair styles were groomed. Returns the
+    lift."""
+    lift = -float(shaped_coords(obj)[: makehuman.BODY_VERTICES, 2].min())
+    obj.data.transform(Matrix.Translation((0.0, 0.0, lift)), shape_keys=True)
+    return lift
 
 
 def visible_vertex_count(obj: bpy.types.Object) -> int:
