@@ -1409,6 +1409,19 @@ table) and `just-core/docs/plans/2026-10-24-just-direct-feasibility.md` (§A, §
 
 The assessment of this section (one app or two; JustDirect inside or beside) waits for §2, §3 and §6.
 
+*read, 2026-10-29* — the kit at just-core `75d3cb01`, for step 1.4 (the engine host):
+- `template/server/src/app.js` `llmArgs`: `runtimes: []`, `runtimeModels: []` — "an image app names "sdcpp" and its
+  image models' pinned files here, a feature of kind "image" in its catalog with its own preset … The template runs no
+  image model". Its runtimes are fixed in code (its only env switches: `FAMILY_TEMPLATE_UI_DIR`,
+  `FAMILY_TEMPLATE_ALLOWED_HOSTS`).
+- An image feature runs only when the app's stores give it a preset (`featurePresetRef` → an engine preset of kind
+  "image" → provider `local-sdcpp` → a `sdcpp` runtime model on disk) — `llm/image_dispatch.js`
+  `resolveRuntimeFeature`, `runtimeFeatureReadiness` (needs: `no-image-model`, `engine-not-on`, `engine-not-installed`,
+  `model-unknown`, `model-not-downloaded`).
+- `scripts/new-app.js` (the generator behind /new-just-app) copies the whole template (app, Electron, server), installs,
+  checks and registers the app in `check-family.js` (`APPS`, `APP_PORTS`, `DEV_PORTS`; the registry today: JustWrite
+  17495, JustVoice 17494, docgen 8742, template 17490, just-house-paint 17499); no server-only mode.
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page

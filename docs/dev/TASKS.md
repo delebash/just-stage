@@ -297,6 +297,12 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            wasted on a face R4 already said would read stylised. Wrap: offline non-rigid registration (trimesh's
            Amberg optimal-step NICP, MIT) in the MIT `libs/`, the result shipped as MakeHuman targets (`gnm` space).
         4. The engine host from the kit's template with `sdcpp`, and the skin generator's first image features.
+           BLOCKED 2026-10-29 on kit work (another repo — the user's word): the kit's template runs no image
+           engine (`template/server/src/app.js`: `runtimes: []`, `runtimeModels: []`, no image feature in its catalog —
+           "The template runs no image model"), so ai-engines.md §2's stand-in ("the kit's own template server … with
+           `sdcpp` on") can't run unchanged; and `scripts/new-app.js` makes only a whole app (Quasar, Electron and
+           server), no server-only package, registering its ports in `check-family.js` (`APPS`, `APP_PORTS`). The
+           card is free since 2026-10-29 (JustVoice: "card free").
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
