@@ -12,6 +12,7 @@ from __future__ import annotations
 import bpy
 
 from .. import api
+from ..character import JustStageFloat
 from ..core.commands import Command, FieldSpec
 
 _KIND_OF_PROPERTY = {
@@ -27,7 +28,11 @@ _KIND_OF_PROPERTY = {
 
 
 class CommandOperator:
-    """Mixin for a command's operator: set `command_id`, declare the mirrored properties."""
+    """Mixin for a command's operator: set `command_id`, declare the mirrored properties.
+
+    A `list[float]` field is a `FloatVectorProperty` when it is short (Blender caps those at 32), or a
+    `CollectionProperty(type=JustStageFloat)` when it isn't (Blender's own way to pass a list to an operator).
+    """
 
     command_id: str = ""
 
@@ -43,8 +48,16 @@ class CommandOperator:
 
 
 def _plain(value):
+    if isinstance(value, bpy.types.bpy_prop_collection):  # a long list: a collection of JustStageFloat items
+        return [item.value for item in value]
     # bpy vector properties come back as bpy_prop_array
     return list(value) if hasattr(value, "__len__") and not isinstance(value, str) else value
+
+
+def _kind(prop) -> str:
+    if prop.function is bpy.props.CollectionProperty:
+        return "list:float" if prop.keywords.get("type") is JustStageFloat else "collection"
+    return _KIND_OF_PROPERTY.get(prop.function, repr(prop.function))
 
 
 def _expected(spec: FieldSpec) -> str:
@@ -72,7 +85,7 @@ def mirror_mismatches(cmd: Command, operator_class: type) -> list[str]:
         if prop is None:
             problems.append(f"no property for field {spec.name!r}")
             continue
-        kind = _KIND_OF_PROPERTY.get(prop.function, repr(prop.function))
+        kind = _kind(prop)
         if kind != _expected(spec):
             problems.append(f"{spec.name}: property kind {kind}, field kind {_expected(spec)}")
         if spec.kind == "choice":
@@ -81,6 +94,10 @@ def mirror_mismatches(cmd: Command, operator_class: type) -> list[str]:
                 problems.append(f"{spec.name}: enum items {items}, choices {spec.choices}")
         default = prop.keywords.get("default", None)
         if spec.required:
+            continue
+        if spec.kind == "list" and prop.function is bpy.props.CollectionProperty:
+            if list(spec.default) != []:
+                problems.append(f"{spec.name}: a collection starts empty; the field's default must be []")
             continue
         if spec.kind == "list":
             default = list(default) if default is not None else None

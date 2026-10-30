@@ -7,9 +7,10 @@
     python tools/dev.py blender [args]   # Blender with JustStage's folders and the template
     python tools/dev.py test [pytest args]  # the in-Blender tests, headless
 
-`BLENDER_USER_RESOURCES` keeps the dev run's settings apart from any Blender the user has; `BLENDER_SYSTEM_EXTENSIONS`
-holds the System repository (Blender uses its `system` folder — measured on 5.3) with `juststage` linked in;
-`BLENDER_SYSTEM_SCRIPTS` holds the template under `startup/bl_app_templates_system/`.
+`BLENDER_USER_RESOURCES` keeps the dev run's settings apart from any Blender the user has, and holds the template under
+`scripts/startup/bl_app_templates_user/`; `BLENDER_SYSTEM_EXTENSIONS` holds the System repository (Blender uses its
+`system` folder — measured on 5.3) with `juststage` linked in. `BLENDER_SYSTEM_SCRIPTS` is not set: on 5.3 it stops
+Blender finding its own `bl_pkg` at start, and extension add-ons are then not loaded (measured).
 """
 
 from __future__ import annotations
@@ -25,11 +26,10 @@ ROOT = Path(__file__).resolve().parents[1]
 DEV = ROOT / ".dev"
 USER = DEV / "user"
 SYSTEM_EXTENSIONS = DEV / "system-extensions"
-SYSTEM_SCRIPTS = DEV / "system-scripts"
 PYDEPS = DEV / "pydeps"
 LINKS = {
     SYSTEM_EXTENSIONS / "system" / "juststage": ROOT / "extension" / "juststage",
-    SYSTEM_SCRIPTS / "startup" / "bl_app_templates_system" / "juststage": ROOT / "template" / "juststage",
+    USER / "scripts" / "startup" / "bl_app_templates_user" / "juststage": ROOT / "template" / "juststage",
 }
 TEST_DEPS = ["pytest==9.1.1"]
 
@@ -91,7 +91,6 @@ def env() -> dict[str, str]:
     e = dict(os.environ)
     e["BLENDER_USER_RESOURCES"] = str(USER)
     e["BLENDER_SYSTEM_EXTENSIONS"] = str(SYSTEM_EXTENSIONS)
-    e["BLENDER_SYSTEM_SCRIPTS"] = str(SYSTEM_SCRIPTS)
     e["JUSTSTAGE_ROOT"] = str(ROOT)
     e["JUSTSTAGE_PYDEPS"] = str(PYDEPS)
     return e

@@ -64,7 +64,7 @@ Paths are inside the `juststage` add-on unless they say otherwise.
 |---|---|---|
 | **The app** | | |
 | Shipping JustStage | one installer per OS: an unmodified Blender (the newest release, 5.3 now), the add-on, the template, Blender Lab's MCP add-on and server, the engine host ([`plugins.md`](plugins.md) §5) | asking users to install Blender and an add-on; a Blender fork for branding |
-| Starting JustStage | the launcher: `--app-template juststage` + `BLENDER_USER_RESOURCES`, `BLENDER_SYSTEM_EXTENSIONS`, `BLENDER_SYSTEM_SCRIPTS` pointing at JustStage's folders | changing the user's own Blender settings |
+| Starting JustStage | the launcher: `--app-template juststage` + `BLENDER_USER_RESOURCES` (settings, the template) and `BLENDER_SYSTEM_EXTENSIONS` (the System repository) pointing at JustStage's folders; the template switches the add-on on through Blender's load handlers | changing the user's own Blender settings; `BLENDER_SYSTEM_SCRIPTS` (breaks `bl_pkg` on 5.3) |
 | Which Blender | the newest release, moved to after the suite passes on it (R1 as changed: 5.3 onward) | building on a version that isn't installed here |
 | **Data** | | |
 | The live character | Blender data-blocks + hand-written `juststage` PropertyGroups | a parallel in-memory model; ad-hoc custom properties |

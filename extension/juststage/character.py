@@ -12,6 +12,13 @@ import bpy
 SCHEMA_VERSION = 1
 
 
+class JustStageFloat(bpy.types.PropertyGroup):
+    """One number in a list — for lists longer than Blender's 32-wide vector properties (a head's 170 GNM
+    coefficients; a command's long `list[float]` parameter on its operator)."""
+
+    value: bpy.props.FloatProperty()
+
+
 class JustStageCharacter(bpy.types.PropertyGroup):
     schema_version: bpy.props.IntProperty(default=SCHEMA_VERSION)
     character_id: bpy.props.StringProperty(description="assetInfo.identifier — a UUID v4 that never changes")
@@ -31,9 +38,11 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     asian: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
     caucasian: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
     african: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
+    gnm_identity: bpy.props.CollectionProperty(type=JustStageFloat, description="GNM head identity coefficients")
 
 
 def register():
+    bpy.utils.register_class(JustStageFloat)
     bpy.utils.register_class(JustStageCharacter)
     bpy.types.Object.juststage = bpy.props.PointerProperty(type=JustStageCharacter)
 
@@ -41,6 +50,7 @@ def register():
 def unregister():
     del bpy.types.Object.juststage
     bpy.utils.unregister_class(JustStageCharacter)
+    bpy.utils.unregister_class(JustStageFloat)
 
 
 def find(character_id: str) -> bpy.types.Object:

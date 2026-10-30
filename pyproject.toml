@@ -15,8 +15,8 @@ blender = "5.3.0"
 blender_path_windows = "E:/blender-5.3.0-beta/blender.exe"
 
 [tool.pytest.ini_options]
-testpaths = ["tests/unit"]
-addopts = "-p no:cacheprovider"
+testpaths = ["tests/unit", "tests/install"]
+addopts = "-p no:cacheprovider --basetemp=.dev/pytest-tmp"
 
 [tool.ruff]
 line-length = 120

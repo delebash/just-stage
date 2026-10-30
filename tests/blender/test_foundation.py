@@ -49,7 +49,7 @@ def test_operator_mirrors_params(command_id):
     assert command_operator.mirror_mismatches(cmd, classes[command_id]) == []
 
 
-def test_the_template_is_found_through_the_system_scripts_folder():
+def test_the_template_is_found_in_juststages_own_user_folder():
     found = [p for p in bpy.utils.app_template_paths() if os.path.isdir(os.path.join(p, "juststage"))]
     assert found, list(bpy.utils.app_template_paths())
 

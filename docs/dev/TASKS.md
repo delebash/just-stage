@@ -283,7 +283,15 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
         3. DONE 2026-10-29: levels 1–2 — `juststage.body.subdivide` puts Blender's Multires (Catmull-Clark) first in the
            stack, before the helper mask; level 2 shows 214,048 faces (the body's 13,378 × 16). Displacement maps come
            with the skin generator (4).
-        3b. Decided 2026-10-29 (adversarial pass): the gate head carries Google's GNM scan-based head shape wrapped onto
+        3b. DONE 2026-10-29: `libs/wrap/gnm_to_hm08.py` (MIT) reads GNM v3.0's model file as plain arrays (SHA-256
+           checked; no GNM code runs — installing GNM's package from GitHub was refused by the permission check, so its
+           data is used directly), fits its skin onto hm08's head (eyes for the start, trimesh's Amberg NICP; fit error
+           mean 0.87 mm, p95 2.17 mm) and writes 170 MakeHuman targets with a neck fade and a fade where hm08 reaches
+           past GNM's skin (crown, shoulder tops); `juststage.head.set_identity` puts a GNM identity (coefficients or a
+           seeded normal draw) on a character as one shape key. The launch path was fixed on the way: the template now
+           sits in JustStage's own user folder and switches the add-on on through Blender's load handlers
+           (`BLENDER_SYSTEM_SCRIPTS` broke `bl_pkg` on 5.3 — measured).
+           Was: decided 2026-10-29 (adversarial pass): the gate head carries Google's GNM scan-based head shape wrapped onto
            hm08 (R4: "realism comes from MHR's and GNM's scan spaces"), so the gate judges the approach R4 chose rather
            than hm08's artist-made face alone — the attack (more work before the first render) loses to a gate round
            wasted on a face R4 already said would read stylised. Wrap: offline non-rigid registration (trimesh's

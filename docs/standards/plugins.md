@@ -101,11 +101,15 @@ built even thought it is using blender core features".
   (Blender 5.3 beta's folder is 956 MB).
 - **A JustStage launcher** (our name and icon in the Start menu, Dock or app list) starts Blender with
   `--app-template juststage` and environment variables pointing at JustStage's own folders: `BLENDER_USER_RESOURCES`
-  (its own preferences and user extensions, apart from any Blender the user has), `BLENDER_SYSTEM_EXTENSIONS` (whose
-  `system` folder is the System repository — measured on 5.3 — holding `juststage` and Blender Lab's add-on, pre-installed — system repositories "are managed
-  outside of Blender and are considered read-only"), `BLENDER_SYSTEM_SCRIPTS` (where the template sits, under
-  `startup/bl_app_templates_system/` — `bpy.utils.app_template_paths`). Blender's own files are not touched. Every
-  flag, variable and path above is in the 5.3 manual and on disk (§8).
+  (its own preferences, user extensions and the template under `scripts/startup/bl_app_templates_user/` — apart from any
+  Blender the user has) and `BLENDER_SYSTEM_EXTENSIONS` (whose `system` folder is the System repository — measured on
+  5.3 — holding `juststage` and Blender Lab's add-on, pre-installed; system repositories "are managed outside of Blender
+  and are considered read-only"). The template switches the add-on on itself, the way the manual describes ("You may
+  enable add-ons associated with your template", defaults set "via handler": `load_factory_preferences_post`,
+  `load_factory_startup_post`, plus `load_post`) — not from its `register()`, which runs before the extension system is
+  up (measured). `BLENDER_SYSTEM_SCRIPTS` is **not** used: on 5.3, setting it stops Blender finding
+  its own `bl_pkg` at start ("No module named 'bl_pkg'"), and extension add-ons are then not loaded (measured
+  2026-10-29). Blender's own files are not touched.
 - **What still says Blender:** the window title ends "— Blender 5.3" (built in C, `wm_window_title_text`; with a Blender
   project active it reads "<file> - <project> — Blender 5.3") and the running window has Blender's icon. Removing them
   is a change to Blender's code — a fork, R1's trigger — not done for a title bar.

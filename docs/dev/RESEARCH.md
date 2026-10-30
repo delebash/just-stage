@@ -1215,6 +1215,15 @@ core features"), at Blender 5.2's sources:
   there loads as `bl_ext.system.<id>` (JustStage's foundation tests, `tools/dev.py test`); an app template under
   `<BLENDER_SYSTEM_SCRIPTS>/startup/bl_app_templates_system/` is listed by `bpy.utils.app_template_paths()`; Blender's
   bundled Python 3.13.13 has pip 26.2.2.
+- Measured 2026-10-29 on the 5.3 beta: with `BLENDER_SYSTEM_SCRIPTS` set (to a folder holding only an app template),
+  Blender prints "ModuleNotFoundError: No module named 'bl_pkg'" and "Extension: unexpected error detecting cache, this
+  is a bug!" at start, and an extension add-on saved as enabled in the preferences is not loaded; without that variable
+  it loads. An app template's `register()` runs before the extension system is up, so enabling an extension add-on from
+  there fails the same way. With `--app-template juststage` and no `userpref.blend` in the template, an add-on saved as
+  enabled in the shared preferences was not loaded either. What works (fresh and repeat launches, measured): the
+  template under `<BLENDER_USER_RESOURCES>/scripts/startup/bl_app_templates_user/`, enabling the add-on from
+  `load_factory_preferences_post` / `load_factory_startup_post` / `load_post` handlers and a one-shot timer — the
+  manual's app-template pattern ("You may enable add-ons associated with your template"; defaults "via handler").
 
 *web, 2026-10-29* — NVIDIA Omniverse's standards (the user: "what does omniverse use … for materials and hair and
 other things"), from docs.omniverse.nvidia.com, page read:
