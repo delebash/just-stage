@@ -1668,6 +1668,28 @@ questions on FLUX 3 and Krea 2:
   text-to-image only; runs in stable-diffusion.cpp; add-ons for identity (V2 non-commercial) and pose (Apache), a
   depth ControlNet card unread; no reference + depth add-on found.
 
+*agent, 2026-10-30* — ComfyUI nodes, FLAME-Universe, the apps that turn photos into head textures, and alternatives
+to FLAME (the user: "did we reall check all confy ui stuff to see if somehwone doesnt already havea a really good
+working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-research-comfyui-flame.md`](../plans/2026-10-30-research-comfyui-flame.md)):
+- `BD_FlameFit` (the BrainDead FaceWrap pack; `pyproject.toml` MIT, no LICENSE file): our pipeline's shape — landmarks,
+  fit, per-view projection bake, angle-weighted blend, Qwen fill, transfer to CC5 / MetaHuman UVs — but weaker: FLAME
+  shape refitted per view from zero, 105 sparse MediaPipe points, a simplified camera (~3–4 px per landmark, its docs);
+  no delighting, normal maps or lashes.
+- Most promising (each argued in the notes): UltraTex (SIGGRAPH Asia 2026; paints 6–10 views of a mesh together up to
+  2048², albedo + metal/rough, keeps our UVs; low-VRAM ComfyUI build 6.8 GB at 1536 per its author; code and LoRA MIT,
+  on FLUX.2 klein base 9B, non-commercial; objects only shown, needs Triton); Hunyuan3D-2's delight model (an
+  InstructPix2Pix SD model, `Hy3DDelightImage`; Tencent community licence, not EU/UK/KR); inverse rendering on our known
+  mesh (NextFace GPL-3, GTAvatar's UV-space method — our code from the methods); HeadCraft (FLAME + StyleGAN2 UV
+  displacement; code MIT, weights' licence unstated, trained on NPHM); FFHQ-UV (50K+ evenly lit 1024² face UVs, the HF
+  dataset MIT) as a colour prior; the commercial apps' layering — projected colour for the low and mid frequencies,
+  scanned normal and cavity detail on top (MetaHuman: albedo from a scan-trained model, normal/cavity from a library;
+  Headshot 3: projection over its base skin, AI delighting, two normal layers).
+- Alternatives to FLAME: none shown better than GNM on a shared benchmark; detail comes as a displacement layer on a
+  base model (HeadCraft; FaceScape's 4K displacements, non-commercial; HRN Apache-2.0; DECA / EMOCA 256², non-commercial).
+  NPHM and Gaussian / NeRF avatars give no riggable mesh; SMPL-X's head is FLAME.
+- Not found (a search gap, not proof): a ComfyUI face-delighting node to true albedo, a pore/wrinkle displacement node,
+  a face-UV generator for a given layout, a photometric FLAME fitter; Civitai / OpenArt pages never came back.
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
