@@ -551,6 +551,25 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   faces, 567 vertices) both reach the forehead: rays along the skin's normals into the helper reach the front midline
   9 mm below the eye's centre, `scalp_solid` from 23 mm above it; the pack's own `short_hedgehog` hairline is 56 mm
   above it (front midline, measured on the attached style).
+*web, 2026-10-29* — the eye shells (step 1.5: occlusion and tearline), public docs only:
+- **CC5** ([Eye Occlusion](https://manual.reallusion.com/Character-Creator-5/Content/ENU/5.0/15_Digital_Human_Shader/Eyes/Digital-Human-Eye-Occlusion-Shader.htm),
+  *page read*): "The topmost mesh layer for the realistic eyes is the Eye Occlusion, which simulate the shadow cast from
+  the eyelids to prevent over-exposure on the eyeballs"; its settings pages are Blur, Shadow 1, Shadow 2 and Vertex
+  Offset (not read). [Tear Line](https://manual.reallusion.com/Character-Creator-5/Content/ENU/5.0/15_Digital_Human_Shader/Eyes/Digital-Human-Tearline-Shader.htm)
+  (*page read*): the layer under the occlusion, to "simulate the moisture and the tear reflectivity on the eyeballs and
+  the tear ducts"; CC5 changed its UVs because CC4's normal-map tiling was "unevenly distributed". CC4's
+  [Tear Line settings](https://manual.reallusion.com/Character-Creator-4/Content/ENU/4.0/15_Digital_Human_Shader/Eyes/Digital-Human-Tearline-Tearline.htm)
+  (*page read*): Depth Offset ("adjust the depth of the entire Tear Line mesh"), Detail Amount, Detail Scale U and V (a
+  tiling normal detail), Edge Fadeout, Roughness; the sub-section "can be used to offset the Eye Occlusion mesh in
+  order to snuggly fit the eyeballs". [New Eye Elements](https://manual.reallusion.com/character-creator-4/Content/ENU/4.0/15_Digital_Human_Shader/Eyes/New-Eye-Elements.htm)
+  (*page read*): both "will be changed along with the movement of eye sockets when morphing and performing facial
+  animations"; they can be deleted and recreated in CC.
+- **MetaHuman:** the face's meshes `eyeshell` and `eyeEdge` (names above); Epic's material set has `EyeShell` and
+  `LacrimalFluid` slots (MetaHumanCharacter API, *search snippet only*). A forum user with a custom template mesh
+  reports the eyeshell and edge clipping into the eyeball ([forum](https://forums.unrealengine.com/t/eyeshell-and-edge-not-aligning-to-eyeball-with-custom-template-mesh/2764072),
+  *search snippet only*).
+- Not found: how either vendor shapes the shells (widths, offsets, how they are generated); no Blender-specific
+  method. Both are real-time fixes — a shadow and a wet line the rasteriser misses at that scale.
 - Lead for the face rig (step 7), contents not yet read: MakeHuman's functional packs also list "Faceunits 01: ARKit
   style face units" and "Visemes 01/02" (Microsoft and Meta/Oculus style), CC0.
 
