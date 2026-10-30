@@ -1422,6 +1422,33 @@ The assessment of this section (one app or two; JustDirect inside or beside) wai
   checks and registers the app in `check-family.js` (`APPS`, `APP_PORTS`, `DEV_PORTS`; the registry today: JustWrite
   17495, JustVoice 17494, docgen 8742, template 17490, just-house-paint 17499); no server-only mode.
 
+*read, 2026-10-29* — how JustStage reaches AI engines, re-checked (the user: "maybe blender already has ai tools or
+plugins … can webpages run in blender … or just have the ai configuration a sepearte webpage that user clicks from
+blender"; "we originally had the kit server code in python"):
+- **The kit's Python past:** `llm_runner/` (71 files, 1,317,496 bytes; MIT) — "Detects hardware, manages/recommends GGUF
+  models, downloads the right prebuilt llama.cpp … and spawns llama-server"; mounted on FastAPI. llama.cpp only — the
+  image, speech and vision runtimes came later, in JavaScript. Deleted in just-core `4619872b` (2026-10-08, "No Python").
+- **The kit's engine code today** (just-core `75d3cb01`): `packages/core/src/runner/` 20,610 lines, `llm/` 13,745 —
+  hardware detection 1,880, the runtime service 2,193, the lifecycle 4,994, binary choice 1,099. Chat runs over HTTP
+  (`POST /v1/ai/run`, `/v1/ai/stream`), images too (`POST /v1/ai/image/jobs`); **speech has no HTTP route** —
+  `llm/speech_dispatch.js` (`transcribeFeature`, `withSpeechModel`) is called inside the app only.
+- **The template carries the kit's AI screens:** `template/src/boot/familytemplate.js` mounts "the kit's whole UI half in
+  one call (installLlmUi …)"; the server serves the built pages when headless (`app-structure.md`: `build:spa` "served
+  by the server for headless use"; `server/src/app.js` reads `FAMILY_TEMPLATE_UI_DIR`).
+- **Blender opens web pages only in the browser:** `bpy.ops.wm.url_open` ("Open a website in the web browser",
+  `5.3/scripts/startup/bl_operators/wm.py:1043`); no web view inside Blender was found.
+- **Blender's extension rules** (the extensions platform's moderation guidelines,
+  `blender-developer-docs/docs/features/extensions/moderation/guidelines.md`): "Make sure the add-on is self-contained …
+  It should not have functionality which is extended by external software. It should not depend on external servers
+  (`localhost` is fine)"; no auto-updater; pip dependencies "bundled as wheels or vendorized"; with the `network`
+  permission, check `bpy.app.online_access` (manual `addons.rst`). They bind the extensions.blender.org listing;
+  JustStage installs through its own installer (plugins.md §5).
+- **Blender AI add-ons** (GitHub, 2026-10-29): Dream Textures (8,232 stars, GPL-3.0; PyTorch, "tested with CUDA and Apple
+  Silicon GPUs"), Pallaidium (1,552, GPL-3.0; diffusers and ComfyUI; "A CUDA-supported Nvidia card with at least 6-16 GB
+  VRAM", Windows, git on PATH), StableGen (996, GPL-3.0; a ComfyUI backend), AI-Render (1,228, MIT; Automatic1111),
+  ComfyUI-BlenderAI-node (1,575, GPL-3.0; ComfyUI), mcp-for-blender (32,728, MIT; an outside LLM drives Blender — the
+  other direction). None runs llama.cpp, stable-diffusion.cpp or audio.cpp, none bundles its engine.
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
