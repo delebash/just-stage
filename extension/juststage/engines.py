@@ -133,17 +133,22 @@ def result(job_id: str) -> bytes:
     return _call("GET", f"/v1/ai/image/jobs/{job_id}/result", timeout=120.0)[0]
 
 
-def run_image(feature: str, prompt: str, width: int, height: int, seed: int, timeout: float = 900.0) -> bytes:
-    """Submit, wait, fetch — the headless way (the UI follows the job itself)."""
-    snapshot = submit_image(feature, prompt, width, height, seed)
+def wait_result(job_id: str, label: str, timeout: float = 900.0) -> bytes:
+    """Wait for a job and fetch its picture — the headless way (the UI follows the job with a timer instead)."""
+    snapshot = job(job_id)
     deadline = time.monotonic() + timeout
     while snapshot["state"] not in ("done", "error", "cancelled"):
         if time.monotonic() > deadline:
-            cancel(snapshot["id"])
-            raise EngineError(f"{feature} took longer than {timeout:.0f} s and was cancelled")
+            cancel(job_id)
+            raise EngineError(f"{label} took longer than {timeout:.0f} s and was cancelled")
         time.sleep(0.5)
-        snapshot = job(snapshot["id"])
+        snapshot = job(job_id)
     if snapshot["state"] != "done":
-        error = snapshot.get("error") or {}
-        raise EngineError(f"{feature}: {error.get('message', snapshot['state']) if isinstance(error, dict) else error}")
-    return result(snapshot["id"])
+        raise EngineError(f"{label}: {failure(snapshot)}")
+    return result(job_id)
+
+
+def failure(snapshot: dict) -> str:
+    """A finished job's words for why it made nothing."""
+    error = snapshot.get("error") or {}
+    return error.get("message", snapshot["state"]) if isinstance(error, dict) else str(error)

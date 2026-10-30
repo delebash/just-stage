@@ -330,9 +330,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (`core/skin_detail.py`), packs it with its provenance and tiles it over the body's UVs as a bump on the
            skin material — tested against the real server (10 s a picture on the 2070 Super, the card's peak 6,060
            MiB). A kit bug found on the way — the route's `seed` never reached sd.cpp, every picture was seed 42 —
-           reported and fixed by the core session (just-core `b41154a7`). Still open in 4: the Blender panel (the
-           server's jobs with progress and Cancel, the model per feature, the AI settings link) and the kit's AI
-           pages on the server (the template's web front end); speech waits for JustVoice's move into the kit.
+           reported and fixed by the core session (just-core `b41154a7`). DONE 2026-10-29: the AI panel (3D view sidebar,
+           JustStage tab) — the server running or not with Start, an AI settings link, each feature with its model,
+           the running jobs with progress and Cancel; an AI command has two halves (`start` submits, `finish` applies)
+           so a button never freezes Blender — a `bpy.app.timers` follower runs between them; `main` still waits for
+           scripts. Two kit bugs found and reported to the core session (2026-10-29): a Cancel sent the moment a job
+           starts (right after another ends) is lost — `runner/sdcpp.js` `runNativeJob` listens for the abort only
+           after its submit — so `test_a_cancelled_job_applies_nothing` fails until that's fixed; and a second job
+           while one runs fails at once ("The graphics card is busy …", 409) instead of queueing — JustStage offers
+           one job at a time meanwhile. Still open in 4: the kit's AI pages on the server (the template's web front
+           end, so the AI settings link has a page); speech waits for JustVoice's move into the kit.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

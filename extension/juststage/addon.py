@@ -8,7 +8,7 @@ import bpy
 from . import api, character
 from .commands import api_status
 from .modules import body, hair, head, skin
-from .ui import operators
+from .ui import ai_jobs, ai_panel, operators
 
 CORE = "core"
 _CORE_COMMANDS = (api_status,)
@@ -26,7 +26,7 @@ def register():
     api.register_plugin(CORE, api=_api_range(), builtin=True)
     for module in _CORE_COMMANDS:
         api.register_command(module, CORE)
-    for cls in operators.CLASSES:
+    for cls in (*operators.CLASSES, *ai_panel.CLASSES):
         bpy.utils.register_class(cls)
     for module in MODULES:
         module.register(_api_range())
@@ -35,7 +35,8 @@ def register():
 def unregister():
     for module in reversed(MODULES):
         module.unregister()
-    for cls in reversed(operators.CLASSES):
+    ai_jobs.stop()
+    for cls in reversed((*operators.CLASSES, *ai_panel.CLASSES)):
         bpy.utils.unregister_class(cls)
     for plugin in reversed(api.plugins()):
         api.unregister_plugin(plugin.id)

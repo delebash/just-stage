@@ -3,7 +3,10 @@
 
 """`juststage.skin.add_detail` — the skin's fine detail (pores, the crosshatch of skin lines) from a close-up drawn by
 the `juststage.skin_detail` feature of JustStage's server (docs/standards/ai-engines.md): made seamless, tiled at
-`size_mm` of real skin, as a bump on the character's skin material (run `juststage.skin.set_tone` first)."""
+`size_mm` of real skin, as a bump on the character's skin material (run `juststage.skin.set_tone` first).
+
+An AI job command: `start` submits the picture, `finish` applies it; the UI runs them around a Blender timer (its
+progress and Cancel in the AI panel), `main` runs both for scripts and headless runs."""
 
 from typing import NamedTuple
 
@@ -18,7 +21,6 @@ class Params(NamedTuple):
 class Result(NamedTuple):
     image: str
     model: str
-    seconds: float
 
 
 COMMAND = dict(
@@ -35,10 +37,19 @@ FEATURE = "juststage.skin_detail"
 SIZE = 1024  # the close-up's pixels a side; its flat middle 60% becomes the tile
 
 
-def main(params: Params) -> Result:
-    import time
+def _material(params: Params):
+    from ... import character
+    from ...core.commands import CommandError
 
-    from ... import character, engines, paths
+    obj = character.find(params.character)
+    material = obj.juststage.skin_material
+    if material is None:
+        raise CommandError(f"{obj.name} has no skin material yet; run juststage.skin.set_tone first")
+    return obj, material
+
+
+def start(params: Params) -> str:
+    from ... import engines, paths
     from ...core.commands import CommandError
     from . import detail
 
@@ -46,15 +57,23 @@ def main(params: Params) -> Result:
         raise CommandError(f"size_mm: expected 1–200, got {params.size_mm}")
     if not 0.0 <= params.strength <= 2.0:
         raise CommandError(f"strength: expected 0–2, got {params.strength}")
-    obj = character.find(params.character)
-    material = obj.juststage.skin_material
-    if material is None:
-        raise CommandError(f"{obj.name} has no skin material yet; run juststage.skin.set_tone first")
-    started = time.monotonic()
+    _material(params)
     try:
-        server = engines.ensure_running(paths.user_dir("server"))
-        png = engines.run_image(FEATURE, detail.PROMPT, SIZE, SIZE, params.seed)
+        engines.ensure_running(paths.user_dir("server"))
+        return engines.submit_image(FEATURE, detail.PROMPT, SIZE, SIZE, params.seed)["id"]
+    except engines.EngineError as e:
+        raise CommandError(str(e)) from None
+
+
+def finish(params: Params, png: bytes) -> Result:
+    from ... import engines
+    from ...core.commands import CommandError
+    from . import detail
+
+    obj, material = _material(params)
+    try:
         model = engines.feature_model(FEATURE)
+        server = engines.health() or {}
     except engines.EngineError as e:
         raise CommandError(str(e)) from None
     provenance = {
@@ -65,4 +84,16 @@ def main(params: Params) -> Result:
         "server": f"{server.get('product', '')} {server.get('version', '')}".strip(),
     }
     image = detail.apply(material, obj.name, detail.height_from_png(png), params.size_mm, params.strength, provenance)
-    return Result(image=image.name, model=model, seconds=round(time.monotonic() - started, 1))
+    return Result(image=image.name, model=model)
+
+
+def main(params: Params) -> Result:
+    from ... import engines
+    from ...core.commands import CommandError
+
+    job_id = start(params)
+    try:
+        png = engines.wait_result(job_id, COMMAND["label"])
+    except engines.EngineError as e:
+        raise CommandError(str(e)) from None
+    return finish(params, png)

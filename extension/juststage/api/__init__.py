@@ -74,6 +74,24 @@ def execute(cmd: _commands.Command, values: dict[str, Any], *, push_undo: bool):
     return result
 
 
+def begin(cmd: _commands.Command, values: dict[str, Any]):
+    """An AI job command's first half: its `Params` and the job id JustStage's server gave it."""
+    if cmd.start is None:
+        raise CommandError(f"{cmd.id} isn't a job command")
+    params = _commands.build_params(cmd, values)
+    return params, cmd.start(params)
+
+
+def complete(cmd: _commands.Command, params, png: bytes):
+    """An AI job command's second half: its picture applied, one undo step after it."""
+    result = cmd.finish(params, png)
+    if not isinstance(result, cmd.result_type):
+        raise CommandError(f"{cmd.id}: finish returned {type(result).__name__}, not its Result")
+    if cmd.record["undo"]:
+        _undo_push(cmd.label)
+    return result
+
+
 def _undo_push(message: str) -> None:
     try:
         import bpy

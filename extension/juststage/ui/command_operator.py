@@ -39,6 +39,20 @@ class CommandOperator:
     def execute(self, context):
         cmd = api.command(self.command_id)
         values = {f.name: _plain(getattr(self, f.name)) for f in cmd.fields}
+        if cmd.start is not None and not bpy.app.background:  # an AI job: started now, followed by ai_jobs
+            from . import ai_jobs
+
+            if ai_jobs.JOBS:  # the server runs one picture at a time; a second one fails at once (kit, 2026-10-29)
+                self.report({"ERROR"}, f"{cmd.label}: wait for the running AI job, or cancel it")
+                return {"CANCELLED"}
+            try:
+                params, job_id = api.begin(cmd, values)
+            except (api.CommandError, api.RegistryError) as e:
+                self.report({"ERROR"}, f"{cmd.id}: {e}")
+                return {"CANCELLED"}
+            ai_jobs.track(cmd, params, job_id)
+            self.report({"INFO"}, f"{cmd.label}: started on JustStage's AI server")
+            return {"FINISHED"}
         try:
             api.execute(cmd, values, push_undo=False)  # the operator's own UNDO flag makes the step
         except (api.CommandError, api.RegistryError) as e:

@@ -51,6 +51,11 @@ class Command:
     record: dict
     main: typing.Callable
     fields: tuple[FieldSpec, ...] = field(default=())
+    #: an AI job command's two halves (commands-and-api.md §2): `start(params) -> job id` submits the job to
+    #: JustStage's server, `finish(params, png) -> Result` applies its picture — the UI runs them around a Blender
+    #: timer, so Blender never waits; `main` still runs the whole command for scripts and headless runs
+    start: typing.Callable | None = None
+    finish: typing.Callable | None = None
 
     @property
     def label(self) -> str:
@@ -123,6 +128,9 @@ def load(module: types.ModuleType) -> Command:
     record.setdefault("permission", record["id"].split(".")[1])
     if not _is_namedtuple(module.Result):
         raise CommandError(f"{module.__name__}: Result must be a NamedTuple")
+    start, finish = getattr(module, "start", None), getattr(module, "finish", None)
+    if (start is None) != (finish is None):
+        raise CommandError(f"{module.__name__}: a job command has both start and finish")
     return Command(
         id=record["id"],
         module=module,
@@ -131,6 +139,8 @@ def load(module: types.ModuleType) -> Command:
         record=record,
         main=module.main,
         fields=describe(module.Params),
+        start=start,
+        finish=finish,
     )
 
 
