@@ -1487,6 +1487,23 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
+*agent, 2026-10-30* — hair, eyes and teeth (notes, ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-hair-eyes-teeth.md`](../plans/2026-10-30-research-hair-eyes-teeth.md); facts to re-check
+before the rec list; measured in Blender 5.3 and read in our code):
+- Why ours looks fake: the hair defaults (melanin 0.8, redness 1.0) are Blender's own — by the manual's formula all red
+  pigment, no brown-black — and every strand has the same value; Principled Hair BSDF is "Cycles Only" (EEVEE's default
+  hair draws each strand ~1 px wide); scalp counts 10K–42K (MetaHuman's real-time level); each brow guide copied into a
+  ~19-strand tuft (the clumps); lashes ~50 upper and 33 lower per eye at 5 points (real lids 90–160 and 75–80); flat
+  iris, sclera and teeth; no occlusion, tearline or caruncle meshes.
+- Image to strands: DiffLocks, Im2Haircut, TANGLED, Perm (MIT), HairStep — training we can't do, or non-commercial or
+  unlicensed weights. Text to strands without training: Digital Salon (MIT; CLIP search over a captioned groom library,
+  then live editing). Facial hair from multi-view capture: Wispy to Voluminous (training-free, no code yet).
+- Training-free: Blender's hair node groups used properly, and DiffLocks' published Blender recipe (75 guide sets × 110
+  random parameters) — a CC0 groom library of our own; hair cards by Unreal's generator or our own baker.
+- Eyes: a layered stack with the iris ~3.6 mm behind the cornea (Navarro's optics); a procedural iris, or an SDXL LoRA
+  (kohya: 8 GB at the edge). Teeth: per-part shaders on our GNM teeth.
+- Open: no measured melanin table per hair colour; VRAM unknown for the hair AI methods; no fix rendered.
+
 *agent, 2026-10-30* — what makes rendered skin read as a photo: relief, pores, shading, light, upscaling, eyes (notes,
 ranked by quality, training buckets, apps, every search logged:
 [`../plans/2026-10-30-research-skin-detail-shading.md`](../plans/2026-10-30-research-skin-detail-shading.md); facts to
