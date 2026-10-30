@@ -36,8 +36,9 @@ VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "f
 SIZE = 4096
 FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam where it ends
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
+COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = 11  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = 16  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -137,6 +138,41 @@ def _render_linear(scene, path, size=512):
     return _pixels(path)[..., :3]
 
 
+def _lower_lids(body, degrees=9.0):
+    """The upper lids lowered a little, as a shape key: our head's neutral eyes show the whole iris (a stare); a relaxed
+    eye — and the AI's painting — has the upper lid over the iris' top. Lid skin over each eyeball turns down about the
+    eyeball's horizontal axis (as a lid closes, so it can't pass through the eye): most at the lid's edge, none 35° above."""
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    co = build.shaped_coords(body).astype(np.float64)
+    key = body.shape_key_add(name="lids lowered", from_mix=False)
+    moved = 0
+    for name in ("Face.eyeLeft", "Face.eyeRight"):
+        eye = bpy.data.objects[name]
+        ev = np.array([v.co for v in eye.data.vertices]) @ np.array(eye.matrix_world)[:3, :3].T + np.array(eye.matrix_world)[:3, 3]
+        centre = (ev.min(axis=0) + ev.max(axis=0)) / 2
+        radius = float((ev.max(axis=0) - ev.min(axis=0))[[0, 2]].mean() / 2)
+        rel = co - centre
+        dist = np.linalg.norm(rel, axis=1)
+        az = np.degrees(np.arctan2(rel[:, 0], -rel[:, 1]))
+        el = np.degrees(np.arctan2(rel[:, 2], np.hypot(rel[:, 0], rel[:, 1])))
+        near = (dist > radius * 0.9) & (dist < radius + 0.012) & (rel[:, 1] < 0) & (np.abs(az) < 45)
+        lid = near & (el > 0) & (dist < radius + 0.004)
+        margin = float(np.min(el[lid])) if lid.any() else 15.0
+        weight = np.clip(1.0 - (el - margin) / 35.0, 0.0, 1.0) * (el >= margin - 2.0) * near
+        weight *= np.clip(1.0 - (np.abs(az) - 30.0) / 15.0, 0.0, 1.0)  # fading toward the corners
+        ang = np.radians(degrees) * weight  # down on the front (-y) side: about the eye's left-right axis (world x)
+        y, z = rel[:, 1], rel[:, 2]
+        new_y = y * np.cos(ang) - z * np.sin(ang)
+        new_z = y * np.sin(ang) + z * np.cos(ang)
+        for i in np.flatnonzero(weight > 0):
+            key.data[i].co.y += float(new_y[i] - y[i])
+            key.data[i].co.z += float(new_z[i] - z[i])
+        moved += int((weight > 0).sum())
+        print(f"  {name}: lid edge at {margin:.1f}° above the eye's centre")
+    key.value = 1.0
+    print(f"lids lowered: {moved} vertices, {degrees}° at the edge")
+
+
 def _close_mouth(body):
     """The lips closed as a shape key: our head's neutral mouth is a slit ~0.9 mm tall at its middle (measured by rays
     from the face camera; teeth behind it), the AI paints it closed. Upper lip down, lower lip up, most at the slit,
@@ -162,11 +198,11 @@ def test_face_project():
     bpy.ops.wm.open_mainfile(filepath=DIR + "face.blend")
     body = bpy.data.objects["Face"]
     _close_mouth(body)
+    _lower_lids(body)
     api = importlib.import_module("bl_ext.system.juststage.api")
     character = body.juststage.character_id
     # brows and lashes as strands (the hair module's MakeHuman CC0 grooms), dark brown: Principled Hair melanin
-    for style, melanin, redness in (('basic_lashes_upper', 0.9, 0.2),
-                                    ('basic_lashes_lower', 0.9, 0.2)):
+    for style, melanin, redness in (('basic_lashes_upper', 0.9, 0.2),):
         api.run('juststage.hair.add', character=character, style=style, melanin=melanin, redness=redness)
     dg = bpy.context.evaluated_depsgraph_get()
     ev = body.evaluated_get(dg)
@@ -230,8 +266,8 @@ def test_face_project():
 
     every = np.arange(len(points))
     low_sum, low_w = np.zeros((len(points), 3)), np.zeros(len(points))
-    high_sum, high_w = np.zeros((len(points), 3)), np.zeros(len(points))
-    nlow_sum, nhigh_sum = np.zeros((len(points), 3)), np.zeros((len(points), 3))
+    high_best, high_w = np.ones((len(points), 3)), np.zeros(len(points))
+    nlow_sum, nhigh_best = np.zeros((len(points), 3)), np.zeros((len(points), 3))
     for view in VIEWS:
         w, col, row = view_samples(view, every)
         albedo = np.load(f"{DIR}albedo_{view}.npy").astype(np.float32) * gains[view]
@@ -242,9 +278,10 @@ def test_face_project():
         low_sum += soft[:, None] * low
         nlow_sum += soft[:, None] * nlow
         low_w += soft
-        high_sum += sharp[:, None] * up.sample(albedo, col, row) / np.maximum(low, 1e-4)
-        nhigh_sum += sharp[:, None] * (up.sample(nworld, col, row) - nlow)
-        high_w += sharp
+        better = sharp > high_w  # the fine band from the single best view: no blur from views that disagree by pixels
+        high_best[better] = (up.sample(albedo, col, row) / np.maximum(low, 1e-4))[better]
+        nhigh_best[better] = (up.sample(nworld, col, row) - nlow)[better]
+        high_w[better] = sharp[better]
         print(f"  {view}: sees {(w > 1e-3).mean():.0%} of the head's texels")
     covered = low_w > 1e-6
     albedo = np.zeros((len(points), 3))
@@ -252,8 +289,8 @@ def test_face_project():
     nrm = normals.copy()
     nrm[covered] = nlow_sum[covered] / low_w[covered, None]
     detail_ok = high_w > 1e-9
-    albedo[detail_ok] *= np.clip(high_sum[detail_ok] / high_w[detail_ok, None], 0.3, 3.0)
-    nrm[detail_ok] += nhigh_sum[detail_ok] / high_w[detail_ok, None]
+    albedo[detail_ok] *= np.clip(high_best[detail_ok], 0.3, 3.0)
+    nrm[detail_ok] += nhigh_best[detail_ok]
     nrm /= np.linalg.norm(nrm, axis=1, keepdims=True) + 1e-12
     t = np.clip((points[:, 2] - FADE_FROM) / (FADE_TO - FADE_FROM), 0.0, 1.0)
     fade = (t * t * (3 - 2 * t)) * np.clip(low_w / (0.15 * np.median(low_w[covered])), 0.0, 1.0)
@@ -306,6 +343,20 @@ def test_face_project():
     rough = np.full((SIZE, SIZE), ROUGH, dtype=np.float32)
     tzone = np.exp(-((points[:, 0] / 0.03) ** 2)) * np.clip(-normals[:, 1], 0.0, 1.0)
     rough[mask] = ROUGH + (ROUGH_TZONE - ROUGH) * tzone + 0.15 * (0.5 - height[mask])
+    cavity = np.clip(1.0 - 2.5 * np.maximum(0.0, 0.5 - height), 0.2, 1.0)
+    rough += 0.2 * (1.0 - cavity)
+    cavity_tex = nodes.new("ShaderNodeTexImage")
+    cavity_tex.image = _image("face cavity", cavity, "Non-Color")
+    spec = nodes.new("ShaderNodeMath")
+    spec.operation = "MULTIPLY"
+    spec.inputs[1].default_value = 0.5
+    links.new(cavity_tex.outputs["Color"], spec.inputs[0])
+    links.new(spec.outputs["Value"], bsdf.inputs["Specular IOR Level"])
+    bsdf.inputs["Coat Weight"].default_value = COAT_WEIGHT
+    bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS
+    bsdf.inputs["Coat IOR"].default_value = 1.45
+    bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT
+    bsdf.inputs["Sheen Roughness"].default_value = 0.4
     rough_tex = nodes.new("ShaderNodeTexImage")
     rough_tex.image = _image("face roughness", rough, "Non-Color")
     links.new(rough_tex.outputs["Color"], bsdf.inputs["Roughness"])
@@ -415,8 +466,9 @@ def test_face_project():
         e_uv = e_uv.reshape(-1, 2)
         names = [slot.material.name if slot.material else "" for slot in eye.material_slots]
         painted_parts = np.array(["Cornea" not in names[m] for m in e_mat])
-        (e_pos, e_nrm), e_mask = up.raster_uv(e_uv[e_loops[painted_parts]],
-                                             [e_co[e_verts[painted_parts]], e_vn[e_verts[painted_parts]]], 1024)
+        e_mid = np.repeat(e_mat[painted_parts][:, None, None], 3, axis=1).astype(np.float32)
+        (e_pos, e_nrm, e_id), e_mask = up.raster_uv(
+            e_uv[e_loops[painted_parts]], [e_co[e_verts[painted_parts]], e_vn[e_verts[painted_parts]], e_mid], 1024)
         e_pts = e_pos[e_mask].astype(np.float64)
         e_n = e_nrm[e_mask].astype(np.float64)
         e_n /= np.linalg.norm(e_n, axis=1, keepdims=True) + 1e-12
@@ -434,11 +486,47 @@ def test_face_project():
         colour = np.zeros((len(e_pts), 3))
         colour[seen] = acc[seen] / wsum[seen, None]
         lum_e = colour @ lum
-        white = seen & (lum_e > np.percentile(lum_e[seen], 70))  # the sclera, the brightest part seen
-        colour *= 0.55 / max(float(np.median(lum_e[white])), 1e-6)
+        sat = (colour.max(axis=1) - colour.min(axis=1)) / np.maximum(colour.max(axis=1), 1e-6)
+        texel_ids = np.round(e_id[e_mask][:, 0]).astype(int)
+        sclera_ids = [i for i, n in enumerate(names) if "Sclera" in n]
+        white = seen & np.isin(texel_ids, sclera_ids) & (sat < 0.35) & (lum_e > np.percentile(lum_e[seen], 50))
+        colour *= 0.45 / max(float(np.median(lum_e[white])), 1e-6)
+        iris_ids = [i for i, n in enumerate(names) if "Iris" in n or "Pupil" in n]
+        disk_v = np.isin(np.repeat(e_mat, 3), iris_ids)
+        disk_pts = e_co[e_verts.ravel()[disk_v]]
+        centre = disk_pts.mean(axis=0)
+        normal = np.linalg.svd(disk_pts - centre)[2][2]
+        normal *= -np.sign(normal[1]) or 1.0  # facing forward (-y)
+        ex = np.array([1.0, 0.0, 0.0]) - normal[0] * normal
+        ex /= np.linalg.norm(ex)
+        ez = np.cross(normal, ex) * -1.0
+        ez *= np.sign(ez[2]) or 1.0
+        radius3d = np.max(np.linalg.norm((disk_pts - centre) - np.outer((disk_pts - centre) @ normal, normal), axis=1))
+        on_disk = np.isin(np.round(e_id[e_mask][:, 0]).astype(int), iris_ids)
+        on_disk_all = on_disk
+        rel = e_pts[on_disk] - centre
+        u, v = rel @ ex, rel @ ez
+        rr, th = np.hypot(u, v) / radius3d, np.arctan2(v, u)
+        band = np.arctan2(np.sin(th), np.abs(np.cos(th))) / 3.0  # every angle into a ±30° band, mirrored
+        face_paint = _linear(_pixels(f"{DIR}painted_face.png")[..., :3])
+        sides = []
+        for side in (1.0, -1.0):  # the band on the iris' right, then its left, in the painting
+            t_side = band if side > 0 else np.pi - band
+            sides.append(t_side)
+        marks = json.load(open(DIR + "landmarks.json"))["face"]["painted"]
+        c_i, ring = (468, range(469, 473)) if "Right" in eye_name else (473, range(474, 478))
+        cx, cy = marks[c_i]
+        r_img = float(np.mean([np.hypot(marks[i][0] - cx, marks[i][1] - cy) for i in ring]))
+        darkness = [float(np.median(up.sample(face_paint, cx + rr * r_img * np.cos(t), cy - rr * r_img * np.sin(t)) @ lum))
+                    for t in sides]
+        th = sides[int(np.argmin(darkness))]
+        colour[on_disk] = up.sample(face_paint, cx + rr * r_img * np.cos(th), cy - rr * r_img * np.sin(th)) * (
+            0.45 / max(float(np.median((acc[seen] / wsum[seen, None])[white[seen]] @ lum)), 1e-6))
         lum_e = colour @ lum
         cap = 1.15 * float(np.percentile(lum_e[seen], 90))
         colour[seen & (lum_e > cap)] *= (cap / lum_e[seen & (lum_e > cap)])[:, None]  # catch-lights out
+        skin_on_white = np.isin(texel_ids, sclera_ids) & ~on_disk_all & (~seen | (sat >= 0.35))
+        colour[skin_on_white] = np.median(colour[white], axis=0)
         colour[~seen] = np.median(colour[white], axis=0)
         e_map = np.zeros((1024, 1024, 3), np.float32)
         e_map[...] = np.median(colour[white], axis=0)
@@ -447,14 +535,25 @@ def test_face_project():
         e_srgb = np.where(e_srgb <= 0.0031308, e_srgb * 12.92, 1.055 * e_srgb ** (1 / 2.4) - 0.055)
         e_img = _image(f"{eye_name} paint", e_srgb, "sRGB")
         for slot in eye.material_slots:
+            if slot.material and "Cornea" in slot.material.name:
+                # the cornea clear (as a shell it greyed the eye — measured 2026-10-30); the wet shine is on the iris
+                # and the white below
+                c_nt = slot.material.node_tree
+                c_out = next(n for n in c_nt.nodes if n.type == "OUTPUT_MATERIAL")
+                c_clear = c_nt.nodes.new("ShaderNodeBsdfTransparent")
+                c_nt.links.new(c_clear.outputs["BSDF"], c_out.inputs["Surface"])
+        for slot in eye.material_slots:
             if slot.material and "Cornea" not in slot.material.name:
                 e_nodes = slot.material.node_tree.nodes
                 e_tex = e_nodes.new("ShaderNodeTexImage")
                 e_tex.image = e_img
                 e_bsdf = next(n for n in e_nodes if n.type == "BSDF_PRINCIPLED")
                 slot.material.node_tree.links.new(e_tex.outputs["Color"], e_bsdf.inputs["Base Color"])
+                e_bsdf.inputs["Roughness"].default_value = 0.06  # wet
+                e_bsdf.inputs["IOR"].default_value = 1.376
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")
 
+    bpy.ops.wm.save_as_mainfile(filepath=f"{DIR}round.blend", copy=True)  # the finished scene, for quick trials
     _gpu(scene, 256)
     for view in ("face", "front", "left40"):
         cam.matrix_world = Matrix(cams[view]["matrix_world"])
