@@ -64,3 +64,14 @@ def test_a_cancelled_job_applies_nothing(human):
 def test_the_ai_panel_is_registered():
     assert hasattr(bpy.types, "VIEW3D_PT_juststage_ai")
     assert bpy.ops.juststage.ai_server_start.poll()
+
+
+def test_a_second_job_waits_behind_the_first(human):
+    result, obj = human
+    cmd = api.command("juststage.skin.add_detail")
+    for seed in (5, 6):
+        params, job_id = api.begin(cmd, {"character": result.character, "seed": seed})
+        ai_jobs.track(cmd, params, job_id)
+    _follow()
+    assert ai_jobs.MESSAGES[-2:] == ["Skin detail (AI): done", "Skin detail (AI): done"]
+    assert bpy.data.images[f"{obj.name} skin detail"]["juststage_seed"] in (5, 6)

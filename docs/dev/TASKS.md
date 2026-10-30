@@ -336,10 +336,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            so a button never freezes Blender — a `bpy.app.timers` follower runs between them; `main` still waits for
            scripts. Two kit bugs found and reported to the core session (2026-10-29): a Cancel sent the moment a job
            starts (right after another ends) is lost — `runner/sdcpp.js` `runNativeJob` listens for the abort only
-           after its submit — so `test_a_cancelled_job_applies_nothing` fails until that's fixed; and a second job
-           while one runs fails at once ("The graphics card is busy …", 409) instead of queueing — JustStage offers
-           one job at a time meanwhile. Still open in 4: the kit's AI pages on the server (the template's web front
-           end, so the AI settings link has a page); speech waits for JustVoice's move into the kit.
+           after its submit — and a second job while one runs failed at once ("The graphics card is busy …", 409)
+           instead of queueing — both fixed by the core session (just-core `04e81a12`); the 12 AI tests pass. The
+           user, 2026-10-29: "lets just do the basics of what we need for ai so we can just test what we need nad see
+           if the app concept works we are spending to much time trying to build ai even before we know if 3d stuff
+           works" — AI stops at these basics. Deferred in 4 (my call, 2026-10-29): the kit's AI pages on the server
+           (the template's web front end — 42 files and Quasar's build) wait until there is a second model or engine
+           to choose between; the engine and FLUX.2 klein are installed already and the panel shows the model, so the
+           AI settings link is hidden until the pages exist. Speech waits for JustVoice's move into the kit.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

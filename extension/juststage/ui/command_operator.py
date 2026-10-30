@@ -42,9 +42,6 @@ class CommandOperator:
         if cmd.start is not None and not bpy.app.background:  # an AI job: started now, followed by ai_jobs
             from . import ai_jobs
 
-            if ai_jobs.JOBS:  # the server runs one picture at a time; a second one fails at once (kit, 2026-10-29)
-                self.report({"ERROR"}, f"{cmd.label}: wait for the running AI job, or cancel it")
-                return {"CANCELLED"}
             try:
                 params, job_id = api.begin(cmd, values)
             except (api.CommandError, api.RegistryError) as e:

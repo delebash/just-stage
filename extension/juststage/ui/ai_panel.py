@@ -1,15 +1,15 @@
 # SPDX-FileCopyrightText: 2026 JustStage contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The AI panel (the 3D view's sidebar, JustStage tab): JustStage's server — running or not, Start, and a link to its
-AI settings pages in the browser (engines, models, which model each feature uses); each AI feature with its model; the
-running jobs with their progress and Cancel; the latest outcomes."""
+"""The AI panel (the 3D view's sidebar, JustStage tab): JustStage's server — running or not, Start; each AI feature with
+its model; the running jobs with their progress and Cancel; the latest outcomes. (A link to the kit's AI settings pages
+in the browser joins when the server serves them — TASKS step 1.4.)"""
 
 from __future__ import annotations
 
 import bpy
 
-from .. import engines, paths
+from .. import engines, paths  # noqa: F401 — engines for the operators below
 from . import ai_jobs
 
 #: the AI features the panel offers: (feature key, label, the command's operator)
@@ -70,7 +70,6 @@ class VIEW3D_PT_juststage_ai(bpy.types.Panel):
             row.operator(JUSTSTAGE_OT_ai_server_start.bl_idname, text="Start")
         else:
             row.label(text=f"AI server: {server.get('product', '')} {server.get('version', '')}", icon="CHECKMARK")
-        layout.operator("wm.url_open", text="AI settings", icon="URL").url = engines.BASE
 
         character = _character_id(context)
         for feature, label, operator in FEATURES:
@@ -80,9 +79,8 @@ class VIEW3D_PT_juststage_ai(bpy.types.Panel):
             if model:
                 box.label(text=f"Model: {model}")
             col = box.column()
-            col.enabled = bool(character) and not ai_jobs.JOBS  # the card runs one AI job at a time
-            text = f"Make {label.lower()}" if character else "Select a character"
-            props = col.operator(operator, text=text if not ai_jobs.JOBS else "Waiting for the running job")
+            col.enabled = bool(character)  # a second job waits on the server behind the first
+            props = col.operator(operator, text=f"Make {label.lower()}" if character else "Select a character")
             if character:
                 props.character = character
 
