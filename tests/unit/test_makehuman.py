@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from juststage.core import makehuman
 
 DATA = Path(__file__).resolve().parents[2] / "extension" / "juststage" / "data" / "fetched" / "makehuman"

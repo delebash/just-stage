@@ -7,6 +7,7 @@ import types
 from typing import Literal, NamedTuple
 
 import pytest
+
 from juststage.core import commands, registry, versions
 
 

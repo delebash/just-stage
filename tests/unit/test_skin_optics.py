@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+
 from juststage.core import skin_optics
 
 ROOT = Path(__file__).resolve().parents[2]

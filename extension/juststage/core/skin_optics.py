@@ -12,8 +12,8 @@ layers, with one calibrated constant: the epidermis's backscatter is EPIDERMIS_B
 0.75σs'. Fitted to NIST's measured reflectance of 100 people (Cooksey, Allen & Tsai 2017, J. Res. NIST 122:26,
 doi:10.18434/M38597, public domain) over 400–700 nm, 0.22 gives a mean RMS error of 0.0098 and a worst of 0.020 in
 reflectance (tools/calibrate_skin.py, 2026-10-29); plain Kubelka–Munk (1.0) gives 0.039, and a pure absorbing epidermis
-over-darkens. The per-channel subsurface radius comes from the dermis's diffusion length. The spectrum is turned into linear Rec.709 (Blender's
-scene-linear) under CIE D65 with the CIE 1931 2° observer.
+over-darkens. The per-channel subsurface radius comes from the dermis's diffusion length. The spectrum is turned into
+linear Rec.709 (Blender's scene-linear) under CIE D65 with the CIE 1931 2° observer.
 """
 
 from __future__ import annotations
