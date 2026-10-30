@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 // The server's entry — `serve [--host H] [--port P] [--data-dir D] [--log-level L]`, run three ways
 // through the kit's runServer (app-structure §Q.3): by the desktop app in a utilityProcess (it
-// reads the `ready` message runServer posts), headless as `juststage-ai-server serve` (the
+// reads the `ready` message runServer posts), headless as `just-stage-server serve` (the
 // app's own exe run as Node — build/launcher/), and `npm run server` in a checkout.
 //
 // Defaults: host 127.0.0.1, port 17481 (version.js), the data folder `--data-dir`, else
-// JUSTSTAGE_AI_DATA_DIR, else the family ladder (paths.js; a checkout's is <repo>/data).
-// runServer also reads JUSTSTAGE_AI_HOST / _PORT / _LOG_LEVEL.
+// JUST_STAGE_DATA_DIR, else the family ladder (paths.js; a checkout's is <repo>/data).
+// runServer also reads JUST_STAGE_HOST / _PORT / _LOG_LEVEL.
 //
 // The seed pass runs HERE, after createApp, never inside it: a test's createApp(tmp) starts from
 // an empty database (the family's call-site).
@@ -24,7 +24,7 @@ import { DEFAULT_PORT, PRODUCT, VERSION } from "./version.js";
 export async function main(argv = process.argv.slice(2)) {
   return runServer({
     argv,
-    envPrefix: "JUSTSTAGE_AI",
+    envPrefix: "JUST_STAGE",
     // One server per data folder (the kit's platform/data_lock.js): the folder — the family ladder
     // when none is named — is locked before `build` opens it, and a second server there says so.
     productName: PRODUCT,

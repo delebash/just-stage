@@ -1449,7 +1449,7 @@ blender"; "we originally had the kit server code in python"):
   ComfyUI-BlenderAI-node (1,575, GPL-3.0; ComfyUI), mcp-for-blender (32,728, MIT; an outside LLM drives Blender — the
   other direction). None runs llama.cpp, stable-diffusion.cpp or audio.cpp, none bundles its engine.
 
-*measured, 2026-10-29* — JustStage AI (`host/`, the kit at just-core `75d3cb01` then `b41154a7`) on this machine:
+*measured, 2026-10-29* — JustStage's server (`server/`, the kit at just-core `75d3cb01` then `b41154a7`) on this machine:
 - The engine (`sdcpp` build `master-1024-77b72a2`) and FLUX.2 klein 4B (8,749,156,110 bytes, house-paint's pinned
   files) showed installed and on disk at once — the kit's shared cache. A 1024×1024 picture with house-paint's recipe
   (4 steps, guidance 1, euler): 9–13 s; the card's peak 6,060 MiB (`nvidia-smi`, 2 s polls).

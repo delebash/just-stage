@@ -13,7 +13,7 @@ import { getDb } from "../app_state.js";
 import { readSettings, writeSettings } from "../database/settings.js";
 import { SETTING_KEYS, SettingsPatch } from "../schemas/settings.js";
 
-const log = getLogger("juststage_ai.settings");
+const log = getLogger("just_stage.settings");
 
 export function router() {
   const app = new Hono();

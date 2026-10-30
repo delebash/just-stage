@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """`juststage.skin.add_detail` — the skin's fine detail (pores, the crosshatch of skin lines) from a close-up drawn by
-JustStage AI's `juststage.skin_detail` feature (docs/standards/ai-engines.md): made seamless, tiled at `size_mm` of
-real skin, as a bump on the character's skin material (run `juststage.skin.set_tone` first)."""
+the `juststage.skin_detail` feature of JustStage's server (docs/standards/ai-engines.md): made seamless, tiled at
+`size_mm` of real skin, as a bump on the character's skin material (run `juststage.skin.set_tone` first)."""
 
 from typing import NamedTuple
 
@@ -52,7 +52,7 @@ def main(params: Params) -> Result:
         raise CommandError(f"{obj.name} has no skin material yet; run juststage.skin.set_tone first")
     started = time.monotonic()
     try:
-        host = engines.ensure_running(paths.user_dir("juststage-ai"))
+        server = engines.ensure_running(paths.user_dir("server"))
         png = engines.run_image(FEATURE, detail.PROMPT, SIZE, SIZE, params.seed)
         model = engines.feature_model(FEATURE)
     except engines.EngineError as e:
@@ -62,7 +62,7 @@ def main(params: Params) -> Result:
         "model": model,
         "seed": params.seed,
         "prompt": detail.PROMPT,
-        "host": f"{host.get('product', '')} {host.get('version', '')}".strip(),
+        "server": f"{server.get('product', '')} {server.get('version', '')}".strip(),
     }
     image = detail.apply(material, obj.name, detail.height_from_png(png), params.size_mm, params.strength, provenance)
     return Result(image=image.name, model=model, seconds=round(time.monotonic() - started, 1))

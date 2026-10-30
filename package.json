@@ -1,0 +1,19 @@
+{
+  "name": "just-stage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "JustStage's JavaScript part: its server (server/), the web kit template's, as an npm workspace like the template's. The Blender extension is Python (pyproject.toml).",
+  "workspaces": [
+    "server"
+  ],
+  "scripts": {
+    "server": "node server/src/serve.js serve",
+    "lint": "biome check .",
+    "test:server": "node node_modules/vitest/vitest.mjs run --config server/vitest.config.js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "vitest": "^5.0.3"
+  }
+}

@@ -10,7 +10,7 @@ SPDX-FileCopyrightText = "2026 JustStage contributors"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]
-path = ["host/package.json", "host/package-lock.json"]
+path = ["server/package.json", "package.json", "package-lock.json", "biome.json"]
 SPDX-FileCopyrightText = "2026 JustStage contributors (copied from the web kit's template)"
 SPDX-License-Identifier = "MIT"
 

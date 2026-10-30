@@ -10,7 +10,7 @@ import { getLogger } from "@delebash/core/platform/log";
 import { getDb } from "./app_state.js";
 import { getSetting } from "./database/settings.js";
 
-const log = getLogger("juststage_ai.auth");
+const log = getLogger("just_stage.auth");
 
 /** [tokens, requireForLoopback]. No tokens = auth off; a read that fails is auth off too, so a
  * settings glitch can never lock the user out. */

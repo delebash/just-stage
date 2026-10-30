@@ -24,7 +24,7 @@ class JUSTSTAGE_OT_skin_set_tone(CommandOperator, bpy.types.Operator):
 
 
 class JUSTSTAGE_OT_skin_add_detail(CommandOperator, bpy.types.Operator):
-    """The skin's fine detail, drawn by JustStage AI"""
+    """The skin's fine detail, drawn by JustStage's AI server"""
 
     bl_idname = "juststage.skin_add_detail"
     bl_label = "Skin detail (AI)"

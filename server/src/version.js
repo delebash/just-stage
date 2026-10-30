@@ -9,7 +9,7 @@ import pkg from "../package.json" with { type: "json" };
 /** The name the desktop shell knows this app's server by: GET /v1/health answers it, and a
  * listener on the app's port is stopped only when it does (src-electron/electron-main.js
  * `productName`). */
-export const PRODUCT = "JustStage AI";
+export const PRODUCT = "JustStage";
 export const VERSION = pkg.version;
 export const API_VERSION = "v1";
 /** JustStage's ports: its Blender API socket 17480, this AI server 17481 (the kit's registry: JW 17495 · JV 17494 ·

@@ -4,7 +4,7 @@
 // The data folder is the family's ONE ladder, the kit's `resolveDataDir` (the user, 2026-08-14:
 // "all that can be the same should be, this includes how data is stored"):
 //   1. `--data-dir` (runServer sets the variable from it)
-//   2. JUSTSTAGE_AI_DATA_DIR — the user's choice; also how the desktop shell hands its root down
+//   2. JUST_STAGE_DATA_DIR — the user's choice; also how the desktop shell hands its root down
 //   3. `data/` beside the app (a checkout: <repo>/data) — the default, portable
 //   4. the OS app-data folder, only when the install folder can't be written
 // The desktop shell resolves the same ladder before its window opens; this one governs headless
@@ -16,10 +16,10 @@ import { resolveDataDir } from "@delebash/core/platform";
 /** The data folder's name under the OS fallback — the desktop main's `appName`. */
 export const APP_NAME = "FamilyTemplate";
 /** The data-folder variable — the desktop main's `dataDirEnv`. */
-export const DATA_DIR_ENV = "JUSTSTAGE_AI_DATA_DIR";
+export const DATA_DIR_ENV = "JUST_STAGE_DATA_DIR";
 
 // The checkout root: server/src/paths.js → the repo. Packaged, this package is installed at
-// <app>/node_modules/juststage-ai-server, so this is <app>/node_modules (the kit uses the
+// <app>/node_modules/just-stage-server, so this is <app>/node_modules (the kit uses the
 // executable's own folder for the data ladder then).
 export const SOURCE_ROOT = path.resolve(import.meta.dirname, "..", "..");
 

@@ -14,7 +14,7 @@ import { upgradeSettings as upgradeToToday } from "@delebash/core/platform";
 import { getLogger } from "@delebash/core/platform/log";
 import { getSetting, insertSettingIfMissing, setSetting } from "./settings.js";
 
-const log = getLogger("juststage_ai.seed");
+const log = getLogger("just_stage.seed");
 
 /** The app's settings and their first values — each key has its schema in schemas/settings.js. */
 export const SETTING_DEFAULTS = {

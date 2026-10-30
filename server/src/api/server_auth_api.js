@@ -12,7 +12,7 @@ import { getDb } from "../app_state.js";
 import { readAuth } from "../auth.js";
 import { setSetting } from "../database/settings.js";
 
-const log = getLogger("juststage_ai.server_auth");
+const log = getLogger("just_stage.server_auth");
 
 export const AuthIn = strictObject({
   tokens: T.Array(T.String({ maxLength: 200 }), { maxItems: 50 }),

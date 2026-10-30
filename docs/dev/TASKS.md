@@ -314,7 +314,15 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            jw and jv and we just copy the files" → "go"; "ok go your rec all go"; and "i my change this later and make
            it all inside blender as it just seems not seemles this way, but for now why we are still testing if it
            even works well enough this is fine".
-           DONE 2026-10-29 (images): JustStage AI is `host/` — the kit template's server copied by hand (its Notes
+           The user, 2026-10-29, verbatim, on the copy: "why it in folde named host will all other apps haver server
+           ffolder this was the point of the tmeplate consistancy and you are already breaking it"; "you didnt run the
+           new-app; but you where still should follow poarts of templat that relate what you need"; "the tempalte is so
+           we have consistency, this app is differnt but still there still should be rules and consistency you follow
+           with server design location ect, that is point of tmeplate"; "you can adjust as needed you are smart this is
+           you job to figure out what to use and not use". So: `server/`, the generator's names for JustStage
+           (`just-stage-server`, `JUST_STAGE_*`, product `JustStage`, version 0.1.0 with the app), the template's server
+           tests (48, moved off its Notes demo onto the settings), its `biome.json`, the root workspace and scripts.
+           DONE 2026-10-29 (images): JustStage's server is `server/` (every family app's server folder) — the kit template's server copied by hand (its Notes
            demo out), port 17481, the image engine on with just-house-paint's FLUX.2 klein 4B row (the family cache
            shares the engine and the 8.7 GB model already on this machine). `juststage.engines` starts it when it
            isn't running and runs image jobs over the kit's routes; `juststage.skin.add_detail` asks its

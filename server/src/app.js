@@ -62,27 +62,27 @@ import {
 } from "./seed_presets.js";
 import { PRODUCT } from "./version.js";
 
-const log = getLogger("juststage_ai.app");
+const log = getLogger("just_stage.app");
 
 /** The problem-type prefix of every error answer (`type`: `<base><slug>`, app-structure §15). */
-export const TYPE_BASE = "https://juststage-ai.local/errors/";
+export const TYPE_BASE = "https://just-stage.local/errors/";
 
 /** The desktop window's origin — the kit's shell loads the UI from app://<id>. */
-export const DESKTOP_ORIGIN = "app://juststageai";
+export const DESKTOP_ORIGIN = "app://juststage";
 /** The renderer's own origins: the desktop window and Quasar's dev server (its registered port,
  * app-structure §1 — the same number as quasar.config.js `devServer` and installLlmUi's
  * `devPorts`). The phone's webview origins are the kit's own (csrf.js CAPACITOR_ORIGINS). */
 export const APP_ORIGINS = [DESKTOP_ORIGIN, "http://localhost:9000", "http://127.0.0.1:9000"];
 
 /**
- * Where the built UI is, for the headless server (null when there is none): JUSTSTAGE_AI_UI_DIR;
+ * Where the built UI is, for the headless server (null when there is none): JUST_STAGE_UI_DIR;
  * a checkout's browser build, dist/spa/; or, packaged, the app folder — this package is installed
- * at <app>/node_modules/juststage-ai-server, so SOURCE_ROOT is <app>/node_modules, and Quasar
+ * at <app>/node_modules/just-stage-server, so SOURCE_ROOT is <app>/node_modules, and Quasar
  * puts the built UI at <app> itself (resources/app.asar); then the working folder's dist/spa.
  */
 export function locateUiDir() {
   const candidates = [];
-  if (process.env.JUSTSTAGE_AI_UI_DIR) candidates.push(process.env.JUSTSTAGE_AI_UI_DIR);
+  if (process.env.JUST_STAGE_UI_DIR) candidates.push(process.env.JUST_STAGE_UI_DIR);
   candidates.push(path.join(SOURCE_ROOT, "dist", "spa"));
   if (path.basename(SOURCE_ROOT) === "node_modules") candidates.push(path.dirname(SOURCE_ROOT));
   candidates.push(path.join(process.cwd(), "dist", "spa"));
@@ -131,7 +131,7 @@ export async function createApp(dataDir = null) {
 
   // 1. Server logs → the in-memory ring (Settings → Logs) and a day file that survives a crash.
   installLogRing();
-  installFileLog(path.join(dataDir, "logs", "juststage-ai.log"));
+  installFileLog(path.join(dataDir, "logs", "just-stage.log"));
 
   // 2. The kit's server — no onUnhandled of our own: the kit's answer is the family's.
   const app = createServer({ typeBase: TYPE_BASE });
@@ -143,10 +143,10 @@ export async function createApp(dataDir = null) {
   // every origin: any web page the user opened could then read this computer's server, backups
   // and keys included (the security review, 2026-10-19). Bearer auth is off until Settings →
   // Server adds a token, and refuses a page that renamed itself to reach this computer (DNS
-  // rebinding; JUSTSTAGE_AI_ALLOWED_HOSTS names a reverse proxy's public name); the desktop shell's
+  // rebinding; JUST_STAGE_ALLOWED_HOSTS names a reverse proxy's public name); the desktop shell's
   // POST /v1/shutdown carries no token and stays open from this machine (the route refuses
   // anyone else itself).
-  const allowedHosts = (process.env.JUSTSTAGE_AI_ALLOWED_HOSTS || "").split(",").map((h) => h.trim()).filter(Boolean);
+  const allowedHosts = (process.env.JUST_STAGE_ALLOWED_HOSTS || "").split(",").map((h) => h.trim()).filter(Boolean);
   // a reverse proxy's public names: the browser's Origin there (https://paint.example.com) is the server's own,
   // though the server sees another scheme and host behind the proxy
   const proxyOrigins = allowedHosts.flatMap((h) => [`https://${h}`, `http://${h}`]);
@@ -206,7 +206,7 @@ export async function createApp(dataDir = null) {
     serveUi(app, uiDir);
     log.info(`UI served from ${uiDir}`);
   } else {
-    log.warning("no built UI found — the headless UI is off. `npm run build:spa` makes dist/spa/, or set JUSTSTAGE_AI_UI_DIR.");
+    log.warning("no built UI found — the headless UI is off. `npm run build:spa` makes dist/spa/, or set JUST_STAGE_UI_DIR.");
   }
 
   return app;

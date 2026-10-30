@@ -10,10 +10,10 @@ import { sortedTables } from "@delebash/core/platform/data_api";
 import { getLogger } from "@delebash/core/platform/log";
 import { MIGRATIONS } from "./schema.js";
 
-const log = getLogger("juststage_ai.database");
+const log = getLogger("just_stage.database");
 
 /** The database file's name, in the data folder. */
-export const DB_FILE = "juststage-ai.db";
+export const DB_FILE = "just-stage.db";
 
 export const dbPath = (dataDir) => path.join(dataDir, DB_FILE);
 

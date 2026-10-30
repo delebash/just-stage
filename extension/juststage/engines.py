@@ -3,8 +3,9 @@
 
 """JustStage's side of its AI server (docs/standards/ai-engines.md §3).
 
-JustStage AI (`host/`: the web kit's template server, copied, with the image engine on) listens on 127.0.0.1:17481;
-this module finds it, starts it when it isn't running, and runs image jobs on it over the kit's routes — submit
+JustStage's server (`server/`: the web kit's template server, copied, with the image engine on) listens on
+127.0.0.1:17481; this module finds it, starts it when it isn't running, and runs image jobs on it over the kit's
+routes — submit
 (`POST /v1/ai/image/jobs`), progress (`GET /v1/jobs/:id`), cancel (`DELETE /v1/jobs/:id`), the picture once
 (`GET /v1/ai/image/jobs/:id/result`). Python's standard library only.
 """
@@ -21,7 +22,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-PORT = 17481  # host/src/version.js DEFAULT_PORT
+PORT = 17481  # server/src/version.js DEFAULT_PORT
 BASE = f"http://127.0.0.1:{PORT}"
 START_SECONDS = 60
 
@@ -47,7 +48,7 @@ def _call(method: str, path: str, body: dict | None = None, timeout: float = 30.
         except ValueError:
             problem = {}
         words = problem.get("detail") or problem.get("title") or str(e)
-        raise EngineError(f"JustStage AI: {words}", problem.get("need", "")) from None
+        raise EngineError(f"JustStage's server: {words}", problem.get("need", "")) from None
 
 
 def _json(method: str, path: str, body: dict | None = None) -> dict:
@@ -62,14 +63,14 @@ def health() -> dict | None:
         return None
 
 
-def host_dir() -> Path:
-    """Where JustStage AI's code is: `JUSTSTAGE_HOST_DIR`, else `host/` in the checkout (`JUSTSTAGE_ROOT`)."""
-    for key, sub in (("JUSTSTAGE_HOST_DIR", ""), ("JUSTSTAGE_ROOT", "host")):
+def server_dir() -> Path:
+    """Where JustStage's server's code is: `JUSTSTAGE_SERVER_DIR`, else `server/` in the checkout (`JUSTSTAGE_ROOT`)."""
+    for key, sub in (("JUSTSTAGE_SERVER_DIR", ""), ("JUSTSTAGE_ROOT", "server")):
         if os.environ.get(key):
             path = Path(os.environ[key]) / sub
             if (path / "src" / "serve.js").exists():
                 return path
-    raise EngineError("JustStage AI isn't on this computer (no host/src/serve.js)")
+    raise EngineError("JustStage's server isn't on this computer (no server/src/serve.js)")
 
 
 def ensure_running(data_dir: Path) -> dict:
@@ -79,7 +80,7 @@ def ensure_running(data_dir: Path) -> dict:
         return found
     node = os.environ.get("JUSTSTAGE_NODE") or shutil.which("node")
     if not node:
-        raise EngineError("JustStage AI needs Node, and none was found")
+        raise EngineError("JustStage's server needs Node, and none was found")
     data_dir.mkdir(parents=True, exist_ok=True)
     flags = 0
     if sys.platform == "win32":  # it outlives the Blender that started it, without a console window
@@ -87,8 +88,8 @@ def ensure_running(data_dir: Path) -> dict:
     with open(data_dir / "serve.log", "ab") as log:
         subprocess.Popen(
             [node, str(Path("src") / "serve.js"), "serve"],
-            cwd=host_dir(),
-            env={**os.environ, "JUSTSTAGE_AI_DATA_DIR": str(data_dir)},
+            cwd=server_dir(),
+            env={**os.environ, "JUST_STAGE_DATA_DIR": str(data_dir)},
             stdout=log,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
@@ -101,7 +102,7 @@ def ensure_running(data_dir: Path) -> dict:
         if found is not None:
             return found
         time.sleep(0.5)
-    raise EngineError(f"JustStage AI didn't start within {START_SECONDS} s (its log: {data_dir / 'serve.log'})")
+    raise EngineError(f"JustStage's server didn't start within {START_SECONDS} s (its log: {data_dir / 'serve.log'})")
 
 
 def feature_model(feature: str) -> str:

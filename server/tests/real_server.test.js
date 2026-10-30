@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: MIT
+// Through a real socket (app-structure §Q.3, §18): `app.request` can't see a missing CORS answer —
+// the 2026-08-02 i18n rewrite shipped 126 green tests and zero working browser requests — so this
+// runs the app on the kit's real server (runServer on @hono/node-server, as the desktop app and the
+// headless path run it) and asks it with Node's own client, Origin header and all.
+import http from "node:http";
+import { runServer } from "@delebash/core/platform";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { createApp } from "../src/app.js";
+import { tmpDir, useHermeticKit } from "./helpers.js";
+
+useHermeticKit();
+
+let served;
+beforeEach(async () => {
+  const app = await createApp(tmpDir());
+  // runServer's stop ends the process; a test keeps it
+  vi.spyOn(process, "exit").mockImplementation(() => undefined);
+  served = await runServer({
+    argv: ["serve"],
+    envPrefix: null,
+    log: { error() {}, info() {} },
+    build: async () => ({ app, host: "127.0.0.1", port: 0 }),
+  });
+});
+afterEach(async () => {
+  await served.stop("test over");
+});
+
+/** One request with Node's own HTTP client. */
+function send(method, path, { headers = {}, body } = {}) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({ host: "127.0.0.1", port: served.port, path, method, headers }, (res) => {
+      let text = "";
+      res.on("data", (b) => {
+        text += b;
+      });
+      res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, text }));
+    });
+    req.on("error", reject);
+    if (body !== undefined) req.write(body);
+    req.end();
+  });
+}
+
+test("a read from the dev server's origin gets its CORS answer", async () => {
+  const r = await send("GET", "/v1/settings", { headers: { origin: "http://localhost:9000" } });
+  expect(r.status).toBe(200);
+  expect(r.headers["access-control-allow-origin"]).toBe("http://localhost:9000");
+});
+
+test("the desktop window's preflight and JSON write go through", async () => {
+  const origin = "app://juststage";
+  const pre = await send("OPTIONS", "/v1/settings", {
+    headers: { origin, "access-control-request-method": "PATCH", "access-control-request-headers": "content-type" },
+  });
+  expect(pre.status).toBeLessThan(300);
+  expect(pre.headers["access-control-allow-origin"]).toBeTruthy();
+  expect(String(pre.headers["access-control-allow-methods"])).toMatch(/PATCH/);
+
+  const body = JSON.stringify({ "windows.checkSeconds": 9 });
+  const r = await send("PATCH", "/v1/settings", { headers: { origin, "content-type": "application/json", "content-length": Buffer.byteLength(body) }, body });
+  expect(r.status).toBe(200);
+  expect(r.headers["access-control-allow-origin"]).toBe(origin);
+  expect(JSON.parse(r.text)["windows.checkSeconds"]).toBe(9);
+});
+
+test("an error answer carries CORS too, so the browser sees the error and not a CORS block", async () => {
+  const body = JSON.stringify({ "windows.checkSeconds": 500 });
+  const r = await send("PATCH", "/v1/settings", {
+    headers: { origin: "http://127.0.0.1:9000", "content-type": "application/json", "content-length": Buffer.byteLength(body) },
+    body,
+  });
+  expect(r.status).toBe(422);
+  expect(r.headers["access-control-allow-origin"]).toBe("http://127.0.0.1:9000");
+  expect(JSON.parse(r.text).requestId).toBe(r.headers["x-request-id"]);
+});
+
+// 2026-10-19, the security review: CORS for every origin let any web page the user opened read this
+// computer's server — backups and keys included; a page that renamed itself to 127.0.0.1 called it as its own.
+test("a page from anywhere else gets no CORS answer: it can't read this computer's server", async () => {
+  const r = await send("GET", "/v1/data/backup", { headers: { origin: "https://evil.example" } });
+  expect(r.headers["access-control-allow-origin"]).toBeUndefined();
+  const pre = await send("OPTIONS", "/v1/server-auth", { headers: { origin: "https://evil.example", "access-control-request-method": "GET" } });
+  expect(pre.headers["access-control-allow-origin"]).toBeUndefined();
+});
+
+test("a page that renamed itself to reach this computer (DNS rebinding) is refused", async () => {
+  const evil = `rebind.evil.example:${served.port}`;
+  const r = await send("GET", "/v1/server-auth", { headers: { host: evil, origin: `http://${evil}` } });
+  expect(r.status).toBe(403);
+  expect(JSON.parse(r.text).type).toMatch(/host-not-allowed$/);
+  // this computer's own names still answer
+  expect((await send("GET", "/v1/settings", { headers: { host: `localhost:${served.port}` } })).status).toBe(200);
+});

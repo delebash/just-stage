@@ -24,7 +24,7 @@ import { APP_TABLES } from "./database/schema.js";
 import { seedWorkspace } from "./database/seed.js";
 import { deleteSetting, getSetting, setSetting } from "./database/settings.js";
 
-const log = getLogger("juststage_ai.data");
+const log = getLogger("just_stage.data");
 
 /** A restore keeps this server's access tokens, as a reset does: they are the server's, not the data's —
  *  a backup made before a token was set would open the server to the network, one with another token

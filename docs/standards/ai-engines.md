@@ -34,7 +34,7 @@ inside Blender.
 
 ## 2 · The exact service
 
-**JustStage ships its own engine host** (item 14) — **JustStage AI**, `host/` in this repo: the kit template's server copied by hand (the kit's generator places apps beside the kit only — `new-app.js` `repointKitPaths`), port 17481; started by `juststage.engines` when it isn't running. As written first: a server-only family package from the kit's template with the
+**JustStage ships its own engine host** (item 14) — **JustStage's server**, `server/` in this repo, in the template's shape (the folder every family app's server has; the generator's names for JustStage — package `just-stage-server`, `JUST_STAGE_*` settings, product `JustStage`, one version with the app; the template's server tests, `biome.json` and root `server`/`test:server`/`lint` scripts as an npm workspace): the kit template's server copied by hand (the kit's generator places apps beside the kit only — `new-app.js` `repointKitPaths`), port 17481; started by `juststage.engines` when it isn't running. As written first: a server-only family package from the kit's template with the
 runtimes its features need turned on — `installLlm({ runtimes: ["sdcpp", …], runtimeModels })` in its
 `server/src/app.js`, run headless by the kit's launcher (`<app>-server serve`, `app-structure.md` §Q.3) — shipped in
 JustStage's installer with its Node runtime ([`plugins.md`](plugins.md) §5) and started by the extension when a
