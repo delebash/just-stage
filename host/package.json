@@ -1,0 +1,18 @@
+{
+  "name": "juststage-ai-server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "JustStage AI \u2014 JustStage's AI server: the web kit's template server, copied by hand (the generator places apps beside the kit only), with the image engine on. JustStage's Blender extension sends it jobs on 127.0.0.1:17481.",
+  "license": "MIT",
+  "exports": {
+    "./serve": "./src/serve.js",
+    "./schemas/*.js": "./src/schemas/*.js"
+  },
+  "dependencies": {
+    "@delebash/core": "file:../../../Web/just-core/packages/core"
+  },
+  "scripts": {
+    "serve": "node src/serve.js serve"
+  }
+}

@@ -29,3 +29,10 @@ def generated(*parts: str, tool: str) -> Path:
 
         raise CommandError(f"{path.name} is missing; run: {tool}")
     return path
+
+
+def user_dir(sub: str) -> Path:
+    """A writable folder of this extension's own under Blender's user resources (never the add-on's folder)."""
+    import bpy
+
+    return Path(bpy.utils.extension_path_user(__package__, path=sub, create=True))

@@ -10,6 +10,11 @@ SPDX-FileCopyrightText = "2026 JustStage contributors"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]
+path = ["host/package.json", "host/package-lock.json"]
+SPDX-FileCopyrightText = "2026 JustStage contributors (copied from the web kit's template)"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
 path = ["extension/juststage/data/fetched/makehuman/**"]
 SPDX-FileCopyrightText = "MakeHuman Community (MPFB2 assets)"
 SPDX-License-Identifier = "CC0-1.0"

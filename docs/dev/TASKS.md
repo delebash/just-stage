@@ -307,13 +307,24 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            responsibliyt, you are overthinking and complicating things" — no cross-app memory rules (ai-engines.md §4
            rule 3 dropped). And on reuse: "we do what full ai in just stage so yeah reusing the kit is good idea its just
            sucjs we have to have node installed now" — Node ships inside JustStage's installer (plugins.md §5).
-           PARKED 2026-10-29 — the user, verbatim: "we will just use what we need now if we need jv we will do it later
-           for now just keep on going with what your are doing on character creator". Found before parking (kit
-           `75d3cb01`): the kit's generator places a new app beside the kit only (`scripts/new-app.js`
-           `repointKitPaths`: "both live in the family folder: <family>/app/<file> and <family>/<kit>/<target>"), so
-           JustStage's AI program made the standard way is its own family app in E:\Dev\Web (its own repo and session),
-           registered by the generator itself; chat and images already run over the kit's routes, speech has none (its
-           request shaping is JustVoice's `engines/audiocpp/slot.js`, 1,013 lines — moving it into the kit is later).
+           The user, 2026-10-29, verbatim, on that parking: "no i did not mean waits you need it i just mean doing
+           full jv you still need image for character creator test that is what got us donw this path"; then "i dont
+           care if you use the new-app.js or if you need to adjust its code, you are overthinking just manually copy
+           the stuff if need be insead of new app"; "ok so we do need a new server for this app just like we have for
+           jw and jv and we just copy the files" → "go"; "ok go your rec all go"; and "i my change this later and make
+           it all inside blender as it just seems not seemles this way, but for now why we are still testing if it
+           even works well enough this is fine".
+           DONE 2026-10-29 (images): JustStage AI is `host/` — the kit template's server copied by hand (its Notes
+           demo out), port 17481, the image engine on with just-house-paint's FLUX.2 klein 4B row (the family cache
+           shares the engine and the 8.7 GB model already on this machine). `juststage.engines` starts it when it
+           isn't running and runs image jobs over the kit's routes; `juststage.skin.add_detail` asks its
+           `juststage.skin_detail` feature for a skin close-up, keeps its fine relief as a seamless height map
+           (`core/skin_detail.py`), packs it with its provenance and tiles it over the body's UVs as a bump on the
+           skin material — tested against the real server (10 s a picture on the 2070 Super, the card's peak 6,060
+           MiB). A kit bug found on the way — the route's `seed` never reached sd.cpp, every picture was seed 42 —
+           reported and fixed by the core session (just-core `b41154a7`). Still open in 4: the Blender panel (the
+           server's jobs with progress and Cancel, the model per feature, the AI settings link) and the kit's AI
+           pages on the server (the template's web front end); speech waits for JustVoice's move into the kit.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

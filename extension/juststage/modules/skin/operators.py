@@ -23,4 +23,18 @@ class JUSTSTAGE_OT_skin_set_tone(CommandOperator, bpy.types.Operator):
     oiliness: bpy.props.FloatProperty(name="Oiliness", default=0.5, min=0.0, max=1.0)
 
 
-CLASSES = (JUSTSTAGE_OT_skin_set_tone,)
+class JUSTSTAGE_OT_skin_add_detail(CommandOperator, bpy.types.Operator):
+    """The skin's fine detail, drawn by JustStage AI"""
+
+    bl_idname = "juststage.skin_add_detail"
+    bl_label = "Skin detail (AI)"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.skin.add_detail"
+
+    character: bpy.props.StringProperty(name="Character")
+    seed: bpy.props.IntProperty(name="Seed", default=1)
+    size_mm: bpy.props.FloatProperty(name="Tile size (mm)", default=20.0, min=1.0, max=200.0)
+    strength: bpy.props.FloatProperty(name="Strength", default=0.5, min=0.0, max=2.0)
+
+
+CLASSES = (JUSTSTAGE_OT_skin_set_tone, JUSTSTAGE_OT_skin_add_detail)

@@ -15,3 +15,6 @@ dist/
 
 # made by the offline tools in libs/ (e.g. libs/wrap/gnm_to_hm08.py)
 extension/juststage/data/generated/
+
+# JustStage AI (host/): its install and its data
+host/node_modules/

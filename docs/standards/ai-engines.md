@@ -34,14 +34,13 @@ inside Blender.
 
 ## 2 · The exact service
 
-**JustStage ships its own engine host** (item 14): a server-only family package from the kit's template with the
+**JustStage ships its own engine host** (item 14) — **JustStage AI**, `host/` in this repo: the kit template's server copied by hand (the kit's generator places apps beside the kit only — `new-app.js` `repointKitPaths`), port 17481; started by `juststage.engines` when it isn't running. As written first: a server-only family package from the kit's template with the
 runtimes its features need turned on — `installLlm({ runtimes: ["sdcpp", …], runtimeModels })` in its
 `server/src/app.js`, run headless by the kit's launcher (`<app>-server serve`, `app-structure.md` §Q.3) — shipped in
 JustStage's installer with its Node runtime ([`plugins.md`](plugins.md) §5) and started by the extension when a
 generator first runs. **When JustDirect exists (R20), it uses the same host** instead of starting its own, so a machine
 runs one host and one arbiter. Its port is registered in the kit's family registry when the package is created (the
-kit's rule). Before the package exists (the gate), the kit's own template server run from source (`npm run server` in
-`just-core/template`) with `sdcpp` on stands in — the same code.
+kit's rule). (The stand-in first written here — the template's own server with `sdcpp` on — couldn't run: the template turns no engine on.)
 
 **The image-job route — the kit gap, filled 2026-10-29** (item 15: requested of the `core` session; shipped on
 just-core's main, `333ac9e3` "… an image feature over HTTP", read in `packages/core/src/llm/image_jobs_api.js`):
