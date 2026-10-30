@@ -1487,6 +1487,26 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
+*agent, 2026-10-30* — photo to a 3D head on our base, the research the user asked for (notes, every search logged:
+[`../plans/2026-10-30-research-ai-photo-to-head.md`](../plans/2026-10-30-research-ai-photo-to-head.md); facts to be
+re-checked before the rec list):
+- Best single-photo shape method found: **RealDenseFace** (arXiv 2608.09238, code 2026-08) — first on the NeRSemble
+  single-photo leaderboard (1.610 mm mean surface error; Pixel3DMM 1.659, SMIRK 2.276): a network predicts, per face
+  pixel, the head-surface point it shows plus depth, then Gauss–Newton fits the face model to those thousands of
+  matches. Code MIT, weights' card MIT; its training data includes Ava-256 (CC BY-NC); the solver is CUDA-only (to
+  rewrite in NumPy); ONNX export untested; VRAM on 8 GB unmeasured.
+- Why the face test's fit failed: only identity was free (camera, pose, expression fixed, so identity absorbed every
+  mismatch); the AI's views disagree 5–40 px; MediaPipe's jaw and outline points slide with the view but were tied
+  to fixed vertices; sparse points don't pin depth; the prior was swamped. GNM's report solves identity, expression,
+  pose and camera together; Google says it will release the dense landmarks it fits to.
+- To our head: wrap FLAME 2023 Open (CC-BY-4.0) onto GNM once with the existing wrap tool; each fit then becomes a
+  linear 3D projection onto GNM's space.
+- Feed-forward avatars: MeshLAM (CVPR 2026, textured mesh) — no code; LAM, GAGAvatar, FaceLift, CAP4D, Arc2Avatar —
+  Gaussian splats, not meshes. Pro apps (MetaHuman From Mesh, Headshot Mesh mode) first make a 3D surface from the
+  photo, then fit their template to it; Headshot 3's photo mode is reported weak on shape.
+- Not verified: the FLAME file RealDenseFace needs, its VRAM, Wrap's and KeenTools' docs (connection errors), whether
+  stable-diffusion.cpp runs Qwen-Image-Edit 2511.
+
 *web, 2026-10-30* — Meshy's image-to-3D, read at the guide the user linked
 ([meshy.ai/tutorials/image-to-3d-model-complete-guide](https://www.meshy.ai/tutorials/image-to-3d-model-complete-guide),
 *page read*; the user: "i gave you meshy … but you never even looked at what it does or how it works"):
