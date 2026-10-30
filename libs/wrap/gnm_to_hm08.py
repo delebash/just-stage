@@ -29,6 +29,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+import scipy.spatial
 import trimesh
 from trimesh import registration
 
@@ -42,6 +43,28 @@ HM08_DM_PER_M = 10.0
 BODY_VERTICES = 13380
 # the head region, in hm08 metres (Y up): the fade runs from mid-neck (0) to the jaw line (1)
 NECK_LOW, NECK_HIGH = 0.55, 0.62
+# hm08's helpers on the head follow GNM too, each from the GNM component it stands for; parts are GNM's own meshes
+HELPERS = {
+    "helper-l-eye": "left_eye",
+    "helper-r-eye": "right_eye",
+    "helper-upper-teeth": "upper_teeth_and_gums",
+    "helper-lower-teeth": "lower_teeth_and_gums",
+    "helper-tongue": "tongue",
+    "helper-l-eyelashes-1": "skin",
+    "helper-l-eyelashes-2": "skin",
+    "helper-r-eyelashes-1": "skin",
+    "helper-r-eyelashes-2": "skin",
+    "helper-hair": "skin",
+}
+# part → (GNM components, the hm08 helper groups its MHCLO binds to); names are MetaHuman's (item 10)
+PARTS = {
+    "eyeLeft": (["left_eye"], ["helper-l-eye"]),
+    "eyeRight": (["right_eye"], ["helper-r-eye"]),
+    "teeth": (
+        ["upper_teeth_and_gums", "lower_teeth_and_gums", "tongue"],
+        ["helper-upper-teeth", "helper-lower-teeth", "helper-tongue"],
+    ),
+}
 # where hm08 reaches past GNM's skin (the crown, the shoulder tops) it keeps its own shape: full transfer within
 # NEAR of the fitted GNM surface, none beyond FAR
 NEAR, FAR = 0.005, 0.020
@@ -120,7 +143,59 @@ def main() -> int:
     bary = trimesh.triangles.points_to_barycentric(fitted_mesh.triangles[tri], closest)
     corners = used[source.faces[tri]]  # GNM vertex indices of each hit triangle
 
-    # 4 · GNM's head identity directions, carried across and faded, as MakeHuman targets
+    # 3b · hm08's head helpers → the GNM vertex they stand on (eyes, teeth, tongue: GNM's own parts; lashes and hair:
+    # the fitted skin), so eyes, teeth and hair helpers move with a GNM head as the skin does
+    fitted_all = template.copy()
+    fitted_all[used] = fitted
+    comp = gnm["vertex_groups"]
+    helper_index, helper_source = [], []
+    for helper, component in HELPERS.items():
+        mask = (comp[group_names.index(component)] > 0.5) if component != "skin" else exterior
+        candidates = np.where(mask)[0]
+        _, nearest = scipy.spatial.cKDTree(fitted_all[candidates]).query(hm_v[hm_groups[helper]])
+        helper_index.extend(hm_groups[helper])
+        helper_source.extend(candidates[nearest].tolist())
+    helper_index = np.array(helper_index)
+    helper_source = np.array(helper_source)
+
+    # 3c · GNM's eyes, teeth, gums and tongue as parts, placed in hm08's head: the NICP field of the nearest skin
+    # vertices, inverse-distance weighted, moves each part vertex as the skin around it moved
+    field = fitted - template[used]
+    skin_tree = scipy.spatial.cKDTree(template[used])
+    parts_out = OUT / "parts"
+    parts_out.mkdir(parents=True, exist_ok=True)
+    parts_meta = {}
+    for part, (components, helpers) in PARTS.items():
+        mask = np.zeros(len(template), dtype=bool)
+        for component in components:
+            mask |= comp[group_names.index(component)] > 0.5
+        keep = mask[gnm["quads"]].all(axis=1)
+        quads, uvs = gnm["quads"][keep], gnm["quad_uvs"][keep]
+        verts = np.unique(quads)
+        dist, near = skin_tree.query(template[verts], k=8)
+        w = 1.0 / np.maximum(dist, 1e-6)
+        placed = template[verts] + (field[near] * (w / w.sum(1, keepdims=True))[:, :, None]).sum(axis=1)
+        local = {v: i for i, v in enumerate(verts)}
+        lines = [
+            f"# {part}: GNM v3.0 {', '.join(components)} (Copyright Google, Apache-2.0), placed in MakeHuman hm08's",
+            "# head by JustStage's libs/wrap/gnm_to_hm08.py. MakeHuman's axes and units (Y up, decimetres).",
+            f"o {part}",
+        ]
+        lines += [f"v {x:.6f} {y:.6f} {z:.6f}" for x, y, z in placed * HM08_DM_PER_M]
+        lines += [f"vt {u:.6f} {v:.6f}" for u, v in uvs.reshape(-1, 2)]
+        for q, quad in enumerate(quads):
+            lines.append("f " + " ".join(f"{local[v] + 1}/{q * 4 + k + 1}" for k, v in enumerate(quad)))
+        (parts_out / f"{part}.obj").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        parts_meta[part] = {
+            "obj": f"{part}.obj",
+            "gnm_components": components,
+            "bind_to": helpers,
+            "vertices": int(len(verts)),
+            "quads": int(len(quads)),
+        }
+    (parts_out / "parts.json").write_text(json.dumps(parts_meta, indent=2), encoding="utf-8")
+
+    # 4 · GNM's head identity directions, carried across and faded, as MakeHuman targets — the skin and the helpers
     weight = fade(hm_v[head, 1], distance)[:, None]
     identity = gnm["vertex_identity_basis"]
     identity_names = gnm["identity_names"].tolist()
@@ -129,10 +204,15 @@ def main() -> int:
     largest = []
     for i in head_ids:
         delta = (identity[i][corners] * bary[:, :, None]).sum(axis=1) * scale * weight  # metres
+        helper_delta = identity[i][helper_source] * scale
         largest.append(float(np.linalg.norm(delta, axis=1).max() * 1000.0))
         rows = "\n".join(
             f"{v} {dx:.6f} {dy:.6f} {dz:.6f}"
-            for v, (dx, dy, dz) in zip(head, delta * HM08_DM_PER_M, strict=True)
+            for v, (dx, dy, dz) in zip(
+                np.concatenate([head, helper_index]),
+                np.concatenate([delta, helper_delta]) * HM08_DM_PER_M,
+                strict=True,
+            )
             if abs(dx) + abs(dy) + abs(dz) > 1e-7
         )
         header = (
@@ -154,6 +234,8 @@ def main() -> int:
         },
         "transfer_distance_mm": {"mean": float(distance.mean() * 1000), "max": float(distance.max() * 1000)},
         "head_vertices": int(len(head)),
+        "helper_vertices": int(len(helper_index)),
+        "parts": parts_meta,
         "full_transfer": int((weight[:, 0] > 0.999).sum()),
         "partial_transfer": int(((weight[:, 0] > 0.001) & (weight[:, 0] <= 0.999)).sum()),
         "no_transfer": int((weight[:, 0] <= 0.001).sum()),

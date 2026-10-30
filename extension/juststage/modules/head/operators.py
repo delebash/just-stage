@@ -23,4 +23,15 @@ class JUSTSTAGE_OT_head_set_identity(CommandOperator, bpy.types.Operator):
     coefficients: bpy.props.CollectionProperty(name="Coefficients", type=JustStageFloat)
 
 
-CLASSES = (JUSTSTAGE_OT_head_set_identity,)
+class JUSTSTAGE_OT_head_add_parts(CommandOperator, bpy.types.Operator):
+    """The head's eyes and teeth, fitted to the character"""
+
+    bl_idname = "juststage.head_add_parts"
+    bl_label = "Eyes and teeth"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.head.add_parts"
+
+    character: bpy.props.StringProperty(name="Character")
+
+
+CLASSES = (JUSTSTAGE_OT_head_set_identity, JUSTSTAGE_OT_head_add_parts)

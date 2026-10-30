@@ -297,7 +297,12 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            wasted on a face R4 already said would read stylised. Wrap: offline non-rigid registration (trimesh's
            Amberg optimal-step NICP, MIT) in the MIT `libs/`, the result shipped as MakeHuman targets (`gnm` space).
         4. The engine host from the kit's template with `sdcpp`, and the skin generator's first image features.
-        5. The skin material (Principled, subsurface, micro normal), eyes, teeth/gums/tongue, brows, lashes, nails.
+        5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
+           MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
+           helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
+           character and refits them when the head shape changes; the head helpers now follow GNM shapes. Still in 5:
+           the skin material (Principled, subsurface, micro normal), eye and teeth materials, the eye occlusion and
+           tearline shells, brows, lashes, nails.
         6. The scalp groom with Blender's hair node groups.
         7. The first face rig: OpenRigLogic's Python bindings built for Blender 5.3's Python 3.13; three expressions.
         8. The first Unreal plugin: import the package, build materials and groom, render.

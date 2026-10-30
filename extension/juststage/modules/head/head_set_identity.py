@@ -47,4 +47,9 @@ def main(params: Params) -> Result:
     else:
         values = np.random.default_rng(params.seed).standard_normal(n).astype(np.float32)
     values *= params.strength
-    return Result(components=n, max_offset_mm=gnm_space.set_identity(obj, values))
+    largest = gnm_space.set_identity(obj, values)
+    from . import parts
+
+    if parts.parts_of(obj):
+        parts.refit(obj)
+    return Result(components=n, max_offset_mm=largest)

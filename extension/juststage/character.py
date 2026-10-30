@@ -39,6 +39,9 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     caucasian: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
     african: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
     gnm_identity: bpy.props.CollectionProperty(type=JustStageFloat, description="GNM head identity coefficients")
+    # on a part's object (an eye, the teeth): which part it is (MetaHuman's name) and whose
+    part: bpy.props.StringProperty()
+    part_of: bpy.props.StringProperty(description="the character's assetInfo identifier")
 
 
 def register():

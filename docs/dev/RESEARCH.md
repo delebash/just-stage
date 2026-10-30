@@ -457,6 +457,15 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   150+ facial morphs; reallusion.com free-3d-character-base page) falls under the EULA's CC Base Model clause, which
   bars use "in any character generation system" (§2) — not a base. No source names a cross-app standard human mesh;
   every app has its own (CC, Daz Genesis, MetaHuman, MakeHuman).
+- GNM v3.0's model file, read as plain arrays (2026-10-29, `.dev/cache/gnm/v3_0/gnm_head.npz`, SHA-256 matching
+  `v3_0/checksums.sha256` on `google/gnm-v3`, Apache-2.0): 17,821 vertices, 17,662 quads, 253 identity directions
+  (`head_000`–`head_169`, 3 eyeball, 80 teeth), 383 expressions, 4 joints (`neck`, `head`, `left_eye`, `right_eye`),
+  46 vertex groups, components `skin`, `left_eye`, `right_eye`, `upper_teeth_and_gums`, `lower_teeth_and_gums`,
+  `tongue`; metres, Y up, facing +Z (eyes at ±30.8 mm, as hm08's eye joint cubes). Wrapped onto hm08: fit mean 0.87 mm,
+  p95 2.17 mm; 3,340 head vertices take GNM's full shape, 781 a fade, 338 none (crown, shoulder tops, low neck).
+  MPFB2's head span references measured on `base.obj`: x 5399–11998 (14.8 cm), y 791–881 (23.3 cm), z 962–5320
+  (19.2 cm), as its MHCLO example uses them. Installing GNM's own package from GitHub was refused by Claude Code's
+  permission check ("Code from External"), so no GNM code is run.
 - MetaHuman's face names on disk (`F:\Epic\UE_5.8\Engine\Plugins\MetaHuman\MetaHumanCoreTechLib\Content\ArchetypeDNA\SKM_Face.dna`,
   11.2 MB, byte scan 2026-10-29, for the spec's item 10): 373 distinct `FACIAL_[CLR]_*` joint names, among them
   `FACIAL_C_FacialRoot`, `FACIAL_C_Jaw`, `FACIAL_L_Eye`/`FACIAL_R_Eye`, `FACIAL_C_TeethUpper`, `FACIAL_C_TeethLower`,

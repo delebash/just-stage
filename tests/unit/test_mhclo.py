@@ -5,7 +5,6 @@
 
 import numpy as np
 import pytest
-
 from juststage.core import mhclo
 
 DOC_EXAMPLE = """# MHCLO asset for MakeHuman and MPFB
