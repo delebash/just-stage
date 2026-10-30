@@ -442,6 +442,20 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            lines and forehead creases are relief; the skin carries the photo's colour variation. Still CG: grey, milky
            irises without the dark limbal ring or wet look; brows and pores washed faint by blending misaligned views;
            one flat skin roughness, no sheen; a thin gap between the lips.
+           ROUNDS 12–18 2026-10-30 (`.dev/facetest/compare18fixed_*.png`, `eyes18.png`; each round saves its scene as
+           `.dev/facetest/round.blend` for quick shading trials, ~25 s a render): the fine band from each texel's single
+           best view (blending misaligned views had washed brows and pores out); a cavity map taking shine out of pores,
+           Coat as the oil lobe (0.12, roughness 0.3), Sheen 0.1 (research rec 5); the irises unwrapped from the close
+           painting by MediaPipe's iris points onto the eye's polar UVs (the painting shows a ±30° band between the lids;
+           sampled inside 0.88 of MediaPipe's radius, a dark limbal ring added); the white only from pale texels; the
+           upper lids turned down 9° about each eyeball (the neutral head stared); the cornea clear (a refracting or a
+           Fresnel shell greyed the eye — trials 2026-10-30); a contact shadow in the eye map; the skin's colour gain on
+           the eyes. Skin, tone and light are close to the photo; the eyes still read as CG — the white too clean, no
+           tearline or caruncle, the lid rim visible — and a pale streak on the neck where coverage ends, red patches in
+           the ears. Next: rec 6's eye parts (occlusion shell, tearline, caruncle; the iris at its depth), then the
+           neck and ear artefacts, then the pore approaches the user asked for side by side ("so we test all approaches
+           and can do this too to find what works best for our setup": from the paintings, a scanned micro-normal tile,
+           procedural, SeedVR2-upscaled paintings).
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

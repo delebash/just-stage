@@ -38,7 +38,7 @@ FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = 16  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = 18  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -490,7 +490,7 @@ def test_face_project():
         texel_ids = np.round(e_id[e_mask][:, 0]).astype(int)
         sclera_ids = [i for i, n in enumerate(names) if "Sclera" in n]
         white = seen & np.isin(texel_ids, sclera_ids) & (sat < 0.35) & (lum_e > np.percentile(lum_e[seen], 50))
-        colour *= 0.45 / max(float(np.median(lum_e[white])), 1e-6)
+        colour *= 0.38 / max(float(np.median(lum_e[white])), 1e-6)
         iris_ids = [i for i, n in enumerate(names) if "Iris" in n or "Pupil" in n]
         disk_v = np.isin(np.repeat(e_mat, 3), iris_ids)
         disk_pts = e_co[e_verts.ravel()[disk_v]]
@@ -520,8 +520,10 @@ def test_face_project():
         darkness = [float(np.median(up.sample(face_paint, cx + rr * r_img * np.cos(t), cy - rr * r_img * np.sin(t)) @ lum))
                     for t in sides]
         th = sides[int(np.argmin(darkness))]
-        colour[on_disk] = up.sample(face_paint, cx + rr * r_img * np.cos(th), cy - rr * r_img * np.sin(th)) * (
-            0.45 / max(float(np.median((acc[seen] / wsum[seen, None])[white[seen]] @ lum)), 1e-6))
+        r_in = 0.88 * r_img  # MediaPipe's iris edge sits a little outside the iris; beyond it is the white
+        limbal = 1.0 - 0.55 * np.clip((rr - 0.82) / 0.18, 0.0, 1.0) ** 1.5  # the dark ring at every iris' edge
+        colour[on_disk] = limbal[:, None] * up.sample(face_paint, cx + rr * r_in * np.cos(th), cy - rr * r_in * np.sin(th)) * (
+            0.38 / max(float(np.median((acc[seen] / wsum[seen, None])[white[seen]] @ lum)), 1e-6))
         lum_e = colour @ lum
         cap = 1.15 * float(np.percentile(lum_e[seen], 90))
         colour[seen & (lum_e > cap)] *= (cap / lum_e[seen & (lum_e > cap)])[:, None]  # catch-lights out
@@ -531,6 +533,13 @@ def test_face_project():
         e_map = np.zeros((1024, 1024, 3), np.float32)
         e_map[...] = np.median(colour[white], axis=0)
         e_map[e_mask] = colour
+        seen_map = np.zeros((1024, 1024), np.float32)
+        seen_map[e_mask] = (wsum > 0.05 * np.median(wsum[seen])).astype(np.float32)
+        seen_map[e_mask] = np.where(on_disk_all, 1.0, seen_map[e_mask])  # the iris counts as open (under the cornea)
+        pad = 40
+        edge = sd.gaussian_blur(np.pad(seen_map, pad, mode="edge"), 12.0)[pad:-pad, pad:-pad]
+        contact = 0.45 + 0.55 * np.clip((edge - 0.35) / 0.5, 0.0, 1.0)
+        e_map *= contact[..., None]
         e_srgb = np.clip(e_map, 0.0, 1.0)
         e_srgb = np.where(e_srgb <= 0.0031308, e_srgb * 12.92, 1.055 * e_srgb ** (1 / 2.4) - 0.055)
         e_img = _image(f"{eye_name} paint", e_srgb, "sRGB")
@@ -548,9 +557,14 @@ def test_face_project():
                 e_tex = e_nodes.new("ShaderNodeTexImage")
                 e_tex.image = e_img
                 e_bsdf = next(n for n in e_nodes if n.type == "BSDF_PRINCIPLED")
-                slot.material.node_tree.links.new(e_tex.outputs["Color"], e_bsdf.inputs["Base Color"])
-                e_bsdf.inputs["Roughness"].default_value = 0.06  # wet
-                e_bsdf.inputs["IOR"].default_value = 1.376
+                e_gain = e_nodes.new("ShaderNodeVectorMath")
+                e_gain.operation = "MULTIPLY"
+                e_gain.inputs[1].default_value = gain.inputs[1].default_value  # the skin's calibrated colour gain
+                slot.material.node_tree.links.new(e_tex.outputs["Color"], e_gain.inputs[0])
+                slot.material.node_tree.links.new(e_gain.outputs["Vector"], e_bsdf.inputs["Base Color"])
+                e_bsdf.inputs["Roughness"].default_value = 0.4 if "Iris" in slot.material.name else 0.25
+                e_bsdf.inputs["Coat Weight"].default_value = 0.3 if "Iris" in slot.material.name else 0.0
+                e_bsdf.inputs["Coat Roughness"].default_value = 0.03
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")
 
     bpy.ops.wm.save_as_mainfile(filepath=f"{DIR}round.blend", copy=True)  # the finished scene, for quick trials
