@@ -1487,6 +1487,29 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
+*agent, 2026-10-30* — what makes rendered skin read as a photo: relief, pores, shading, light, upscaling, eyes (notes,
+ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-skin-detail-shading.md`](../plans/2026-10-30-research-skin-detail-shading.md); facts to
+re-check before the rec list; nothing run on skin here):
+- Why ours looks waxy: `modules/skin/material.py` has one roughness (≈0.59) everywhere — no cavity map, no second
+  specular lobe, no sheen; `modules/skin/detail.py` turns brightness into bump, which no professional pipeline does —
+  they take the light out of the colour first, and pores come from scanned or generated height.
+- Taking the light out: OpenDelight (SIGGRAPH 2026, face-specific; code GPL-3, weights' licence not stated), Marigold IID
+  (OpenRAIL++).
+- Relief from images: Sapiens2 normals (human-specific; no non-commercial clause; bans deepfakes), StableNormal
+  (Apache), Marigold / E2E-FT, MoGe-2 (MIT, official ONNX) — none tested at pore scale.
+- Pores, all training-free: Disney's graph-based micro-wrinkles (SGP 2023), example tiles from the CC-BY 3.0 Lee
+  Perry-Smith scan, Blender Studio's tension-map wrinkles.
+- Blender 5.3: multires bakes normals, displacement and vector displacement; adaptive subdivision is no longer
+  experimental. EEVEE has no Random Walk, IOR or anisotropy for skin scattering — Cycles for the final render.
+- Upscaling: SeedVR2 (Apache; its README: 8 GB works with GGUF Q4) the strongest; SUPIR non-commercial; Real-ESRGAN and
+  MoSR run inside stable-diffusion.cpp.
+- Eyes: ICT-FaceKit (MIT) ships eye occlusion, tearline and eye-corner meshes; the cornea in Cycles by MNEE shadow
+  caustics or a shadow-ray trick.
+- BumpMesh (CNC Kitchen, AGPL) pushes brightness as height for 3D printing — the same as ours, not a skin fix.
+- Open for the user: whether CC Blender Tools (GPL-3, ships Reallusion texture files) is a clean-room reference;
+  whether to train a small FLUX.2 klein-4B LoRA (SimpleTuner: ~8 GB at int8 — skin training data is the blocker).
+
 *agent, 2026-10-30* — AI texturing of our own mesh, the methods (notes, ranked by quality — the papers' own claims, no
 independent comparison exists — training buckets, apps, every search logged:
 [`../plans/2026-10-30-research-ai-texturing.md`](../plans/2026-10-30-research-ai-texturing.md); facts to re-check

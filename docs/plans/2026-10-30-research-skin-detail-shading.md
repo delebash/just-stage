@@ -162,7 +162,8 @@ the separation has to be done by a model:
     input (traiNNer-redux benchmark, RTX 4090). The trainer is `the-database/traiNNer-redux`, Apache-2.0. Its
     training VRAM is not documented. The skin data is again the blocker.
 - **Normal → height integration (a):** Frankot–Chellappa (1988) solves for the height whose slopes best match the
-  normal map, using FFT Poisson integration. It is the standard step in DeepBump-type tools. Steps:
+  normal map, using FFT Poisson integration. It is a standard way to do this step; DeepBump's README doesn't name its
+  own method. Steps:
   1. Turn normals into slopes p = −nx/nz and q = −ny/nz.
   2. Take their FFT.
   3. Compute H = −j(ωx·P + ωy·Q)/(ωx² + ωy²).
@@ -367,7 +368,7 @@ No verified free CC0 human-pore displacement set was found (search 7).
 | Two highlight lobes | a sharp lobe (oil film) + a broad lobe (skin) | (i) Coat as the sharp lobe: low weight, low roughness, white tint, Coat Normal = micro normal — **costs:** the coat dims the base; (ii) Mix Shader of two Principled at the lobe mix — **costs:** doubles shading; (iii) Add Shader of a Glossy — not energy-conserving | UE `lobe_mix` 0.85 (snippet); CC Blender Tools "Dual Specular skin shader (Eevee & Cycles) with specular micro details" (README); GPU Gems 3 ch. 14 (d'Eon & Luebke; search result) |
 | Fine facial hair (peach fuzz) | MetaHuman bakes "fuzz" into SRMF | low Sheen Weight (crude in EEVEE) | MetaHuman (page read) |
 | Micro-normal | a tiling pore normal on top of the baked normal, LOD0 | a second normal at UV × tile, combined with the baked normal (Normal Map → Bump chain) | MetaHuman (page read) |
-| Colour | delit albedo; no AO baked in except at far LODs | §1.0 | MetaHuman LOD2 note (page read) |
+| Colour | delit albedo; MetaHuman adds AO to base colour only at LOD2 "to help fake shadowing" | §1.0 | MetaHuman (page read) |
 
 ### 3.3 Free and paid Blender references
 
@@ -478,7 +479,7 @@ methods' general restoration quality.
   (24 / 15), Eye occlusion L/R (152 / 128), Sclera and Iris split meshes.
   - "Additional eye geometry including lacrimal fluid, blend meshes, and occlusion meshes adopts the style of Unreal
     Engine's Digital Human Project … plug and play with Unreal Engine's shaders" (README, API).
-  - It sits on the same research-lab lineage as GNM / ICT heads already in RESEARCH §5.
+  - ICT-FaceKit is already in RESEARCH §5 as a head source.
 
 ### 6.2 Techniques in Blender (a)
 
