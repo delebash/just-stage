@@ -19,6 +19,7 @@ Run: python tools/dev.py test tools/face_test/test_face_project.py -k face_proje
 
 import importlib
 import json
+import os
 import time
 from pathlib import Path
 
@@ -36,7 +37,7 @@ FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 BUMP_STRENGTH, BUMP_DISTANCE = 0.3, 0.0004
 RATIO_MAX = 2.5  # the detail texture stores ratio / RATIO_MAX in 8 bits
-ROUND = 5  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = 7  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -289,8 +290,11 @@ def test_face_project():
         scene.view_settings.exposure += float(np.log2(skin_p / skin_r))
     target = _patch_colour(_linear(photo))
     best = None
-    for melanin in (0.006, 0.009, 0.012, 0.016, 0.022):
-        for blood in (0.010, 0.016, 0.024, 0.034):
+    fixed = os.environ.get("FACETEST_TONE")  # "melanin,blood": skip the fit (a painting warmer than any tone it can make)
+    melanins, bloods = ((float(fixed.split(",")[0]),), (float(fixed.split(",")[1]),)) if fixed else (
+        (0.006, 0.009, 0.012, 0.016, 0.022), (0.010, 0.016, 0.024, 0.034))
+    for melanin in melanins:
+        for blood in bloods:
             set_tone(melanin, blood)
             got = _patch_colour(_linear(_render(scene, f"{DIR}calib.png", 512)), [(c // 2, r // 2) for c, r in PATCHES], 9)
             err = np.abs(np.log(got / got.mean()) - np.log(target / target.mean())).sum()  # colour, not brightness

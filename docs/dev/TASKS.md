@@ -411,8 +411,17 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            model labelled (FLUX 3: FLUX Kommunity License, gated at BFL, free under US$5M revenue — secondary source).
            RealDenseFace measured 2026-10-30 (RESEARCH §10): its network takes 1.1 GB (ViT-B, 0.1 s a picture) or 0.5 GB
            (ViT-S) on the card — fits beside anything. STEP 1 DONE. Rec 4 needs the FLAME 2023 Open file, whose download
-           needs a sign-in at flame.is.tue.mpg.de — the user's account. Next: rec 1 — face test round 6, all views
-           painted by FLUX 3 Image Klein.
+           needs a sign-in at flame.is.tue.mpg.de — the user's account.
+           ROUNDS 6–7 2026-10-30: all ten views painted by FLUX 3 Image Klein (`sd-cli`, seed 1, the clay view as its one
+           reference); the landmark warp took them from 5.6–12.7 px to 3.7–9.3 px. Round 6's tone fit hit the darkest
+           corner of its grid (melanin 0.022, blood 0.034 — FLUX 3's photo is warmer than any tone our skin model makes,
+           and the chin patch is stubbly), so round 7 fixes round 3's tone (`FACETEST_TONE=0.012,0.022`). Result
+           (`.dev/facetest/compare7_*.png`): the features land on the mesh (no doubled eyes or lips) and the tone is
+           close, but it is still another person and still reads as CG — the photo's eye bags, brow ridge and lips are
+           shape our head doesn't have (rec 4), the skin detail is weaker after projection, the AI's shaved-stubble patch
+           on the back of the scalp carried onto the head (next prompt: completely bald, no stubble), and the mouth is
+           open showing teeth. Round 5's pictures kept in `.dev/facetest/round5/`. Next: rec 1's second half — each next
+           view painted on a render of the paint already projected, for one person across views.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
