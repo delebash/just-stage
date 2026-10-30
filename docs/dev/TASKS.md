@@ -301,8 +301,10 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
            character and refits them when the head shape changes; the head helpers now follow GNM shapes. Still in 5:
-           the skin material (Principled, subsurface, micro normal), eye and teeth materials, the eye occlusion and
-           tearline shells, brows, lashes, nails.
+           eye and teeth materials, the eye occlusion and tearline shells, brows, lashes, nails, the skin's
+           micro normal and texture layers. DONE in 5 on 2026-10-29: the skin material — `juststage.skin.set_tone`
+           builds Principled BSDF with Random Walk (Skin) subsurface from `core/skin_optics.py` (Donner & Jensen's
+           chromophores, calibrated on NIST's 100 measured skins: mean RMS 0.0098), IOR 1.4, the paper's roughness.
         6. The scalp groom with Blender's hair node groups.
         7. The first face rig: OpenRigLogic's Python bindings built for Blender 5.3's Python 3.13; three expressions.
         8. The first Unreal plugin: import the package, build materials and groom, render.

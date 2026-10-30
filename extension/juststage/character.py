@@ -38,6 +38,11 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     asian: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
     caucasian: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
     african: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
+    melanin: bpy.props.FloatProperty(default=0.0104, min=0.0, max=0.5)
+    eumelanin: bpy.props.FloatProperty(default=0.6, min=0.0, max=1.0)
+    blood: bpy.props.FloatProperty(default=0.016, min=0.001, max=0.2)
+    oiliness: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
+    skin_material: bpy.props.PointerProperty(type=bpy.types.Material, description="this character's skin material")
     gnm_identity: bpy.props.CollectionProperty(type=JustStageFloat, description="GNM head identity coefficients")
     # on a part's object (an eye, the teeth): which part it is (MetaHuman's name) and whose
     part: bpy.props.StringProperty()

@@ -7,13 +7,13 @@ import bpy
 
 from . import api, character
 from .commands import api_status
-from .modules import body, head
+from .modules import body, head, skin
 from .ui import operators
 
 CORE = "core"
 _CORE_COMMANDS = (api_status,)
 #: Built-in modules in dependency order; each registers through the same `register_plugin` outside plugins use.
-MODULES = (body, head)
+MODULES = (body, head, skin)
 
 
 def _api_range() -> str:
