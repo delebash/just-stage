@@ -60,6 +60,34 @@ Labels, never filters: licence, memory, platform. *[page]* = read at the page; *
 - Skin: reviews say Raw close-ups show pores and fine hairs (aiindigo); Kittl rates its skin realism below its other
   strengths; no controlled skin comparison with FLUX found *[snippets]*.
 
+## Measured on this PC (2026-10-30)
+
+The user's go: "your rec go only test flux 3 and krea 2 if you think it is worth it". The score: how far the painting's
+478 face points (MediaPipe Face Landmarker) sit from the clay view's, in pixels at 1024² — mean (median, worst); the
+detector's own wobble is ~4 px. stable-diffusion.cpp master-1024-77b72a2 `sd-cli`, CUDA, RTX 2070 Super 8 GB, seed 1
+unless marked, the face test's prompt (`tools/face_test/face_paint.py`), times cold (model load included).
+
+| View | FLUX.2 klein 4B, the view as reference (face test round 3) | + refcontrol: depth + front (4 steps) | refcontrol on klein base 4B (28 steps, CFG 4) | FLUX 3 Image Klein Q8_0, the view as reference (16 steps) | FLUX 3, the view + the front photo |
+|---|---|---|---|---|---|
+| front | 4.5 (3.8, 21) | — | — | 5.6 (5.4, 19) | — |
+| left40 | 14.5 (14.7, 33) | 11.3 (12.1, 30), 44 s | 12.7 (12.0, 40), 468 s | 6.2 (5.7, 14); seed 2: 7.2 (6.4, 26) | 177.4 — it drew the front photo's pose |
+| face (close) | 39.2 (32.3, 102) | — | — | 12.7 (11.7, 37); seed 2: 11.1 (10.3, 27) | — |
+| faceleft30 (close) | 44.4 (39.3, 120) | — | — | 7.9 (6.8, 24) | — |
+
+- FLUX 3 Image Klein: `leejet/flux-3-image-klein-GGUF` Q8_0 (6,151,716,032 bytes; not gated; JustDirect's download in
+  `E:/Dev/Web/test-just-direct/ai-cache/hf`), text encoder `Qwen/Qwen3-VL-4B-Instruct-GGUF` Q8_0 (4,280,406,144
+  bytes, Apache-2.0), FLUX.2's VAE (ours), CFG 1, euler, `--offload-to-cpu`: ~99 s a view; with no `--max-vram` the
+  card's peak was 7,165 MiB (the desktop's 588 included) — the earlier failure (master-1004) doesn't happen on
+  master-1024. The prompt upsampler not used.
+- Looks: photoreal skin on every view — pores, stubble, redness, eyelid folds, wet eyes. On left40 it painted shaved
+  stubble over the back of the scalp with a hard edge ("shaved head" in the prompt).
+- With the front photo as a second reference it ignored our head's turn (the README: the first reference sets only
+  the output size) — so one face across views has to come from the views themselves: each next view painted from a
+  render carrying the paint already projected (ConsistenTex's way, already rec 1's second half).
+- Krea 2 not tested: not on this PC (12B; GGUF ~7–13 GB), text-to-image only, editing only through a community LoRA
+  (stable-diffusion.cpp's `krea2-turbo-edit` recipe: "Requires a matching Ostris-compatible community editing LoRA";
+  the identity one non-commercial), no depth input — and FLUX 3 already holds our head near the detector's noise.
+
 ## Search log (WebSearch, standard mode)
 
 1. "FLUX.3 Image Klein release" → braindetox, eesel, magica, runware, goenhance, poyo, tensor.art, orcarouter: launch
@@ -84,5 +112,4 @@ flux-3-image-klein-depth; flux-3-klein-lora; refcontrol.
 ## Gaps in this search
 
 Not read: the FLUX Kommunity and Krea 2 licence files (gated / not fetched); Reddit itself (no thread surfaced); the
-Patil Krea 2 depth ControlNet card. Not measured here: FLUX 3 Image Klein or Krea 2 on this card, or how either holds a
-face to our head's shape.
+Patil Krea 2 depth ControlNet card. Not measured here: Krea 2.

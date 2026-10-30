@@ -397,6 +397,19 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            1–8 and decisions 1, 2, 4 as recommended; decision 3: Reallusion's texture files may be used where they are
            free and open source (their own terms read first — CC Blender Tools' code is GPL-3, the textures inside may
            carry Reallusion's). First step: measure the refcontrol LoRA on our engine, then RealDenseFace's memory.
+           STEP 1, THE PAINTER MEASURED 2026-10-30 (`docs/plans/2026-10-30-research-image-models.md`): the refcontrol
+           LoRA gives a small gain — the painted face points 11.3 px from our head's on left40 against 14.5 without it,
+           12.7 on klein base (468 s). The user then asked, verbatim: "dont we use flux.3 is there an updated version?",
+           "does flux 3 not do this already?", "what about krea 2 and krea 2 turbo", "user do report flux 3 may acutall
+           not be as good as flux2", and: "your rec go only test flux 3 and krea 2 if you think it is worth it". FLUX 3
+           Image Klein (already on this PC) painting from the clay view alone: 6.2 px on left40 (seed 2: 7.2), 12.7 and
+           7.9 px on the close face views where FLUX.2 klein drifts 39 and 44 px; photoreal; ~99 s a view, card peak
+           7,165 MiB. Krea 2 not tested (text-to-image only, not on this PC; FLUX 3 already near the detector's ~4 px).
+           MY CALL (under that go): rec 1 paints each view with FLUX 3 Image Klein from the clay view; one face across
+           views from painting each next view on a render of the paint already projected (rec 1's second half). The
+           refcontrol LoRA and the kit LoRA request are dropped. FLUX.2 klein 4B stays beside it as a choice, each
+           model labelled (FLUX 3: FLUX Kommunity License, gated at BFL, free under US$5M revenue — secondary source).
+           Next: RealDenseFace's memory on this card.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

@@ -1639,12 +1639,17 @@ questions on FLUX 3 and Krea 2:
   `--offload-to-cpu`. On FLUX.2 klein 4B distilled (4 steps, CFG 1): 44 s; a photoreal picture of the same person
   turned to our head's pose; its face points (MediaPipe) sit 11.3 px from the clay view's (median 12.1, worst 30)
   against 14.5 px (median 14.7, worst 33) for the painting without depth — 22% closer. On klein base 4B Q8_0 (the
-  model it was trained on, `leejet/FLUX.2-klein-base-4B-GGUF`, 28 steps, CFG 4): 468 s; not scored yet.
+  model it was trained on, `leejet/FLUX.2-klein-base-4B-GGUF`, 28 steps, CFG 4): 468 s, 12.7 px — no gain.
 - FLUX 3 Image Klein (2026-10-15, 5.6B; FLUX Kommunity licence, free under US$5M revenue — secondary source): one model
   for text-to-image, editing with up to 10 references and layout boxes; **no depth, pose or structure input** in its
   README; needs its 9B prompt upsampler; testers call it "a strong editor and a weak generator of people". No depth
   LoRA for it found. Failed to load on this card in stable-diffusion.cpp without a `--max-vram` budget (just-core
   RESEARCH, 2026-10-27).
+- **FLUX 3 Image Klein measured** (Q8_0, Qwen3-VL-4B, 16 steps, the clay view as its one reference, ~99 s a view,
+  card peak 7,165 MiB with `--offload-to-cpu` alone): 6.2 px on left40 (seed 2: 7.2), 12.7 and 7.9 px on the close face
+  views where FLUX.2 klein drifts 39 and 44 px; front 5.6 (FLUX.2 4.5). Photoreal skin. With the front photo as a
+  second reference it drew the front's pose (177 px) — one face across views comes from painting each next view on a
+  render of the paint already projected.
 - Krea 2 Raw / Turbo (2026-06-22, 12B; Krea 2 Community License, free under US$1M revenue — search snippet):
   text-to-image only; runs in stable-diffusion.cpp; add-ons for identity (V2 non-commercial) and pose (Apache), a
   depth ControlNet card unread; no reference + depth add-on found.
