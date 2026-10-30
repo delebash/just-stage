@@ -9,6 +9,8 @@
 MakeHuman's CC0 assets come from MPFB2's repository at a pinned commit (the spec's item 3: "build on MPFB2's
 formats"). Each file is checked against the git blob hash GitHub's tree lists for that commit, so a fetched file is
 byte-for-byte the pinned one. Files land in extension/juststage/data/fetched/ (not committed; REUSE.toml labels them).
+The offline tools' inputs (Google's GNM model for libs/wrap/gnm_to_hm08.py) are checked against their published
+SHA-256 and kept in .dev/cache/.
 """
 
 from __future__ import annotations
@@ -43,6 +45,34 @@ SOURCES = {
         "extra": {"LICENSE.md": "LICENSE.md"},
     },
 }
+
+
+#: Inputs of the offline tools (libs/), checked by SHA-256 and kept out of the add-on (.dev/cache/).
+TOOL_INPUTS = {
+    "gnm": {
+        "url": "https://huggingface.co/google/gnm-v3/resolve/main/v3_0/gnm_head.npz",
+        "sha256": "61d78bbfb4ad8e0b38495804a4caef3214d3df00f8c3f68761e63b41ce3747eb",  # v3_0/checksums.sha256
+        "dest": ROOT / ".dev" / "cache" / "gnm" / "v3_0" / "gnm_head.npz",
+        "licence": "Apache-2.0 (google/gnm-v3)",
+    },
+}
+
+
+def fetch_tool_input(name: str, spec: dict, check_only: bool) -> int:
+    dest: Path = spec["dest"]
+    if dest.exists() and hashlib.sha256(dest.read_bytes()).hexdigest() == spec["sha256"]:
+        print(f"{name}: present")
+        return 0
+    if check_only:
+        print(f"missing or changed: {dest}")
+        return 1
+    data = _get(spec["url"])
+    if hashlib.sha256(data).hexdigest() != spec["sha256"]:
+        sys.exit(f"{name}: {spec['url']} does not match its published SHA-256")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(data)
+    print(f"{name}: fetched")
+    return 0
 
 
 def _get(url: str) -> bytes:
@@ -100,7 +130,9 @@ def fetch(name: str, spec: dict, check_only: bool) -> int:
 
 def main(argv: list[str]) -> int:
     check_only = "--check" in argv
-    return 1 if sum(fetch(n, s, check_only) for n, s in SOURCES.items()) else 0
+    bad = sum(fetch(n, s, check_only) for n, s in SOURCES.items())
+    bad += sum(fetch_tool_input(n, s, check_only) for n, s in TOOL_INPUTS.items())
+    return 1 if bad else 0
 
 
 if __name__ == "__main__":
