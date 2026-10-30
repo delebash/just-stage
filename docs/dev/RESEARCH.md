@@ -1487,6 +1487,20 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
+*web, 2026-10-30* — Meshy's image-to-3D, read at the guide the user linked
+([meshy.ai/tutorials/image-to-3d-model-complete-guide](https://www.meshy.ai/tutorials/image-to-3d-model-complete-guide),
+*page read*; the user: "i gave you meshy … but you never even looked at what it does or how it works"):
+- One photo (≥ 1024 px, plain background, even light, front or ¾) plus an optional material prompt → a "white model"
+  (geometry, ~1–2 min; "multi-view synthesis" — "Generate Multi-view" predicts the sides, back and ¾ views first) →
+  remesh → texturing: "UV unwrapping, multi-view diffusion, back-projection, and super-resolution" (~1–6 min) → PBR
+  maps when on: base colour, normal, metallic, roughness. **Retexture** "reruns only the texture pass" on an existing
+  mesh with a new prompt — the job JustStage needs on its own head. Characters: A- or T-pose; auto-rigging separate;
+  "hair and fur work better with Text-to-3D than with a photo". Exports GLB, FBX, OBJ, USDZ, STL; models Meshy 7/6/6 Lite
+  (closed, cloud). Nothing on faces specifically.
+- So the professional texturing pipeline is the family the face test built by hand (views → back-projection), with
+  what it lacked: the views made TOGETHER by a multi-view diffusion model (so they agree — no drift), super-resolution,
+  and PBR maps estimated from the result.
+
 *web, 2026-10-30* — texturing a given mesh from AI images, the latest open methods (the user: "did you search for
 latest techniques for all of our app functions?", after pasting TRELLIS.2, Meshy/Tripo, BumpMesh and multi-view
 diffusion re-texturing). Checked against: commercial use, 8 GB, any graphics card:
