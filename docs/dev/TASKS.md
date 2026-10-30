@@ -388,6 +388,9 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            — 16.1 → 14.3 px while bending the identity 19.5 sd — not used. Then the user: "did you search for latest
            techniques for all of our app functions?" — no, not for texturing a given mesh; the research is RESEARCH §10
            *web, 2026-10-30*, and continues.
+           RESEARCH DONE 2026-10-30: five areas (`docs/plans/2026-10-30-research-*.md`, every search logged), key
+           facts re-checked by API and licence files; the rec list is `docs/plans/2026-10-30-realism-recs.md` —
+           SHOWN to the user, waiting for their word. Nothing built meanwhile.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
