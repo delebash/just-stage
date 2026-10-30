@@ -303,6 +303,10 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            `sdcpp` on") can't run unchanged; and `scripts/new-app.js` makes only a whole app (Quasar, Electron and
            server), no server-only package, registering its ports in `check-family.js` (`APPS`, `APP_PORTS`). The
            card is free since 2026-10-29 (JustVoice: "card free").
+           The user, 2026-10-29, verbatim: "i dont care about two apps managinemment memory that is uyser
+           responsibliyt, you are overthinking and complicating things" — no cross-app memory rules (ai-engines.md §4
+           rule 3 dropped). And on reuse: "we do what full ai in just stage so yeah reusing the kit is good idea its just
+           sucjs we have to have node installed now" — Node ships inside JustStage's installer (plugins.md §5).
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

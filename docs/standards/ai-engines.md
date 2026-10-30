@@ -64,6 +64,9 @@ No stopgap is needed.
 
 ## 4 · The 8 GB rule
 
+Two apps sharing the card is the user's to manage, not the apps' (the user, 2026-10-29: "i dont care about two apps
+managinemment memory that is uyser responsibliyt"); the rules below are JustStage's own load beside its own jobs.
+
 The kit's arbiter is **in-process**: "each app process holds its OWN instance (cross-APP arbitration is out of scope,
 design §7.2)" (`arbiter.js`). Blender's own VRAM (EEVEE, textures, Cycles) is not booked anywhere, and a local video
 clip alone takes 7.3 GB of the card (§10). Rules:
@@ -75,7 +78,6 @@ clip alone takes 7.3 GB of the card (§10). Rules:
    sd.cpp beside a JustStage head in EEVEE on the 2070 Super, recorded in RESEARCH §1 and in
    [`quality-gate.md`](quality-gate.md); if it doesn't fit, generation runs with the viewport in Solid mode (the
    measured fallback), and the spec is updated with the numbers.
-3. Video (JustDirect's job) never runs while JustStage's viewport is live — the queue rule from §10.
 
 ## 5 · Models — labelled, never filtered
 
