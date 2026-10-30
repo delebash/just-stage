@@ -1487,6 +1487,26 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
+*web, 2026-10-30* — texturing a given mesh from AI images, the latest open methods (the user: "did you search for
+latest techniques for all of our app functions?", after pasting TRELLIS.2, Meshy/Tripo, BumpMesh and multi-view
+diffusion re-texturing). Checked against: commercial use, 8 GB, any graphics card:
+- **Multi-view diffusion painting a given mesh** (all views at once, guided by the mesh's own geometry, so the views
+  agree and stay on the mesh — the drift the face test fights): MV-Adapter (`huanngzh/MV-Adapter`, Apache-2.0 code,
+  1.3k ★, last push 2025-06-26; "geometry-conditioned adapters with low VRAM requirements (<10G)" on SD2.1, ~14 GB for
+  SDXL; its texture pipeline needs NVIDIA's CV-CUDA) — README read; Hunyuan3D-Paint 2.1 (PBR maps: albedo, metallic,
+  roughness; "21GB for texture generation"; the Tencent Hunyuan 3D 2.1 Community License, whose territory excludes the
+  EU, UK and South Korea — *one third-party blog, the licence file not read*); MaterialMVP and TEXGen (no licence on
+  GitHub); MVPainter (Alibaba AMAP — the repo name searched wasn't found).
+- **A photo split into colour, roughness and shading** (so painted shadows don't become colour or dents): Marigold IID
+  (`prs-eth/Marigold`, code Apache-2.0, last push 2026-09-06; the IID weights "CreativeML Open RAIL++-M", SD2-based —
+  appearance: albedo, roughness, metallicity; lighting: albedo, diffuse shading, residual) — model card read.
+- **Relief from a photo:** StableNormal (`Stable-X/StableNormal`, Apache-2.0 code, last push 2025-08-02), Marigold
+  Normals.
+- **Photo to textured 3D head:** no open, permissive, photoreal tool found (KeenTools is a commercial service; CRM is MIT
+  but general objects; a CVPR 2026 feed-forward animatable textured-mesh head — code and licence not found).
+- All of the above run in PyTorch, mostly CUDA-only: the family's engine (stable-diffusion.cpp) runs none of them as
+  they are. TRELLIS.2 is MIT (12.5k ★) but needs ~24 GB (§7).
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page

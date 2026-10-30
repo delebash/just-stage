@@ -380,6 +380,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            pores, wrinkles and folds, no doubled eyes. Still short of the photo: darker, contrastier light (the
            photo is high-key), a different face shape (our GNM head), dark eyes without wetness or shells, the lips'
            lower edge misregistered, a light band at the temple where views change.
+           ROUNDS 4–5 2026-10-29/30: exposure, background and skin tone calibrated against the photo; a two-band seam
+           blend; the photo's light fitted (a 1.6 m soft light, far left, face height); painted broad shading divided
+           out (the user: "the neck is wrong it looks like the adams apple is indented … stuff like that" — a painted
+           shadow read as a dent). Closer in light and tone; the photo's skin texture stronger; the face a different
+           person. A landmark shape fit (`test_face_fit.py`: GNM identity by Gauss-Newton on MediaPipe's points) FAILED
+           — 16.1 → 14.3 px while bending the identity 19.5 sd — not used. Then the user: "did you search for latest
+           techniques for all of our app functions?" — no, not for texturing a given mesh; the research is RESEARCH §10
+           *web, 2026-10-30*, and continues.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

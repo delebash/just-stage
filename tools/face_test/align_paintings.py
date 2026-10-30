@@ -49,7 +49,7 @@ def warp(painted: np.ndarray, clay_pts: np.ndarray, painted_pts: np.ndarray) -> 
     )
     src = np.vstack([clay_pts, border])
     dst = np.vstack([painted_pts, border])
-    rbf = RBFInterpolator(src, dst, kernel="thin_plate_spline", smoothing=2.0)
+    rbf = RBFInterpolator(src, dst, kernel="thin_plate_spline", smoothing=0.3)  # tight: the lips need it
     gy, gx = np.mgrid[0 : h : complex(GRID), 0 : w : complex(GRID)]
     coarse = rbf(np.c_[gx.ravel(), gy.ravel()]).reshape(GRID, GRID, 2).astype(np.float32)
     full = cv2.resize(coarse, (w, h), interpolation=cv2.INTER_CUBIC)
