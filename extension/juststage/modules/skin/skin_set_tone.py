@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 JustStage contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""`juststage.skin.set_tone` — the skin's colour from its chromophores: melanin (and how much of it is eumelanin), blood,
-and oiliness. The defaults are about the median of NIST's 100 measured people."""
+"""`juststage.skin.set_tone` — the skin's colour from its chromophores: melanin (and how much of it is
+eumelanin), blood, and oiliness. The defaults are about the median of NIST's 100 measured people."""
 
 from typing import NamedTuple
 
