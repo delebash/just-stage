@@ -20,10 +20,18 @@ OUT = "E:/Dev/3D/just-stage/.dev/facetest/"
 HEAD = Vector((0.0, -0.06, 1.615))
 FACE = Vector((0.0, -0.10, 1.585))  # between the eyes and the nose tip
 #: (name, azimuth°, elevation°, distance m, aimed at) — four views round the head, three close on the face
-VIEWS = (("front", 0, 0, 0.78, HEAD), ("left40", 40, 0, 0.78, HEAD), ("right40", -40, 0, 0.78, HEAD),
-         ("left90", 90, 0, 0.78, HEAD), ("right90", -90, 0, 0.78, HEAD), ("above", 0, 28, 0.78, HEAD),
-         ("below", 0, -22, 0.78, HEAD), ("face", 0, 0, 0.40, FACE), ("faceleft30", 30, 0, 0.42, FACE),
-         ("faceright30", -30, 0, 0.42, FACE))
+VIEWS = (
+    ("front", 0, 0, 0.78, HEAD),
+    ("left40", 40, 0, 0.78, HEAD),
+    ("right40", -40, 0, 0.78, HEAD),
+    ("left90", 90, 0, 0.78, HEAD),
+    ("right90", -90, 0, 0.78, HEAD),
+    ("above", 0, 28, 0.78, HEAD),
+    ("below", 0, -22, 0.78, HEAD),
+    ("face", 0, 0, 0.40, FACE),
+    ("faceleft30", 30, 0, 0.42, FACE),
+    ("faceright30", -30, 0, 0.42, FACE),
+)
 LENS, SIZE = 85, 1024
 
 

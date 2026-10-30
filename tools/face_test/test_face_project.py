@@ -16,6 +16,7 @@ Run: python tools/dev.py test tools/face_test/test_face_project.py -k face_proje
 import importlib
 import json
 import time
+from pathlib import Path
 
 import bpy
 import numpy as np
@@ -99,6 +100,10 @@ def test_face_project():
     t0 = time.time()
     bpy.ops.wm.open_mainfile(filepath=DIR + "face.blend")
     body = bpy.data.objects["Face"]
+    api = importlib.import_module("bl_ext.system.juststage.api")
+    api.run(
+        "juststage.skin.set_tone", character=body.juststage.character_id, melanin=0.012, blood=0.022
+    )  # paler, pinker
     dg = bpy.context.evaluated_depsgraph_get()
     ev = body.evaluated_get(dg)
     mesh = ev.to_mesh()
@@ -129,27 +134,33 @@ def test_face_project():
     cams = json.load(open(DIR + "cameras.json"))
     accum = np.zeros((len(points), 3))
     wsum = np.zeros(len(points))
+    views = {}
     for view in VIEWS:
         cam = cams[view]
         mw = np.array(cam["matrix_world"])
-        painted = _linear(_pixels(f"{DIR}painted_{view}.png")[..., :3])
+        aligned = Path(f"{DIR}aligned_{view}.png")  # the painting warped onto the clay's face (align_paintings.py)
+        painted = _linear(_pixels(str(aligned) if aligned.exists() else f"{DIR}painted_{view}.png")[..., :3])
         clay = _linear(_pixels(f"{DIR}clay_{view}.png")[..., :3])
         depth = _pixels(f"{DIR}depth_{view}.exr")[..., 0]
         col, row, dist = up.project(points, mw, cam["lens"], cam["sensor_width"], cam["size"])
-        w = up.view_weights(points, normals, col, row, dist, depth, mw[:3, 3])
+        # sharpness 16: each texel takes mostly its one best view (blending many smears their small misalignments)
+        w = up.view_weights(points, normals, col, row, dist, depth, mw[:3, 3], sharpness=16.0)
         edge = np.minimum.reduce([col, row, cam["size"] - 1 - col, cam["size"] - 1 - row])
         w *= np.clip(np.nan_to_num(edge) / 80.0, 0.0, 1.0)  # fade out toward the picture's frame
-        w *= (0.78 / np.nan_to_num(dist, nan=1e3)) ** 4  # close views count more: more of their pixels per texel
+        w *= (0.78 / np.nan_to_num(dist, nan=1e3)) ** 2  # close views count more: more of their pixels per texel
         r = up.sample(painted / np.maximum(clay, 0.01), col, row)
         seen = w > 1e-3
-        r /= np.median(r[seen], axis=0)  # each view's overall brightness matched before blending
-        accum += w[:, None] * r
-        wsum += w
+        views[view] = (w, r, np.median(r[seen], axis=0))
         print(f"  {view}: sees {seen.mean():.0%} of the head's texels")
+    # only the detail travels: each view's ratio around 1 (freckles, pores, redness); the tone stays the calibrated skin
+    # model's — the AI's pictures and our renders go through different colour handling, so their ratio misreads tone
+    # (kept whole it clipped flat; as a hue it came out grey)
+    for w, r, m in views.values():
+        accum += w[:, None] * r / m
+        wsum += w
     covered = wsum > 1e-6
     ratio = np.ones((len(points), 3))
     ratio[covered] = accum[covered] / wsum[covered, None]
-    ratio /= np.median(ratio[covered], axis=0)  # the AI's changes around the calibrated colour, not its exposure
     ratio = np.clip(ratio, 0.3, 2.5)
     t = np.clip((points[:, 2] - FADE_FROM) / (FADE_TO - FADE_FROM), 0.0, 1.0)
     fade = (t * t * (3 - 2 * t)) * np.clip(wsum / (0.15 * np.median(wsum[covered])), 0.0, 1.0)

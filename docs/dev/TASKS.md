@@ -369,6 +369,17 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            Next: align each painted view to its clay view by facial landmarks before projecting (warp the painting
            so its eyes, nose, mouth and jaw sit on the mesh's), softer close-view weights, and the skin tone taken
            from the AI's painting.
+           ROUND 3 2026-10-29 — the projection works: `tools/face_test/align_paintings.py` (MediaPipe Face
+           Landmarker, Apache-2.0, in `.dev/venv-tools`; a thin-plate-spline warp) measured the AI's drift — 5–15 px
+           on the head views, ~40 px (worst 182) on the close face views — and warps each painting back to 4–11 px
+           (the detector's own noise ~4 px); each texel takes mostly its one best view (facing weight cos¹⁶ — blending
+           many views smeared the detail flat); only the detail travels (each view's ratio around 1) and the tone
+           stays the calibrated skin model's (paler: melanin 0.012, blood 0.022) — keeping the AI's tone clipped the
+           ratio flat, and as a hue it came out grey (the AI's pictures and our renders differ in colour handling).
+           Result (`.dev/facetest/compare_face.png`, `compare_left40.png`): the 3D head carries the photo's freckles,
+           pores, wrinkles and folds, no doubled eyes. Still short of the photo: darker, contrastier light (the
+           photo is high-key), a different face shape (our GNM head), dark eyes without wetness or shells, the lips'
+           lower edge misregistered, a light band at the temple where views change.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

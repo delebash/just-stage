@@ -34,7 +34,16 @@ def call(method, path, body=None, timeout=600):
 
 seed = int(sys.argv[1])
 views = sys.argv[2:] or [
-    "front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30"
+    "front",
+    "left40",
+    "right40",
+    "left90",
+    "right90",
+    "above",
+    "below",
+    "face",
+    "faceleft30",
+    "faceright30",
 ]
 jobs = {}
 for view in views:
