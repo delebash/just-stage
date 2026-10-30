@@ -13,3 +13,8 @@ SPDX-License-Identifier = "GPL-3.0-or-later"
 path = ["extension/juststage/data/fetched/makehuman/**"]
 SPDX-FileCopyrightText = "MakeHuman Community (MPFB2 assets)"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["extension/juststage/data/fetched/optics/**"]
+SPDX-FileCopyrightText = "Scott Prahl (OMLC); CIE — published tables, no licence stated; cited in tools/fetch_data.py"
+SPDX-License-Identifier = "LicenseRef-cited-data"

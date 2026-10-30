@@ -466,6 +466,19 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   MPFB2's head span references measured on `base.obj`: x 5399–11998 (14.8 cm), y 791–881 (23.3 cm), z 962–5320
   (19.2 cm), as its MHCLO example uses them. Installing GNM's own package from GitHub was refused by Claude Code's
   permission check ("Code from External"), so no GNM code is run.
+- Skin colour from chromophores (R5's physically based melanin and haemoglobin layers), read 2026-10-29: Donner &
+  Jensen, "A Spectral BSSRDF for Shading Human Skin", EGSR 2006 (the PDF from graphics.ucsd.edu, §3.3–§3.5): eumelanin
+  σa = 6.6×10¹⁰·λ^−3.33 mm⁻¹ (eq. 3), pheomelanin 2.9×10¹⁴·λ^−4.75 (eq. 4), baseline 0.0244 + 8.53·e^−(λ−154)/66.2 (eq. 5),
+  epidermis Cm(βm·em + (1−βm)·pm) + (1−Cm)·baseline (eq. 6), dermis Ch(γ·oxy + (1−γ)·deoxy) + (1−Ch)·baseline with
+  γ = 0.75 (eq. 7), σs' = 14.74·λ^−0.22 + 2.2×10¹¹·λ^−4 (eq. 8, halved in the dermis), epidermis 0.25 mm, n = 1.4;
+  parameter ranges Ch 0.001–0.1, Cm 0–0.5, βm 0–1 (Table 1). Haemoglobin: Prahl's molar extinction (OMLC, 1998,
+  250–1000 nm). Colour: CIE 1931 2° and D65 (files.cie.co.at/Publications-datasets/). Calibration data: NIST's
+  "Reference Data Set of Human Skin Reflectance" (Cooksey, Allen & Tsai 2017, doi:10.18434/M38597, public domain): 100
+  people, R1–R3 and their average, 250–2500 nm. With Kubelka–Munk for both layers the measured spectra are fitted best
+  at an epidermal backscatter of 0.22 × KM's 0.75σs': mean RMS 0.0098, worst 0.020 over 400–700 nm (plain KM 0.039;
+  an absorbing-only epidermis over-darkens dark skin). Fitted melanin 0.56–5.1% (median 1.0%), blood 0.7–6.3% (median
+  1.6%) — the NIST set leans light to medium. The Monk Skin Tone Scale (CC BY 4.0) was looked at as a tone target; its
+  page is a script app and no source gave values that could be checked, so it isn't used.
 - MetaHuman's face names on disk (`F:\Epic\UE_5.8\Engine\Plugins\MetaHuman\MetaHumanCoreTechLib\Content\ArchetypeDNA\SKM_Face.dna`,
   11.2 MB, byte scan 2026-10-29, for the spec's item 10): 373 distinct `FACIAL_[CLR]_*` joint names, among them
   `FACIAL_C_FacialRoot`, `FACIAL_C_Jaw`, `FACIAL_L_Eye`/`FACIAL_R_Eye`, `FACIAL_C_TeethUpper`, `FACIAL_C_TeethLower`,

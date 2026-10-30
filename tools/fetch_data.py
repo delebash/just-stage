@@ -47,8 +47,36 @@ SOURCES = {
 }
 
 
-#: Inputs of the offline tools (libs/), checked by SHA-256 and kept out of the add-on (.dev/cache/).
+#: Small published tables the add-on computes from, checked by SHA-256 (extension/juststage/data/fetched/optics/).
+TABLES = {
+    "hemoglobin": {
+        "url": "https://omlc.org/spectra/hemoglobin/summary.html",
+        "sha256": "c5b3a312f3c8e135bf69845ba11afa94d92db0a3f784d344d92afcf9dc290c66",
+        "dest": FETCHED / "optics" / "prahl_hemoglobin.html",
+        "licence": "Scott Prahl, OMLC, 1998 (molar extinction of HbO2 and Hb) — no licence stated; cited",
+    },
+    "cie_xyz_1931_2deg": {
+        "url": "https://files.cie.co.at/Publications-datasets/CIE_xyz_1931_2deg.csv",
+        "sha256": "fa663e3535a7e0763a745993a1f0a192eb0275ac46ad2d1befd7626841e713c1",
+        "dest": FETCHED / "optics" / "CIE_xyz_1931_2deg.csv",
+        "licence": "CIE dataset (CIE 1931 2° colour-matching functions) — no licence stated on its CIE page; cited",
+    },
+    "cie_d65": {
+        "url": "https://files.cie.co.at/Publications-datasets/CIE_std_illum_D65.csv",
+        "sha256": "e76f210bffff3d552ef7113025da5f325d5dfec200dd4b878b1a2f3a507032cb",
+        "dest": FETCHED / "optics" / "CIE_std_illum_D65.csv",
+        "licence": "CIE dataset (CIE standard illuminant D65) — no licence stated on its CIE page; cited",
+    },
+}
+
+#: Inputs of the offline tools (libs/, tools/), checked by SHA-256 and kept out of the add-on (.dev/cache/).
 TOOL_INPUTS = {
+    "nist_skin": {
+        "url": "https://opendata.nist.gov/1832_Data_JResNIST_skinrefl%20v3.txt",
+        "sha256": "ce9aac735d9d83b4b874b98d45f1ebda682cdc0e652f804efe00ab2fce0c25d9",
+        "dest": ROOT / ".dev" / "cache" / "nist" / "1832_Data_JResNIST_skinrefl v3.txt",
+        "licence": "NIST open data (public domain) — Cooksey, Allen & Tsai 2017, doi:10.18434/M38597",
+    },
     "gnm": {
         "url": "https://huggingface.co/google/gnm-v3/resolve/main/v3_0/gnm_head.npz",
         "sha256": "61d78bbfb4ad8e0b38495804a4caef3214d3df00f8c3f68761e63b41ce3747eb",  # v3_0/checksums.sha256
@@ -131,7 +159,7 @@ def fetch(name: str, spec: dict, check_only: bool) -> int:
 def main(argv: list[str]) -> int:
     check_only = "--check" in argv
     bad = sum(fetch(n, s, check_only) for n, s in SOURCES.items())
-    bad += sum(fetch_tool_input(n, s, check_only) for n, s in TOOL_INPUTS.items())
+    bad += sum(fetch_tool_input(n, s, check_only) for n, s in {**TABLES, **TOOL_INPUTS}.items())
     return 1 if bad else 0
 
 
