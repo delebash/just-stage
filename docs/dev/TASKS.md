@@ -344,6 +344,21 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (the template's web front end — 42 files and Quasar's build) wait until there is a second model or engine
            to choose between; the engine and FLUX.2 klein are installed already and the panel shows the model, so the
            AI settings link is hidden until the pages exist. Speech waits for JustVoice's move into the kit.
+        THE FACE TEST (the user's go 2026-10-29, "your rec go", on: "stop adding parts and do one realism test on the
+           face first" — paint-and-project skin, the cheap fixes, then renders beside MetaHuman and CC5 for the user's
+           verdict). The user's words on the way: "do you think we will get realism if not there is no point in this
+           … even if we have to make everyhting ourselves"; "how does cc5 and metahuman do it we are supposed to do it
+           professional and tye same way"; "can we do cc5 more detailed base and with ai gen we should be ahle to gen
+           high quality images like what cc5 uses, correct?" → "your rec go".
+           FIRST RESULT 2026-10-29 (`tools/face_test/`): seven clay views of the bare head (Cycles, even white world
+           light), each repainted as a photograph by FLUX.2 klein on JustStage's server (`juststage.face_paint`, the
+           view as init AND reference — house-paint's way; init alone was ignored), projected back onto the 4096² UV
+           (`core/uv_projection.py`) as the ratio painted/clay — so the clay's light cancels and the calibrated skin
+           colour stays on average — blended by facing, depth-tested, faded toward each picture's frame and where
+           views barely reach. The face gains real skin: freckles, redness, eyelid creases, nasolabial folds, lip
+           colour (renders `.dev/facetest/render_*_painted.png` beside `_plain`). Open: the painted brows double the
+           strand brows; a soft band on the shoulders; resolution soft; no specular/roughness map yet; the eye shells;
+           studio HDRI lighting (Poly Haven, CC0); the MetaHuman and CC5 references for the side-by-side.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

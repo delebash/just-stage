@@ -26,6 +26,17 @@ export const DEFAULT_ENGINE_PRESETS = [
     params: { steps: 4, cfg: 1, sampler: "euler" },
     position: 1,
   },
+  // JustStage's face painting: the same model as an editor — the starting picture (the head's view) in, house-paint's
+  // repaint recipe (strength 1: FLUX.2 [klein] edits from the picture as its reference).
+  {
+    id: "p_face_paint",
+    name: "Face painting",
+    provider_id: "local-sdcpp",
+    model: "flux2-klein-4b",
+    kind: "image",
+    params: { steps: 4, cfg: 1, strength: 1, sampler: "euler" },
+    position: 2,
+  },
   // The catch-all: any action without a preset of its own runs here (DEFAULT_PRESET_ID).
   {
     id: "p_general",
@@ -54,6 +65,7 @@ export const DEFAULT_ENGINE_PRESETS = [
 
 export const DEFAULT_FEATURE_PRESETS = {
   "juststage.skin_detail": "p_skin_detail",
+  "juststage.face_paint": "p_face_paint",
 };
 
 export const DEFAULT_PRESET_ID = "p_general";

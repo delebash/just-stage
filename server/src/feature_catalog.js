@@ -21,4 +21,13 @@ export const FEATURE_CATALOG = [
     group: "Skin",
     kind: "image",
   }),
+  // JustStage's face test (TASKS step 1): a picture of the character's bare head from one camera, repainted as a
+  // photograph of a real face in the same pose and framing, then projected back onto the head's texture in Blender.
+  FeatureCatalogEntry({
+    key: "juststage.face_paint",
+    label: "Paint a face",
+    hint: "Repaints a view of a character's head as a photograph of a real face — JustStage projects it onto the skin.",
+    group: "Skin",
+    kind: "image",
+  }),
 ];

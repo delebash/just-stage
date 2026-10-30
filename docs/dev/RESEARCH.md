@@ -1462,6 +1462,31 @@ blender"; "we originally had the kit server code in python"):
   ("the caller's own seed wins over the preset's"); the route takes no `request.params`.
 - hm08's UVs: a median 0.57 UV units per metre of skin over the body's faces (10th–90th percentile 0.40–1.10).
 
+*leads from the user, 2026-10-29, not checked* — cloud face generators as fallbacks for the face test's pictures
+(the user: "Canva AI Face Generator: … for commercial projects, provided you follow their AI Product Terms"; "Adobe
+Firefly: … trained on licensed and public domain content"; "EaseMate AI: … text-to-image or image-to-image … free
+credits"). Their terms, image-to-image control and APIs are unread; the face test runs on the local model first.
+- hm08's head (the body's faces above the neck joint, 4,242 faces) holds 21.1% of the UV square — about 1,880 px a
+  side at 4096², 3,760 at 8192² — *measured 2026-10-29*.
+
+*measured, 2026-10-29* — the face test (`tools/face_test/`):
+- Blender 5.x worlds light through their Background node; `World.color` changes nothing in a render — the first clay
+  views were nearly black. A white Background at strength 1 gives the even light the clay views need.
+- FLUX.2 klein on stable-diffusion.cpp ignores a starting picture sent as `init` alone at the preset's strength 1
+  (seven views came back byte-identical); sent as `init` and `refs` (house-paint's `aiphoto/edit.js`: "the photo is
+  both init and reference image") it repaints each view in its pose and framing — the front view's eyes within ~2 px
+  of the clay's. Seven 1024² views: 22 s for the first (the model loading), then ~22 s each queued (219 s in all).
+- Projection: 36,046 head triangles rasterised to 4,037,726 texels of a 4096² UV in 4 s (numpy); seven views reach
+  69% of the head's texels (the back of the head has no view); the painted/clay ratio's 5th–95th percentile
+  0.55–2.2 after each view's brightness is matched.
+- A projection seam appears where one view's picture frame ends; fading each view's weight over its last 80 px
+  removes the hard line (a soft band stays on the shoulders).
+- MetaHuman: "The MetaHuman database of real-world scan data has been significantly expanded to offer more variation
+  in character mesh shapes and textures … retain more authentic realism, such as blemishes"
+  ([MetaHuman 5.6](https://metahuman.com/news/metahuman-leaves-early-access-with-a-feature-packed-new-release),
+  *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
+  ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
