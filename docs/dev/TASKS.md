@@ -391,6 +391,12 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            RESEARCH DONE 2026-10-30: five areas (`docs/plans/2026-10-30-research-*.md`, every search logged), key
            facts re-checked by API and licence files; the rec list is `docs/plans/2026-10-30-realism-recs.md` —
            SHOWN to the user, waiting for their word. Nothing built meanwhile.
+           APPROVED 2026-10-30 — the user, verbatim: "3 clean room means we build it ourselves but using textures files
+           from reallusion as long as they are free and open source that is ok, our app is going to be different
+           enough from cc5 anyway so if you think they are useful you can use them, your rec on the rest go". So recs
+           1–8 and decisions 1, 2, 4 as recommended; decision 3: Reallusion's texture files may be used where they are
+           free and open source (their own terms read first — CC Blender Tools' code is GPL-3, the textures inside may
+           carry Reallusion's). First step: measure the refcontrol LoRA on our engine, then RealDenseFace's memory.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
