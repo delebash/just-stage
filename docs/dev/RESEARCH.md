@@ -1821,6 +1821,31 @@ every one logged; key claims page-read):
   manual: the AO node gives no valid result on a shadow-caustics caster or receiver - AO and MNEE can't be combined.
 - Not found (a search gap): an open occlusion or tearline shader; a CC0 sclera texture with veins; an open caruncle.
 
+*measured, 2026-10-31* - eye openings, ICT's tear strip and flow between the paintings (face test rounds 50-51):
+- Our head's skin is watertight around the eyes (no boundary edges among its 13,380 vertices' polygons): the lids fold
+  into the socket, so "skin within a few mm of the eyeball" also finds the socket lining and the lids' backs. The
+  opening is what shows: rays out from 3 mm under the eyeball's surface, skin within 8 mm outside it, on a 1 x 0.5 deg
+  grid, the shown patch around the gaze. Ours (eyeball radius 14.8 mm by a sphere fit; the iris disc 23.2 deg in
+  radius, its middle at az +-4.7, el -6.5 deg): at the iris -30 .. -2 deg before the lid key; the lid's edge stands
+  1.0-1.5 mm off the eyeball. ICT-FaceKit's left eye (radius 15.2 mm): az -24 .. 44 deg, lids +13 / -22 deg at the
+  middle.
+- ICT-FaceKit's lacrimal fluid (left: polygons 24692-24854, 204 vertices, all quads): a ring with two rims - 36
+  vertices on the eyeball at the lid margins (a median 0.3 mm off it, -0.2..1.4), 46 under the lids (1.6 mm, 0.9..3.3)
+  - about 3-4 rows across; its UVs sit in tile u 4-5, both u and v running along the eye (corr with azimuth -0.90 and
+  0.87). Its inner rim lies 1.5-2.5 deg inside ICT's lid edge, so 1-2.5 deg of it shows below the upper lid and above
+  the lower.
+- MediaPipe's Face Landmarker on a clay render (no brows, flat colour) guesses: between two clay renders a degree or
+  two of lid apart, its brow points moved 9-11 px (median), nose 5.5 px (max 13.8; the nose unchanged), eye rings 6
+  px, face oval 3.1 px, lips 1.3 px (face view, 1024 px); its lid contour read a near-shut clay eye as matching an
+  open painted one. On a clay, measure the lids from its colours (the eye opening is what isn't skin-coloured); keep
+  MediaPipe for the paintings, where its lid lines and iris (radius 36.7 px in the face view, against our geometry's
+  5.83 mm iris = 36.4 px) hold. A circle fitted to the clay's coloured iris under-read it (26-29 px).
+- Flow between the AI's paintings (Floating Textures, OpenCV DIS on the light-free colours, judged on held-out views):
+  at pore scale (difference of Gaussians 1.5-4 px) the paintings don't correspond at all - correlation 0.03-0.14 -
+  each view invents its own pores, and the close view its own brows, eye bags and moles; at feature scale (3-16 px)
+  flow from a quarter resolution raises agreement on two of three held-out views (face 0.411 -> 0.445, front 0.554 ->
+  0.568 at 6-16 px) without blurring.
+
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0
 downloads, CC BY-NC, weak on profiles (their notes: `E:\Dev\Web\just-core\docs\plans\2026-10-31-just-direct-

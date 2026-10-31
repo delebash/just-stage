@@ -17,6 +17,8 @@ the iris colour sampled at the eyes.
 Run: python tools/dev.py test tools/face_test/test_face_project.py -k face_project -s
 """
 
+import collections
+import functools
 import importlib
 import importlib.util
 import itertools
@@ -34,6 +36,9 @@ up = importlib.import_module("bl_ext.system.juststage.core.uv_projection")
 _spec = importlib.util.spec_from_file_location("mpfb_nodes", str(Path(__file__).with_name("mpfb_nodes.py")))
 mpfb_nodes = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mpfb_nodes)
+_spec = importlib.util.spec_from_file_location("face_shape", str(Path(__file__).with_name("face_shape.py")))
+face_shape = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(face_shape)
 _spec = importlib.util.spec_from_file_location("relief_geometry", str(Path(__file__).with_name("relief_geometry.py")))
 relief_geometry = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(relief_geometry)
@@ -49,6 +54,7 @@ PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, 
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
 ROUND = int(os.environ.get("FACETEST_ROUND", 49))  # each round's pictures get their own names (an open picture can't be overwritten)
+FLOW = os.environ.get("FACETEST_FLOW", "0") == "1"  # flow_views.py's nudged paintings (the approved alignment rec)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -61,6 +67,17 @@ def _pixels(path):
     img.pixels.foreach_get(px)
     bpy.data.images.remove(img)
     return px.reshape(h, w, 4)[::-1]  # rows top first
+
+
+def _view_map(kind, view):
+    """A view's light-free colours (kind "albedo") or world normals ("nworld"): flow_views.py's nudged ones with
+    FACETEST_FLOW=1 - which must be newer than the light removal they came from."""
+    plain = Path(f"{DIR}{kind}_{view}.npy")
+    if not FLOW:
+        return np.load(plain).astype(np.float32)
+    flowed = Path(f"{DIR}flowed_{kind}_{view}.npy")
+    assert flowed.exists() and flowed.stat().st_mtime >= plain.stat().st_mtime, f"run flow_views.py first ({flowed.name})"
+    return np.load(flowed).astype(np.float32)
 
 
 def _linear(srgb):
@@ -149,6 +166,10 @@ def _render_linear(scene, path, size=512):
 
 
 ICT_MESH = "E:/Dev/3D/just-stage/.dev/cache/ict/generic_neutral_mesh.obj"  # USC-ICT/ICT-FaceKit FaceXModel, MIT
+#: its README's index table (left side): the face's vertices, the left eyeball's vertices, the polygons of the left eye
+#: occlusion and of the left lacrimal fluid
+ICT_SKIN, ICT_EYE, ICT_OCCLUSION, ICT_TEAR = (0, 9409), (21451, 23021), (25048, 25176), (24692, 24855)
+ICT_SKIN_POLYGONS = 9230  # its face's polygons
 #: the occlusion's darkening per side, CC5's documented model (Eye Occlusion Shadow 1: a range and strength for the top,
 #: bottom, inner and outer, each with an edge fade): (range in UV, strength) - starting values, to be calibrated on the
 #: white's brightness profile against the painting
@@ -156,68 +177,54 @@ ICT_MESH = "E:/Dev/3D/just-stage/.dev/cache/ict/generic_neutral_mesh.obj"  # USC
 # 0.125 vs the painting's 0.191 (already darker - the lashes), mid-white 0.283 vs 0.252, low 0.194 vs 0.185 - so a light top
 OCCLUSION = {"top": (0.30, 0.15), "bottom": (0.20, 0.15), "inner": (0.20, 0.30), "outer": (0.15, 0.15)}
 OCCLUSION_COLOUR = (0.33, 0.09, 0.05)  # CC5's Shadow 2 example #54170E, a dark red-brown
+TEAR_ROUGHNESS = 0.3  # CC5's Tear Line examples: 0.25 and 0.45
+TEAR_FADE = 0.25  # the film fades in over this share of the strip from its edge on the eyeball (CC5's Edge Fadeout)
 
 
-def _ict_occlusion():
-    """ICT-FaceKit's left eye occlusion sheet (its README: polygons 25048-25175): faces and per-vertex UVs - u across
-    the eye, v from the lower lid to the upper (measured: corr(u, x) -0.97, corr(v, y) 0.83) - the layout of Unreal's
-    Digital Human eye occlusion, which ICT says its meshes follow."""
-    vt, faces = [], []
+@functools.cache
+def _ict():
+    """ICT-FaceKit's neutral mesh: positions in Blender's axes (ICT's are y up, z forward, in centimetres - its eye
+    centres are 6.19 apart), UVs, and faces as (vertex, uv) pairs."""
+    v, vt, faces = [], [], []
     with open(ICT_MESH, encoding="utf-8") as f:
         for line in f:
-            if line.startswith("vt "):
+            if line.startswith("v "):
+                v.append([float(x) for x in line.split()[1:4]])
+            elif line.startswith("vt "):
                 vt.append([float(x) for x in line.split()[1:3]])
             elif line.startswith("f "):
                 faces.append([tuple(int(t) - 1 for t in c.split("/")[:2]) for c in line.split()[1:]])
-    occ = faces[25048:25176]
-    order = sorted({c[0] for f in occ for c in f})
-    local = {v: k for k, v in enumerate(order)}
+    v = np.array(v)
+    return np.c_[v[:, 0], -v[:, 2], v[:, 1]], np.array(vt), faces
+
+
+def _ict_part(first, end):
+    """One of ICT's pieces by its polygon range: faces in its own vertex numbers, positions, per-vertex UVs."""
+    v, vt, faces = _ict()
+    part = faces[first:end]
+    order = sorted({c[0] for f in part for c in f})
+    local = {g: k for k, g in enumerate(order)}
     uv = np.zeros((len(order), 2))
-    for f in occ:
-        for v, t in f:
-            uv[local[v]] = vt[t]
-    return [[local[c[0]] for c in f] for f in occ], uv
+    for f in part:
+        for g, t in f:
+            uv[local[g]] = vt[t]
+    return [[local[c[0]] for c in f] for f in part], v[order], uv
 
 
-def _occlusion_shell(eye, skin, name):
+def _occlusion_shell(o, name):
     """Rec 6's eye occlusion (docs/plans/2026-10-31-audit-eyes.md section 6): ICT's sheet, its topology and UVs kept,
     placed over our own eyeball across our lid opening - u from the outer corner to the inner, v from the lower lid's
-    edge to the upper's (found per 2.5-degree slice, as the lid key finds them), 3-4 degrees under each lid, 0.4 mm off
-    the eyeball (ICT's sits a median 0.5 mm off). Shaded as CC5 documents: per-side ranges, a soft edge, a tinted
-    transparent film that only darkens what is behind it and casts nothing (Cycles traces the lids' own shadow)."""
-    faces, uv = _ict_occlusion()
-    m = np.array(eye.matrix_world)
-    ev = np.array([v.co for v in eye.data.vertices]) @ m[:3, :3].T + m[:3, 3]
-    centre = (ev.min(axis=0) + ev.max(axis=0)) / 2
-    radius = float((ev.max(axis=0) - ev.min(axis=0))[[0, 2]].mean() / 2)
-    rel = skin - centre
-    dist = np.linalg.norm(rel, axis=1)
-    az = np.degrees(np.arctan2(rel[:, 0], -rel[:, 1]))
-    el = np.degrees(np.arctan2(rel[:, 2], np.hypot(rel[:, 0], rel[:, 1])))
-    # the lid edges as the lid key finds them (skin touching the eyeball, edges at least 2 deg off its middle), per
-    # 5 deg slice, where the opening is at least 4 deg tall: round 49's looser test (1 deg, 4 mm, 2.5 deg slices) caught
-    # the corners' skin and found a 98 deg opening with lids at +-2 deg
-    touching = (dist > radius * 0.9) & (dist < radius + 0.0025) & (rel[:, 1] < 0) & (np.abs(az) < 50)
-    upper, lower, centres = [], [], []
-    for a0 in np.arange(-50.0, 50.0, 5.0):
-        inb = touching & (az >= a0) & (az < a0 + 5.0)
-        up, lo = el[inb & (el > 2)], el[inb & (el < -2)]
-        if up.size and lo.size and up.min() - lo.max() >= 4.0:
-            upper.append(up.min())
-            lower.append(lo.max())
-            centres.append(a0 + 2.5)
-    centres, upper, lower = np.array(centres), np.array(upper), np.array(lower)
-    inner = -np.sign(centre[0])  # toward the nose
-    a_outer, a_inner = (centres.max(), centres.min()) if inner < 0 else (centres.min(), centres.max())
-    a_outer -= 4.0 * inner
-    a_inner += 4.0 * inner
+    edge to the upper's, 3-4 degrees under each lid, 0.4 mm off the eyeball (ICT's sits a median 0.5 mm off). Shaded as
+    CC5 documents: per-side ranges, a soft edge, a tinted transparent film that only darkens what is behind it and
+    casts nothing (Cycles traces the lids' own shadow)."""
+    faces, _, uv = _ict_part(*ICT_OCCLUSION)
+    widen = 4.0 * np.sign(o.inner - o.outer)
+    a_outer, a_inner = o.outer - widen, o.inner + widen
     a = a_outer + uv[:, 0] * (a_inner - a_outer)
-    lo_e = np.interp(a, centres, lower) - 3.0
-    up_e = np.interp(a, centres, upper) + 3.0
+    lo_e = np.interp(a, o.centres, o.lower) - 3.0
+    up_e = np.interp(a, o.centres, o.upper) + 3.0
     e = lo_e + uv[:, 1] * (up_e - lo_e)
-    ar, er = np.radians(a), np.radians(e)
-    direction = np.c_[np.sin(ar) * np.cos(er), -np.cos(ar) * np.cos(er), np.sin(er)]
-    points = centre + (radius + 0.0004) * direction
+    points = o.centre + (o.radius + 0.0004) * face_shape.direction(a, e)
     mesh = bpy.data.meshes.new(f"{name} occlusion")
     mesh.from_pydata(points.tolist(), [], faces)
     layer = mesh.uv_layers.new(name="UVMap")
@@ -260,8 +267,111 @@ def _occlusion_shell(eye, skin, name):
     nt.links.new(film.outputs["BSDF"], out.inputs["Surface"])
     mesh.materials.append(mat)
     print(f"  {name} occlusion: {len(points)} vertices over an opening of {abs(a_inner - a_outer):.0f} deg, "
-          f"lids {lower.max():.1f} .. {upper.min():.1f} deg")
+          f"lids {o.lower.max():.1f} .. {o.upper.min():.1f} deg")
     return obj
+
+
+def _tearline(o, skin, name):
+    """Rec 6's tearline (docs/plans/2026-10-31-audit-eyes.md section 6, item 3): ICT's lacrimal-fluid strip, a ring from
+    the eyeball at the lid margins (its edge there a median 0.3 mm off the eyeball) to under both lids (its other edge
+    1.6 mm off), moved onto our eye. Each vertex keeps its angle past ICT's lid edge on its side, at the same share of
+    the way from the outer corner to the inner, and its height off the eyeball scaled to ours - but stays under our
+    lid's skin where that is lower. Shaded as a tear film: water's Fresnel reflection (IOR 1.336) over a transparent
+    film, CC5's example roughness, faded in from its edge on the eyeball (CC5's Edge Fadeout); seen by the camera and
+    by reflections only, so it casts nothing."""
+    faces, ict_points, _ = _ict_part(*ICT_TEAR)
+    ict_v = _ict()[0]
+    ict_polys = [[c[0] for c in f] for f in _ict()[2][:ICT_SKIN_POLYGONS]]
+    i = face_shape.eye_opening(ict_v[slice(*ICT_EYE)], ict_v[slice(*ICT_SKIN)], ict_polys, (0.0, 0.0), 0.3, 0.8)  # cm
+    az, el, dist = face_shape.angles(ict_points, i.centre)
+    off = (dist - i.radius) * o.radius / i.radius
+    a = o.outer + (az - i.outer) / (i.inner - i.outer) * (o.inner - o.outer)
+    upper_side = el > (np.interp(az, i.centres, i.upper) + np.interp(az, i.centres, i.lower)) / 2
+    i_edge = np.where(upper_side, np.interp(az, i.centres, i.upper), np.interp(az, i.centres, i.lower))
+    o_edge = np.where(upper_side, np.interp(a, o.centres, o.upper), np.interp(a, o.centres, o.lower))
+    t_dir = face_shape.direction(a, o_edge + (el - i_edge))
+    # under our lid: no higher than the skin within 3 deg of it, less 0.2 mm
+    s_az, s_el, s_dist = face_shape.angles(skin, o.centre)
+    near_eye = (s_dist < o.radius + 0.005) & (skin[:, 1] < o.centre[1])
+    s_dir, s_off = face_shape.direction(s_az[near_eye], s_el[near_eye]), s_dist[near_eye] - o.radius
+    close = np.degrees(np.arccos(np.clip(t_dir @ s_dir.T, -1.0, 1.0))) < 3.0
+    ceiling = np.where(close, s_off[None, :], np.inf).min(axis=1) - 0.0002
+    lowered = int((off > ceiling).sum())
+    off = np.maximum(np.minimum(off, ceiling), 0.0001)
+    points = o.centre + (o.radius + off)[:, None] * t_dir
+    # the strip's share from its rim on the eyeball (0) to its rim under the lids (1), in steps along its edges
+    count = collections.Counter(tuple(sorted((f[k], f[k - 1]))) for f in faces for k in range(len(f)))
+    links, rim = collections.defaultdict(set), collections.defaultdict(set)
+    for (p, q), n in count.items():
+        for graph in (links, rim) if n == 1 else (links,):
+            graph[p].add(q)
+            graph[q].add(p)
+    loops, seen = [], set()
+    for start in rim:
+        if start not in seen:
+            loop, todo = set(), [start]
+            while todo:
+                p = todo.pop()
+                if p not in loop:
+                    loop.add(p)
+                    todo.extend(rim[p])
+            seen |= loop
+            loops.append(loop)
+    assert len(loops) == 2, f"ICT's tear strip should have two rims, found {len(loops)}"
+    on_eye, under_lid = sorted(loops, key=lambda lp: np.median(dist[list(lp)]))
+
+    def steps(sources):
+        d, front = dict.fromkeys(sources, 0), list(sources)
+        while front:
+            nxt = []
+            for p in front:
+                for q in links[p]:
+                    if q not in d:
+                        d[q] = d[p] + 1
+                        nxt.append(q)
+            front = nxt
+        return np.array([d[k] for k in range(len(points))], dtype=float)
+
+    near = steps(on_eye)
+    share = near / (near + steps(under_lid))
+    mesh = bpy.data.meshes.new(f"{name} tearline")
+    mesh.from_pydata(points.tolist(), [], faces)
+    mesh.attributes.new("share", "FLOAT", "POINT").data.foreach_set("value", share)
+    mesh.update()
+    outward = np.array([(np.array(p.center) - o.centre) @ np.array(p.normal) for p in mesh.polygons])
+    if np.median(outward) < 0:  # mirrored onto the right eye: facing away from the eyeball again
+        mesh.flip_normals()
+    obj = bpy.data.objects.new(f"{name} tearline", mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    obj.visible_shadow = obj.visible_diffuse = obj.visible_volume_scatter = False
+    mat = bpy.data.materials.new(f"{name} tearline")
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    attr = nt.nodes.new("ShaderNodeAttribute")
+    attr.attribute_name = "share"
+    fade = nt.nodes.new("ShaderNodeMapRange")
+    fade.interpolation_type = "SMOOTHSTEP"
+    fade.inputs["From Max"].default_value = TEAR_FADE
+    nt.links.new(attr.outputs["Fac"], fade.inputs["Value"])
+    fresnel = nt.nodes.new("ShaderNodeFresnel")
+    fresnel.inputs["IOR"].default_value = 1.336
+    wet = nt.nodes.new("ShaderNodeMath")
+    wet.operation = "MULTIPLY"
+    nt.links.new(fresnel.outputs["Fac"], wet.inputs[0])
+    nt.links.new(fade.outputs["Result"], wet.inputs[1])
+    gloss = nt.nodes.new("ShaderNodeBsdfGlossy")
+    gloss.inputs["Roughness"].default_value = TEAR_ROUGHNESS
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(wet.outputs["Value"], mix.inputs["Fac"])
+    nt.links.new(nt.nodes.new("ShaderNodeBsdfTransparent").outputs["BSDF"], mix.inputs[1])
+    nt.links.new(gloss.outputs["BSDF"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    mesh.materials.append(mat)
+    print(f"  {name} tearline: {len(points)} vertices, {off.min() * 1000:.2f}-{off.max() * 1000:.2f} mm off the eyeball, "
+          f"{lowered} kept under the lid")
+    return obj
+
 
 LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
 
@@ -316,6 +426,83 @@ def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour
     obj.visible_shadow = False  # the asset's .mhmat: castShadows False
     print(f"{kind}: {style}, {len(co)} vertices, {len(faces)} cards, {shorten:.0%} length")
 
+
+LASHES = os.environ.get("FACETEST_LASHES", "cards")  # rec 7's strands at real counts, or "cards" (MakeHuman's)
+#: per eye and lid: count, length at the longest and at the corners (mm), the angle off the eyeball at the root and the
+#: curl to the tip (degrees). Counts: StatPearls' 90-160 upper, 75-80 lower; lengths and curl starting values
+LASH_UPPER = {"count": 120, "long": 10.0, "short": 6.0, "rise": 15.0, "curl": 60.0}
+LASH_LOWER = {"count": 75, "long": 6.0, "short": 3.5, "rise": 10.0, "curl": 25.0}
+LASH_POINTS = 12  # the research: 10+ points each for the curl (the pack's lashes have 5)
+LASH_RADIUS = (0.00005, 0.000012)  # at the root and the tip (m): 0.1 mm thick at the root
+LASH_MELANIN, LASH_REDNESS = 0.95, 0.25  # near black-brown
+
+
+def _strand_lashes(body, openings, seed=7):
+    """Rec 7's lashes at real counts (approved 2026-10-30: "brows and lashes at real counts (lashes 90-160 upper)";
+    `../plans/2026-10-30-research-hair-eyes-teeth.md`: 90-160 upper in 5-6 rows, 75-80 lower in 3-4, per eye, 10+ points
+    each for the curl). MetaHuman's way - strand grooms - as Blender hair curves: roots on the lid's front skin just past
+    the opening's edge (face_shape.eye_opening), found by rays from in front onto the subdivided surface the camera
+    sees, in a band 0.5-2 deg wide (the rows), none by the inner corner; each lash grows out from the eyeball and curls
+    away from the eye, longest just outside the middle, the outer ones leaning outward; Principled Hair BSDF by melanin,
+    rendered as 3D curves."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    rng = np.random.default_rng(seed)
+    to_local = np.array(body.matrix_world.inverted())
+    to_world = np.array(body.matrix_world)
+    tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())  # its local space
+    strands, missed = [], 0
+    for o in openings.values():
+        outward = np.sign(o.outer - o.inner)
+        for spec, side in ((LASH_UPPER, 1.0), (LASH_LOWER, -1.0)):
+            n = spec["count"]
+            f = np.sort(rng.uniform(0.06, 0.97, n))  # the share of the way from the inner corner to the outer
+            az = o.inner + f * (o.outer - o.inner)
+            el = np.interp(az, o.centres, o.upper if side > 0 else o.lower) + side * rng.uniform(0.5, 2.0, n)
+            dirs = face_shape.direction(az, el)
+            for k in range(n):
+                start = o.centre + dirs[k] * (o.radius + 0.02)
+                s_local = to_local[:3, :3] @ start + to_local[:3, 3]
+                hit = tree.ray_cast(Vector(s_local), Vector(to_local[:3, :3] @ -dirs[k]), 0.025)
+                if hit[0] is None:
+                    missed += 1
+                    continue
+                normal = to_world[:3, :3] @ np.array(hit[1])
+                root = to_world[:3, :3] @ np.array(hit[0]) + to_world[:3, 3] - 0.0001 * normal / np.linalg.norm(normal)
+                radial = (root - o.centre) / np.linalg.norm(root - o.centre)
+                away = (face_shape.direction(az[k:k + 1], el[k:k + 1] + side)[0] - dirs[k])  # up for the upper lid
+                away -= (away @ radial) * radial
+                away /= np.linalg.norm(away)
+                along = face_shape.direction(az[k:k + 1] + outward, el[k:k + 1])[0] - dirs[k]  # toward the outer corner
+                along -= (along @ radial) * radial
+                along /= np.linalg.norm(along)
+                length = 0.001 * rng.uniform(0.85, 1.1) * (spec["short"] + (spec["long"] - spec["short"]) * np.sin(np.pi * f[k] ** 1.3))
+                t = np.linspace(0.0, 1.0, LASH_POINTS)
+                theta = np.radians(spec["rise"] + rng.normal(0.0, 5.0)) + np.radians(spec["curl"] + rng.normal(0.0, 10.0)) * t ** 1.5
+                d = np.cos(theta)[:, None] * radial + np.sin(theta)[:, None] * away + 0.3 * (f[k] - 0.5) * along
+                d /= np.linalg.norm(d, axis=1, keepdims=True)
+                steps = np.vstack([np.zeros(3), d[:-1] * length / (LASH_POINTS - 1)])
+                strands.append(root + np.cumsum(steps, axis=0))
+    curves = bpy.data.hair_curves.new(f"{body.name} lashes")
+    curves.add_curves([LASH_POINTS] * len(strands))
+    curves.position_data.foreach_set("vector", np.concatenate(strands).astype(np.float32).ravel())
+    t = np.tile(np.linspace(0.0, 1.0, LASH_POINTS), len(strands))
+    curves.attributes.new("radius", "FLOAT", "POINT").data.foreach_set("value", np.interp(t, [0.0, 1.0], LASH_RADIUS).astype(np.float32))
+    obj = bpy.data.objects.new(f"{body.name} lashes", curves)
+    bpy.context.scene.collection.objects.link(obj)
+    mat = bpy.data.materials.new(f"{body.name} lashes")
+    nt = mat.node_tree
+    nt.nodes.clear()
+    hair = nt.nodes.new("ShaderNodeBsdfHairPrincipled")
+    hair.parametrization = "MELANIN"
+    hair.inputs["Melanin"].default_value = LASH_MELANIN
+    hair.inputs["Melanin Redness"].default_value = LASH_REDNESS
+    nt.links.new(hair.outputs[0], nt.nodes.new("ShaderNodeOutputMaterial").inputs["Surface"])
+    curves.materials.append(mat)
+    bpy.context.scene.cycles_curves.shape = "THICK"  # 3D curves for close-ups (the research)
+    print(f"lashes: {len(strands)} strands ({missed} roots missed), {LASH_POINTS} points each")
+    return obj
 
 def _pad(img, mask, px=16):
     """Each UV island grown outward by `px` texels with its own edge values (a bake's "margin"): filtering at UV seams
@@ -389,7 +576,15 @@ def test_face_project():
     t0 = time.time()
     bpy.ops.wm.open_mainfile(filepath=DIR + "face.blend")
     body = bpy.data.objects["Face"]
-    _add_lashes(body)
+    # each eye's opening, once, from the untouched eye (its iris marks the gaze; later its materials are replaced and
+    # its cornea split off, which moves its bounding box): for the lashes, the occlusion and the tearline
+    skin = importlib.import_module("bl_ext.system.juststage.modules.body.build").shaped_coords(body)[:13380].astype(np.float64)
+    polys = face_shape.skin_polygons(body)
+    openings = {}
+    for eye_name in ("Face.eyeLeft", "Face.eyeRight"):
+        eye = bpy.data.objects[eye_name]
+        openings[eye_name] = face_shape.eye_opening(face_shape.world_points(eye), skin, polys, face_shape.gaze(eye), 0.003, 0.008)
+    _strand_lashes(body, openings) if LASHES == "strands" else _add_lashes(body)
     _head_tile(body)
     # brows: the painted ones in the skin - MakeHuman's brow cards (010, 011, 012, masked or not) all sat higher and more
     # arched than the painting's and doubled them; without cards the painted brows read as hair (round 43 trials)
@@ -456,7 +651,7 @@ def test_face_project():
     looks = {}
     for view in VIEWS:
         w, col, row = view_samples(view, sub)
-        looks[view] = (w, up.sample(_blur(np.load(f"{DIR}albedo_{view}.npy").astype(np.float32), 6.0), col, row) @ lum)
+        looks[view] = (w, up.sample(_blur(_view_map("albedo", view), 6.0), col, row) @ lum)
     gains = dict.fromkeys(VIEWS, 1.0)
     for _ in range(4):
         num = sum(w * gains[v] * l for v, (w, l) in looks.items())
@@ -475,8 +670,8 @@ def test_face_project():
     nlow_sum, nhigh_best = np.zeros((len(points), 3)), np.zeros((len(points), 3))
     for view in VIEWS:
         w, col, row = view_samples(view, every)
-        albedo = np.load(f"{DIR}albedo_{view}.npy").astype(np.float32) * gains[view]
-        nworld = np.load(f"{DIR}nworld_{view}.npy").astype(np.float32)
+        albedo = _view_map("albedo", view) * gains[view]
+        nworld = _view_map("nworld", view)
         low_img, nlow_img = _blur(albedo, 6.0), _blur(nworld, 6.0)
         low, nlow = up.sample(low_img, col, row), up.sample(nlow_img, col, row)
         soft, sharp = w**4, w**16
@@ -952,7 +1147,8 @@ def test_face_project():
             bm.free()
         shell.visible_shadow = shell.visible_diffuse = False
         receivers.objects.link(shell)
-        _occlusion_shell(eye, importlib.import_module("bl_ext.system.juststage.modules.body.build").shaped_coords(body)[:13380].astype(np.float64), eye_name)
+        _occlusion_shell(openings[eye_name], eye_name)
+        receivers.objects.link(_tearline(openings[eye_name], skin, eye_name))  # its wet shine catches the eye light
         colour = np.zeros((1, 3)) + major  # for the print below
         white = np.array([True])
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")

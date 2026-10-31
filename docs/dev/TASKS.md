@@ -600,6 +600,47 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (3) a lash-shadow trial; (4) the lips' thickness and width from MakeHuman's CC0 identity sliders, fitted to
            the painting, the seal kept (`../plans/2026-10-31-audit-face-edits.md` §2.4); (5) rec 6's wording - a dated
            correction note beside the approved text (ICT has no caruncle mesh, only "eye blend") - DONE.
+           ROUNDS 50-51 2026-10-31 - the user's go: "keep going dont stop until you have a quality working app".
+           (1) LIDS, MEASURED AGAINST THE EYE'S CORNERS - the iris-radius ruler misled (the clay has no textured iris;
+           the eased 11 / 6 deg key of round 50 moved nothing it should): lid heights above the corner line as a share
+           of the eye's width, MediaPipe, face view. The painting's upper lid 0.253 at the middle, lower -0.067; round
+           50's render 0.258 / -0.042, its clay 0.246 / -0.107. Rays out from the eyeball found why the key barely moved
+           the margin: the skin is watertight (it folds into the socket), so the "skin touching the eyeball" search the
+           key, the occlusion and the tearline used found the socket and the lids' backs - at the iris our opening
+           really runs from -30 to -2 deg, the search said +-2..7 deg, so the key turned the skin above the margin and
+           the occlusion darkened the top of the white with its lower-lid ramp. Now one `face_shape.eye_opening`: rays on
+           a 1 x 0.5 deg grid, the shown patch around the gaze, used by the lid key, the occlusion and the tearline
+           (ICT's opening the same way: -24..44 deg, lids +13 / -22 at the middle). CORRECTION, same day: a first
+           re-calibration by MediaPipe on the clay (upper 7.5, lower 13.5 deg, "matching" 0.252 / -0.066) left the clay's
+           eyes near shut - seen in the close-ups; round 51's render was stopped. MediaPipe on a clay render guesses:
+           between two clays a degree or two of lid apart its brows moved 9-11 px, its nose 5.5 px (unchanged geometry),
+           its eye rings 6 px; only its lips held (1.3 px). A colour-fitted iris ruler under-read the iris by a quarter
+           (26-29 px against the geometry's 36.4). The ruler now: the clay's eye opening segmented from its colours
+           against the painting's lid lines (MediaPipe on the painting), column by column, in px. By it our neutral
+           opening is the smaller one - ~2.5 mm short of the painting's in the front view - so the key opens the eye
+           (upper +1, lower -4.4 deg to start; to verify on the clay). The landmark warp anchors on the same: the
+           painting's lid points moved straight up or down onto the clay's opening edge, the outer lips (stable), the
+           border; MediaPipe's other clay points left out (they made the brows jump 40 px between rounds 50 and 51).
+           (2) FLOW ALIGNMENT BUILT (`flow_views.py`, Floating Textures with OpenCV DIS on the light-free paintings, each
+           view warped by the facing-weighted mean flow toward the others, its own zero flow included) and judged by
+           held-out views (left out of the flows; the others re-projected to its camera, before / after, against its
+           own painting). At pore scale no two paintings agree (correlation 0.03-0.14): each invents its own pores, and
+           the close "face" painting its own brows, eye bags and moles - flow there only fits noise (first run: worse
+           on all three). Flow at feature scale (DIS from a quarter resolution), the blend's outlines masked: face
+           0.147 -> 0.177 (3-8 px band), 0.411 -> 0.445 (6-16 px); front 0.444 -> 0.481, 0.554 -> 0.568; left40 (13% of
+           its picture) 0.060 -> 0.049, 0.345 -> 0.350; the blend's sharpness up, not down (less ghosting, not blur). ON
+           from round 51 (`FACETEST_FLOW=1`).
+           (3) TEARLINE BUILT - ICT's lacrimal-fluid strip (a ring: its rim on the eyeball at the lid margins a median
+           0.3 mm off it, its other rim under the lids 1.6 mm off; measured) placed by its angle past ICT's lid edge on
+           each side and its share of the way between the corners, its height scaled to our eyeball and kept under our
+           lid's skin; shaded as a tear film - water's Fresnel (IOR 1.336) over a transparent film, roughness 0.3 (CC5's
+           examples 0.25-0.45), faded in from its eyeball rim; camera and reflections only.
+           (4) WHAT THE EYE CLOSE-UPS SHOW (painting / round 50 / clay, 3x): the biggest tells left are the lashes -
+           sparse thick black card spikes across the iris, where the painting has a dense fine dark lash line - then
+           the iris (lighter, pinkish, a contrasty fibre pattern, the pupil a smeared blob), a flat dry white with a
+           stray vein line, and a thick pink band on the lower lid where the painting has a thin wet line. Next after
+           round 51: rec 7's lashes at real counts as strands (approved 2026-10-30, never built; the cards were a
+           stand-in), then the iris.
            ROUND 49 2026-10-31 and its trials, each re-attacked first (the user: "always rethink on your rec adverserily"):
            (1) HEAD TILE - hm08 scatters the head's own UV islands over the whole map and its face island already holds
            3,028 of the head's 4,018 polygons, so face priority gains nothing; Blender's packer on everything painted
