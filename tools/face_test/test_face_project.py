@@ -42,9 +42,10 @@ VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "f
 SIZE = 4096
 FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam where it ends
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
+PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = 27  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 27))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -537,6 +538,26 @@ def test_face_project():
     links.new(height_tex.outputs["Color"], bump.inputs["Height"])
     links.new(nmap.outputs["Normal"], bump.inputs["Normal"])
     links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+    # pores, the approaches side by side (the user: "so we test all approaches"): PORE_SOURCE=paint (the paintings'
+    # own fine relief, above), scan (the Lee Perry-Smith scan's cheek tile, CC-BY 3.0, at its real size ~7.5 cm), both
+    source = os.environ.get("PORE_SOURCE", "paint")
+    if source in ("scan", "both"):
+        if source == "scan":
+            bump.inputs["Strength"].default_value = 0.0
+        tile = nodes.new("ShaderNodeTexImage")
+        tile.image = bpy.data.images.load(DIR + "pores_lps.png")
+        tile.image.colorspace_settings.name = "Non-Color"
+        coords, mapping = nodes.new("ShaderNodeTexCoord"), nodes.new("ShaderNodeMapping")
+        mapping.inputs["Scale"].default_value = (PORE_TILES, PORE_TILES, 1.0)
+        links.new(coords.outputs["UV"], mapping.inputs["Vector"])
+        links.new(mapping.outputs["Vector"], tile.inputs["Vector"])
+        scan_bump = nodes.new("ShaderNodeBump")
+        scan_bump.inputs["Strength"].default_value = 0.35
+        scan_bump.inputs["Distance"].default_value = 0.0002
+        links.new(tile.outputs["Color"], scan_bump.inputs["Height"])
+        links.new(bump.outputs["Normal"], scan_bump.inputs["Normal"])
+        links.new(scan_bump.outputs["Normal"], bsdf.inputs["Normal"])
+    print(f"pores from: {source}")
 
     def set_tone(melanin, blood):  # the light fit's quick renders: the skin model's scattering; the colour is the map's
         api.run("juststage.skin.set_tone", character=character, melanin=melanin, blood=blood)
