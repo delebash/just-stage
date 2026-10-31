@@ -503,6 +503,11 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            the side); our cornea's reflection at 0.3 of Fresnel. Round 39 (`compare39fixed_*.png`): eyes brown from the
            side, brows read as this man's. Still: the ears' hollows red, the neck streak, the scalp's painted stubble (the
            painting has it too), the photo's warmer contrast around the eyes.
+           ROUNDS 40-41 2026-10-30: each view's paint kept clear of its silhouettes (pixels on an outline are part
+           background) and the UV islands padded 16 texels (a bake's margin) - both standard, both kept; neither moved the
+           pale line on the neck behind the jaw (narrow, bluish: likely the relief map or a crease catching light - next,
+           traced on `round.blend` by toggling the normal and albedo maps). The ears' hollows stay red (partly the
+           painting's own backlit red).
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

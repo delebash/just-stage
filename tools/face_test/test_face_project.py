@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 39))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 41))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -328,6 +328,25 @@ def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour
     print(f"{kind}: {style}, {len(co)} vertices, {len(faces)} cards, {shorten:.0%} length")
 
 
+def _pad(img, mask, px=16):
+    """Each UV island grown outward by `px` texels with its own edge values (a bake's "margin"): filtering at UV seams
+    otherwise blends in the fill outside the islands — the pale line on the neck's seam."""
+    out = img.astype(np.float32).copy()
+    known = mask.copy()
+    for _ in range(px):
+        grow = np.zeros(out.shape, np.float32)
+        count = np.zeros(mask.shape, np.float32)
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            shifted_known = np.roll(known, (dy, dx), axis=(0, 1))
+            shifted = np.roll(out, (dy, dx), axis=(0, 1))
+            grow += shifted * (shifted_known[..., None] if out.ndim == 3 else shifted_known)
+            count += shifted_known
+        new = (~known) & (count > 0)
+        out[new] = (grow[new] / (count[new][:, None] if out.ndim == 3 else count[new]))
+        known |= new
+    return out
+
+
 def _close_mouth(body):
     """The lips closed as a shape key: our head's neutral mouth is a slit ~0.9 mm tall at its middle (measured by rays
     from the face camera; teeth behind it), the AI paints it closed. Upper lip down, lower lip up, most at the slit,
@@ -402,7 +421,10 @@ def test_face_project():
         facing = up.view_weights(points[idx], normals[idx], col, row, dist, depth, mw[:3, 3], sharpness=1.0)
         edge = np.minimum.reduce([col, row, cam["size"] - 1 - col, cam["size"] - 1 - row])
         frame = np.clip(np.nan_to_num(edge) / 80.0, 0.0, 1.0) * (0.78 / np.nan_to_num(dist, nan=1e3)) ** 2
-        return facing * frame, col, row
+        # away from the view's silhouettes: pixels on an outline are part background (the pale ear rims and neck streak)
+        inside = _blur((depth < 0.999).astype(np.float32)[..., None], 4.0)
+        clear_of_edge = up.sample(np.clip((inside - 0.5) / 0.45, 0.0, 1.0), col, row)[:, 0]
+        return facing * frame * clear_of_edge, col, row
 
     lum = np.array(sd.LUMA)
     sub = np.arange(0, len(points), 16)
@@ -500,6 +522,7 @@ def test_face_project():
     albedo_map = np.zeros((SIZE, SIZE, 3), dtype=np.float32)
     albedo_map[...] = fallback * scale
     albedo_map[mask] = albedo
+    albedo_map = _pad(albedo_map, mask)
     srgb = np.clip(albedo_map, 0.0, 1.0)
     srgb = np.where(srgb <= 0.0031308, srgb * 12.92, 1.055 * srgb ** (1 / 2.4) - 0.055)
     albedo_tex = nodes.new("ShaderNodeTexImage")
@@ -514,6 +537,7 @@ def test_face_project():
     nrm_map = np.zeros((SIZE, SIZE, 3), dtype=np.float32)
     nrm_map[..., 2] = 1.0
     nrm_map[mask] = nrm @ rot_inv.T
+    nrm_map = _pad(nrm_map, mask)
     normal_tex = nodes.new("ShaderNodeTexImage")
     normal_tex.image = _image("face normal", nrm_map * 0.5 + 0.5, "Non-Color")
     normal_tex.interpolation = "Cubic"
@@ -527,6 +551,7 @@ def test_face_project():
     high = high - sd.gaussian_blur(np.pad(high, pad, mode="reflect"), 2.0)[pad:-pad, pad:-pad]  # pores, fine lines
     high[~mask] = 0.0
     height = np.clip(0.5 + high / (6.0 * high[mask].std()), 0.0, 1.0)
+    height = _pad(height, mask)
     rough = np.full((SIZE, SIZE), ROUGH, dtype=np.float32)
     tzone = np.exp(-((points[:, 0] / 0.03) ** 2)) * np.clip(-normals[:, 1], 0.0, 1.0)
     rough[mask] = ROUGH + (ROUGH_TZONE - ROUGH) * tzone + 0.15 * (0.5 - height[mask])
