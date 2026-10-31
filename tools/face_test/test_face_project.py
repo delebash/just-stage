@@ -750,7 +750,7 @@ def test_face_project():
         eye_in["InnerLayerRoughness"].default_value = 0.35  # a glossy iris mirrored the grey studio
         eye_in["EyeWhiteColor"].default_value = (0.50, 0.45, 0.42, 1.0)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
-        if os.environ.get("EYE_STYLE", "mh") == "mh":
+        if os.environ.get("EYE_STYLE", "mpfb") == "mh":  # rounds 30–31: its brown read red-orange; MPFB2 kept
             import zipfile
 
             mh_path = DIR + "mh_brown_eye.png"
@@ -765,8 +765,9 @@ def test_face_project():
             baked = up.sample(mh, (mu * w_mh - 0.5).ravel(), ((1 - mv) * h_mh - 0.5).ravel()).reshape(1024, 1024, 3)
             r_uv = np.hypot(u - 0.5, v - 0.5)
             iris_px = (r_uv < 0.17) & (r_uv > 0.06)
-            # the iris' median colour becomes the painting's (×1.6: the painting lights the iris head-on — round 26)
-            tint = (major * 1.6) / np.maximum(np.median(baked[iris_px], axis=0), 1e-4)
+            # MakeHuman's iris keeps its own colour (a per-channel tint blew its near-zero blue up 8× — round 30); only
+            # its brightness becomes the painted iris' (×1.6: the painting lights the iris head-on — round 26)
+            tint = float(major @ lum) * 1.6 / max(float(np.median(baked[iris_px] @ lum)), 1e-4)
             iris_all = r_uv < 0.185
             baked[iris_all] *= tint
             b_srgb = np.clip(baked, 0.0, 1.0)

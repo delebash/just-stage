@@ -471,6 +471,15 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            eyes dry (no strong catch-light) and lashless (the lash groom hangs across the eye — needs curl), the neck
            streak behind the jaw, red ear cavities, the lips' contact line, the scalp's painted stubble.
            Card: handed to the JustDirect session ("card free", 2026-10-30) — no GPU work here until it hands back.
+           ROUNDS 27–31 2026-10-30 (the card shared with the JustDirect session by message, "card free" both ways):
+           MakeHuman's CC0 lash cards fitted by MHCLO (`eyelashes01`; the groom's strands had hung across the eye) — real
+           lashes on the lids, still long and full for this man; pores compared on one cheek (`.dev/facetest/
+           pores_compare.png`: the paintings' own, the Lee Perry-Smith scan tile at its measured size, both) — alike at
+           this distance, both richest, kept as default; the photo's pores catch highlights ours don't (shine, next);
+           MakeHuman's photographic CC0 eye texture baked onto our eyes — rejected (its brown reads red-orange when lit);
+           MPFB2's procedural eye kept. Next: the lids shaped from the painting — MediaPipe's 16 lid-contour points per
+           eye in the painting against the clay, each lid slice turned until our edge lands on the painted one (the eyes
+           still stare); the lashes shortened; skin shine; the neck streak; the ears.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
