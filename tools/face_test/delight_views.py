@@ -26,7 +26,7 @@ import OpenEXR
 
 DIR = Path("E:/Dev/3D/just-stage/.dev/facetest")
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
-DETAIL_MM = 15.0  # relief smaller than this comes from the painting, larger from our mesh
+DETAIL_MM = 25.0  # relief smaller than this comes from the painting, larger from our mesh (15 lost the eye bags)
 LUMA = np.array([0.2126, 0.7152, 0.0722])
 
 

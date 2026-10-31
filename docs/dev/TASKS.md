@@ -480,6 +480,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            MPFB2's procedural eye kept. Next: the lids shaped from the painting — MediaPipe's 16 lid-contour points per
            eye in the painting against the clay, each lid slice turned until our edge lands on the painted one (the eyes
            still stare); the lashes shortened; skin shine; the neck streak; the ears.
+           ROUNDS 32-34 2026-10-30: measured (MediaPipe on the face view) that the rendered eye already matches the
+           painting's shape - opening 7.7-7.9 mm vs 7.8-8.2, iris centre 0.46-0.47 vs 0.44-0.45 of the opening, the
+           upper lid over 1.8-2.1 mm of iris vs 1.9-2.2 - so the stare was shading: the eye calibrated like the skin
+           (linear colour at MediaPipe's iris and lid points, painting vs render): iris x (1.0, 0.78, 0.82), the white
+           beside the iris x (1.89, 1.56, 1.41) - EyeWhiteColor (0.94, 0.70, 0.59) (sampling toward the corners caught
+           pink tissue and overshot - round 32); relief from the paintings kept up to 25 mm (15 lost the eye bags);
+           MakeHuman's CC0 brow cards (`eyebrow001`) by MHCLO; the lash cards at 60% length (tips pulled toward the lid).
+           Round 34 (`.dev/facetest/compare34fixed_*.png`): eyes read as eyes, defined brows. Still: the lips fuller than
+           the painting's with a contact line, a slight stare, the ears, the neck streak, no wet catch-light, the skin's
+           shine. Pore approaches compared (rounds 27-29): alike at portrait distance.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

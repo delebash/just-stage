@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 30))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 34))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -283,7 +283,7 @@ def _eye_shells(body):
 LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
 
 
-def _add_lashes(body, style="eyelashes01"):  # the short, sparse set (02–04 are fuller)
+def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour=(0.012, 0.009, 0.008)):  # 01: the short set
     """MakeHuman's lash cards (its CC0 system assets: a strip mesh, an MHCLO binding to hm08, a lash texture with
     transparency) fitted to our head by MHCLO — MakeHuman's own way, and the card lashes CC5 and MetaHuman use. Fitted
     after the lid keys, so they sit on the lids as shaped."""
@@ -292,7 +292,7 @@ def _add_lashes(body, style="eyelashes01"):  # the short, sparse set (02–04 ar
     mhclo = importlib.import_module("bl_ext.system.juststage.core.mhclo")
     build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
     pack = zipfile.ZipFile(LASH_PACK)
-    folder = f"eyelashes/{style}/{style}"
+    folder = f"{kind}/{style}/{style}"
     binding = mhclo.parse(pack.read(folder + ".mhclo").decode("utf-8", "replace"))
     co = mhclo.fit(binding, build.shaped_coords(body))
     uvs, faces = [], []
@@ -301,27 +301,31 @@ def _add_lashes(body, style="eyelashes01"):  # the short, sparse set (02–04 ar
             uvs.append([float(x) for x in line.split()[1:3]])
         elif line.startswith("f "):
             faces.append([tuple(int(x) - 1 if x else -1 for x in (c.split("/") + [""])[:2]) for c in line.split()[1:]])
-    mesh = bpy.data.meshes.new(f"{body.name} lashes")
+    if shorten < 1.0:
+        skin = build.shaped_coords(body)[:13380]  # the body's own vertices, not its helpers
+        near = np.array([skin[np.argmin(np.linalg.norm(skin - v, axis=1))] for v in co])
+        co = near + (co - near) * shorten
+    mesh = bpy.data.meshes.new(f"{body.name} {style}")
     mesh.from_pydata(co.tolist(), [], [[c[0] for c in f] for f in faces])
     layer = mesh.uv_layers.new(name="UVMap")
     flat = [uvs[c[1]] for f in faces for c in f]
     for loop, uv in zip(layer.data, flat):
         loop.uv = uv
-    obj = bpy.data.objects.new(f"{body.name} lashes", mesh)
+    obj = bpy.data.objects.new(f"{body.name} {style}", mesh)
     bpy.context.scene.collection.objects.link(obj)
     tex_path = DIR + f"{style}.png"
     Path(tex_path).write_bytes(pack.read(folder + ".png"))
-    mat = bpy.data.materials.new(f"{body.name} lashes")
+    mat = bpy.data.materials.new(f"{body.name} {style}")
     nt = mat.node_tree
     bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
     tex = nt.nodes.new("ShaderNodeTexImage")
     tex.image = bpy.data.images.load(tex_path)
-    bsdf.inputs["Base Color"].default_value = (0.012, 0.009, 0.008, 1.0)  # dark brown-black hair
+    bsdf.inputs["Base Color"].default_value = (*colour, 1.0)  # dark brown-black hair
     bsdf.inputs["Roughness"].default_value = 0.45
     nt.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
     mesh.materials.append(mat)
     obj.visible_shadow = True
-    print(f"lashes: {style}, {len(co)} vertices, {len(faces)} cards")
+    print(f"{kind}: {style}, {len(co)} vertices, {len(faces)} cards, {shorten:.0%} length")
 
 
 def _close_mouth(body):
@@ -351,6 +355,7 @@ def test_face_project():
     _close_mouth(body)
     _lower_lids(body)
     _add_lashes(body)
+    _add_lashes(body, style="eyebrow001", kind="eyebrows", shorten=1.0, colour=(0.03, 0.02, 0.015))
     api = importlib.import_module("bl_ext.system.juststage.api")
     character = body.juststage.character_id
     # brows and lashes as strands (the hair module's MakeHuman CC0 grooms), dark brown: Principled Hair melanin
@@ -744,11 +749,16 @@ def test_face_project():
         eye_in = made["EnhancedEye"].inputs
         eye_in["IrisToEyeWhiteRelation"].default_value = 0.40
         eye_in["PupilSize"].default_value = 0.27
-        eye_in["IrisMajorColor"].default_value = (*np.clip(major * 1.8, 0, 1), 1.0)  # the painting's iris is lit head-on
-        eye_in["IrisMinorColor"].default_value = (*np.clip(minor * 1.8, 0, 1), 1.0)
+        # calibrated like the skin (2026-10-30, round 27 against the painting, linear light measured at MediaPipe's iris
+        # and lid points): our iris read greyer and lighter, our white cooler and darker than the painting's
+        iris_gain = np.array([1.0, 0.78, 0.82])
+        eye_in["IrisMajorColor"].default_value = (*np.clip(major * 1.8 * iris_gain, 0, 1), 1.0)  # lit head-on in the painting
+        eye_in["IrisMinorColor"].default_value = (*np.clip(minor * 1.8 * iris_gain, 0, 1), 1.0)
         eye_in["IrisSection4Color"].default_value = (*np.clip(minor * 0.9, 0, 1), 1.0)  # a softer limbal ring
         eye_in["InnerLayerRoughness"].default_value = 0.35  # a glossy iris mirrored the grey studio
-        eye_in["EyeWhiteColor"].default_value = (0.50, 0.45, 0.42, 1.0)
+        # the white beside the iris (MediaPipe's iris edge × 1.25–1.6 toward each corner, linear): the painting's
+        # (0.230, 0.165, 0.138) against round 27's (0.122, 0.106, 0.098) — (0.50, 0.45, 0.42) × (1.89, 1.56, 1.41)
+        eye_in["EyeWhiteColor"].default_value = (0.94, 0.70, 0.59, 1.0)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
         if os.environ.get("EYE_STYLE", "mpfb") == "mh":  # rounds 30–31: its brown read red-orange; MPFB2 kept
             import zipfile
