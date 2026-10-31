@@ -25,6 +25,9 @@ DIR = Path("E:/Dev/3D/just-stage/.dev/facetest")
 MODEL = Path("E:/Dev/3D/just-stage/.dev/cache/mediapipe/face_landmarker.task")
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
 GRID = 64  # the warp is solved on a coarse grid and smoothly scaled up to the full picture
+#: MediaPipe's inner lip ring, left out of the warp: the head's lips are closed (face_shape.py), so there is no inner
+#: edge to find on the clay - the detector guesses one at the crease, and the warp pulled the painting's lips apart
+INNER_LIPS = (78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191)
 
 
 def landmarks(detector, path: Path) -> np.ndarray | None:
@@ -47,8 +50,9 @@ def warp(painted: np.ndarray, clay_pts: np.ndarray, painted_pts: np.ndarray) -> 
             np.c_[np.zeros(8), h - edge * h],
         ]
     )
-    src = np.vstack([clay_pts, border])
-    dst = np.vstack([painted_pts, border])
+    keep = np.setdiff1d(np.arange(len(clay_pts)), INNER_LIPS)
+    src = np.vstack([clay_pts[keep], border])
+    dst = np.vstack([painted_pts[keep], border])
     rbf = RBFInterpolator(src, dst, kernel="thin_plate_spline", smoothing=0.3)  # tight: the lips need it
     gy, gx = np.mgrid[0 : h : complex(GRID), 0 : w : complex(GRID)]
     coarse = rbf(np.c_[gx.ravel(), gy.ravel()]).reshape(GRID, GRID, 2).astype(np.float32)

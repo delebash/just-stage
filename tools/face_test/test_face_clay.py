@@ -1,21 +1,26 @@
 # SPDX-FileCopyrightText: 2026 JustStage contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Face test, stage 1 (processor only): the character, seven cameras around its head, a clay picture and a depth
-picture from each, the cameras saved.
+"""Face test, stage 1 (processor only): the character (lips closed, lids to the iris - face_shape.py), ten cameras
+around its head, a clay picture and a depth picture from each, the cameras saved.
 
 Run: python tools/dev.py test tools/face_test/test_face_clay.py -k face_clay -s
 """
 
 import importlib
+import importlib.util
 import json
 import math
 import time
+from pathlib import Path
 
 import bpy
 from mathutils import Vector
 
 api = importlib.import_module("bl_ext.system.juststage.api")
+_spec = importlib.util.spec_from_file_location("face_shape", str(Path(__file__).with_name("face_shape.py")))
+face_shape = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(face_shape)
 OUT = "E:/Dev/3D/just-stage/.dev/facetest/"
 HEAD = Vector((0.0, -0.06, 1.615))
 FACE = Vector((0.0, -0.10, 1.585))  # between the eyes and the nose tip
@@ -60,6 +65,8 @@ def test_face_clay():
     api.run("juststage.head.add_parts", character=c)
     api.run("juststage.skin.set_tone", character=c, melanin=0.025)
     api.run("juststage.body.subdivide", character=c, levels=1, viewport_level=1)
+    face_shape.close_mouth(bpy.data.objects["Face"])  # the shape the paintings are projected onto
+    face_shape.lower_lids(bpy.data.objects["Face"])
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "GPU"

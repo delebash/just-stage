@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 42))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 46))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -145,54 +145,6 @@ def _render_linear(scene, path, size=512):
     return _pixels(path)[..., :3]
 
 
-def _lower_lids(body, upper=14.0, lower=5.0):
-    """The lids closer to the iris, as a shape key: our neutral eyes show white above and below the iris (a stare, or
-    eyes rolled up); a relaxed eye — and the AI's painting — has the upper lid over the iris' top and the lower lid at its
-    bottom. Lid skin over each eyeball turns about the eyeball's left-right axis (as a lid closes, so it can't pass
-    through the eye): the upper lid down, the lower lid up, most at each lid's edge (found per 10° slice across the eye),
-    none 35° away from it."""
-    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
-    co = build.shaped_coords(body).astype(np.float64)
-    key = body.shape_key_add(name="lids closer", from_mix=False)
-    moved = 0
-    for name in ("Face.eyeLeft", "Face.eyeRight"):
-        eye = bpy.data.objects[name]
-        ev = np.array([v.co for v in eye.data.vertices]) @ np.array(eye.matrix_world)[:3, :3].T + np.array(eye.matrix_world)[:3, 3]
-        centre = (ev.min(axis=0) + ev.max(axis=0)) / 2
-        radius = float((ev.max(axis=0) - ev.min(axis=0))[[0, 2]].mean() / 2)
-        rel = co - centre
-        dist = np.linalg.norm(rel, axis=1)
-        az = np.degrees(np.arctan2(rel[:, 0], -rel[:, 1]))
-        el = np.degrees(np.arctan2(rel[:, 2], np.hypot(rel[:, 0], rel[:, 1])))
-        near = (dist > radius * 0.9) & (dist < radius + 0.012) & (rel[:, 1] < 0) & (np.abs(az) < 45)
-        touching = near & (dist < radius + 0.004)
-        ang = np.zeros(len(co))
-        edges = []
-        for a0 in range(-40, 40, 10):
-            in_bin = (az >= a0) & (az < a0 + 10)
-            up_edge = el[touching & in_bin & (el > 3)]
-            lo_edge = el[touching & in_bin & (el < -3)]
-            fade = max(0.0, 1.0 - (abs(a0 + 5) - 25) / 15) if abs(a0 + 5) > 25 else 1.0  # less toward the corners
-            if up_edge.size:
-                m = float(up_edge.min())
-                w = np.clip(1.0 - (el - m) / 35.0, 0.0, 1.0) * (el >= m - 2.0)
-                ang += np.where(in_bin & near, np.radians(upper) * w * fade, 0.0)
-                edges.append(round(m, 1))
-            if lo_edge.size:
-                m = float(lo_edge.max())
-                w = np.clip(1.0 - (m - el) / 35.0, 0.0, 1.0) * (el <= m + 2.0)
-                ang -= np.where(in_bin & near, np.radians(lower) * w * fade, 0.0)
-        y, z = rel[:, 1], rel[:, 2]
-        new_y = y * np.cos(ang) - z * np.sin(ang)
-        new_z = y * np.sin(ang) + z * np.cos(ang)
-        for i in np.flatnonzero(ang != 0):
-            key.data[i].co.y += float(new_y[i] - y[i])
-            key.data[i].co.z += float(new_z[i] - z[i])
-        moved += int((ang != 0).sum())
-        print(f"  {name}: upper lid edges {edges}°")
-    key.value = 1.0
-    print(f"lids closer: {moved} vertices (upper {upper}°, lower {lower}° at the edges)")
-
 def _eye_shells(body):
     """The eye's layer stack as CC5 and MetaHuman build it (research §5a): an occlusion shell — a skin 0.15 mm over the
     eyeball, clear in the middle and darkening toward the lids (the soft shadow where lid meets eye) — with the tear line
@@ -283,7 +235,7 @@ def _eye_shells(body):
 LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
 
 
-def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour=(0.012, 0.009, 0.008)):  # 01: the short set
+def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour=(0.012, 0.009, 0.008), lower=False):
     """MakeHuman's lash cards (its CC0 system assets: a strip mesh, an MHCLO binding to hm08, a lash texture with
     transparency) fitted to our head by MHCLO — MakeHuman's own way, and the card lashes CC5 and MetaHuman use. Fitted
     after the lid keys, so they sit on the lids as shaped."""
@@ -301,10 +253,15 @@ def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour
             uvs.append([float(x) for x in line.split()[1:3]])
         elif line.startswith("f "):
             faces.append([tuple(int(x) - 1 if x else -1 for x in (c.split("/") + [""])[:2]) for c in line.split()[1:]])
-    if shorten < 1.0:
-        skin = build.shaped_coords(body)[:13380]  # the body's own vertices, not its helpers
-        near = np.array([skin[np.argmin(np.linalg.norm(skin - v, axis=1))] for v in co])
-        co = near + (co - near) * shorten
+    skin = build.shaped_coords(body)[:13380]  # the body's own vertices, not its helpers
+    near = np.array([skin[np.argmin(np.linalg.norm(skin - v, axis=1))] for v in co])
+    co = near + (co - near) * shorten
+    if not lower:  # eyelashes01's texture holds two upper strips (its top half) and two lower ones (bottom right): a card
+        # is a lower lash when its UV centre lies there (the root-height rule dropped most upper cards too - round 45)
+        centre = [np.mean([uvs[c[1]] for c in face], axis=0) for face in faces]
+        down = [v < 0.41 or u > 0.74 for u, v in centre]
+        faces = [face for face, d in zip(faces, down) if not d]
+        print(f"{kind}: {sum(down)} lower cards dropped")
     mesh = bpy.data.meshes.new(f"{body.name} {style}")
     mesh.from_pydata(co.tolist(), [], [[c[0] for c in f] for f in faces])
     layer = mesh.uv_layers.new(name="UVMap")
@@ -322,9 +279,10 @@ def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour
     tex.image = bpy.data.images.load(tex_path)
     bsdf.inputs["Base Color"].default_value = (*colour, 1.0)  # dark brown-black hair
     bsdf.inputs["Roughness"].default_value = 0.45
+    bsdf.inputs["Specular IOR Level"].default_value = 0.0  # the asset's .mhmat: specularColor 0 0 0
     nt.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
     mesh.materials.append(mat)
-    obj.visible_shadow = True
+    obj.visible_shadow = False  # the asset's .mhmat: castShadows False
     print(f"{kind}: {style}, {len(co)} vertices, {len(faces)} cards, {shorten:.0%} length")
 
 
@@ -347,35 +305,13 @@ def _pad(img, mask, px=16):
     return out
 
 
-def _close_mouth(body):
-    """The lips closed as a shape key: our head's neutral mouth is a slit ~0.9 mm tall at its middle (measured by rays
-    from the face camera; teeth behind it), the AI paints it closed. Upper lip down, lower lip up, most at the slit,
-    fading out by ~4 mm and toward the corners (±24 mm)."""
-    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
-    co = build.shaped_coords(body).astype(np.float64)
-    x, y, z = co[:, 0], co[:, 1], co[:, 2]
-    z_mid = 1.5484  # where the lips meet, middle and corners (measured)
-    half = np.clip(1.0 - (x / 0.024) ** 2, 0.0, 1.0)
-    gap = 0.0016 * half
-    near = (np.abs(x) < 0.027) & (y < -0.138) & (np.abs(z - z_mid) < 0.012)
-    shift = (gap / 2 + 0.0004 * half) * np.exp(-(((z - z_mid) / 0.005) ** 2)) * near
-    shift += 0.12 * np.abs(z - z_mid) * half * near * (np.abs(z - z_mid) < 0.010)  # thinner lips
-    key = body.shape_key_add(name="mouth closed", from_mix=False)  # the basis plus this offset only
-    dz = np.where(z > z_mid, -shift, shift)
-    for i in np.flatnonzero(near):
-        key.data[i].co.z += dz[i]
-    key.value = 1.0
-    print(f"mouth closed: {near.sum()} vertices, at most {shift.max() * 1000:.2f} mm")
-
-
 def test_face_project():
     t0 = time.time()
     bpy.ops.wm.open_mainfile(filepath=DIR + "face.blend")
     body = bpy.data.objects["Face"]
-    _close_mouth(body)
-    _lower_lids(body)
     _add_lashes(body)
-    _add_lashes(body, style="eyebrow012", kind="eyebrows", shorten=1.0, colour=(0.09, 0.065, 0.048))  # straight, sparse, mid-brown
+    # brows: the painted ones in the skin - MakeHuman's brow cards (010, 011, 012, masked or not) all sat higher and more
+    # arched than the painting's and doubled them; without cards the painted brows read as hair (round 43 trials)
     api = importlib.import_module("bl_ext.system.juststage.api")
     character = body.juststage.character_id
     # brows and lashes as strands (the hair module's MakeHuman CC0 grooms), dark brown: Principled Hair melanin
@@ -498,17 +434,8 @@ def test_face_project():
         albedo[rim] = np.median(albedo[near_rim], axis=0) * np.array([0.9, 0.78, 0.78])
         nrm[rim] = normals[rim]
     print(f"  lid rim: {rim.sum()} texels take the rim's colour")
-    # the lips' contact: the inner lip surfaces (facing up or down, at the mouth line) got pale colours from views that
-    # saw teeth or the gap; they take the lips' own colour, darker — the line where real lips meet
-    z_mouth = 1.5484  # where the lips meet (measured, _close_mouth)
-    inner_lip = (np.abs(points[:, 0]) < 0.026) & (np.abs(points[:, 2] - z_mouth) < 0.0025) & (points[:, 1] < -0.135) & (
-        np.abs(normals[:, 2]) > 0.5)
-    lip_skin = (np.abs(points[:, 0]) < 0.02) & (np.abs(points[:, 2] - z_mouth) < 0.006) & (points[:, 1] < -0.14) & (
-        ~inner_lip) & covered
-    if lip_skin.any():
-        albedo[inner_lip] = np.median(albedo[lip_skin], axis=0) * np.array([0.55, 0.42, 0.42])
-        nrm[inner_lip] = normals[inner_lip]
-    print(f"  lips' contact: {inner_lip.sum()} texels")
+    # the lips' contact takes the painting's own colours: the clay views now have the closed lips (face_shape.py), so no
+    # view sees teeth or a gap there (round 44: the flat colour that replaced them read as a strip under the upper lip)
     t = np.clip((points[:, 2] - FADE_FROM) / (FADE_TO - FADE_FROM), 0.0, 1.0)
     fade = (t * t * (3 - 2 * t)) * np.clip(low_w / (0.4 * np.median(low_w[covered])), 0.0, 1.0) ** 2  # grazing-only texels fade to the skin's median
     face_zone = covered & (points[:, 2] > 1.5) & (fade > 0.9)
@@ -798,7 +725,7 @@ def test_face_project():
         next(n for n in cc.nodes if n.type == "VALUE").outputs[0].default_value = 0.46
         eye_in = made["EnhancedEye"].inputs
         eye_in["IrisToEyeWhiteRelation"].default_value = 0.40
-        eye_in["PupilSize"].default_value = 0.27
+        eye_in["PupilSize"].default_value = 0.16
         # calibrated like the skin (2026-10-30, round 27 against the painting, linear light measured at MediaPipe's iris
         # and lid points): our iris read greyer and lighter, our white cooler and darker than the painting's
         iris_gain = np.array([1.0, 0.78, 0.82])
@@ -813,6 +740,14 @@ def test_face_project():
         # (0.230, 0.165, 0.138) against round 27's (0.122, 0.106, 0.098) — (0.50, 0.45, 0.42) × (1.89, 1.56, 1.41)
         eye_in["EyeWhiteColor"].default_value = (0.94, 0.70, 0.59, 1.0)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
+        # the white darkened toward the lids and corners by ambient occlusion within 6 mm (the cornea is split off below,
+        # so only the lids occlude): our white read as one flat colour; 6 mm brought its brightest tenth to 0.258
+        # against the painting's 0.248, from 0.287 (round 45 trials, linear, face view)
+        ao = e_mat.node_tree.nodes.new("ShaderNodeAmbientOcclusion")
+        ao.inputs["Color"].default_value = eye_in["EyeWhiteColor"].default_value
+        ao.inputs["Distance"].default_value = 0.006
+        ao.samples, ao.only_local = 16, False
+        e_mat.node_tree.links.new(ao.outputs["Color"], eye_in["EyeWhiteColor"])
         if os.environ.get("EYE_STYLE", "mpfb") == "mh":  # rounds 30–31: its brown read red-orange; MPFB2 kept
             import zipfile
 
@@ -858,6 +793,21 @@ def test_face_project():
                 c_nt.links.new(c_nt.nodes.new("ShaderNodeBsdfTransparent").outputs["BSDF"], c_mix.inputs[1])
                 c_nt.links.new(c_gloss.outputs["BSDF"], c_mix.inputs[2])
                 c_nt.links.new(c_mix.outputs["Shader"], c_out.inputs["Surface"])
+        # the cornea as its own object, unseen by shadow and diffuse rays: the white's ambient occlusion then sees only the
+        # lids (with the shell in the eye's object it turned the white black - round 45 trials); the catch light still
+        # reaches it (light linking)
+        cornea_ids = [i for i, sl in enumerate(eye.material_slots) if sl.material and "Cornea" in sl.material.name]
+        shell = eye.copy()
+        shell.data, shell.name = eye.data.copy(), f"{eye_name} cornea"
+        scene.collection.objects.link(shell)
+        for obj, keep in ((eye, False), (shell, True)):
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            bmesh.ops.delete(bm, geom=[f for f in bm.faces if (f.material_index in cornea_ids) != keep], context="FACES")
+            bm.to_mesh(obj.data)
+            bm.free()
+        shell.visible_shadow = shell.visible_diffuse = False
+        receivers.objects.link(shell)
         colour = np.zeros((1, 3)) + major  # for the print below
         white = np.array([True])
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")

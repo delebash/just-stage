@@ -512,6 +512,37 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            `round.blend`: it stays with the relief map off and goes with a flat colour - it is in the albedo; not in
            left40's or left90's light-free paintings (only the AI's natural neck creases there) - another view's edge
            (perhaps `below`); left open, small.
+           ROUND 43 2026-10-31 (after a compaction the user, verbatim: "you auto compacted to re read rules docs session
+           nots your rec go"). Trials on `round.blend` measured against the painting (face view): the brow cards rendered
+           as a grey film - MakeHuman's own `.mhmat` for these cards says "specularColor 0 0 0", "castShadows False", ours
+           had the default shine and cast shadows; with that fixed and the card masked like a hair card, every MakeHuman
+           brow set (010, 011, 012) still sat higher and more arched than the painting's brows and doubled them - with no
+           cards, the painted brows in the skin read as hair (kept: no brow cards; the lash cards take the `.mhmat`'s no
+           shine, no shadow). The pupil 33 px wide against the painting's 21 (PupilSize 0.27; 0.14 gave 18, 0.20 gave 26)
+           -> 0.16. The lower lash cards dropped (the painting shows none). The white over all its visible pixels has the
+           painting's hue, ~20% darker - kept (a neutral white measured at one spot read lavender). The full Fresnel
+           cornea greyed the eye - 0.3 kept. Lips (MediaPipe, per eye-corner span): upper 0.090 -> 0.086 (painting 0.080),
+           lower 0.133 -> 0.130 (0.122), width 0.594 -> 0.585 (0.557), the seam 0.025 -> 0.031 (0.004) - barely moved:
+           the clay views were rendered with the head's open mouth and lids, so the landmark warp stretched the painting's
+           closed lips open again (the pale band between the lips), and the depth test ran on the old shape. Next (round
+           44): the mouth and lid shape keys moved to `face_shape.py` and applied before the clay and depth renders, so
+           the paintings are aligned to and projected onto the same surface; the open-mouth stage kept in
+           `.dev/facetest/round43_open_mouth/` (what FLUX 3 painted from).
+           ROUNDS 44-45 2026-10-31: the clay and depth views re-rendered with the lips closed and the lids lowered
+           (`face_shape.py`, applied in `test_face_clay.py`); MediaPipe's 20 inner-lip points left out of the warp (a
+           closed mouth has no inner edge on the clay - the detector guessed one at the crease, 0.051 against the
+           painting's 0.004). The lips' seam went 0.031 -> 0.003 (painting 0.004), width 0.585 -> 0.562 (0.557), nose to
+           mouth 0.164 -> 0.177 (0.172), mouth to chin 0.277 -> 0.286 (0.304); the pale band between the lips gone. The
+           flat contact colour over the inner lips removed (it read as a strip once the projection lined up). The eye's
+           shape measured against the painting: opening/width 0.340 vs 0.339, the same lid cover over the iris, tilt +8.0
+           vs +6.5 degrees - the eye's shape is not the difference. Its white was one flat colour: ambient occlusion within
+           6 mm (Cycles' AO node) darkens it toward the lids and corners - with the cornea shell in the eye's object AO
+           turned the white black, so the cornea is split into its own object, unseen by shadow and diffuse rays (still
+           light-linked to the catch light); its brightest tenth 0.258 vs the painting's 0.248 (0.287 before). The lower
+           lash cards: by tip direction 100 dropped but forward-pointing lower cards stayed (dark marks on the lower lid);
+           by root height 169 dropped, the upper ones too (round 45); now by eyelashes01's texture layout (upper strips on
+           its top half, lower strips bottom right): 88 lower, 96 upper. Still: the upper lip 0.086 vs 0.080 and the lower
+           0.128 vs 0.122; the painting's hooded upper lid (a fold over the lid, shading the eye) - shape our head lacks.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

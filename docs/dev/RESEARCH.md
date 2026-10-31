@@ -1703,6 +1703,14 @@ working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-resea
   "explicitly released as CC0 in september 2020") carry lash cards `eyelashes01`–`04` (.obj + .mhclo to hm08 + RGBA
   .png) and brow cards; `eyelashes02` fitted by our `core/mhclo.fit`: 250 vertices, 184 cards, z 1.611–1.628, in front
   of the cornea — on the lids.
+- MakeHuman's own material files for these cards (`eyelashes01.mhmat`, `eyebrow012.mhmat`, read 2026-10-31):
+  "specularColor 0 0 0", "transparent True", "backfaceCull False", "castShadows False", "receiveShadows True", the
+  card's PNG as `diffuseTexture` (its RGB near black; the hair is in its alpha). A Principled BSDF left at its default
+  specular and casting shadows renders a brow card as a grey film (face test round 43). Brow sets' coverage (alpha >
+  0.05 share of the 512² map): 006 0.040, 007 0.050, 011 0.078, 001 0.106 … 012 0.161, 009 0.322.
+- Painted views must be aligned to, and depth-tested against, renders of the same surface they are projected onto: the
+  face test's clay views had the head's open mouth while the paintings closed it, and the 478-point landmark warp
+  stretched the painted lips open again (round 43).
 - Scanned pores: three.js ships the Lee Perry-Smith head scan (`examples/models/gltf/LeePerrySmith/`: a 4096²
   displacement JPEG, a 1024² tangent normal, 1024² colour and specular; "Infinite, 3D Head Scan by Lee Perry-Smith is
   licensed under a Creative Commons Attribution 3.0 Unported License … always mention where you got them from"). Its
