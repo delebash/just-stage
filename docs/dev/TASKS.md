@@ -576,6 +576,28 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (rec 5, "true displacement ... relief from pictures"): check the normal map carries the lid fold, then the
            paintings' normals as geometry - Nehab et al. 2005 (positions + normals, one sparse solve) on the subdivided
            head.
+           ALIGNMENT AND THE AUDIT - APPROVED 2026-10-31. The user, verbatim: "what are you using mediapipe for from my
+           searches it is not the best and is old, are you sure you should be using it?"; "so how come you are using
+           mediapipe … do we need to again re-eavalute all your choices in tools and methods … how do we fix this?";
+           "so your rec think adversially on it first", then "go". The rec as shown: (1) on top of the coarse warp, the
+           standard local fix - optical flow between each painting's light-free colours and a light-free render of the
+           textured head from the other views (Floating Textures, EG 2008; Dellepiane et al., TVCG 2012), OpenCV's DIS
+           flow first, RAFT if needed; (2) the coarse warp - MediaPipe's 478 points against RealDenseFace's 5,023 (which
+           also reads the two profile views MediaPipe can't) - decided by (3) a leave-one-out judge: every view but one
+           projected, rendered at that one's camera, compared on structure with its light-free painting, sharpness
+           checked apart (colour agreement where views overlap rewards blur - the attack's change). And the audit: every
+           job in the pipeline, its tool, the logged search that chose it or NOT RESEARCHED, its measured number; every
+           NOT RESEARCHED job researched the user's way (plain, "X vs Y", alternatives, leaderboards, named candidates on
+           GitHub / arXiv / Hugging Face; code read; measured here) before more is built on it.
+           ROUND 48 2026-10-31 - the relief as geometry (`relief_geometry.py`, Nehab et al. 2005 on the texel grid, 1.2M
+           texels solved in 73 s; heights -3.0 to +2.6 mm, 1st-99th percentile) rendered with Blender 5.3's adaptive
+           subdivision: NO GAIN, OFF by default (`RELIEF_GEOMETRY=1` turns it on). The eye area is unchanged - checked
+           after the fact (the check was planned first and skipped): Sapiens2's raw normals of the close painting show the
+           eyeball and the lid's edge but no hooded fold above it, and the normals we project differ from them by ~5 deg -
+           the fold is in the painting's colour and shading, not in its relief. The displacement tore the lips' contact
+           (ridges) and spiked the ears' hollows. The light fit moved (azimuth -45 deg, 1.6 m, fill 1.0, error 0.111).
+           The research step that day: `../plans/2026-10-31-choices-audit.md` - four researched recs never built (flow
+           alignment, seam levelling, the eye layer stack, expression transfer); the order of work recorded there.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

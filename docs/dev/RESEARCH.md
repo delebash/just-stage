@@ -1715,6 +1715,57 @@ tagged "other"), no face-specific comparison found):
 - For a mesh whose broad shape is right and whose normals carry the detail - our head with the paintings' projected
   normal map - Nehab et al.'s method is the standard: vertex positions solved so the surface's tangents are
   perpendicular to the target normals, held near the original positions; one sparse linear solve.
+
+*web, 2026-10-31* - is MediaPipe the right tool for aligning the paintings? (the user: "from my searches it is not the
+best and is old, are you sure you should be using it?"). Queries: "best face landmark detection model 2026 more
+accurate than mediapipe" -> no 2026 landmark model benchmarked against MediaPipe on 300W/WFLW found; one comparison
+table (detection: RetinaFace 0.95 at ~1 FPS vs MediaPipe 0.94 at 36 FPS; MediaPipe's landmark stage 0.88 +/- 0.15); a
+surgical-setting study (arXiv 2507.18248): lighting and head pose are the known weak points; SCRFD's weights
+non-commercial; "dense face alignment correspondence model open source 2026 dense landmarks" -> only older dense
+methods (PIFA 2017, DenseReg 2017, 2DASL 2019); "align generated face image to 3D render dense correspondence warp
+texture projection" -> Yu et al. ICCV 2017 (a learned per-pixel flow plus a matchability mask between a photo and a
+rendered 3D face model), a 3D spatial transformer network (learned TPS + camera), landmark warp then dense optical
+flow refinement, morphable-model correspondence by projection and TPS. Not found: a source on aligning AI-generated
+images to renders specifically. RealDenseFace (2026; first on the NeRSemble single-view board; already measured here)
+is the modern form of Yu et al.'s idea: dense per-pixel correspondence to a head model.
+- The user's pasted search answer (2026-10-31, a Google AI answer on video face mocap for Unreal), checked: RealDenseFace
+  first on NeRSemble's single-view board, dense UV correspondence + relative depth, fitted to FLAME, real time - matches
+  its README and code read here (its README: "80+ FPS" online; the answer's "84+ FPS on an RTX 4090" and "CVPR 2026" not
+  verified - only arXiv 2608.09238 seen); labels the answer omits: code MIT, weights trained on Ava-256 (CC BY-NC), its
+  code expects the academic FLAME 2023 file, its solver is CUDA-only. NeuFace is a method for 3D face pseudo-labels on
+  videos (TMLR 2024, ICLR 2025 poster; FLAME through DECA) - code and licence not found (arXiv 2310.03205); DECA and
+  EMOCA need FLAME 2020 (non-commercial). Other FLAME video trackers found: philgras/video-head-tracker (CC BY-NC 3.0),
+  Pixel3DMM (CC BY-NC 4.0). Search note: our search tool's extended query "is there a better face point model than
+  mediapipe 2026 RealDenseFace vs MediaPipe face tracking alternatives" returned only SDK vendors' pages (Banuba,
+  visage|SDK 151 points, OpenSeeFace) and not RealDenseFace - named-candidate, leaderboard and GitHub/arXiv/Hugging
+  Face searches find what plain queries miss here.
+
+*web, 2026-10-31* - anything new from Apple for face capture? (the user: "is apple iphone have anthing new since ai
+boom"). Queries: "WWDC 2026 ARKit face tracking new features" (only a visionOS 27 ARKit summary - Vision Pro, no face
+tracking named - and 2017-2021 material); "iPhone face capture 2026 MetaHuman Animator Live Link Face update depth";
+"Apple Vision framework face landmarks 2026 new API iOS 26 face tracking blendshapes" (`FaceObservation.Landmarks2D`
+from iOS 18; one forum report of iOS 26 landmark coordinates outside [0,1]); "iPhone 17 TrueDepth camera face tracking
+improvements ARKit blendshapes 2025 2026" (nothing specific); developer.apple.com "ARKit iOS 26 what's new face tracking
+ARFaceAnchor" (ARFaceAnchor: 52 blend shapes, 60 updates a second, gaze since ARKit 2, multiple faces, ARKit 5's better
+accuracy - no iOS 26 change found); Epic's sites "MetaHuman Animator monocular video webcam Android audio driven
+animation release notes":
+- Apple: no new face-capture API found for iOS 26 / WWDC 2026 - ARKit's face tracking (TrueDepth, 52 blend shapes) is
+  as it was; a search gap, not proof.
+- Epic, since 2025: MetaHuman 5.6 - MetaHuman Animator in real time from mono cameras (most webcams, many phones,
+  Android through Live Link) and from audio alone (with the speaker's emotion and plausible head movement); 5.7 notes -
+  its mode on iOS devices without TrueDepth; 5.8 - Live Link Face for Android (take recording, RTSP streaming), RTSP on
+  iOS too, a new real-time audio-driven model, single-camera body capture (Fab plugin, Windows, offline, experimental).
+  Device advice in Epic's docs: iPhone 12 or newer, 16 / 16 Pro recommended.
+
+*web, 2026-10-31* - the standard fix for misaligned projected pictures. Queries: "Floating Textures Eisemann optical
+flow multi-view texture projection misalignment" -> Eisemann et al., Floating Textures (Computer Graphics Forum 27(2)
+409-418, Eurographics 2008 best student paper, doi 10.1111/j.1467-8659.2008.01138.x): projective texturing from several
+views with imprecise geometry or cameras gives blur and ghosting; it computes optical flow between the projected
+textures and warps them to agree; Dellepiane et al. (IEEE TVCG 2012, "Flow-based local optimization for image-to-geometry
+projection"): flow between overlapping images fixes the local misregistration that shows as ghosting or as jumps where
+one camera's part meets another's; "multi-view texture mapping misaligned images optical flow correction latest method
+2025 2026" -> Volino et al. (BMVC 2014): surface-based optical flow between views for multi-layer texture video; no
+2025-2026 method found (a search gap; newer work may sit under neural textures or Gaussian splatting).
 - **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
   Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
   `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.

@@ -34,6 +34,9 @@ up = importlib.import_module("bl_ext.system.juststage.core.uv_projection")
 _spec = importlib.util.spec_from_file_location("mpfb_nodes", str(Path(__file__).with_name("mpfb_nodes.py")))
 mpfb_nodes = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mpfb_nodes)
+_spec = importlib.util.spec_from_file_location("relief_geometry", str(Path(__file__).with_name("relief_geometry.py")))
+relief_geometry = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(relief_geometry)
 MPFB_EYES = "E:/Dev/3D/just-stage/.dev/cache/mpfb2_nodes/procedural_eyes.json"  # mpfb2 6ff1eb35 data/node_trees
 sd = importlib.import_module("bl_ext.system.juststage.core.skin_detail")
 DIR = "E:/Dev/3D/just-stage/.dev/facetest/"
@@ -45,7 +48,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 47))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 48))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -479,6 +482,54 @@ def test_face_project():
     nmap = nodes.new("ShaderNodeNormalMap")
     nmap.space = "OBJECT"
     links.new(normal_tex.outputs["Color"], nmap.inputs["Color"])
+    # off by default: round 48 measured no gain - the paintings' normals (Sapiens2) carry no hooded fold over the lid
+    # (raw vs ours ~5 deg apart; neither shows it), and the displacement tore the lips' contact and spiked the ears
+    if os.environ.get("RELIEF_GEOMETRY", "0") == "1":
+        # the paintings' relief as geometry (relief_geometry.py, Nehab et al. 2005): heights along the mesh normal that
+        # give the surface the paintings' normals - the lid's fold, the brow ridge, the lips - so they cast shadows and
+        # turn edges, not only shade (rec 5); solved at half the maps' resolution (0.55 mm texels); none at the eyes'
+        # rims (the lids stay on the eyeballs) or the lips' contact (the mouth stays closed)
+        t_relief = time.time()
+        target_map = np.zeros((SIZE, SIZE, 3), np.float32)
+        target_map[mask] = nrm
+        mesh_map = np.zeros((SIZE, SIZE, 3), np.float32)
+        mesh_map[mask] = normals
+        keep = np.clip((eye_gap - 0.0015) / 0.004, 0.0, 1.0)
+        keep *= 1.0 - np.exp(-(((points[:, 2] - 1.5484) / 0.0025) ** 2)) * (np.abs(points[:, 0]) < 0.03)
+        keep_map = np.zeros((SIZE, SIZE), np.float32)
+        keep_map[mask] = keep
+        half = mask[::2, ::2]
+        lift = relief_geometry.heights(pos_map[::2, ::2].astype(np.float64), mesh_map[::2, ::2].astype(np.float64),
+                                       target_map[::2, ::2].astype(np.float64), half,
+                                       max_step=0.003) * keep_map[::2, ::2]
+        lift = np.repeat(np.repeat(lift, 2, axis=0), 2, axis=1)
+        lift[~mask] = 0.0
+        lift = _pad(lift, mask)
+        print(f"relief as geometry: heights {np.percentile(lift[mask], 1) * 1000:+.2f} to {np.percentile(lift[mask], 99) * 1000:+.2f} mm "
+              f"(1st-99th percentile), {time.time() - t_relief:.0f}s")
+        disp_img = bpy.data.images.new("face displacement", SIZE, SIZE, alpha=False, float_buffer=True)
+        disp_img.colorspace_settings.name = "Non-Color"
+        rgba = np.ones((SIZE, SIZE, 4), dtype=np.float32)
+        rgba[..., :3] = lift[..., None]
+        disp_img.pixels.foreach_set(rgba[::-1].ravel())
+        disp_img.filepath_raw = DIR + "face_displacement.exr"
+        disp_img.file_format = "OPEN_EXR"
+        disp_img.save()
+        disp_tex = nodes.new("ShaderNodeTexImage")
+        disp_tex.image = disp_img
+        disp_tex.interpolation = "Cubic"
+        disp = nodes.new("ShaderNodeDisplacement")
+        disp.space = "OBJECT"
+        disp.inputs["Midlevel"].default_value = 0.0
+        disp.inputs["Scale"].default_value = 1.0
+        links.new(disp_tex.outputs["Color"], disp.inputs["Height"])
+        out_node = next(n for n in nodes if n.type == "OUTPUT_MATERIAL")
+        links.new(disp.outputs["Displacement"], out_node.inputs["Displacement"])
+        mat.displacement_method = "DISPLACEMENT"  # the object-space normal map already gives the shading normal
+        subsurf = next((m for m in body.modifiers if m.type == "SUBSURF"), None) or body.modifiers.new("Subdivision", "SUBSURF")
+        subsurf.use_adaptive_subdivision = True  # Blender 5.3: diced to the pixel at render
+        subsurf.adaptive_space = "PIXEL"
+        subsurf.adaptive_pixel_size = 1.0
 
     lum_map = albedo_map @ lum
     pad = 13
