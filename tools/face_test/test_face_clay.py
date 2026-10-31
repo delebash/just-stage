@@ -65,8 +65,10 @@ def test_face_clay():
     api.run("juststage.head.add_parts", character=c)
     api.run("juststage.skin.set_tone", character=c, melanin=0.025)
     api.run("juststage.body.subdivide", character=c, levels=1, viewport_level=1)
+    face_shape.export_neutral(bpy.data.objects["Face"], f"{OUT}head_neutral.npz")  # for flame_fit.py
     face_shape.close_mouth(bpy.data.objects["Face"])  # the shape the paintings are projected onto
     face_shape.lower_lids(bpy.data.objects["Face"])
+    face_shape.apply_fit(bpy.data.objects["Face"], f"{OUT}fit_offsets.npz")  # the painted person (flame_fit.py)
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "GPU"

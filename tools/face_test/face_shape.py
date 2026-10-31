@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2026 JustStage contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Face test: the head's shape for the whole test - the lips closed and the lids brought to the iris, as shape keys.
-Applied before the clay and depth pictures (test_face_clay.py), so the paintings are aligned to, and projected onto,
-the same surface (round 43: the clay's open mouth stretched the painting's closed lips into a pale band between them).
+"""Face test: the head's shape for the whole test - the lips closed, the lids brought to the iris and the painted
+person's shape (flame_fit.py), as shape keys. Applied before the clay and depth pictures (test_face_clay.py), so the
+paintings are aligned to, and projected onto, the same surface (round 43: the clay's open mouth stretched the
+painting's closed lips into a pale band between them).
 """
 
 import importlib
@@ -84,3 +85,37 @@ def lower_lids(body, upper=14.0, lower=5.0):
         print(f"  {name}: upper lid edges {edges}°")
     key.value = 1.0
     print(f"lids closer: {moved} vertices (upper {upper}°, lower {lower}° at the edges)")
+
+
+def export_neutral(body, path):
+    """Our head before any of these shape keys (vertices and triangles, world = object space here), for flame_fit.py's
+    fit to our own surface."""
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    co = build.shaped_coords(body).astype(np.float64)
+    tris = [(p.vertices[0], p.vertices[i], p.vertices[i + 1]) for p in body.data.polygons for i in range(1, len(p.vertices) - 1)]
+    np.savez(path, co=co, faces=np.asarray(tris, np.int64))
+    print(f"neutral head: {len(co)} vertices, {len(tris)} triangles -> {path}")
+
+
+def apply_fit(body, path):
+    """The painted person's shape (flame_fit.py's offsets, from the neutral head) as one more additive shape key; each
+    eyeball moves with the face around it. Nothing when there is no fit yet."""
+    from pathlib import Path
+
+    from mathutils import Vector
+
+    if not Path(path).exists():
+        print("painted person: no fit yet")
+        return
+    fit = np.load(path)
+    offsets = fit["offsets"].astype(np.float64)
+    key = body.shape_key_add(name="painted person", from_mix=False)
+    for i in np.flatnonzero(np.linalg.norm(offsets, axis=1) > 1e-6):
+        key.data[i].co += Vector(offsets[i])
+    key.value = 1.0
+    for name in ("Face.eyeLeft", "Face.eyeRight"):
+        eye = bpy.data.objects[name]
+        side = "left_eye" if eye.matrix_world.translation.x > 0 else "right_eye"  # FLAME's left is the scene's +x
+        eye.matrix_world.translation += Vector(fit[side].astype(np.float64))
+    moved = np.linalg.norm(offsets, axis=1)
+    print(f"painted person: {int((moved > 0.0005).sum())} vertices over 0.5 mm, at most {moved.max() * 1000:.1f} mm")

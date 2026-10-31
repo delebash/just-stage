@@ -1656,6 +1656,43 @@ questions on FLUX 3 and Krea 2:
   the whole card's peak 1,995 MiB with the desktop's 588. All keys load; four 512² maps out (2-channel UV correspondence
   and three 1-channel maps). Its `flame_assets.npz` holds FLAME's UVs and faces only (5,023 vertex UVs, 9,976 faces) —
   the mesh itself is `flame2023.pkl`, whose download page shows only a sign-in form (flame.is.tue.mpg.de, 2026-10-30).
+- **FLAME files, downloaded by the user and checked 2026-10-31** (`.dev/cache/flame/`, git-ignored; zips' sha256:
+  FLAME2023Open a6b4c3dc…, mediapipe_landmark_embedding 9b7f96d4…, FLAME_masks c196afeb…). `flame2023_Open.pkl` — its
+  readme: "available under a Creative Commons Attribution 4.0 International License", cite the FLAME paper in
+  publications — references only numpy and scipy's `csc_matrix` (read with `pickletools`, loaded by an allow-list
+  unpickler; no chumpy): `v_template` 5,023×3, `f` 9,976 triangles, `shapedirs` 5,023×3×400 (its
+  `supr_expression_metadata`: the last 100 are expressions, from the SUPR head, male — so 300 identity), `posedirs` 36,
+  5 joints (`J_regressor`, `kintree_table`), linear blend skinning. The masks (`FLAME_masks.pkl`, 14 regions: face,
+  lips, nose, eye regions, eyeballs, ears, scalp, neck, forehead, boundary) index the Open head and sit where they should
+  on it (lips' centre front-low, eyeballs ±0.032 m, ears ±0.076 m). The Mediapipe embedding: 105 MediaPipe points as
+  barycentric coordinates in FLAME triangles. The download page also offers, by the user's choice downloaded too:
+  FLAME 2023 academic (`flame2023.pkl`, `flame2023_no_jaw.pkl`), the FLAME 2020 Blender add-on, the texture space
+  (1.2 GB) — all non-commercial, for testing only; and D3DFACS registrations (`d3dfacs_alignments.zip`, 5,225,133,752
+  bytes, sha256 9b3b2255…, public link, the page's data licence; 47,384 PLY frames in FLAME topology, a folder per person and per FACS action-unit combination such as
+  `1+2+5`, 8.9 GB unpacked - kept zipped) for testing the face rig. Its other datasets (FaMoS, CoMA, VOCASET, LYHM)
+  link to their own sites with their own sign-ups. The page notes: RingNet needs FLAME 2019; DECA, EMOCA and GIF need
+  FLAME 2020; a converter maps FLAME 2023 academic expressions to the Open model's (not tested on older versions).
+  The page's code list: a TensorFlow fitting framework (sample FLAME; fit to 2D landmarks, 3D landmarks or registered
+  meshes; sample the texture space; VOCA templates), a Chumpy one (fit to scans), BFM-to-FLAME (convert Basel Face
+  Model colours and meshes), a PyTorch photometric fitting framework (fit FLAME to an image with a differentiable
+  renderer), PyTorch FLAME (load FLAME, landmarks embedded in its surface), RingNet, DECA, EMOCA, VOCA (speech-driven
+  animation of a FLAME template from audio), GIF (StyleGAN2 conditioned on FLAME renders), and the FLAME-Universe list
+  (github.com/TimoBolkart/FLAME-Universe). Datasets by sign-up on their own sites, for testing later: FaMoS
+  (tempeh.is.tue.mpg.de; 95 subjects x 28 dynamic expressions, 600K frames) for the face rig, VOCASET
+  (voca.is.tue.mpg.de; 12 subjects x 40 speech sequences with audio) for lip-sync; CoMA (coma.is.tue.mpg.de; 12 subjects,
+  12 extreme expressions); LYHM (York Headspace; 1,216 neutral scans) - licences not read.
+  Their download pages, read signed in (2026-10-31): FaMoS - FLAME registrations in 7 7z volumes (6 x 10.7 GB +
+  3.2 GB, all needed to extract, 108 GB extracted), plus TEMPEH's training images and scans (~400 GB); CoMA - registered
+  data 2.4 GB (`files.is.tue.mpg.de/tbolkart/COMA/COMA_data.zip`, public link - downloaded to `.dev/cache/flame/coma/`),
+  raw textured scans 29-50 GB a subject; VOCA - audio 71 MB, sentences 17 KB, raw scans 142-224 GB a subject, registered /
+  unposed / unposed-cleaned data 15 GB each, template meshes 2 MB, the trained VOCA model 12 MB, its training data 8 GB.
+  VOCA's training data holds `data_verts.npy`, `raw_audio_fixed.pkl`, `templates.pkl`, `subj_seq_to_idx.pkl` (VOCA's
+  `config_parser.py`: `./training_data/...`) - the four files FaceFormer's README asks for, so the package speech-driven
+  methods read. Links on `download.is.tue.mpg.de` need the site's sign-in (without it they return a web page); links on
+  `files.is.tue.mpg.de` are public. FLAME_PyTorch (`soubhiksanyal/FLAME_PyTorch` 5a85f60; GitHub says MIT, its file
+  header claims MPG rights needing a licence agreement) runs FLAME through smplx's `lbs`: joints from the shaped mesh,
+  pose correctives from (R - I) of the four non-root joints in order, transforms about each joint's rest place - the same
+  steps as our `flame_fit.Flame`. The photometric fitting repository (`HavenFeng/photometric_optimization`) is MIT.
 - **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
   Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
   `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.

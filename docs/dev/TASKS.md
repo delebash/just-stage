@@ -550,6 +550,17 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (2026-10-31): FLAME 2023 Open, the Mediapipe Landmark Embedding and the Vertex Masks into
            `.dev/cache/flame/` (folder made); the download page's registered expression data (FaMoS, D3DFACS, CoMA,
            VOCASET, LYHM) noted for testing the face rig later - data licence not read.
+           REC 4, THE SHAPE FIT 2026-10-31 (the FLAME files in; the user: "ok keep going"): `tools/face_test/flame_fit.py`
+           - RealDenseFace (ViT-B) predicts every FLAME vertex's place in 8 paintings (its 105 MediaPipe-embedded points
+           land 5-8 px from MediaPipe's own on the head views, 12-13 px on the close views, where the face is twice as
+           big); FLAME 2023 Open fitted to all 8 through our cameras, one identity, pose and scale free: median 3-5 px
+           on the head views, 5 px on the close side views, 12 px on the close front view. FLAME fitted to our head's
+           surface in 3D: 1.49 mm median, 90% within 3.61 mm. The identity difference carried to our head: 2,118 skin
+           vertices over 0.5 mm, at most 7.4 mm - brow ridge 2.8 mm forward, nose tip 2 mm forward (1 mm sideways),
+           cheeks 1.2 mm back, lids and lips under ~1 mm, eyes ~2.8 mm. Applied as the shape key "painted person" in the
+           clay stage (`face_shape.apply_fit`), after the mouth and lid keys; our FLAME code checked step by step against
+           the authors' (FLAME_PyTorch through smplx's `lbs`). Next: clay, align, normals, light removal and the round on
+           the new shape, measured against the painting.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
