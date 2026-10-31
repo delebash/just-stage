@@ -113,9 +113,19 @@ def apply_fit(body, path):
     for i in np.flatnonzero(np.linalg.norm(offsets, axis=1) > 1e-6):
         key.data[i].co += Vector(offsets[i])
     key.value = 1.0
+    # each eyeball moves with the lid skin around it (within 20 mm of its centre): FLAME's own eyeballs are fitted by
+    # neither fit (both use the face's skin), and their offset - 2 mm inward and up - pushed the whites out at the
+    # inner corners (the first fitted clay views)
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    co = build.shaped_coords(body).astype(np.float64)[:13380]
     for name in ("Face.eyeLeft", "Face.eyeRight"):
         eye = bpy.data.objects[name]
-        side = "left_eye" if eye.matrix_world.translation.x > 0 else "right_eye"  # FLAME's left is the scene's +x
-        eye.matrix_world.translation += Vector(fit[side].astype(np.float64))
+        m = np.array(eye.matrix_world)
+        ev = np.array([v.co for v in eye.data.vertices]) @ m[:3, :3].T + m[:3, 3]
+        centre = (ev.min(axis=0) + ev.max(axis=0)) / 2
+        around = np.linalg.norm(co - centre, axis=1) < 0.020
+        move = offsets[:13380][around].mean(axis=0)
+        eye.matrix_world.translation += Vector(move)
+        print(f"  {name}: moved {np.round(move * 1000, 2).tolist()} mm with {int(around.sum())} lid vertices")
     moved = np.linalg.norm(offsets, axis=1)
     print(f"painted person: {int((moved > 0.0005).sum())} vertices over 0.5 mm, at most {moved.max() * 1000:.1f} mm")

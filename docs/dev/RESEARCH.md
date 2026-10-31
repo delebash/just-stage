@@ -1693,6 +1693,28 @@ questions on FLUX 3 and Krea 2:
   header claims MPG rights needing a licence agreement) runs FLAME through smplx's `lbs`: joints from the shaped mesh,
   pose correctives from (R - I) of the four non-root joints in order, transforms about each joint's rest place - the same
   steps as our `flame_fit.Flame`. The photometric fitting repository (`HavenFeng/photometric_optimization`) is MIT.
+- **The FLAME fit, measured 2026-10-31** (face test): RealDenseFace reads our clay renders as well as the paintings
+  (its 105 MediaPipe-embedded points 6-8 px from MediaPipe's on the head views, 12-14 px close); FLAME 2023 Open fits
+  the clay views' predictions to 2-4 px, the paintings' to 3-5 px (12 px on the close front view). The paintings'
+  non-rigid difference from our clay, by MediaPipe (rigid shift removed): 4-7 px on the head views, 7-14 px close -
+  1-2 mm, no more than the two detectors disagree; the fitted change didn't follow it. A whole-head model fit doesn't
+  resolve this head's remaining differences; they are mid-scale forms.
+
+*web, 2026-10-31* - relief from pictures into geometry (queries: "latest techniques recover 3D face geometry detail
+from normal maps normal integration 2026" -> SuperNormal (multi-view normal integration, arXiv 2312.04803),
+discontinuity-aware normal integration (ICCV 2025), anisotropic screen-space meshing (CVPR 2025), feature-preserving
+decimation for normal integration, Cao et al. inverse plane fitting (CVPR 2021), Ma et al. 2008 gradient-illumination
+face normals refining geometry, Wang et al. 3DV 2013 template registration to normal maps, Bouafif et al. 2020 face
+normals integrated by weighted least squares; "mesh refinement from normal map open source combine positions and
+normals" -> `normal-position-combination` (PyPI 0.0.3, MIT, a binding of Nehab et al. SIGGRAPH 2005's C++), Berkiten et
+al. 3DV 2014 (Nehab's linear method combines high-frequency normals with low-frequency positions; Poisson
+reconstruction smooths when their resolutions differ), CraftsMan3D (normal-map refiner by differentiable rendering);
+"best open source monocular face depth geometry estimation 2026 sapiens2 pointmap MoGe" -> MoGe / MoGe-2 (MIT code;
+metric pointmaps, depth, normals, FOV; general, not face-specific), Sapiens2 pointmap 0.4B-5B (human-centric; licence
+tagged "other"), no face-specific comparison found):
+- For a mesh whose broad shape is right and whose normals carry the detail - our head with the paintings' projected
+  normal map - Nehab et al.'s method is the standard: vertex positions solved so the surface's tangents are
+  perpendicular to the target normals, held near the original positions; one sparse linear solve.
 - **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
   Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
   `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.

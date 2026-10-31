@@ -561,6 +561,21 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            clay stage (`face_shape.apply_fit`), after the mouth and lid keys; our FLAME code checked step by step against
            the authors' (FLAME_PyTorch through smplx's `lbs`). Next: clay, align, normals, light removal and the round on
            the new shape, measured against the painting.
+           RESULT 2026-10-31 - NOT APPLIED. The first fit (FLAME to the paintings vs FLAME to our head in 3D) made the
+           clay drift further from the paintings (MediaPipe, against the same head without the fit: eyes 18 -> 28 px on
+           the close front view; FLAME's own eyeballs, fitted by neither side, had moved our eyes 2 mm inward and up -
+           fixed: the eyes follow the lid skin). The second (FLAME to the paintings and to the clay views, both through
+           RealDenseFace, so its leaning cancels; the clay fit 2-4 px): the change, 3.9 mm at most, predicted at the 105
+           shared points, does not point where MediaPipe sees the paintings differ (agreement -0.06 to +0.57) and would
+           raise the drift in 6 of 8 views. MediaPipe's own non-rigid drift (the AI's shift taken out) is 4-7 px on the
+           head views and 7-14 px on the close ones - 1-2 mm - the size of the two detectors' disagreement: the painted
+           person's broad shape already matches ours; a whole-head model can't move it reliably. What reads as another
+           person is mid-scale form - the hooded fold over the upper lid, the brow ridge, lip volume, the eye bags -
+           which the paintings' normals carry but only shade (a normal map: no overhang, no cast shadow, no outline).
+           `flame_fit.py` and `fit_offsets.rejected.npz` kept; `face_shape.apply_fit` stays (no file, no key). Next
+           (rec 5, "true displacement ... relief from pictures"): check the normal map carries the lid fold, then the
+           paintings' normals as geometry - Nehab et al. 2005 (positions + normals, one sparse solve) on the subdivided
+           head.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
