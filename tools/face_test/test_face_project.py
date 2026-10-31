@@ -44,7 +44,7 @@ FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = 25  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = 26  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -678,18 +678,28 @@ def test_face_project():
         eye_in = made["EnhancedEye"].inputs
         eye_in["IrisToEyeWhiteRelation"].default_value = 0.40
         eye_in["PupilSize"].default_value = 0.27
-        eye_in["IrisMajorColor"].default_value = (*np.clip(major, 0, 1), 1.0)
-        eye_in["IrisMinorColor"].default_value = (*np.clip(minor, 0, 1), 1.0)
-        eye_in["IrisSection4Color"].default_value = (*np.clip(minor * 0.5, 0, 1), 1.0)
+        eye_in["IrisMajorColor"].default_value = (*np.clip(major * 1.8, 0, 1), 1.0)  # the painting's iris is lit head-on
+        eye_in["IrisMinorColor"].default_value = (*np.clip(minor * 1.8, 0, 1), 1.0)
+        eye_in["IrisSection4Color"].default_value = (*np.clip(minor * 0.9, 0, 1), 1.0)  # a softer limbal ring
+        eye_in["InnerLayerRoughness"].default_value = 0.35  # a glossy iris mirrored the grey studio
         eye_in["EyeWhiteColor"].default_value = (0.50, 0.45, 0.42, 1.0)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
         for slot in eye.material_slots:
             if slot.material and "Cornea" not in slot.material.name:
                 slot.material = e_mat
-            elif slot.material:  # the cornea clear (as a shell it greyed the eye — trials 2026-10-30)
+            elif slot.material:  # the cornea: clear, with half a Fresnel reflection — the catch-light, no grey veil
                 c_nt = slot.material.node_tree
                 c_out = next(n for n in c_nt.nodes if n.type == "OUTPUT_MATERIAL")
-                c_nt.links.new(c_nt.nodes.new("ShaderNodeBsdfTransparent").outputs["BSDF"], c_out.inputs["Surface"])
+                c_mix, c_fres, c_half = (c_nt.nodes.new(t) for t in ("ShaderNodeMixShader", "ShaderNodeFresnel", "ShaderNodeMath"))
+                c_fres.inputs["IOR"].default_value = 1.376
+                c_half.operation, c_half.inputs[1].default_value = "MULTIPLY", 0.5
+                c_gloss = c_nt.nodes.new("ShaderNodeBsdfGlossy")
+                c_gloss.inputs["Roughness"].default_value = 0.02
+                c_nt.links.new(c_fres.outputs["Fac"], c_half.inputs[0])
+                c_nt.links.new(c_half.outputs["Value"], c_mix.inputs["Fac"])
+                c_nt.links.new(c_nt.nodes.new("ShaderNodeBsdfTransparent").outputs["BSDF"], c_mix.inputs[1])
+                c_nt.links.new(c_gloss.outputs["BSDF"], c_mix.inputs[2])
+                c_nt.links.new(c_mix.outputs["Shader"], c_out.inputs["Surface"])
         colour = np.zeros((1, 3)) + major  # for the print below
         white = np.array([True])
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")

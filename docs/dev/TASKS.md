@@ -456,6 +456,21 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            neck and ear artefacts, then the pore approaches the user asked for side by side ("so we test all approaches
            and can do this too to find what works best for our setup": from the paintings, a scanned micro-normal tile,
            procedural, SeedVR2-upscaled paintings).
+           ROUNDS 19–26 2026-10-30 (`.dev/facetest/compare26fixed_*.png`, `eyes26_left40.png`). The user, verbatim:
+           "so you are still hving problems i cant beleive it is this hard i am sure others already do it, did you
+           research thoroughly the newest best techniques and check how the code it and check confyui … but keep going".
+           My answer: the skin follows the pros' method and works; on the eyes I had been hand-tuning our own shading
+           instead of using the proven open eye setups the research listed — corrected: MPFB2's procedural eye
+           ("EnhancedEye", `data/node_trees/procedural_eyes.json` at 6ff1eb35, CC0 data) built by our loader
+           (`tools/face_test/mpfb_nodes.py`) onto our eye's polar UVs (one eye per map, eyeball UV radius 0.46, iris 0.40
+           of it; their two-eye distance node had to have its second centre moved off the map), iris colours from the
+           painting; both lids brought to the iris per 10° slice (upper 11°, lower 5°); the lid underside that faces the
+           eye takes the rim's colour (the paintings put eye colours there — the "shiny strip"); the cornea clear with
+           half a Fresnel reflection; a weak catch light by the camera; the occlusion shell tried and set aside (its
+           shading blotched). Trials on `.dev/facetest/round.blend` (~25 s a render) found each cause. Still open: the
+           eyes dry (no strong catch-light) and lashless (the lash groom hangs across the eye — needs curl), the neck
+           streak behind the jaw, red ear cavities, the lips' contact line, the scalp's painted stubble.
+           Card: handed to the JustDirect session ("card free", 2026-10-30) — no GPU work here until it hands back.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
