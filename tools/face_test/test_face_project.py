@@ -44,7 +44,7 @@ FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = 26  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = 27  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -279,6 +279,50 @@ def _eye_shells(body):
         print(f"  {name}: shell {len(verts)} verts, lid rim {len(rim)} points")
 
 
+LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
+
+
+def _add_lashes(body, style="eyelashes02"):
+    """MakeHuman's lash cards (its CC0 system assets: a strip mesh, an MHCLO binding to hm08, a lash texture with
+    transparency) fitted to our head by MHCLO — MakeHuman's own way, and the card lashes CC5 and MetaHuman use. Fitted
+    after the lid keys, so they sit on the lids as shaped."""
+    import zipfile
+
+    mhclo = importlib.import_module("bl_ext.system.juststage.core.mhclo")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    pack = zipfile.ZipFile(LASH_PACK)
+    folder = f"eyelashes/{style}/{style}"
+    binding = mhclo.parse(pack.read(folder + ".mhclo").decode("utf-8", "replace"))
+    co = mhclo.fit(binding, build.shaped_coords(body))
+    uvs, faces = [], []
+    for line in pack.read(folder + ".obj").decode("utf-8", "replace").splitlines():
+        if line.startswith("vt "):
+            uvs.append([float(x) for x in line.split()[1:3]])
+        elif line.startswith("f "):
+            faces.append([tuple(int(x) - 1 if x else -1 for x in (c.split("/") + [""])[:2]) for c in line.split()[1:]])
+    mesh = bpy.data.meshes.new(f"{body.name} lashes")
+    mesh.from_pydata(co.tolist(), [], [[c[0] for c in f] for f in faces])
+    layer = mesh.uv_layers.new(name="UVMap")
+    flat = [uvs[c[1]] for f in faces for c in f]
+    for loop, uv in zip(layer.data, flat):
+        loop.uv = uv
+    obj = bpy.data.objects.new(f"{body.name} lashes", mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    tex_path = DIR + f"{style}.png"
+    Path(tex_path).write_bytes(pack.read(folder + ".png"))
+    mat = bpy.data.materials.new(f"{body.name} lashes")
+    nt = mat.node_tree
+    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(tex_path)
+    bsdf.inputs["Base Color"].default_value = (0.012, 0.009, 0.008, 1.0)  # dark brown-black hair
+    bsdf.inputs["Roughness"].default_value = 0.45
+    nt.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
+    mesh.materials.append(mat)
+    obj.visible_shadow = True
+    print(f"lashes: {style}, {len(co)} vertices, {len(faces)} cards")
+
+
 def _close_mouth(body):
     """The lips closed as a shape key: our head's neutral mouth is a slit ~0.9 mm tall at its middle (measured by rays
     from the face camera; teeth behind it), the AI paints it closed. Upper lip down, lower lip up, most at the slit,
@@ -305,6 +349,7 @@ def test_face_project():
     body = bpy.data.objects["Face"]
     _close_mouth(body)
     _lower_lids(body)
+    _add_lashes(body)
     api = importlib.import_module("bl_ext.system.juststage.api")
     character = body.juststage.character_id
     # brows and lashes as strands (the hair module's MakeHuman CC0 grooms), dark brown: Principled Hair melanin

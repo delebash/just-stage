@@ -1690,6 +1690,25 @@ working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-resea
 - Not found (a search gap, not proof): a ComfyUI face-delighting node to true albedo, a pore/wrinkle displacement node,
   a face-UV generator for a given layout, a photometric FLAME fitter; Civitai / OpenArt pages never came back.
 
+*measured + web, 2026-10-30* — eyes, lashes and pore sources for the face test (rounds 19–27, `docs/dev/TASKS.md`):
+- MPFB2's procedural eye (`src/mpfb/data/node_trees/procedural_eyes.json` at 6ff1eb35, CC0 data; 14 node groups,
+  "EnhancedEye") built by `tools/face_test/mpfb_nodes.py` works on GNM's eye: one eye per UV map centred at (0.5, 0.5),
+  eyeball UV radius 0.46, iris 0.40 of it (measured: iris UVs 0.315–0.685, pupil 0.45–0.55). Its distance node sums two
+  eyes' centres — the second must be moved off the map. Trials: a refracting or Fresnel-shell cornea greyed the eye;
+  a glossy iris and the shader's 0.4 clear coat mirrored the grey studio; the paintings' eye colours on our lids'
+  undersides read as a shiny strip.
+- MPFB2's lash groom (hair-editor pack "basic_lashes_upper") on our GNM-shaped head: 99 strands, 3.7 mm, roots at the
+  eye's middle height (z 1.616–1.623 against the eye centre 1.623) — they hang across the eye. GNM has no lash geometry.
+  MakeHuman's system assets (`makehuman_system_assets_cc0.zip`, 280,737,770 bytes, sha256 b542127a8e25…; each asset file
+  "explicitly released as CC0 in september 2020") carry lash cards `eyelashes01`–`04` (.obj + .mhclo to hm08 + RGBA
+  .png) and brow cards; `eyelashes02` fitted by our `core/mhclo.fit`: 250 vertices, 184 cards, z 1.611–1.628, in front
+  of the cornea — on the lids.
+- Scanned pores: three.js ships the Lee Perry-Smith head scan (`examples/models/gltf/LeePerrySmith/`: a 4096²
+  displacement JPEG, a 1024² tangent normal, 1024² colour and specular; "Infinite, 3D Head Scan by Lee Perry-Smith is
+  licensed under a Creative Commons Attribution 3.0 Unported License … always mention where you got them from"). Its
+  high-passed displacement shows pores and fine lines (with 8×8 JPEG blocks — blurred σ 0.8 first); a 512² seamless
+  cheek tile made (`.dev/facetest/pores_lps.png`) for the pore comparison.
+
 ## 11 · PhotoCraft, the setup we looked at
 
 *web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
