@@ -1766,6 +1766,60 @@ projection"): flow between overlapping images fixes the local misregistration th
 one camera's part meets another's; "multi-view texture mapping misaligned images optical flow correction latest method
 2025 2026" -> Volino et al. (BMVC 2014): surface-based optical flow between views for multi-layer texture video; no
 2025-2026 method found (a search gap; newer work may sit under neural textures or Gaussian splatting).
+
+*web + measured, 2026-10-31* - the face's neutral: lips and lids (`../plans/2026-10-31-audit-face-edits.md`, 18 searches,
+every one logged; key claims page-read):
+- MetaHuman's neutral is sealed: "In the neutral pose the lips should be completely sealed, without gaps and without
+  intersections"; "Expressions are stored and treated as differences from the Neutral Pose"; for likeness scans a
+  "relaxed face with the teeth touching, but not clenched" (Neutral Pose; Expressions for Likeness Calibration - page read).
+- MetaHuman's lids turn about the eye: rotate `FACIAL_[L|R]_EyelidUpperA` joints and check the lids keep "a sectional
+  contour of the eyeball" (Skin Weights - page read); "The eyelid shell and folds shouldn't intersect".
+- ARKit's `mouthClose` is jaw-relative ("closing of the lips without relation to the position of the jaw", Apple - page
+  read). Measured on hm08: Faceunits `mouthClose` at 1 lowers the upper lip 2-7 mm and lifts lower lip and chin ~27 mm;
+  `eyeBlinkLeft` at 0.2 sinks the upper lid ~0.7 mm further into the eyeball (1.1 mm at 0.5) - the flattening
+  MetaHuman warns about.
+- MakeHuman's Faceunits 01 (Mika Suominen): 52 targets with ARKit's names, every metadata entry "license": "CC0";
+  `faceunits01.zip` 257,821 bytes, sha256 d113107b…, from files2.makehumancommunity.org/functional/; not in our system
+  asset pack nor in MPFB2's repo (MPFB2 loads it when installed); byte-identical to naver/anny's copy. Same topology as
+  hm08: no transfer needed.
+- MakeHuman's CC0 identity mouth targets (in our repo, `extension/juststage/data/fetched/makehuman/targets/mouth/`)
+  thin and narrow the lips without moving the seam (`mouth-scale-horiz-decr` narrows 2.9 mm on average, the lip-height
+  targets change the seam by under 0.6 mm); the eye-height targets move the lids only 0.75-1.3 mm.
+- ICT-FaceKit (MIT, push 2020-12-01): 57 expression OBJs (ARKit names without tongueOut, split L/R, plus cheekRaiser,
+  PupilDilate), 100 identity modes, eye occlusion, lacrimal fluid and lash meshes; FACS map in its README (AU45 ->
+  eyeBlink, AU7 -> eyeSquint, AU24 -> mouthPress, AU28 -> mouthRoll).
+- Transfer tools: Blender's Surface Deform (built in); ShapeKeyWrap, ShapeKeyTransferBlender, mesh-expression-retargeter
+  (GPL-3); `vasiliskatr/deformation_transfer_ARkit_blendshapes` (MIT, Sumner & Popovic 2004) and its example-based
+  facial rigging repo (MIT); ARKitBlendshapeHelper and arkit-blendshape-tool have no licence.
+- GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
+  and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
+  landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
+- Lead: MakeHuman's packs page lists "Eyebrows 01 - A set of high-res eyebrows by Mindfront" under CC0 mesh assets (not in
+  our local pack).
+
+*web + measured, 2026-10-31* - the eye's occlusion and tear line, shaded and fitted (`../plans/2026-10-31-audit-eyes.md`,
+27 searches logged; CC5's pages read one by one):
+- CC5's Eye Occlusion is set, not computed: a UV-space mask with its own range, contrast and edge fade for the upper
+  lid, lower lid, inner and outer corner (Shadow 1, default strength 0.312), a second colour layer (Shadow 2), a Blur
+  ("simulating the shadows from the eyelids"; "Inner Blur Contrast" places "the dark crevice between the eyeball and the
+  tear duct") and a Vertex Offset ("to snuggly fit the eyeballs"; Depth Offset 0.500). Its Tear Line: depth offset
+  0.050, detail normal tiling, edge fadeout, roughness 0.25-0.45, opacity 0.04-0.2 (the manual's examples).
+- UE 4.27 Photorealistic Character: a translucent sheet over the eye, `MI_Eye_Occlusion_Bust`, its border fitted to the
+  open lid, UVs filling 0-1; the Eye shading model's Ambient Occlusion input is the soft lid / caruncle shadow.
+  MetaHuman's DNA Calibration scripts (Epic's licence, study only): `eyeshell`, `eyeEdge`, `cartilage` (inner corner),
+  `saliva` and `eyelashesShadow` meshes, each skinned to the face joints.
+- Film: Weta (Gollum) added "an extra amount of shadowing from the eyelids" and the meniscus, driven by curves on the
+  lid edges; Sony US 9336622: the band between pupil and upper lid at 40-60% of the eye's shading, "a combination of
+  shadows from the brow, eyelashes, and upper lid"; Sony US 9269185: a procedural meniscus ribbon from the socket loop,
+  thicker at the bottom. Unity's The Heretic: an anisotropic spherical Gaussian fitted to four lid markers. The real
+  lower tear meniscus is ~0.20 +/- 0.05 mm high.
+- ICT-FaceKit (MIT) per eye: eye occlusion 152 v, lacrimal fluid 204 v, eye blend 24 v, with UVs, no shader or texture,
+  no caruncle mesh. Measured: the shells live inside every expression shape (a blink moves the occlusion up to 9.6 mm,
+  the eyeball not at all); the occlusion sits a median 0.5 mm off its eyeball (fitted sphere 15.8 mm) and covers the
+  27 x 11 mm opening. CC5's shells carry their own Eye_Blink / Eye_Wide / Eye_Squint shapes (Reallusion staff).
+- Blender: Shrinkwrap "Nearest Surface Point" with an offset "Outside Surface" keeps a layer off another surface; the
+  manual: the AO node gives no valid result on a shadow-caustics caster or receiver - AO and MNEE can't be combined.
+- Not found (a search gap): an open occlusion or tearline shader; a CC0 sclera texture with veins; an open caruncle.
 - **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
   Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
   `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.

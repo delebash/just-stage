@@ -86,3 +86,14 @@ The light-and-measuring agent was stopped after 19 searches; its partial notes w
 **Order of work from here:** round 48 (the relief as geometry) → the alignment (flow on top of the coarse warp; the
 coarse warp decided by the leave-one-out test) → seams (one view per region, levelled, blended) → the eye layer stack
 (rec 6) → the mouth and lids by expression transfer.
+
+## Correction after the face-edits research (2026-10-31)
+
+Rows 17 and 18 above said "NOT FOLLOWED — own shape keys" against the rank-1 expression transfer. Wrong: that transfer
+builds the expression set; the neutral is a different job. Measured and page-read (`2026-10-31-audit-face-edits.md`):
+- 18, the lids: our rotation about the eyeball is MetaHuman's own principle (lid joints keeping the eyeball's contour);
+  a partial `eyeBlink` sinks the lid 0.7 mm into the eye. **Kept**; moves into the head module later, retired when the
+  DNA rig's lid joints exist.
+- 17, the mouth: sealing the neutral is MetaHuman's rule (kept, NOT STANDARD as code); `mouthClose` is jaw-relative
+  (lifts the chin ~27 mm). The real fix: lip thickness and width from MakeHuman's CC0 identity sliders (in our repo),
+  solved by least squares to the painting's outer-lip points, instead of the hand-made falloffs.
