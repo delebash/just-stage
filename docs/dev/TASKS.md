@@ -592,6 +592,34 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            CORRECTION 2026-10-31 (found by the JustDirect research session): the rec above says RealDenseFace "also reads
            the two profile views MediaPipe can't" - never measured; `flame_fit.py` leaves left90 / right90 out and no
            RealDenseFace output exists for them. To be measured in the alignment test, not assumed.
+           APPROVED 2026-10-31 - the user, verbatim: "your rec on all but always rethink on your rec adverserily go", on
+           the list: (1) the head's own texture tile (spec tile 1001; the face had ~560 x 640 texels and lost ~40% of the
+           painting's detail); (2) the eye layers - occlusion and tearline shells the CC5 / MetaHuman / ICT way, shaded
+           with CC5's documented per-side mask, blur and a near-transparent wet strip, calibrated on the white's
+           brightness profile, the AO node and the dead `_eye_shells` removed (`../plans/2026-10-31-audit-eyes.md` §6);
+           (3) a lash-shadow trial; (4) the lips' thickness and width from MakeHuman's CC0 identity sliders, fitted to
+           the painting, the seal kept (`../plans/2026-10-31-audit-face-edits.md` §2.4); (5) rec 6's wording - a dated
+           correction note beside the approved text (ICT has no caruncle mesh, only "eye blend") - DONE.
+           ROUND 49 2026-10-31 and its trials, each re-attacked first (the user: "always rethink on your rec adverserily"):
+           (1) HEAD TILE - hm08 scatters the head's own UV islands over the whole map and its face island already holds
+           3,028 of the head's 4,018 polygons, so face priority gains nothing; Blender's packer on everything painted
+           gives the face 6.0 texels/mm (3.8 before; the close painting ~7.5; MPFB2's `face_solid` layer would give more
+           but covers only chin to lower lids). Built: `_head_tile` (the HeadTile UV layer, 10.8M texels vs 4.8M), the
+           shader reads every head map through it, and outside the painted area the surface's own normal (the map's
+           fill had a flat "up" normal). Pore-band detail (difference of Gaussians, sigma 1.0-2.5 px, right cheek): the
+           painting 4.15, ours 2.80 rendered as now; the render's own share: denoising -10%, the 1.5 px pixel filter
+           -7% (1024 samples raw, 1.0 px: 3.28, 79% of the painting). (2) EYE OCCLUSION - ICT-FaceKit's sheet (MIT, its
+           UVs: u across the eye, v lower to upper lid, measured) placed over our eyeball across our lid opening, shaded
+           as CC5 documents (per-side ramps, a tinted transparent film, no shadow); the AO node and the dead
+           `_eye_shells` removed. Measured first: our white's top third was already darker than the painting's (0.074
+           vs 0.156 linear), mid brighter (0.283 vs 0.252) - so weak starting strengths. Round 49: mid 0.241, low 0.241
+           (painting 0.222, 0.231); top still 0.063. Its lid-edge detection caught the corners' skin (a 98 deg
+           opening) - tightened to the lid key's own test, to re-render. (3) LASH SHADOWS on: the mid-white drops 0.238
+           -> 0.190 (painting 0.222) - kept off. Lash length 100 / 75 / 55%: the top third stays 0.064-0.066 - the
+           lashes are not what darkens it; next suspect: our upper lid's rim beside the iris. (4) LIPS via MakeHuman's
+           sliders: DEFERRED - its target differences (5-7%) are inside MediaPipe's own spread on the same lips (clay
+           vs textured render up to 0.019); the falloff-to-slider swap keeps the look and moves with the seal into the
+           head module.
            ROUND 48 2026-10-31 - the relief as geometry (`relief_geometry.py`, Nehab et al. 2005 on the texel grid, 1.2M
            texels solved in 73 s; heights -3.0 to +2.6 mm, 1st-99th percentile) rendered with Blender 5.3's adaptive
            subdivision: NO GAIN, OFF by default (`RELIEF_GEOMETRY=1` turns it on). The eye area is unchanged - checked

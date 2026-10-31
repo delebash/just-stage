@@ -48,7 +48,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 48))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 49))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -148,92 +148,120 @@ def _render_linear(scene, path, size=512):
     return _pixels(path)[..., :3]
 
 
-def _eye_shells(body):
-    """The eye's layer stack as CC5 and MetaHuman build it (research §5a): an occlusion shell — a skin 0.15 mm over the
-    eyeball, clear in the middle and darkening toward the lids (the soft shadow where lid meets eye) — with the tear line
-    in it: a wet, glossy band along the lower lid. Built per eye from where our head's lid skin touches the eyeball."""
-    dg = bpy.context.evaluated_depsgraph_get()
-    head = np.array([v.co for v in body.evaluated_get(dg).to_mesh().vertices])
-    body.evaluated_get(dg).to_mesh_clear()
-    for name in ("Face.eyeLeft", "Face.eyeRight"):
-        eye = bpy.data.objects[name]
-        mw = np.array(eye.matrix_world)
-        ev = np.array([v.co for v in eye.data.vertices]) @ mw[:3, :3].T + mw[:3, 3]
-        centre = (ev.min(axis=0) + ev.max(axis=0)) / 2
-        radius = float(np.median(np.linalg.norm(ev - centre, axis=1)))
-        rel = head - centre
-        dist = np.linalg.norm(rel, axis=1)
-        rim = head[(np.abs(dist - radius) < 0.0012) & (rel[:, 1] < -0.004)]  # lid skin touching the eye, in front
-        # the shell: the eyeball's front faces, pushed out 0.15 mm
-        me = eye.data
-        keep = [p for p in me.polygons if np.mean([(ev[v] - centre)[1] for v in p.vertices]) < -0.003]
-        used = sorted({v for p in keep for v in p.vertices})
-        index = {v: i for i, v in enumerate(used)}
-        verts = centre + (ev[used] - centre) * ((radius + 0.00015) / np.linalg.norm(ev[used] - centre, axis=1))[:, None]
-        faces = [[index[v] for v in p.vertices] for p in keep]
-        shell = bpy.data.meshes.new(f"{name} shell")
-        shell.from_pydata(verts.tolist(), [], faces)
-        bm = bmesh.new()
-        bm.from_mesh(shell)
-        bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=3, use_grid_fill=True)
-        bm.to_mesh(shell)
-        bm.free()
-        verts = np.array([v.co for v in shell.vertices])
-        verts = centre + (verts - centre) * ((radius + 0.00015) / np.linalg.norm(verts - centre, axis=1))[:, None]
-        for i, v in enumerate(shell.vertices):
-            v.co = verts[i]
-        # per vertex: the lid's edge as the front camera sees it — the shell points its depth picture shows, and each
-        # seen point's distance (mm) to the nearest hidden one
-        cam_f = json.load(open(DIR + "cameras.json"))["face"]
-        depth_f = _pixels(f"{DIR}depth_face.exr")[..., 0]
-        mw_f = np.array(cam_f["matrix_world"])
-        col, row, dist_f = up.project(verts, mw_f, cam_f["lens"], cam_f["sensor_width"], cam_f["size"])
-        seen_f = np.abs(up.sample(depth_f[..., None], col, row)[:, 0] - dist_f) < 0.0015
-        hidden = verts[~seen_f]
-        near = np.full(len(verts), 9.0)
-        if len(hidden):
-            for i0 in range(0, len(verts), 2000):
-                d = np.linalg.norm(verts[i0 : i0 + 2000, None, :] - hidden[None, :, :], axis=2).min(axis=1) * 1000
-                near[i0 : i0 + 2000] = d
-        near[~seen_f] = 0.0
-        shade = np.clip(np.where(verts[:, 2] > centre[2], np.exp(-near / 1.6), 0.6 * np.exp(-near / 0.9)), 0.0, 1.0)
-        tear = np.clip(np.exp(-near / 0.5), 0.0, 1.0) * (verts[:, 2] < centre[2] + 0.001)
-        for attr_name, values in (("lid_shadow", shade), ("tear", tear)):
-            attr = shell.attributes.new(attr_name, "FLOAT", "POINT")
-            attr.data.foreach_set("value", values.astype(np.float32))
-        obj = bpy.data.objects.new(f"{name} shell", shell)
-        bpy.context.scene.collection.objects.link(obj)
-        mat = bpy.data.materials.new(f"{name} shell")
-        nt = mat.node_tree
-        nt.nodes.clear()
-        out = nt.nodes.new("ShaderNodeOutputMaterial")
-        a_shadow, a_tear = nt.nodes.new("ShaderNodeAttribute"), nt.nodes.new("ShaderNodeAttribute")
-        a_shadow.attribute_name, a_tear.attribute_name = "lid_shadow", "tear"
-        clear = nt.nodes.new("ShaderNodeBsdfTransparent")
-        dark = nt.nodes.new("ShaderNodeBsdfDiffuse")
-        dark.inputs["Color"].default_value = (0.02, 0.012, 0.01, 1.0)
-        wet = nt.nodes.new("ShaderNodeBsdfGlossy")
-        wet.inputs["Roughness"].default_value = 0.02
-        mix_shadow, mix_tear = nt.nodes.new("ShaderNodeMixShader"), nt.nodes.new("ShaderNodeMixShader")
-        strength = nt.nodes.new("ShaderNodeMath")
-        strength.operation = "MULTIPLY"
-        strength.inputs[1].default_value = 0.85
-        nt.links.new(a_shadow.outputs["Fac"], strength.inputs[0])
-        nt.links.new(strength.outputs["Value"], mix_shadow.inputs["Fac"])
-        nt.links.new(clear.outputs["BSDF"], mix_shadow.inputs[1])
-        nt.links.new(dark.outputs["BSDF"], mix_shadow.inputs[2])
-        tear_amt = nt.nodes.new("ShaderNodeMath")
-        tear_amt.operation = "MULTIPLY"
-        tear_amt.inputs[1].default_value = 0.35
-        nt.links.new(a_tear.outputs["Fac"], tear_amt.inputs[0])
-        nt.links.new(tear_amt.outputs["Value"], mix_tear.inputs["Fac"])
-        nt.links.new(mix_shadow.outputs["Shader"], mix_tear.inputs[1])
-        nt.links.new(wet.outputs["BSDF"], mix_tear.inputs[2])
-        nt.links.new(mix_tear.outputs["Shader"], out.inputs["Surface"])
-        obj.data.materials.append(mat)
-        obj.visible_shadow = False  # the shell darkens what's behind it; it casts nothing
-        print(f"  {name}: shell {len(verts)} verts, lid rim {len(rim)} points")
+ICT_MESH = "E:/Dev/3D/just-stage/.dev/cache/ict/generic_neutral_mesh.obj"  # USC-ICT/ICT-FaceKit FaceXModel, MIT
+#: the occlusion's darkening per side, CC5's documented model (Eye Occlusion Shadow 1: a range and strength for the top,
+#: bottom, inner and outer, each with an edge fade): (range in UV, strength) - starting values, to be calibrated on the
+#: white's brightness profile against the painting
+# measured before the shell (round 48, face view, linear, the white beside the iris): just under the upper lashes ours
+# 0.125 vs the painting's 0.191 (already darker - the lashes), mid-white 0.283 vs 0.252, low 0.194 vs 0.185 - so a light top
+OCCLUSION = {"top": (0.30, 0.15), "bottom": (0.20, 0.15), "inner": (0.20, 0.30), "outer": (0.15, 0.15)}
+OCCLUSION_COLOUR = (0.33, 0.09, 0.05)  # CC5's Shadow 2 example #54170E, a dark red-brown
 
+
+def _ict_occlusion():
+    """ICT-FaceKit's left eye occlusion sheet (its README: polygons 25048-25175): faces and per-vertex UVs - u across
+    the eye, v from the lower lid to the upper (measured: corr(u, x) -0.97, corr(v, y) 0.83) - the layout of Unreal's
+    Digital Human eye occlusion, which ICT says its meshes follow."""
+    vt, faces = [], []
+    with open(ICT_MESH, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("vt "):
+                vt.append([float(x) for x in line.split()[1:3]])
+            elif line.startswith("f "):
+                faces.append([tuple(int(t) - 1 for t in c.split("/")[:2]) for c in line.split()[1:]])
+    occ = faces[25048:25176]
+    order = sorted({c[0] for f in occ for c in f})
+    local = {v: k for k, v in enumerate(order)}
+    uv = np.zeros((len(order), 2))
+    for f in occ:
+        for v, t in f:
+            uv[local[v]] = vt[t]
+    return [[local[c[0]] for c in f] for f in occ], uv
+
+
+def _occlusion_shell(eye, skin, name):
+    """Rec 6's eye occlusion (docs/plans/2026-10-31-audit-eyes.md section 6): ICT's sheet, its topology and UVs kept,
+    placed over our own eyeball across our lid opening - u from the outer corner to the inner, v from the lower lid's
+    edge to the upper's (found per 2.5-degree slice, as the lid key finds them), 3-4 degrees under each lid, 0.4 mm off
+    the eyeball (ICT's sits a median 0.5 mm off). Shaded as CC5 documents: per-side ranges, a soft edge, a tinted
+    transparent film that only darkens what is behind it and casts nothing (Cycles traces the lids' own shadow)."""
+    faces, uv = _ict_occlusion()
+    m = np.array(eye.matrix_world)
+    ev = np.array([v.co for v in eye.data.vertices]) @ m[:3, :3].T + m[:3, 3]
+    centre = (ev.min(axis=0) + ev.max(axis=0)) / 2
+    radius = float((ev.max(axis=0) - ev.min(axis=0))[[0, 2]].mean() / 2)
+    rel = skin - centre
+    dist = np.linalg.norm(rel, axis=1)
+    az = np.degrees(np.arctan2(rel[:, 0], -rel[:, 1]))
+    el = np.degrees(np.arctan2(rel[:, 2], np.hypot(rel[:, 0], rel[:, 1])))
+    # the lid edges as the lid key finds them (skin touching the eyeball, edges at least 2 deg off its middle), per
+    # 5 deg slice, where the opening is at least 4 deg tall: round 49's looser test (1 deg, 4 mm, 2.5 deg slices) caught
+    # the corners' skin and found a 98 deg opening with lids at +-2 deg
+    touching = (dist > radius * 0.9) & (dist < radius + 0.0025) & (rel[:, 1] < 0) & (np.abs(az) < 50)
+    upper, lower, centres = [], [], []
+    for a0 in np.arange(-50.0, 50.0, 5.0):
+        inb = touching & (az >= a0) & (az < a0 + 5.0)
+        up, lo = el[inb & (el > 2)], el[inb & (el < -2)]
+        if up.size and lo.size and up.min() - lo.max() >= 4.0:
+            upper.append(up.min())
+            lower.append(lo.max())
+            centres.append(a0 + 2.5)
+    centres, upper, lower = np.array(centres), np.array(upper), np.array(lower)
+    inner = -np.sign(centre[0])  # toward the nose
+    a_outer, a_inner = (centres.max(), centres.min()) if inner < 0 else (centres.min(), centres.max())
+    a_outer -= 4.0 * inner
+    a_inner += 4.0 * inner
+    a = a_outer + uv[:, 0] * (a_inner - a_outer)
+    lo_e = np.interp(a, centres, lower) - 3.0
+    up_e = np.interp(a, centres, upper) + 3.0
+    e = lo_e + uv[:, 1] * (up_e - lo_e)
+    ar, er = np.radians(a), np.radians(e)
+    direction = np.c_[np.sin(ar) * np.cos(er), -np.cos(ar) * np.cos(er), np.sin(er)]
+    points = centre + (radius + 0.0004) * direction
+    mesh = bpy.data.meshes.new(f"{name} occlusion")
+    mesh.from_pydata(points.tolist(), [], faces)
+    layer = mesh.uv_layers.new(name="UVMap")
+    layer.data.foreach_set("uv", np.array([uv[mesh.loops[k].vertex_index] for k in range(len(mesh.loops))]).ravel())
+    obj = bpy.data.objects.new(f"{name} occlusion", mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    obj.visible_shadow = obj.visible_diffuse = obj.visible_volume_scatter = False
+    mat = bpy.data.materials.new(f"{name} occlusion")
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    film = nt.nodes.new("ShaderNodeBsdfTransparent")
+    coords = nt.nodes.new("ShaderNodeUVMap")
+    split = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(coords.outputs["UV"], split.inputs["Vector"])
+    darkness = None
+    for side, (span, strength) in OCCLUSION.items():
+        ramp = nt.nodes.new("ShaderNodeMapRange")
+        ramp.interpolation_type = "SMOOTHSTEP"
+        axis = split.outputs["Y" if side in ("top", "bottom") else "X"]
+        near_one = side in ("top", "inner")  # u runs outer (0) to inner (1); v lower (0) to upper (1)
+        ramp.inputs["From Min"].default_value = 1.0 - span if near_one else span
+        ramp.inputs["From Max"].default_value = 1.0 if near_one else 0.0
+        ramp.inputs["To Max"].default_value = strength
+        nt.links.new(axis, ramp.inputs["Value"])
+        if darkness is None:
+            darkness = ramp.outputs["Result"]
+        else:
+            both = nt.nodes.new("ShaderNodeMath")
+            both.operation = "MAXIMUM"
+            nt.links.new(darkness, both.inputs[0])
+            nt.links.new(ramp.outputs["Result"], both.inputs[1])
+            darkness = both.outputs["Value"]
+    tint = nt.nodes.new("ShaderNodeMix")
+    tint.data_type = "RGBA"
+    nt.links.new(darkness, tint.inputs["Factor"])
+    next(i for i in tint.inputs if i.identifier == "A_Color").default_value = (1.0, 1.0, 1.0, 1.0)
+    next(i for i in tint.inputs if i.identifier == "B_Color").default_value = (*OCCLUSION_COLOUR, 1.0)
+    nt.links.new(next(o for o in tint.outputs if o.identifier == "Result_Color"), film.inputs["Color"])
+    nt.links.new(film.outputs["BSDF"], out.inputs["Surface"])
+    mesh.materials.append(mat)
+    print(f"  {name} occlusion: {len(points)} vertices over an opening of {abs(a_inner - a_outer):.0f} deg, "
+          f"lids {lower.max():.1f} .. {upper.min():.1f} deg")
+    return obj
 
 LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
 
@@ -308,11 +336,61 @@ def _pad(img, mask, px=16):
     return out
 
 
+
+def _head_tile(body):
+    """The head's own texture tile (the standards spec's UDIM 1001, `docs/standards/character-data-model.md` "UV
+    layout and tiles"): hm08's UV islands of everything painted (above FADE_FROM) packed by Blender's own packer into a
+    0-1 square of their own. On the body's shared map the face had 3.8 texels/mm against the close painting's ~7.5;
+    packed it gets 6.0 (measured 2026-10-31; prioritising the face island gains nothing - it already holds 3,028 of
+    the head's 4,018 polygons). Polygons below sit on one reserved corner (the plain skin colour)."""
+    me = body.data
+    co = np.empty(len(me.vertices) * 3, np.float32)
+    me.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    src = me.uv_layers["UVMap"]
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    src.data.foreach_get("uv", uv)
+    me.uv_layers.new(name="HeadTile").data.foreach_set("uv", uv)
+    pick = np.array([co[list(p.vertices)][:, 2].max() > FADE_FROM - 0.02 and max(p.vertices) < 13380 for p in me.polygons])
+    chosen = set(int(v) for p, k in zip(me.polygons, pick) if k for v in p.vertices)
+    for v in me.vertices:
+        v.select = v.index in chosen
+    for e in me.edges:
+        e.select = all(v in chosen for v in e.vertices)
+    for p, k in zip(me.polygons, pick):
+        p.select = bool(k)
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    bpy.context.view_layer.objects.active = body
+    body.select_set(True)
+    me.uv_layers.active = me.uv_layers["HeadTile"]
+    bpy.context.scene.tool_settings.mesh_select_mode = (False, False, True)
+    bpy.context.scene.tool_settings.use_uv_select_sync = False
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.uv.select_all(action="SELECT")
+    bpy.ops.uv.pack_islands(udim_source="CLOSEST_UDIM", rotate=True, scale=True, margin=0.002)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    tile = me.uv_layers["HeadTile"]
+    packed = np.empty(len(me.loops) * 2, np.float32)
+    tile.data.foreach_get("uv", packed)
+    packed = packed.reshape(-1, 2) * 0.985  # the corner beyond 0.985 stays free
+    loop_pick = np.zeros(len(me.loops), bool)
+    for p, k in zip(me.polygons, pick):
+        if k:
+            loop_pick[list(p.loop_indices)] = True
+    packed[~loop_pick] = 0.995  # everything else on the reserved corner
+    tile.data.foreach_set("uv", packed.ravel())
+    me.uv_layers.active = src
+    src.active_render = True  # the pore tile and anything else on plain UV coordinates keep hm08's layout
+    print(f"head tile: {int(pick.sum())} polygons packed into their own map")
+
+
 def test_face_project():
     t0 = time.time()
     bpy.ops.wm.open_mainfile(filepath=DIR + "face.blend")
     body = bpy.data.objects["Face"]
     _add_lashes(body)
+    _head_tile(body)
     # brows: the painted ones in the skin - MakeHuman's brow cards (010, 011, 012, masked or not) all sat higher and more
     # arched than the painting's and doubled them; without cards the painted brows read as hair (round 43 trials)
     api = importlib.import_module("bl_ext.system.juststage.api")
@@ -337,7 +415,7 @@ def test_face_project():
     mesh.vertex_normals.foreach_get("vector", vn)
     vn = vn.reshape(-1, 3)
     uvs = np.empty(len(mesh.loops) * 2, dtype=np.float32)
-    mesh.uv_layers["UVMap"].data.foreach_get("uv", uvs)
+    mesh.uv_layers["HeadTile"].data.foreach_get("uv", uvs)  # the head's own tile (_head_tile)
     uvs = uvs.reshape(-1, 2)
     ev.to_mesh_clear()
     head = (co[verts][:, :, 2] > FADE_FROM).all(axis=1)
@@ -463,8 +541,11 @@ def test_face_project():
     albedo_map = _pad(albedo_map, mask)
     srgb = np.clip(albedo_map, 0.0, 1.0)
     srgb = np.where(srgb <= 0.0031308, srgb * 12.92, 1.055 * srgb ** (1 / 2.4) - 0.055)
+    head_uv = nodes.new("ShaderNodeUVMap")
+    head_uv.uv_map = "HeadTile"
     albedo_tex = nodes.new("ShaderNodeTexImage")
     albedo_tex.image = _image("face albedo", srgb, "sRGB")
+    links.new(head_uv.outputs["UV"], albedo_tex.inputs["Vector"])
     gain = nodes.new("ShaderNodeVectorMath")
     gain.operation = "MULTIPLY"
     gain.inputs[1].default_value = (1.0, 1.0, 1.0)
@@ -479,9 +560,22 @@ def test_face_project():
     normal_tex = nodes.new("ShaderNodeTexImage")
     normal_tex.image = _image("face normal", nrm_map * 0.5 + 0.5, "Non-Color")
     normal_tex.interpolation = "Cubic"
+    links.new(head_uv.outputs["UV"], normal_tex.inputs["Vector"])
     nmap = nodes.new("ShaderNodeNormalMap")
     nmap.space = "OBJECT"
     links.new(normal_tex.outputs["Color"], nmap.inputs["Color"])
+    # outside the painted area the map holds only its fill: the surface's own normal there (the fill's flat "up" normal
+    # shaded the neck below the paint wrongly)
+    painted_tex = nodes.new("ShaderNodeTexImage")
+    painted_tex.image = _image("face painted", _pad(mask.astype(np.float32), mask), "Non-Color")
+    links.new(head_uv.outputs["UV"], painted_tex.inputs["Vector"])
+    normal_mix = nodes.new("ShaderNodeMix")
+    normal_mix.data_type = "VECTOR"
+    geometry = nodes.new("ShaderNodeNewGeometry")
+    links.new(painted_tex.outputs["Color"], normal_mix.inputs["Factor"])
+    links.new(geometry.outputs["Normal"], next(i for i in normal_mix.inputs if i.identifier == "A_Vector"))
+    links.new(nmap.outputs["Normal"], next(i for i in normal_mix.inputs if i.identifier == "B_Vector"))
+    shading_normal = next(o for o in normal_mix.outputs if o.identifier == "Result_Vector")
     # off by default: round 48 measured no gain - the paintings' normals (Sapiens2) carry no hooded fold over the lid
     # (raw vs ours ~5 deg apart; neither shows it), and the displacement tore the lips' contact and spiked the ears
     if os.environ.get("RELIEF_GEOMETRY", "0") == "1":
@@ -518,6 +612,7 @@ def test_face_project():
         disp_tex = nodes.new("ShaderNodeTexImage")
         disp_tex.image = disp_img
         disp_tex.interpolation = "Cubic"
+        links.new(head_uv.outputs["UV"], disp_tex.inputs["Vector"])
         disp = nodes.new("ShaderNodeDisplacement")
         disp.space = "OBJECT"
         disp.inputs["Midlevel"].default_value = 0.0
@@ -545,6 +640,7 @@ def test_face_project():
     rough += 0.2 * (1.0 - cavity)
     cavity_tex = nodes.new("ShaderNodeTexImage")
     cavity_tex.image = _image("face cavity", cavity, "Non-Color")
+    links.new(head_uv.outputs["UV"], cavity_tex.inputs["Vector"])
     spec = nodes.new("ShaderNodeMath")
     spec.operation = "MULTIPLY"
     spec.inputs[1].default_value = 0.5
@@ -557,14 +653,16 @@ def test_face_project():
     bsdf.inputs["Sheen Roughness"].default_value = 0.4
     rough_tex = nodes.new("ShaderNodeTexImage")
     rough_tex.image = _image("face roughness", rough, "Non-Color")
+    links.new(head_uv.outputs["UV"], rough_tex.inputs["Vector"])
     links.new(rough_tex.outputs["Color"], bsdf.inputs["Roughness"])
     height_tex = nodes.new("ShaderNodeTexImage")
     height_tex.image = _image("face height", height, "Non-Color")
+    links.new(head_uv.outputs["UV"], height_tex.inputs["Vector"])
     bump = nodes.new("ShaderNodeBump")
     bump.inputs["Strength"].default_value = BUMP_STRENGTH
     bump.inputs["Distance"].default_value = BUMP_DISTANCE
     links.new(height_tex.outputs["Color"], bump.inputs["Height"])
-    links.new(nmap.outputs["Normal"], bump.inputs["Normal"])
+    links.new(shading_normal, bump.inputs["Normal"])
     links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
     # pores, the approaches side by side (the user: "so we test all approaches"): PORE_SOURCE=paint (the paintings'
     # own fine relief, above), scan (the Lee Perry-Smith scan's cheek tile, CC-BY 3.0, at its real size ~7.5 cm), both
@@ -794,14 +892,6 @@ def test_face_project():
         # (0.240, 0.205, 0.186) / (0.333, 0.241, 0.202) = (0.72, 0.85, 0.92) on (0.94, 0.70, 0.59)
         eye_in["EyeWhiteColor"].default_value = (0.68, 0.60, 0.54, 1.0)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
-        # the white darkened toward the lids and corners by ambient occlusion within 6 mm (the cornea is split off below,
-        # so only the lids occlude): our white read as one flat colour; 6 mm brought its brightest tenth to 0.258
-        # against the painting's 0.248, from 0.287 (round 45 trials, linear, face view)
-        ao = e_mat.node_tree.nodes.new("ShaderNodeAmbientOcclusion")
-        ao.inputs["Color"].default_value = eye_in["EyeWhiteColor"].default_value
-        ao.inputs["Distance"].default_value = 0.006
-        ao.samples, ao.only_local = 16, False
-        e_mat.node_tree.links.new(ao.outputs["Color"], eye_in["EyeWhiteColor"])
         if os.environ.get("EYE_STYLE", "mpfb") == "mh":  # rounds 30–31: its brown read red-orange; MPFB2 kept
             import zipfile
 
@@ -862,6 +952,7 @@ def test_face_project():
             bm.free()
         shell.visible_shadow = shell.visible_diffuse = False
         receivers.objects.link(shell)
+        _occlusion_shell(eye, importlib.import_module("bl_ext.system.juststage.modules.body.build").shaped_coords(body)[:13380].astype(np.float64), eye_name)
         colour = np.zeros((1, 3)) + major  # for the print below
         white = np.array([True])
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")

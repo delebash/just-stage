@@ -53,6 +53,9 @@ Not measured on this machine yet: every model's memory on the 8 GB card, the ref
    Random Walk skin scattering). Relief from pictures where needed: MoGe-2 (MIT, official ONNX) or StableNormal (Apache).
 6. **Eyes.** ICT-FaceKit's (MIT) eye occlusion, tearline and caruncle meshes as templates fitted to our eyes; the iris
    ~3.6 mm behind the cornea (Navarro's eye optics); a procedural iris.
+   *Correction 2026-10-31 (the user: "your rec on all"; the text above is kept as approved):* ICT-FaceKit ships no
+   caruncle mesh - its inner-corner piece is "eye blend" (24 vertices); MetaHuman's is `cartilage`. The corner's
+   pink comes from the painting projected onto our skin (`2026-10-31-audit-eyes.md` §6).
 7. **Hair.** Real hair colours (melanin values per colour, per-strand variation — today's defaults are all red
    pigment), Cycles hair, 100K+ scalp strands for renders, brows and lashes at real counts (lashes 90–160 upper);
    later, Digital Salon's (MIT) text → groom search and DiffLocks' published Blender recipe for a CC0 groom library
