@@ -589,6 +589,9 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            job in the pipeline, its tool, the logged search that chose it or NOT RESEARCHED, its measured number; every
            NOT RESEARCHED job researched the user's way (plain, "X vs Y", alternatives, leaderboards, named candidates on
            GitHub / arXiv / Hugging Face; code read; measured here) before more is built on it.
+           CORRECTION 2026-10-31 (found by the JustDirect research session): the rec above says RealDenseFace "also reads
+           the two profile views MediaPipe can't" - never measured; `flame_fit.py` leaves left90 / right90 out and no
+           RealDenseFace output exists for them. To be measured in the alignment test, not assumed.
            ROUND 48 2026-10-31 - the relief as geometry (`relief_geometry.py`, Nehab et al. 2005 on the texel grid, 1.2M
            texels solved in 73 s; heights -3.0 to +2.6 mm, 1st-99th percentile) rendered with Blender 5.3's adaptive
            subdivision: NO GAIN, OFF by default (`RELIEF_GEOMETRY=1` turns it on). The eye area is unchanged - checked

@@ -1820,6 +1820,13 @@ every one logged; key claims page-read):
 - Blender: Shrinkwrap "Nearest Surface Point" with an offset "Outside Surface" keeps a layer off another surface; the
   manual: the AO node gives no valid result on a shadow-caustics caster or receiver - AO and MNEE can't be combined.
 - Not found (a search gap): an open occlusion or tearline shader; a CC0 sclera texture with veins; an open caruncle.
+
+*from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
+(`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0
+downloads, CC BY-NC, weak on profiles (their notes: `E:\Dev\Web\just-core\docs\plans\2026-10-31-just-direct-
+research-mocap-notes\face-landmarks-juststage.md`). Also suggested there: SEA-RAFT for the flow step, flow rejection,
+a limbus ellipse fit for the iris, the crop box from the mesh projected through the known camera. Not on disk here:
+Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weights.
 - **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
   Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
   `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.
