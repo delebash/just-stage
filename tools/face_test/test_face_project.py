@@ -468,6 +468,17 @@ def test_face_project():
         albedo[rim] = np.median(albedo[near_rim], axis=0) * np.array([0.9, 0.78, 0.78])
         nrm[rim] = normals[rim]
     print(f"  lid rim: {rim.sum()} texels take the rim's colour")
+    # the lips' contact: the inner lip surfaces (facing up or down, at the mouth line) got pale colours from views that
+    # saw teeth or the gap; they take the lips' own colour, darker — the line where real lips meet
+    z_mouth = 1.5484  # where the lips meet (measured, _close_mouth)
+    inner_lip = (np.abs(points[:, 0]) < 0.026) & (np.abs(points[:, 2] - z_mouth) < 0.0025) & (points[:, 1] < -0.135) & (
+        np.abs(normals[:, 2]) > 0.5)
+    lip_skin = (np.abs(points[:, 0]) < 0.02) & (np.abs(points[:, 2] - z_mouth) < 0.006) & (points[:, 1] < -0.14) & (
+        ~inner_lip) & covered
+    if lip_skin.any():
+        albedo[inner_lip] = np.median(albedo[lip_skin], axis=0) * np.array([0.55, 0.42, 0.42])
+        nrm[inner_lip] = normals[inner_lip]
+    print(f"  lips' contact: {inner_lip.sum()} texels")
     t = np.clip((points[:, 2] - FADE_FROM) / (FADE_TO - FADE_FROM), 0.0, 1.0)
     fade = (t * t * (3 - 2 * t)) * np.clip(low_w / (0.4 * np.median(low_w[covered])), 0.0, 1.0) ** 2  # grazing-only texels fade to the skin's median
     face_zone = covered & (points[:, 2] > 1.5) & (fade > 0.9)

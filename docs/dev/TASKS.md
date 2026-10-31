@@ -494,6 +494,10 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            to the eyes alone (Blender's light linking - at 40 W on everything it turned the skin and lips oily, round 35);
            the lips closed with 0.4 mm overlap and 12% thinner in height. Next: the iris bump down (it glittered), the
            lips' contact line, the ears, the neck streak.
+           ROUND 37 2026-10-30: the lips' inner surfaces take the lips' own colour, darker (the contact line); the light
+           removal's occlusion floor 0.5 (0.2 boosted the ears' hollows 5x). Still: the iris grey-blue from the side (the
+           cornea's grazing reflection of the grey studio), the brow cards too heavy and arched (`eyebrow001` - try a
+           sparser set or lower opacity), the ears' hollows still red, the neck streak behind the jaw.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

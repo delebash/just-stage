@@ -91,7 +91,7 @@ def main() -> int:
 
         # 2. light: occlusion from the evenly lit clay, a first-order light fitted over the skin, both divided out
         clay_l = clay @ LUMA
-        occlusion = np.clip(clay_l / np.median(clay_l[inner]), 0.2, 1.2)
+        occlusion = np.clip(clay_l / np.median(clay_l[inner]), 0.5, 1.2)  # 0.2 boosted the ears' hollows 5x - red
         lum = (painted @ LUMA) / occlusion
         skin = inner & (lum > np.percentile(lum[inner], 15)) & (lum < np.percentile(lum[inner], 97))  # no eyes, brows
         # a soft light: an even part plus one direction, the direction searched over the camera's half (its world-space
