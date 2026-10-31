@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 46))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 47))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -738,7 +738,10 @@ def test_face_project():
         # its alpha 0 turned the whole eye black (round 38) - a lower IOR keeps the layer, with a fifth of the shine
         # the white beside the iris (MediaPipe's iris edge × 1.25–1.6 toward each corner, linear): the painting's
         # (0.230, 0.165, 0.138) against round 27's (0.122, 0.106, 0.098) — (0.50, 0.45, 0.42) × (1.89, 1.56, 1.41)
-        eye_in["EyeWhiteColor"].default_value = (0.94, 0.70, 0.59, 1.0)
+        # round 46, measured at the white's outer side (7x7 spots beside each iris, where the painting's white is clean -
+        # its inner corners are dark red tissue, which made a whole-white median read as matching): painting/ours
+        # (0.240, 0.205, 0.186) / (0.333, 0.241, 0.202) = (0.72, 0.85, 0.92) on (0.94, 0.70, 0.59)
+        eye_in["EyeWhiteColor"].default_value = (0.68, 0.60, 0.54, 1.0)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
         # the white darkened toward the lids and corners by ambient occlusion within 6 mm (the cornea is split off below,
         # so only the lids occlude): our white read as one flat colour; 6 mm brought its brightest tenth to 0.258

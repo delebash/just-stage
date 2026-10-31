@@ -543,6 +543,13 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            by root height 169 dropped, the upper ones too (round 45); now by eyelashes01's texture layout (upper strips on
            its top half, lower strips bottom right): 88 lower, 96 upper. Still: the upper lip 0.086 vs 0.080 and the lower
            0.128 vs 0.122; the painting's hooded upper lid (a fold over the lid, shading the eye) - shape our head lacks.
+           ROUND 46 2026-10-31: the lower lashes dropped by the texture's strips (88), the upper 96 kept - no marks on the
+           lower lid. The white sampled at its outer side (7x7 spots beside each iris): ours redder and a third brighter than
+           the painting's, whose clean white is near neutral (r/g 1.16-1.19) - the whole-white median had mixed in its dark
+           red inner corners; EyeWhiteColor (0.94, 0.70, 0.59) -> (0.68, 0.60, 0.54) for round 47. The user's FLAME files
+           (2026-10-31): FLAME 2023 Open, the Mediapipe Landmark Embedding and the Vertex Masks into
+           `.dev/cache/flame/` (folder made); the download page's registered expression data (FaMoS, D3DFACS, CoMA,
+           VOCASET, LYHM) noted for testing the face rig later - data licence not read.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
