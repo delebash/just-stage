@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 27))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 30))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -145,7 +145,7 @@ def _render_linear(scene, path, size=512):
     return _pixels(path)[..., :3]
 
 
-def _lower_lids(body, upper=11.0, lower=5.0):
+def _lower_lids(body, upper=14.0, lower=5.0):
     """The lids closer to the iris, as a shape key: our neutral eyes show white above and below the iris (a stare, or
     eyes rolled up); a relaxed eye — and the AI's painting — has the upper lid over the iris' top and the lower lid at its
     bottom. Lid skin over each eyeball turns about the eyeball's left-right axis (as a lid closes, so it can't pass
@@ -283,7 +283,7 @@ def _eye_shells(body):
 LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
 
 
-def _add_lashes(body, style="eyelashes02"):
+def _add_lashes(body, style="eyelashes01"):  # the short, sparse set (02–04 are fuller)
     """MakeHuman's lash cards (its CC0 system assets: a strip mesh, an MHCLO binding to hm08, a lash texture with
     transparency) fitted to our head by MHCLO — MakeHuman's own way, and the card lashes CC5 and MetaHuman use. Fitted
     after the lid keys, so they sit on the lids as shaped."""
@@ -540,7 +540,7 @@ def test_face_project():
     links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
     # pores, the approaches side by side (the user: "so we test all approaches"): PORE_SOURCE=paint (the paintings'
     # own fine relief, above), scan (the Lee Perry-Smith scan's cheek tile, CC-BY 3.0, at its real size ~7.5 cm), both
-    source = os.environ.get("PORE_SOURCE", "paint")
+    source = os.environ.get("PORE_SOURCE", "both")  # 2026-10-30: both read richest
     if source in ("scan", "both"):
         if source == "scan":
             bump.inputs["Strength"].default_value = 0.0
@@ -750,6 +750,34 @@ def test_face_project():
         eye_in["InnerLayerRoughness"].default_value = 0.35  # a glossy iris mirrored the grey studio
         eye_in["EyeWhiteColor"].default_value = (0.50, 0.45, 0.42, 1.0)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
+        if os.environ.get("EYE_STYLE", "mh") == "mh":
+            import zipfile
+
+            mh_path = DIR + "mh_brown_eye.png"
+            if not Path(mh_path).exists():
+                Path(mh_path).write_bytes(zipfile.ZipFile(LASH_PACK).read("eyes/materials/brown_eye.png"))
+            mh = _linear(_pixels(mh_path)[..., :3])
+            yy, xx = np.mgrid[0:1024, 0:1024]
+            u, v = (xx + 0.5) / 1024, 1.0 - (yy + 0.5) / 1024
+            k = 0.285 / 0.46
+            mu, mv = 0.705 + (u - 0.5) * k, 0.7 + (v - 0.5) * k
+            h_mh, w_mh = mh.shape[:2]
+            baked = up.sample(mh, (mu * w_mh - 0.5).ravel(), ((1 - mv) * h_mh - 0.5).ravel()).reshape(1024, 1024, 3)
+            r_uv = np.hypot(u - 0.5, v - 0.5)
+            iris_px = (r_uv < 0.17) & (r_uv > 0.06)
+            # the iris' median colour becomes the painting's (×1.6: the painting lights the iris head-on — round 26)
+            tint = (major * 1.6) / np.maximum(np.median(baked[iris_px], axis=0), 1e-4)
+            iris_all = r_uv < 0.185
+            baked[iris_all] *= tint
+            b_srgb = np.clip(baked, 0.0, 1.0)
+            b_srgb = np.where(b_srgb <= 0.0031308, b_srgb * 12.92, 1.055 * b_srgb ** (1 / 2.4) - 0.055)
+            e_mat = bpy.data.materials.new(f"JustStage eye ({eye_name}, MakeHuman texture)")
+            e_bsdf = next(n for n in e_mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+            e_tex = e_mat.node_tree.nodes.new("ShaderNodeTexImage")
+            e_tex.image = _image(f"{eye_name} mh", b_srgb, "sRGB")
+            e_mat.node_tree.links.new(e_tex.outputs["Color"], e_bsdf.inputs["Base Color"])
+            e_bsdf.inputs["Roughness"].default_value = 0.35
+            e_bsdf.inputs["Subsurface Weight"].default_value = 0.1
         for slot in eye.material_slots:
             if slot.material and "Cornea" not in slot.material.name:
                 slot.material = e_mat
