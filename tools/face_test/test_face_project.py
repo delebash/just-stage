@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 37))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 39))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -356,7 +356,7 @@ def test_face_project():
     _close_mouth(body)
     _lower_lids(body)
     _add_lashes(body)
-    _add_lashes(body, style="eyebrow001", kind="eyebrows", shorten=1.0, colour=(0.03, 0.02, 0.015))
+    _add_lashes(body, style="eyebrow012", kind="eyebrows", shorten=1.0, colour=(0.09, 0.065, 0.048))  # straight, sparse, mid-brown
     api = importlib.import_module("bl_ext.system.juststage.api")
     character = body.juststage.character_id
     # brows and lashes as strands (the hair module's MakeHuman CC0 grooms), dark brown: Principled Hair melanin
@@ -774,6 +774,8 @@ def test_face_project():
         eye_in["IrisSection4Color"].default_value = (*np.clip(minor * 0.9, 0, 1), 1.0)  # a softer limbal ring
         eye_in["InnerLayerRoughness"].default_value = 0.35  # a glossy iris mirrored the grey studio
         eye_in["IrisBumpStrength"].default_value = 0.1  # 0.3 glittered under the catch light (round 36)
+        eye_in["OuterLayerIOR"].default_value = 1.15  # its outer layer mirrored the grey studio from the side (round 37);
+        # its alpha 0 turned the whole eye black (round 38) - a lower IOR keeps the layer, with a fifth of the shine
         # the white beside the iris (MediaPipe's iris edge × 1.25–1.6 toward each corner, linear): the painting's
         # (0.230, 0.165, 0.138) against round 27's (0.122, 0.106, 0.098) — (0.50, 0.45, 0.42) × (1.89, 1.56, 1.41)
         eye_in["EyeWhiteColor"].default_value = (0.94, 0.70, 0.59, 1.0)
@@ -815,7 +817,7 @@ def test_face_project():
                 c_out = next(n for n in c_nt.nodes if n.type == "OUTPUT_MATERIAL")
                 c_mix, c_fres, c_half = (c_nt.nodes.new(t) for t in ("ShaderNodeMixShader", "ShaderNodeFresnel", "ShaderNodeMath"))
                 c_fres.inputs["IOR"].default_value = 1.376
-                c_half.operation, c_half.inputs[1].default_value = "MULTIPLY", 0.5
+                c_half.operation, c_half.inputs[1].default_value = "MULTIPLY", 0.3
                 c_gloss = c_nt.nodes.new("ShaderNodeBsdfGlossy")
                 c_gloss.inputs["Roughness"].default_value = 0.02
                 c_nt.links.new(c_fres.outputs["Fac"], c_half.inputs[0])

@@ -498,6 +498,11 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            removal's occlusion floor 0.5 (0.2 boosted the ears' hollows 5x). Still: the iris grey-blue from the side (the
            cornea's grazing reflection of the grey studio), the brow cards too heavy and arched (`eyebrow001` - try a
            sparser set or lower opacity), the ears' hollows still red, the neck streak behind the jaw.
+           ROUNDS 38-39 2026-10-30: brows `eyebrow012` (straight, sparse), mid-brown; MPFB2's eye keeps its outer layer
+           (alpha 0 turned the eye black - round 38) at IOR 1.15 (a fifth of the shine; 1.33 mirrored the grey studio from
+           the side); our cornea's reflection at 0.3 of Fresnel. Round 39 (`compare39fixed_*.png`): eyes brown from the
+           side, brows read as this man's. Still: the ears' hollows red, the neck streak, the scalp's painted stubble (the
+           painting has it too), the photo's warmer contrast around the eyes.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the
