@@ -490,6 +490,10 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            Round 34 (`.dev/facetest/compare34fixed_*.png`): eyes read as eyes, defined brows. Still: the lips fuller than
            the painting's with a contact line, a slight stare, the ears, the neck streak, no wet catch-light, the skin's
            shine. Pore approaches compared (rounds 27-29): alike at portrait distance.
+           ROUNDS 35-36 2026-10-30: the catch light bright and small (0.12 m, 15 W), seen by glossy rays only and linked
+           to the eyes alone (Blender's light linking - at 40 W on everything it turned the skin and lips oily, round 35);
+           the lips closed with 0.4 mm overlap and 12% thinner in height. Next: the iris bump down (it glittered), the
+           lips' contact line, the ears, the neck streak.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

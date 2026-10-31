@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 34))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 37))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -339,7 +339,8 @@ def _close_mouth(body):
     half = np.clip(1.0 - (x / 0.024) ** 2, 0.0, 1.0)
     gap = 0.0016 * half
     near = (np.abs(x) < 0.027) & (y < -0.138) & (np.abs(z - z_mid) < 0.012)
-    shift = (gap / 2 + 0.0001 * half) * np.exp(-(((z - z_mid) / 0.005) ** 2)) * near
+    shift = (gap / 2 + 0.0004 * half) * np.exp(-(((z - z_mid) / 0.005) ** 2)) * near
+    shift += 0.12 * np.abs(z - z_mid) * half * near * (np.abs(z - z_mid) < 0.010)  # thinner lips
     key = body.shape_key_add(name="mouth closed", from_mix=False)  # the basis plus this offset only
     dz = np.where(z > z_mid, -shift, shift)
     for i in np.flatnonzero(near):
@@ -610,7 +611,12 @@ def test_face_project():
     cam_pos = np.array(cams["face"]["matrix_world"])[:3, 3]
     catch.location = cam_pos + np.array([0.0, 0.0, 0.25])
     catch.rotation_euler = (__import__("mathutils").Vector(head_c - catch.location)).to_track_quat("-Z", "Y").to_euler()
-    catch.data.size, catch.data.energy = 0.25, 1.5
+    catch.data.size, catch.data.energy = 0.12, 15.0
+    catch.visible_diffuse = catch.visible_transmission = catch.visible_volume_scatter = False  # reflections only
+    receivers = bpy.data.collections.new("catch light receivers")  # light linking (Blender 4.0+): the eyes only -
+    for eye_name in ("Face.eyeLeft", "Face.eyeRight"):  # on the skin it read as oil (round 35)
+        receivers.objects.link(bpy.data.objects[eye_name])
+    catch.light_linking.receiver_collection = receivers
     lit_strength.default_value = fill
     key.location = pos
     key.rotation_euler = (__import__("mathutils").Vector(head_c - pos)).to_track_quat("-Z", "Y").to_euler()
@@ -756,6 +762,7 @@ def test_face_project():
         eye_in["IrisMinorColor"].default_value = (*np.clip(minor * 1.8 * iris_gain, 0, 1), 1.0)
         eye_in["IrisSection4Color"].default_value = (*np.clip(minor * 0.9, 0, 1), 1.0)  # a softer limbal ring
         eye_in["InnerLayerRoughness"].default_value = 0.35  # a glossy iris mirrored the grey studio
+        eye_in["IrisBumpStrength"].default_value = 0.1  # 0.3 glittered under the catch light (round 36)
         # the white beside the iris (MediaPipe's iris edge × 1.25–1.6 toward each corner, linear): the painting's
         # (0.230, 0.165, 0.138) against round 27's (0.122, 0.106, 0.098) — (0.50, 0.45, 0.42) × (1.89, 1.56, 1.41)
         eye_in["EyeWhiteColor"].default_value = (0.94, 0.70, 0.59, 1.0)
