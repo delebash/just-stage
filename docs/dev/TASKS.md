@@ -508,6 +508,10 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            pale line on the neck behind the jaw (narrow, bluish: likely the relief map or a crease catching light - next,
            traced on `round.blend` by toggling the normal and albedo maps). The ears' hollows stay red (partly the
            painting's own backlit red).
+           ROUND 42 2026-10-30: paint kept clear of every depth jump too (standard; kept). The neck's pale line traced on
+           `round.blend`: it stays with the relief map off and goes with a flat colour - it is in the albedo; not in
+           left40's or left90's light-free paintings (only the AI's natural neck creases there) - another view's edge
+           (perhaps `below`); left open, small.
         5. Parts DONE 2026-10-29: GNM's eyes (`eyeLeft`, `eyeRight`) and teeth with gums and tongue (`teeth`) —
            MetaHuman's part names — placed in hm08's head by the wrap tool and bound to hm08's eye, teeth and tongue
            helpers with MHCLO (`tools/bind_parts.py`, round trip 0.08 mm); `juststage.head.add_parts` fits them to the

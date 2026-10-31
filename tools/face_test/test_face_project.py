@@ -45,7 +45,7 @@ ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
-ROUND = int(os.environ.get("FACETEST_ROUND", 41))  # each round's pictures get their own names (an open picture can't be overwritten)
+ROUND = int(os.environ.get("FACETEST_ROUND", 42))  # each round's pictures get their own names (an open picture can't be overwritten)
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -422,7 +422,15 @@ def test_face_project():
         edge = np.minimum.reduce([col, row, cam["size"] - 1 - col, cam["size"] - 1 - row])
         frame = np.clip(np.nan_to_num(edge) / 80.0, 0.0, 1.0) * (0.78 / np.nan_to_num(dist, nan=1e3)) ** 2
         # away from the view's silhouettes: pixels on an outline are part background (the pale ear rims and neck streak)
-        inside = _blur((depth < 0.999).astype(np.float32)[..., None], 4.0)
+        # ...and its depth jumps (a jaw in front of the neck: pixels on that edge blend both — the neck's pale line)
+        near = np.where(depth < 0.999, depth, 1.0).astype(np.float32)
+        hi, lo = near.copy(), near.copy()
+        for dy in (-2, -1, 0, 1, 2):
+            for dx in (-2, -1, 0, 1, 2):
+                shifted = np.roll(near, (dy, dx), axis=(0, 1))
+                hi, lo = np.maximum(hi, shifted), np.minimum(lo, shifted)
+        smooth_here = ((depth < 0.999) & (hi - lo < 0.01)).astype(np.float32)
+        inside = _blur(smooth_here[..., None], 4.0)
         clear_of_edge = up.sample(np.clip((inside - 0.5) / 0.45, 0.0, 1.0), col, row)[:, 0]
         return facing * frame * clear_of_edge, col, row
 
