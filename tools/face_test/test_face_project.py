@@ -1248,10 +1248,12 @@ def test_face_project():
     # 0.22 in the middle band while the white's colour was fixed). Measured the same way on the painting and the render
     # (at 512 px): around each iris (MediaPipe's, on the painting) the white is the pale, unsaturated pixels of the
     # eye's box outside 1.1 iris radii (brighter than its 60th percentile there, saturation under 0.35); the iris its
-    # median colour at 0.4-0.85 of its radius, lower half. One white and one iris gain for both eyes, pooled - one
+    # pigment at 0.4-0.85 of its radius, lower half: the median colour of its darker half (the painting's iris is dark
+    # warm pigment, (0.058, 0.028, 0.019), under a bright cornea sheen that the render makes itself - round 58, matched
+    # on all its pixels, took a x4 blue gain and turned lilac). One white and one iris gain for both eyes, pooled - one
     # person's eyes, the render makes the light's difference between them (round 55's first try, a 7x7 spot per white
     # and three per iris, per channel: a pink white where a spot met the outer corner's tissue, one iris orange, one
-    # green; round 56-57's brightness only left the iris grey-green beside the painting's warm brown).
+    # green).
     marks = json.load(open(DIR + "aligned_marks.json"))["face"]  # the photo is the aligned painting
     photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
     yy, xx = np.mgrid[0:512, 0:512]
@@ -1267,8 +1269,10 @@ def test_face_project():
         lum_i = img @ lum
         sat = (img.max(axis=2) - img.min(axis=2)) / np.maximum(img.max(axis=2), 1e-6)
         pale = [box & (sat < 0.35) & (lum_i > np.percentile(lum_i[box], 60)) for box, _iris in regions]
+        iris_px = np.concatenate([img[iris] for _box, iris in regions])
+        iris_l = iris_px @ lum
         return (np.median(np.concatenate([img[m] for m in pale]), axis=0),
-                np.median(np.concatenate([img[iris] for _box, iris in regions]), axis=0))
+                np.median(iris_px[iris_l < np.median(iris_l)], axis=0))
 
     want_white, want_iris = eye_colours(photo_half)
     for _ in range(2):

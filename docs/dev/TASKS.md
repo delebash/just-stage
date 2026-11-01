@@ -759,6 +759,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            less, Na et al. 2006) and the lower ones finer (0.05 mm; ticks along the lid before) - CPU render: a line
            at the margin, not a fringe; the iris calibrated per channel, pooled over both eyes' lower irises (by
            brightness only it stayed grey-green beside the painting's warm brown). The round to run.
+           ROUND 58 2026-11-01: the eyes turned to -14.8 / -15.5 deg - the irises sit lower in the opening, as the
+           painting's; light fit 0.077, the white matched. The iris went lilac with a pale ring round a large dark
+           pupil: per channel over all its pixels the calibration took a x4 blue gain (1.73, 2.17, 4.01). Measured on the
+           aligned points: the painting's iris overall (0.178, 0.117, 0.098) is dark warm pigment - its darker half
+           (0.058, 0.028, 0.019), green/red 0.49, blue/red 0.32 - under a bright cornea sheen; ours matched overall but
+           its darker half was (0.076, 0.050, 0.047), 0.65 / 0.61. Rounds 56-57 had measured the iris through the
+           unaligned points (~10 px off, partly on the white) - why they read as matched yet looked light. Now the
+           calibration matches the darker half (the pigment); our cornea makes the sheen. The round to run.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
