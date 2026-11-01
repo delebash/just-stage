@@ -766,7 +766,17 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (0.058, 0.028, 0.019), green/red 0.49, blue/red 0.32 - under a bright cornea sheen; ours matched overall but
            its darker half was (0.076, 0.050, 0.047), 0.65 / 0.61. Rounds 56-57 had measured the iris through the
            unaligned points (~10 px off, partly on the white) - why they read as matched yet looked light. Now the
-           calibration matches the darker half (the pigment); our cornea makes the sheen. The round to run.
+           calibration matches the darker half (the pigment); our cornea makes the sheen.
+           ROUND 59: the iris warm brown (texture gain 0.89, 0.71, 0.77 - the pigment matched), but a doll's eye at
+           3.5x: a pitch-black middle to half the radius, a bright orange ring, a dark rim - a macro photo's hard rings
+           - and too big. MediaPipe's iris radius on the painting reads ~20% wide (36.7 px; its edges, where the white
+           starts left and right: ~30 px, 15.4 at 512 px); ours was sized to MediaPipe's number (17.5 at 512 px: 13%
+           too big). Built: the iris' size calibrated with the colours (MPFB2's IrisToEyeWhiteRelation and the
+           texture's mapping, the half-width measured the same way on painting and render, ~0.35 of the eyeball
+           instead of 0.40); `iris_paint.py` shapes the texture's radial profile to the painting's (per 5% ring, each
+           over its mean, 0.3-3x, the radius from the edges): the pupil dark brown, not black, the rings softened, the
+           fibres kept - the painting's lower iris is lighter (0.15-0.18 against 0.02-0.03 in the middle) partly from
+           light the cornea focuses, which our clear cornea shell doesn't do. The round to run.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

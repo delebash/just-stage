@@ -9,7 +9,11 @@ brightness outward from it; catch-lights are taken out ring by ring; the picture
 IRIS_RADIUS of its width (test_face_project.IRIS_TEXTURE_RADIUS) and its brightness scaled to the painting's iris
 (linear light, 0.4-0.85 of the radius, its lower half - the upper lies under the lid in the painting); its hue kept
 (per channel it went grey-lilac: the painting's iris colour carries its cornea's sheen, which the render adds itself -
-the render's own calibration then matches the colour, cornea and all).
+the render's own calibration then matches the colour, cornea and all). Its radial profile shaped to the painting's: a
+macro photo's iris has hard rings (a black pupil, a bright collarette, a dark rim) where the painting's eye at a
+normal distance ramps smoothly from a dark middle (0.02-0.04 out to half the radius) to 0.14-0.22 (round 59's
+close-up: a doll's eye); each ring (5% of the radius) scaled by the ratio of the two profiles, each over its own mean
+(within 0.3-3x), its fibres kept.
 
 Run (the tool environment): .dev/venv-rdf/Scripts/python -I tools/face_test/iris_paint.py SEED [SEED ...]
 Writes iris_seed{N}.png (the raw paintings), iris_texture_seed{N}.png (each prepared) and iris_texture.png (the first).
@@ -88,23 +92,43 @@ def without_highlights(img, cx, cy, radius):
     return out
 
 
+RINGS = np.arange(0.0, 1.0001, 0.05)
+
+
+def edge_radius(lum, cx, cy, guess):
+    """An iris' radius from where the white starts left and right of it (the strongest fall and rise of brightness
+    along rows near its middle; the widest such chord) - MediaPipe's iris radius on the painting reads ~20% wide."""
+    widths = []
+    for dy in range(-6, 7):
+        row = lum[int(round(cy + dy)), int(cx - 1.4 * guess):int(cx + 1.4 * guess)]
+        grad = np.gradient(cv2.GaussianBlur(row[None], (0, 0), 1.0)[0])
+        half = len(row) // 2
+        widths.append((np.argmax(grad[half:]) + half - np.argmin(grad[:half])) / 2)
+    return float(np.percentile(widths, 75))
+
+
 def painting_iris():
-    """The painting's iris in the face view (MediaPipe's points, landmarks.json): linear colour at 0.4-0.85 of its
-    radius in its lower half, both eyes."""
+    """The painting's iris in the face view (MediaPipe's centre, landmarks.json; the radius from its edges), its lower
+    half, both eyes: the linear colour at 0.4-0.85 of its radius, and the luminance profile (median per ring of
+    RINGS)."""
     img = linear(cv2.imread(str(DIR / "painted_face.png")))
     marks = json.load(open(DIR / "landmarks.json"))["face"]["painted"]
     h, w = img.shape[:2]
     yy, xx = np.mgrid[0:h, 0:w]
-    picked = []
+    picked, rings = [], [[] for _ in RINGS[:-1]]
     for c, ring in ((468, range(469, 473)), (473, range(474, 478))):
         cx, cy = marks[c]
-        r = float(np.mean([np.hypot(marks[i][0] - cx, marks[i][1] - cy) for i in ring]))
+        guess = float(np.mean([np.hypot(marks[i][0] - cx, marks[i][1] - cy) for i in ring]))
+        r = edge_radius(img @ LUMA, cx, cy, guess)
         rr = np.hypot(xx - cx, yy - cy) / r
         picked.append(img[(rr > 0.4) & (rr < 0.85) & (yy > cy)])
-    return np.concatenate(picked).mean(axis=0)
+        for k, (lo, hi) in enumerate(zip(RINGS[:-1], RINGS[1:], strict=True)):
+            rings[k].append(img[(rr >= lo) & (rr < hi) & (yy > cy)] @ LUMA)
+    profile = np.array([np.median(np.concatenate(v)) for v in rings])
+    return np.concatenate(picked).mean(axis=0), profile
 
 
-def prepare(raw_path, target):
+def prepare(raw_path, target, profile):
     img = linear(cv2.imread(str(raw_path)))
     cx, cy, pupil, radius = find_iris(img)
     img = without_highlights(img, cx, cy, radius)
@@ -114,19 +138,26 @@ def prepare(raw_path, target):
     tex = cv2.warpAffine(img, m, (SIZE, SIZE), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_REPLICATE)
     yy, xx = np.mgrid[0:SIZE, 0:SIZE]
     rr = np.hypot(xx - SIZE / 2 + 0.5, yy - SIZE / 2 + 0.5) / (IRIS_RADIUS * SIZE)
+    lum = tex @ LUMA
+    own = np.array([np.median(lum[(rr >= lo) & (rr < hi)]) for lo, hi in zip(RINGS[:-1], RINGS[1:], strict=True)])
+    middles = (RINGS[:-1] + RINGS[1:]) / 2
+    ratio = np.clip((profile / profile.mean()) / np.maximum(own / own.mean(), 1e-6), 0.3, 3.0)
+    ring_gain = np.where(rr < 1.05, np.interp(np.minimum(rr, middles[-1]), middles, ratio), 1.0)
+    tex *= ring_gain[..., None]
     band = tex[(rr > 0.4) & (rr < 0.85)].mean(axis=0)
     tex *= (target @ LUMA) / (band @ LUMA)  # brightness only (see above)
     return tex, (cx, cy, pupil, radius, band)
 
 
 def main(argv) -> int:
-    target = painting_iris()
-    print(f"the painting's iris (linear, 0.4-0.85 r, lower half): {np.round(target, 3).tolist()}")
+    target, profile = painting_iris()
+    print(f"the painting's iris (linear, 0.4-0.85 r, lower half): {np.round(target, 3).tolist()}; its profile "
+          f"{np.round(profile, 3).tolist()}")
     for n, seed in enumerate(int(a) for a in argv):
         raw = DIR / f"iris_seed{seed}.png"
         if not raw.exists():
             painter.paint([], PROMPT, seed, raw)
-        tex, (cx, cy, pupil, radius, band) = prepare(raw, target)
+        tex, (cx, cy, pupil, radius, band) = prepare(raw, target, profile)
         out = srgb_bgr(tex)
         cv2.imwrite(str(DIR / f"iris_texture_seed{seed}.png"), out)
         if n == 0:

@@ -386,7 +386,7 @@ def _iris_texture(eye_name):
     centred macro iris by the image model, onto the eye's UVs) in MPFB2's iris rings instead of its Voronoi fibres: the
     inner ring, the fibre band and the flat band take the texture, through a colour gain calibrated against the
     painting; the border ring still blends from it to the white. Its bump off (MPFB2's fibres no longer under it).
-    Returns the gain node."""
+    Returns the gain's socket and the texture's mapping (set_iris_size moves it with the iris' size)."""
     tree = bpy.data.node_groups[f"mpfb_eye.{eye_name}.IrisMain"]
     nodes, links = tree.nodes, tree.links
     mapping = nodes.new("ShaderNodeMapping")
@@ -405,7 +405,17 @@ def _iris_texture(eye_name):
     for socket in ("Section1Color", "Section2Color", "Section3Color"):
         links.new(gain.outputs["Vector"], nodes["IrisSectionsColorSwitch"].inputs[socket])
     links.new(gain.outputs["Vector"], nodes["IrisBorder"].inputs["MinColor"])
-    return gain
+    return gain.inputs[1], mapping
+
+
+def set_iris_size(eye_in, mapping, relation):
+    """MPFB2's iris size (its IrisToEyeWhiteRelation, the iris' radius over the eyeball's on the eye's UVs) and the
+    iris texture's mapping with it."""
+    eye_in["IrisToEyeWhiteRelation"].default_value = relation
+    if mapping is not None:
+        scale = IRIS_TEXTURE_RADIUS / (0.46 * relation)
+        mapping.inputs["Scale"].default_value = (scale, scale, 1.0)
+        mapping.inputs["Location"].default_value = (0.5 - 0.5 * scale, 0.5 - 0.5 * scale, 0.0)
 
 
 #: per eye and lid: count, length at the longest and at the corners (mm), the angle off straight ahead at the root seen
@@ -1053,7 +1063,7 @@ def test_face_project():
         aligned = Path(f"{DIR}aligned_{view}.png")
         eye_paintings[view] = (_linear(_pixels(str(aligned) if aligned.exists() else f"{DIR}painted_{view}.png")[..., :3]),
                                _pixels(f"{DIR}depth_{view}.exr")[..., 0])
-    whites, iris_gains = {}, {}  # each eye's EyeWhiteColor input and its iris texture's gain, calibrated below
+    whites, iris_gains, iris_sizes = {}, {}, {}  # each eye's white, iris texture gain and iris size: calibrated below
     for eye_name in ("Face.eyeLeft", "Face.eyeRight"):
         eye = bpy.data.objects.get(eye_name)
         if eye is None:
@@ -1173,8 +1183,10 @@ def test_face_project():
         # (0.240, 0.205, 0.186) / (0.333, 0.241, 0.202) = (0.72, 0.85, 0.92) on (0.94, 0.70, 0.59)
         eye_in["EyeWhiteColor"].default_value = (0.68, 0.60, 0.54, 1.0)  # the start; calibrated below
         whites[eye_name] = eye_in["EyeWhiteColor"]
+        iris_sizes[eye_name] = (eye_in, None)
         if Path(IRIS_TEXTURE).exists():
-            iris_gains[eye_name] = _iris_texture(eye_name).inputs[1]
+            iris_gains[eye_name], iris_map = _iris_texture(eye_name)
+            iris_sizes[eye_name] = (eye_in, iris_map)
             eye_in["IrisBumpStrength"].default_value = 0.0
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
         if os.environ.get("EYE_STYLE", "mpfb") == "mh":  # rounds 30–31: its brown read red-orange; MPFB2 kept
@@ -1265,6 +1277,19 @@ def test_face_project():
         box = (np.abs(xx - cx) < 2.2 * r_eye) & (np.abs(yy - cy) < r_eye) & (rr > 1.1)
         regions.append((box, (rr > 0.4) & (rr < 0.85) & (yy > cy)))
 
+    def iris_half_width(img):
+        """The iris' half-width at its widest, from where the white starts left and right (the strongest fall and
+        rise of brightness along rows through its middle) - MediaPipe's iris radius on the painting is ~20% wide."""
+        lum_s = img @ lum
+        widths = []
+        for c_i in (468, 473):
+            cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
+            for dy in range(-3, 4):
+                row = lum_s[int(round(cy + dy)), int(cx - 28):int(cx + 28)]
+                grad = np.gradient(row)
+                widths.append((np.argmax(grad[28:]) + 28 - np.argmin(grad[:28])) / 2)
+        return float(np.percentile(widths, 75))
+
     def eye_colours(img):
         lum_i = img @ lum
         sat = (img.max(axis=2) - img.min(axis=2)) / np.maximum(img.max(axis=2), 1e-6)
@@ -1275,9 +1300,14 @@ def test_face_project():
                 np.median(iris_px[iris_l < np.median(iris_l)], axis=0))
 
     want_white, want_iris = eye_colours(photo_half)
+    want_width = iris_half_width(photo_half)
     for _ in range(2):
         shot = _render_linear(scene, f"{DIR}calib.exr") * 2.0 ** scene.view_settings.exposure
         got_white, got_iris = eye_colours(shot)
+        got_width = iris_half_width(shot)
+        for eye_in, iris_map in iris_sizes.values():
+            relation = eye_in["IrisToEyeWhiteRelation"].default_value * want_width / max(got_width, 1.0)
+            set_iris_size(eye_in, iris_map, float(np.clip(relation, 0.30, 0.45)))
         for socket in whites.values():
             white_now = np.array(socket.default_value[:3])
             socket.default_value = (*np.clip(white_now * want_white / np.maximum(got_white, 1e-4), 0.05, 0.95), 1.0)
@@ -1285,6 +1315,9 @@ def test_face_project():
             gain_now = np.array(socket.default_value)
             socket.default_value = tuple(np.clip(gain_now * want_iris / np.maximum(got_iris, 1e-5), 0.1, 10.0))
     white_set = np.round(next(iter(whites.values())).default_value[:3], 3).tolist()
+    relation_set = next(iter(iris_sizes.values()))[0]["IrisToEyeWhiteRelation"].default_value
+    print(f"  the iris' half-width (512 px): the painting's {want_width:.1f}, ours {got_width:.1f} before the last "
+          f"step; its size {relation_set:.3f} of the eyeball (0.40 before)")
     print(f"  the eyes: the white {white_set} (the painting's {np.round(want_white, 3).tolist()}, ours before the last "
           f"step {np.round(got_white, 3).tolist()}); the iris {np.round(want_iris, 3).tolist()} wanted, "
           f"{np.round(got_iris, 3).tolist()} before" + (f", its texture's gain "
