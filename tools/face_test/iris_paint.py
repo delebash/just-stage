@@ -6,8 +6,10 @@
 procedural iris read as noise beside the painting's: round 54's close-up). FLUX 3 Image Klein paints a head-on macro
 iris (no reference); the pupil is found as the darkest blob near the middle, the iris' rim as the strongest rise in
 brightness outward from it; catch-lights are taken out ring by ring; the picture is cropped so the iris' radius is
-IRIS_RADIUS of its width (test_face_project.IRIS_TEXTURE_RADIUS) and its colour scaled to the painting's iris (linear
-light, 0.4-0.85 of the radius, its lower half - the upper lies under the lid in the painting).
+IRIS_RADIUS of its width (test_face_project.IRIS_TEXTURE_RADIUS) and its brightness scaled to the painting's iris
+(linear light, 0.4-0.85 of the radius, its lower half - the upper lies under the lid in the painting); its hue kept
+(per channel it went grey-lilac: the painting's iris colour carries its cornea's sheen, which the render adds itself -
+the render's own calibration then matches the colour, cornea and all).
 
 Run (the tool environment): .dev/venv-rdf/Scripts/python -I tools/face_test/iris_paint.py SEED [SEED ...]
 Writes iris_seed{N}.png (the raw paintings), iris_texture_seed{N}.png (each prepared) and iris_texture.png (the first).
@@ -49,14 +51,16 @@ def srgb_bgr(rgb):
 
 
 def find_iris(img):
-    """The pupil's centre (the darkest blob nearest the middle) and the iris' radius (the strongest rise in the
-    brightness profile outward from it, past twice the pupil's radius)."""
+    """The pupil's centre (the largest dark blob near the middle - the darkest pixels, closed into one: alone they
+    split a large pupil into specks, seeds 1-2's first run) and the iris' radius (the strongest rise in the brightness
+    profile outward from it, past twice the pupil's radius)."""
     h, w = img.shape[:2]
     lum = cv2.GaussianBlur(img @ LUMA, (0, 0), 3.0)
     dark = (lum < np.percentile(lum, 3)).astype(np.uint8)
+    dark = cv2.morphologyEx(dark, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31)))
     n, labels, stats, cents = cv2.connectedComponentsWithStats(dark)
-    k = 1 + int(np.argmin([np.hypot(*(cents[i] - (w / 2, h / 2))) - 0.02 * np.sqrt(stats[i, cv2.CC_STAT_AREA])
-                           for i in range(1, n)]))
+    near = [i for i in range(1, n) if np.hypot(*(cents[i] - (w / 2, h / 2))) < 0.3 * w]
+    k = max(near, key=lambda i: stats[i, cv2.CC_STAT_AREA])
     cx, cy = cents[k]
     pupil = np.sqrt(stats[k, cv2.CC_STAT_AREA] / np.pi)
     yy, xx = np.mgrid[0:h, 0:w]
@@ -111,7 +115,7 @@ def prepare(raw_path, target):
     yy, xx = np.mgrid[0:SIZE, 0:SIZE]
     rr = np.hypot(xx - SIZE / 2 + 0.5, yy - SIZE / 2 + 0.5) / (IRIS_RADIUS * SIZE)
     band = tex[(rr > 0.4) & (rr < 0.85)].mean(axis=0)
-    tex *= target / band
+    tex *= (target @ LUMA) / (band @ LUMA)  # brightness only (see above)
     return tex, (cx, cy, pupil, radius, band)
 
 
@@ -128,7 +132,7 @@ def main(argv) -> int:
         if n == 0:
             cv2.imwrite(str(DIR / "iris_texture.png"), out)
         print(f"seed {seed}: pupil at ({cx:.0f}, {cy:.0f}) r {pupil:.0f} px, iris r {radius:.0f} px "
-              f"(pupil {pupil / radius:.2f} of it); its band {np.round(band, 3).tolist()} -> scaled to the painting's")
+              f"(pupil {pupil / radius:.2f} of it); its band {np.round(band, 3).tolist()} -> the painting's brightness")
     return 0
 
 

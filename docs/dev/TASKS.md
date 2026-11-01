@@ -703,6 +703,28 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            the repainted views each invent their own fine detail, so moving them onto each other doesn't bring them to
            a view left out. Flow stays off; the rec closes here, measured. (`flow_views.py` keeps RAFT as the judge's
            alternative: FACETEST_FLOW_METHOD=raft.)
+           ROUNDS 55-56 2026-11-01 (the card back for ~25 min): the iris painted by FLUX 3 Image Klein, three seeds in
+           2 min, each a convincing macro iris; the pupil finder's first form took a speck of a large pupil (the darkest
+           3% split it) - now the darkest pixels closed into one blob, the largest near the middle (pupils 0.23-0.28 of
+           the iris, as the painting's); scaled per channel to the painting's iris they went grey-lilac (its colour
+           carries its cornea's sheen) - now brightness only, hue kept; seed 2 (fine radial fibres, dark brown) used.
+           Round 55: the iris reads as a real iris; the spot calibration failed - a pink white (the left eye's spot met
+           the outer corner's tissue), one iris orange, one green (three spots per iris, per channel). Round 56: both
+           measured the same way on painting and render - the pale unsaturated pixels around each iris for the white,
+           the iris' lower half for its brightness - pooled over both eyes (one albedo; the render makes the light's
+           difference): the white (0.263, 0.224, 0.204) against the painting's (0.263, 0.224, 0.205), the iris 0.214
+           against 0.200 before the last step. Light fit 0.091 (54: 0.074), exposure -1.29.
+           THE STEP UNDER THE EYES (in every round's close-up, unchanged by the levelling) - traced on the CPU: not the
+           relief normals (render without them: still there), not the fallback fill (fade 1 there), not the views'
+           visibility edges (each view's weight feathered toward its edge on the texture, Szeliski's feathering: no
+           measurable change - removed), not the mesh (texel depth against the face camera's depth picture: 0 mm), not
+           the UVs (no overlap - every polygon shown there covers its texels once). It is a painted feature in the wrong
+           place: faceright30 (60% of the weight there) has the eye bag's crease where the hero (38%) has smooth skin -
+           its tone 0.84 against the hero's 1.14 - because a crease painted but not modelled lands elsewhere on the mesh
+           from 30 degrees. Choosing harder by facing (the broad band at cos^16) made it worse (0.82: faceright30 faces
+           that skin more). The hero leading where it sees fixes it: its weight x4 - the patch 0.88 -> 1.06 between its
+           neighbours' 1.18 / 0.99, the lips' doubled contact line gone, the face's mid-scale unevenness 0.051 -> 0.047
+           (median), 0.095 -> 0.087 (p90), measured in the face camera. Built (HERO_VIEW, HERO_WEIGHT); the round to run.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

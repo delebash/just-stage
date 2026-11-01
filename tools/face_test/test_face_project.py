@@ -49,6 +49,7 @@ HDRI = "E:/Dev/3D/just-stage/.dev/cache/hdri/studio_small_09_2k.hdr"
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
 SIZE = 4096
 LEVEL_CELL, LEVEL_SIGMA = 8, 3.0  # the gain fields' grid (texels a cell: ~1.3 mm) and smoothing (cells: ~4 mm)
+HERO_VIEW, HERO_WEIGHT = "face", 4.0  # face_paint_seq.py's hero: the other views were painted from it (see below)
 FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam where it ends
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
@@ -703,6 +704,13 @@ def test_face_project():
         low_img, nlow_img = _blur(albedo, 6.0), _blur(nworld, 6.0)
         low, nlow = up.sample(low_img, col, row), up.sample(nlow_img, col, row)
         soft, sharp = w**4, w**16
+        if view == HERO_VIEW:
+            # the hero leads where it sees: the views painted from it carry its features, but a feature painted and not
+            # modelled (the eye bag's crease) lands elsewhere on the mesh from 30 degrees - round 56's straight-edged
+            # dark patch under the eye was faceright30's crease averaged in (0.84 there against the hero's 1.14);
+            # x4: the patch 0.88 -> 1.06 between its neighbours' 1.18 / 0.99, the lips' doubled contact line gone,
+            # mid-scale unevenness over the face 0.051 -> 0.047 (median), 0.095 -> 0.087 (p90), in the face camera
+            soft, sharp = soft * HERO_WEIGHT, sharp * HERO_WEIGHT**4
         low_sum += soft[:, None] * low * field_at(fields[view], every)  # levelled; the fine band below is a ratio
         nlow_sum += soft[:, None] * nlow
         low_w += soft
@@ -1186,38 +1194,47 @@ def test_face_project():
         white = np.array([True])
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")
 
-    # the whites calibrated like the skin, against the painting in the face view, at the same spots as round 46's
-    # measurement (7x7 beside each iris on its outer side, 1.4 iris radii out, where the painting's white is clean): the
-    # light fit changes from round to round (round 53 from 45 deg up, 1.6 m; round 54 from 25 deg, 3.0 m - the white
-    # 0.34 against the painting's 0.22 in the middle band), so a fixed white colour follows the light, not the painting
-    # the iris texture's gain the same way, at three spots in the iris' lower half (0.65 of its radius, 60 / 90 / 120
-    # deg below its centre - the upper half lies under the lid and the catch light)
+    # the whites and the iris calibrated like the skin, against the painting in the face view, every round (the light
+    # fit moves: round 53 from 45 deg up, 1.6 m; round 54 from 25 deg, 3.0 m - its white 0.34 against the painting's
+    # 0.22 in the middle band while the white's colour was fixed). Measured the same way on the painting and the render
+    # (at 512 px): around each iris (MediaPipe's, on the painting) the white is the pale, unsaturated pixels of the
+    # eye's box outside 1.1 iris radii (brighter than its 60th percentile there, saturation under 0.35); the iris its
+    # median brightness at 0.4-0.85 of its radius, lower half. One white and one iris gain for both eyes, pooled - one
+    # person's eyes, the render makes the light's difference between them (round 55's first try, a 7x7 spot per white
+    # and three per iris, per channel: a pink white where a spot met the outer corner's tissue, one iris orange, one
+    # green). The iris keeps the texture's hue: its brightness only.
     marks = json.load(open(DIR + "landmarks.json"))["face"]["painted"]
-    spots, iris_spots = {}, {}
-    for eye_name, (c_i, ring, outward) in (("Face.eyeRight", (468, range(469, 473), -1.0)),
-                                           ("Face.eyeLeft", (473, range(474, 478), 1.0))):
-        cx, cy = marks[c_i]
-        r_img = float(np.mean([np.hypot(marks[i][0] - cx, marks[i][1] - cy) for i in ring]))
-        spots[eye_name] = (int(round(cx + outward * 1.4 * r_img)), int(round(cy)))
-        iris_spots[eye_name] = [(int(round(cx + 0.65 * r_img * np.cos(np.radians(a)))),
-                                 int(round(cy + 0.65 * r_img * np.sin(np.radians(a))))) for a in (60, 90, 120)]
+    photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
+    yy, xx = np.mgrid[0:512, 0:512]
+    regions = []
+    for c_i, ring in ((468, range(469, 473)), (473, range(474, 478))):
+        cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
+        r_eye = float(np.mean([np.hypot(*(np.array(marks[i]) - marks[c_i])) for i in ring])) / 2
+        rr = np.hypot(xx - cx, yy - cy) / r_eye
+        box = (np.abs(xx - cx) < 2.2 * r_eye) & (np.abs(yy - cy) < r_eye) & (rr > 1.1)
+        regions.append((box, (rr > 0.4) & (rr < 0.85) & (yy > cy)))
+
+    def eye_colours(img):
+        lum_i = img @ lum
+        sat = (img.max(axis=2) - img.min(axis=2)) / np.maximum(img.max(axis=2), 1e-6)
+        pale = [box & (sat < 0.35) & (lum_i > np.percentile(lum_i[box], 60)) for box, _iris in regions]
+        return (np.median(np.concatenate([img[m] for m in pale]), axis=0),
+                float(np.median(np.concatenate([lum_i[iris] for _box, iris in regions]))))
+
+    want_white, want_iris = eye_colours(photo_half)
     for _ in range(2):
         shot = _render_linear(scene, f"{DIR}calib.exr") * 2.0 ** scene.view_settings.exposure
-        for eye_name, (sx, sy) in spots.items():
-            want = _patch_colour(_linear(photo), [(sx, sy)], 3)
-            got = _patch_colour(shot, [(sx // 2, sy // 2)], 2)
-            new = np.clip(np.array(whites[eye_name].default_value[:3]) * want / np.maximum(got, 1e-4), 0.05, 0.95)
-            whites[eye_name].default_value = (*new, 1.0)
-            if eye_name in iris_gains:
-                want = _patch_colour(_linear(photo), iris_spots[eye_name], 3)
-                got = _patch_colour(shot, [(x // 2, y // 2) for x, y in iris_spots[eye_name]], 2)
-                gain_now = np.array(iris_gains[eye_name].default_value)
-                iris_gains[eye_name].default_value = tuple(np.clip(gain_now * want / np.maximum(got, 1e-5), 0.1, 10.0))
-    for eye_name, socket in whites.items():
-        print(f"  {eye_name}: the white {np.round(socket.default_value[:3], 3).tolist()} (painting at the spot "
-              f"{np.round(_patch_colour(_linear(photo), [spots[eye_name]], 3), 3).tolist()})"
-              + (f"; the iris texture's gain {np.round(iris_gains[eye_name].default_value, 2).tolist()}"
-                 if eye_name in iris_gains else ""))
+        got_white, got_iris = eye_colours(shot)
+        for socket in whites.values():
+            white_now = np.array(socket.default_value[:3])
+            socket.default_value = (*np.clip(white_now * want_white / np.maximum(got_white, 1e-4), 0.05, 0.95), 1.0)
+        for socket in iris_gains.values():
+            gain_now = np.array(socket.default_value)
+            socket.default_value = tuple(np.clip(gain_now * want_iris / max(got_iris, 1e-5), 0.1, 10.0))
+    white_set = np.round(next(iter(whites.values())).default_value[:3], 3).tolist()
+    print(f"  the eyes: the white {white_set} (the painting's {np.round(want_white, 3).tolist()}, ours before the last "
+          f"step {np.round(got_white, 3).tolist()}); the iris brightness {want_iris:.3f} wanted, {got_iris:.3f} before"
+          + (f", its texture's gain {next(iter(iris_gains.values())).default_value[0]:.2f}" if iris_gains else ""))
 
     bpy.ops.wm.save_as_mainfile(filepath=f"{DIR}round.blend", copy=True)  # the finished scene, for quick trials
     _gpu(scene, 256)
