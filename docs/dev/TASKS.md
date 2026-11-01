@@ -776,7 +776,19 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            instead of 0.40); `iris_paint.py` shapes the texture's radial profile to the painting's (per 5% ring, each
            over its mean, 0.3-3x, the radius from the edges): the pupil dark brown, not black, the rings softened, the
            fibres kept - the painting's lower iris is lighter (0.15-0.18 against 0.02-0.03 in the middle) partly from
-           light the cornea focuses, which our clear cornea shell doesn't do. The round to run.
+           light the cornea focuses, which our clear cornea shell doesn't do.
+           ROUNDS 60-62 2026-11-01: the iris' size calibrated to 0.338 of the eyeball (half-width 16.0 / 15.4 at 512
+           px). Round 60-61: still a large dark octagonal middle - not MPFB2's pupil disc (scaled with the iris in 61:
+           its PupilSize is over the eyeball, 0.16 was 0.40-0.47 of the iris), but the mesh: GNM's eye UVs squeeze its
+           2.7 mm pupil disc into UV radius 0-0.05 and its iris (2.55-5.5 mm) into 0.05-0.185, so the texture landed
+           warped (its pupil at ~0.45 of the 3D radius). Built: `_linear_iris_uvs` lays the iris' and pupil's UVs out by
+           3D radius (angles kept, UV 0.185 at the limbus as before, the sclera's untouched); MPFB2's border ring
+           narrowed to the last 2% (its dark border colour drew a thin black outline; linking the texture into it read
+           the texture's replicated outside - a green ring). Round 62: warm brown irises of the painting's size, a
+           normal pupil, no outline, lower in the opening as the painting's; the face reads as the same man. Left at the
+           eye: the whites bright and even (the painting's shaded under the upper lid, pinkish toward the corners), the
+           upper lid's margin shadow; the iris calibration now three passes (two left it 20-50% off after the layout
+           change).
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

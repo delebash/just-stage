@@ -385,7 +385,8 @@ def _iris_texture(eye_name):
     """The research's iris from an image model (`../plans/2026-10-30-research-hair-eyes-teeth.md` §5c, 3: a flat,
     centred macro iris by the image model, onto the eye's UVs) in MPFB2's iris rings instead of its Voronoi fibres: the
     inner ring, the fibre band and the flat band take the texture, through a colour gain calibrated against the
-    painting; the border ring still blends from it to the white. Its bump off (MPFB2's fibres no longer under it).
+    painting; MPFB2's border ring - its dark border colour, a thin black outline round the iris (round 61) - narrowed
+    to the last 2% of the radius (the texture has its own limbus). Its bump off (MPFB2's fibres no longer under it).
     Returns the gain's socket and the texture's mapping (set_iris_size moves it with the iris' size)."""
     tree = bpy.data.node_groups[f"mpfb_eye.{eye_name}.IrisMain"]
     nodes, links = tree.nodes, tree.links
@@ -408,10 +409,15 @@ def _iris_texture(eye_name):
     return gain.inputs[1], mapping
 
 
+PUPIL_SHARE = 0.22  # MPFB2's black pupil disc, of the iris' radius: just inside the iris texture's own pupil (0.24)
+
+
 def set_iris_size(eye_in, mapping, relation):
-    """MPFB2's iris size (its IrisToEyeWhiteRelation, the iris' radius over the eyeball's on the eye's UVs) and the
-    iris texture's mapping with it."""
+    """MPFB2's iris size (its IrisToEyeWhiteRelation, the iris' radius over the eyeball's on the eye's UVs), its pupil
+    with it (PupilSize is over the eyeball too: 0.16 was 0.40-0.47 of the iris - round 60's huge pupil) and the iris
+    texture's mapping."""
     eye_in["IrisToEyeWhiteRelation"].default_value = relation
+    eye_in["PupilSize"].default_value = relation * PUPIL_SHARE
     if mapping is not None:
         scale = IRIS_TEXTURE_RADIUS / (0.46 * relation)
         mapping.inputs["Scale"].default_value = (scale, scale, 1.0)
@@ -592,6 +598,35 @@ def _head_tile(body):
     print(f"head tile: {int(pick.sum())} polygons packed into their own map")
 
 
+def _linear_iris_uvs(eye, ids=None):
+    """The iris' and pupil's UVs laid out by their 3D radius, each loop's angle kept, out to the limbus where the
+    sclera's begin: GNM's eye squeezes its 2.7 mm pupil disc into UV radius 0-0.05 and its iris (2.55-5.5 mm) into
+    0.05-0.185 (measured 2026-11-01), so a texture or MPFB2's rings landed warped - the iris texture's pupil (0.24 of
+    the iris) at ~0.45 of the 3D radius, a dilated, ringed eye (round 61). `ids`: the iris' and pupil's material
+    indices, when their slots no longer say so."""
+    m = np.array(eye.matrix_world)
+    co = np.array([v.co for v in eye.data.vertices]) @ m[:3, :3].T + m[:3, 3]
+    centre = (co.min(axis=0) + co.max(axis=0)) / 2
+    names = [sl.material.name if sl.material else "" for sl in eye.material_slots]
+    ids = ids or {i for i, n in enumerate(names) if "Iris" in n or "Pupil" in n}
+    loops = [(li, vi) for p in eye.data.polygons if p.material_index in ids
+             for li, vi in zip(p.loop_indices, p.vertices, strict=True)]
+    verts = sorted({vi for _li, vi in loops})
+    axis = co[verts].mean(axis=0) - centre
+    axis /= np.linalg.norm(axis)
+    rel = co - centre
+    radial = np.linalg.norm(rel - np.outer(rel @ axis, axis), axis=1)
+    uv = eye.data.uv_layers[0].data
+    rho_max = max(float(np.hypot(*(np.array(uv[li].uv) - 0.5))) for li, _vi in loops)
+    r_max = float(radial[verts].max())
+    for li, vi in loops:
+        u, v = uv[li].uv
+        angle = np.arctan2(v - 0.5, u - 0.5)
+        rho = rho_max * radial[vi] / r_max
+        uv[li].uv = (0.5 + rho * np.cos(angle), 0.5 + rho * np.sin(angle))
+    return rho_max, r_max
+
+
 def _aim_eyes():
     """Each eye turned about its middle to the elevation the paintings' irises show: per view, the ray from its camera
     through MediaPipe's iris centre on the aligned painting (aligned_marks.json, by align_paintings.py) meets the
@@ -640,6 +675,9 @@ def test_face_project():
     t0 = time.time()
     bpy.ops.wm.open_mainfile(filepath=DIR + "face.blend")
     body = bpy.data.objects["Face"]
+    for eye_name in ("Face.eyeLeft", "Face.eyeRight"):
+        rho_max, r_max = _linear_iris_uvs(bpy.data.objects[eye_name])
+        print(f"{eye_name}: iris and pupil UVs by 3D radius, UV {rho_max:.3f} at the limbus ({r_max * 1000:.2f} mm)")
     _aim_eyes()
     # each eye's opening, once, from the untouched eye (its iris marks the gaze; later its materials are replaced and
     # its cornea split off, which moves its bounding box): for the lashes, the occlusion and the tearline
@@ -1165,7 +1203,7 @@ def test_face_project():
         next(n for n in cc.nodes if n.type == "VALUE").outputs[0].default_value = 0.46
         eye_in = made["EnhancedEye"].inputs
         eye_in["IrisToEyeWhiteRelation"].default_value = 0.40
-        eye_in["PupilSize"].default_value = 0.16
+        eye_in["PupilSize"].default_value = 0.40 * PUPIL_SHARE  # set with the iris (set_iris_size)
         # calibrated like the skin (2026-10-30, round 27 against the painting, linear light measured at MediaPipe's iris
         # and lid points): our iris read greyer and lighter, our white cooler and darker than the painting's
         iris_gain = np.array([1.0, 0.78, 0.82])
@@ -1188,6 +1226,7 @@ def test_face_project():
             iris_gains[eye_name], iris_map = _iris_texture(eye_name)
             iris_sizes[eye_name] = (eye_in, iris_map)
             eye_in["IrisBumpStrength"].default_value = 0.0
+            eye_in["IrisSection3End"].default_value = 0.98  # the border ring starts here (MPFB2: 0.85)
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
         if os.environ.get("EYE_STYLE", "mpfb") == "mh":  # rounds 30–31: its brown read red-orange; MPFB2 kept
             import zipfile
@@ -1301,7 +1340,7 @@ def test_face_project():
 
     want_white, want_iris = eye_colours(photo_half)
     want_width = iris_half_width(photo_half)
-    for _ in range(2):
+    for _ in range(3):  # two left the iris 20-50% off when its layout changed (round 62)
         shot = _render_linear(scene, f"{DIR}calib.exr") * 2.0 ** scene.view_settings.exposure
         got_white, got_iris = eye_colours(shot)
         got_width = iris_half_width(shot)
