@@ -13,7 +13,10 @@ The close "face" painting is the hero (the test's photo). For each next view, in
 2. FLUX 3 Image Klein (face_paint_cli.paint) edits that picture alone - the person comes from its painted part (with
    the hero as a second reference, round 54's first try, the model painted the hero's front view instead of the
    30-degree one: the lips 180 px off);
-3. the new painting aligned to the clay (align_paintings.py, in MediaPipe's environment) before the next view uses it.
+3. its colour matched to the composite where that was already painted (gain compensation, Brown & Lowe 2007: a
+   gain per channel in linear light, the median ratio over the painted part) - unmatched, the tone drifted darker and
+   more orange view by view (round 54's sequence);
+4. the new painting aligned to the clay (align_paintings.py, in MediaPipe's environment) before the next view uses it.
 
 Run (the tool environment with OpenEXR): .dev/venv-rdf/Scripts/python -I tools/face_test/face_paint_seq.py SEED [VIEW ...]
 """
@@ -75,7 +78,26 @@ def composite(view, done, views):
     alpha = cv2.GaussianBlur(inside, (0, 0), FEATHER)
     clay = srgb(DIR / f"clay_{view}.png")
     out = alpha[..., None] * painted + (1.0 - alpha[..., None]) * clay
-    return (np.clip(out, 0.0, 1.0)[..., ::-1] * 255.0).round().astype(np.uint8), float(alpha[target.covered].mean())
+    picture = (np.clip(out, 0.0, 1.0)[..., ::-1] * 255.0).round().astype(np.uint8)
+    return picture, alpha * target.covered, float(alpha[target.covered].mean())
+
+
+def linear(srgb_img):
+    return np.where(srgb_img <= 0.04045, srgb_img / 12.92, ((srgb_img + 0.055) / 1.055) ** 2.4)
+
+
+def match_colour(path, start, alpha):
+    """The painting at `path` scaled per channel (linear light) to `start` where `alpha` says it was painted already;
+    returns the gains."""
+    new, ref = linear(srgb(path)), linear(start[..., ::-1].astype(np.float32) / 255.0)
+    keep = alpha > 0.9
+    gain = np.ones(3)
+    if keep.sum() > 1000:
+        gain = np.median(ref[keep], axis=0) / np.maximum(np.median(new[keep], axis=0), 1e-6)
+    out = np.clip(new * gain, 0.0, 1.0)
+    out = np.where(out <= 0.0031308, out * 12.92, 1.055 * out ** (1 / 2.4) - 0.055)
+    cv2.imwrite(str(path), (out[..., ::-1] * 255.0).round().astype(np.uint8))
+    return gain
 
 
 def main(argv) -> int:
@@ -85,13 +107,15 @@ def main(argv) -> int:
     done = [HERO] + list(ORDER[:ORDER.index(todo[0])])  # a resumed run: the views before its first are painted
     for view in todo:
         t = time.time()
-        picture, share = composite(view, done, views)
+        picture, alpha, share = composite(view, done, views)
         start = DIR / f"seq_start_{view}.png"
         cv2.imwrite(str(start), picture)
         painter.paint([start], PROMPT, seed, DIR / f"painted_{view}.png")
+        gain = match_colour(DIR / f"painted_{view}.png", picture, alpha)
         subprocess.run([str(TOOLS_PYTHON), str(HERE / "align_paintings.py"), view], check=True)
         done.append(view)
-        print(f"{view}: {share:.0%} of it painted already; repainted and aligned in {time.time() - t:.0f}s", flush=True)
+        print(f"{view}: {share:.0%} of it painted already; repainted, colour x {np.round(gain, 3).tolist()}, "
+              f"aligned in {time.time() - t:.0f}s", flush=True)
     return 0
 
 

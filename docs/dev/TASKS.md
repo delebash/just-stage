@@ -725,6 +725,26 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            that skin more). The hero leading where it sees fixes it: its weight x4 - the patch 0.88 -> 1.06 between its
            neighbours' 1.18 / 0.99, the lips' doubled contact line gone, the face's mid-scale unevenness 0.051 -> 0.047
            (median), 0.095 -> 0.087 (p90), measured in the face camera. Built (HERO_VIEW, HERO_WEIGHT); the round to run.
+           THE SEQUENCE'S COLOUR DRIFT at its source: round 56 against the paintings (front view, linear) - the scalp
+           top less red (green/red 0.72 against 0.64), cheek / neck / chest darker (0.30 / 0.16 / 0.35 against 0.36 /
+           0.22 / 0.41) and more orange; the levelling corrects views only where they overlap. Built in
+           `face_paint_seq.py`: each new painting's colour matched to its composite where that was painted already
+           (gain compensation, Brown & Lowe 2007: a gain per channel in linear light, the median ratio over alpha > 0.9)
+           before it is aligned and used by the next view. The gains the round-54 paintings would have needed: faceleft30
+           (1.13, 1.22, 1.23), front (0.74, 0.73, 0.74), above (0.99, 1.03, 1.18), left90 (1.17, 1.35, 1.58). The
+           round-54 sequence kept in `.dev/facetest/paintings_seq54/`.
+           ROUND 57 2026-11-01 (the repaint with the colour match, the hero leading the blend): the gains FLUX's
+           paintings needed - faceleft30 (1.13, 1.22, 1.23), faceright30 (1.03, 1.14, 1.19), front (0.78, 0.77, 0.79),
+           left40 (1.38, 1.55, 1.72), right40 (1.04, 1.07, 1.15), above (1.00, 1.06, 1.20), below (1.18, 1.29, 1.43),
+           left90 (1.07, 1.32, 1.61), right90 (1.10, 1.13, 1.23): mostly away from orange. The face view: the patch under
+           the eyes and the lips' doubled contact line gone, the nostrils clean. The front against its (now hero-toned)
+           painting, linear: scalp top 0.364 / 0.349, cheek 0.294 / 0.281, neck 0.160 / 0.169, chest 0.325 / 0.322 -
+           most of round 56's "too dark" was the old front painting 25% brighter than the hero. Light fit 0.076,
+           exposure -1.23; the white (0.265, 0.225, 0.206) to the painting's (0.263, 0.224, 0.205). Left: a grey-blue
+           cast on the back of the scalp in the 40-degree view (left40's gain is one per picture, blue x1.72, and its
+           scalp didn't drift as its face did); pores mixed (cheek R 3.64 / L 5.38 / forehead 4.00 against the
+           painting's 4.14 / 7.66 / 6.17; round 56: 5.85 / 6.04 / 4.12); the scalp still less red than the painting
+           (green/red 0.69 against 0.64).
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
