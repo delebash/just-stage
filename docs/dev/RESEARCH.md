@@ -1849,6 +1849,10 @@ every one logged; key claims page-read):
   forward-backward check (Sundaram, Brox & Keutzer, ECCV 2010: |w + w'|^2 < 0.01 (|w|^2 + |w'|^2) + 0.5) the features
   (lids, lip line) stay near zero but smooth skin keeps 15 px patches - DIS's aperture problem on low-texture skin
   whose shading differs between paintings. Bilinear resampling alone costs pore-scale detail; Lanczos keeps it.
+  Re-judged 2026-10-31 on the paintings made in sequence (one person): agreement without flow rose (face view 0.514,
+  front 0.748 at 6-16 px; the front's pore band 0.366); DIS and RAFT (torchvision `raft_large` C_T_SKHT_V2, BSD-3,
+  weights from download.pytorch.org, 20.1 MB) both raise the front and lower the face and the 40-degree view - a
+  learned flow doesn't change the verdict.
 - Painting the views in sequence with FLUX 3 Image Klein (sd-cli edit mode, measured 2026-10-31): given two pictures
   - the re-projected composite first, the hero painting second - it painted the hero's own front view into the
   30-degree view (lips 180 px off); given the composite alone it keeps the pose (lids 1.8-5.4 px, lips 4-12.5 px) and

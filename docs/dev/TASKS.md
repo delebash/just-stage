@@ -693,6 +693,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            painting's iris, linear (0.152, 0.096, 0.083)); `_iris_texture` puts it in MPFB2's iris rings through a gain
            calibrated with the white (three spots in the iris' lower half), its rim ring still blending to the white,
            its bump off. Used when `iris_texture.png` exists.
+           (4) FLOW, RE-JUDGED ON THE ONE-PERSON PAINTINGS (the approved alignment rec: "DIS then RAFT, judged by
+           leave-one-out"): painted in sequence the views already agree far more without any flow - held out, the
+           others re-projected against the face view 0.514 at 6-16 px (0.411 with the independent paintings), the front
+           0.748 (0.554), the front's pores 0.366 (0.03-0.14). DIS on top: front up (pores 0.366 -> 0.438), face down
+           (0.140 -> 0.116, 0.285 -> 0.247, 0.514 -> 0.483), left40 down a little. RAFT (torchvision `raft_large`,
+           C_T_SKHT_V2, BSD-3; half size on the CPU, 1.3 s a pair): the same pattern - front 0.440 / 0.711 / 0.769,
+           face 0.128 / 0.259 / 0.473, left40 0.318 / 0.445 / 0.569. Two of three held-out views worse with either:
+           the repainted views each invent their own fine detail, so moving them onto each other doesn't bring them to
+           a view left out. Flow stays off; the rec closes here, measured. (`flow_views.py` keeps RAFT as the judge's
+           alternative: FACETEST_FLOW_METHOD=raft.)
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

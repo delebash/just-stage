@@ -23,9 +23,11 @@ band, difference of Gaussians 1.5 - 4 px, over the face); their sharpness is pri
 reward blur. Nothing is written.
 
 Run (the tool environment): .dev/venv-rdf/Scripts/python -I tools/face_test/flow_views.py [--judge VIEW ...]
+(FACETEST_FLOW_METHOD=raft for RAFT instead of DIS: judged 2026-10-31, no better.)
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -183,11 +185,40 @@ def judge(names, views, dis):
                   + f"; the painting's {mine.var():.1f}")
 
 
+class Raft:
+    """RAFT (Teed & Deng, ECCV 2020; torchvision's `raft_large`, code and weights BSD-3) with DIS's `calc`: flow from
+    the first grey picture to the second, run at half size and scaled back (on the CPU while the card is lent)."""
+
+    def __init__(self):
+        os.environ.setdefault("TORCH_HOME", str(Path("E:/Dev/3D/just-stage/.dev/cache/torch")))
+        import torch
+        from torchvision.models.optical_flow import Raft_Large_Weights, raft_large
+
+        self.torch = torch
+        torch.set_num_threads(os.cpu_count() or 4)
+        self.model = raft_large(weights=Raft_Large_Weights.C_T_SKHT_V2).eval()
+
+    def calc(self, first, second, _flow=None):
+        torch = self.torch
+        h, w = first.shape
+
+        def batch(g):
+            small = cv2.resize(g, (w // 2, h // 2), interpolation=cv2.INTER_AREA).astype(np.float32) / 127.5 - 1.0
+            return torch.from_numpy(np.repeat(small[None, None], 3, axis=1))
+
+        with torch.no_grad():
+            flow = self.model(batch(first), batch(second), num_flow_updates=12)[-1][0].permute(1, 2, 0).numpy()
+        return cv2.resize(flow, (w, h), interpolation=cv2.INTER_LINEAR) * 2.0
+
+
 def main(argv) -> int:
     cams = json.load(open(DIR / "cameras.json"))
     views = {name: View(name, cams[name]) for name in VIEWS}
-    dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
-    dis.setFinestScale(FINEST)
+    if os.environ.get("FACETEST_FLOW_METHOD", "dis") == "raft":
+        dis = Raft()
+    else:
+        dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
+        dis.setFinestScale(FINEST)
     if argv[:1] == ["--judge"]:
         judge(argv[1:] or ["face"], views, dis)
         return 0
