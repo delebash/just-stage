@@ -11,11 +11,13 @@ as matching the painting; only its lips held (1.3 px; round 51, 2026-10-31). So 
 rings) go onto the clay's eye openings - segmented from the clay's colours, each lid point moved straight up or down
 onto the opening's edge - and the painting's outer lips onto the clay's; a thin-plate-spline warp (SciPy's
 RBFInterpolator) carries them, the picture's border pinned, everything between interpolated (the flow step,
-flow_views.py, refines between the views). Views where a face or an eye isn't found keep what they can.
+flow_views.py, refines between the views). Views where a face or an eye isn't found keep what they can. MediaPipe's
+points on each aligned picture go to aligned_marks.json (the projection aims the eyes at the aligned face's irises).
 
 Run (the tool environment, .dev/venv-tools): .dev/venv-tools/Scripts/python tools/face_test/align_paintings.py [VIEW ...]
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -120,6 +122,12 @@ def main() -> int:
             dst = np.vstack([painted_eyes, painted_pts[lips]])
             moved = np.linalg.norm(src - dst, axis=1)
             cv2.imwrite(str(out), warp(cv2.imread(str(painted_path)), src, dst))
+            aligned_pts = landmarks(detector, out)
+            if aligned_pts is not None:
+                marks_path = DIR / "aligned_marks.json"
+                marks = json.load(open(marks_path)) if marks_path.exists() else {}
+                marks[view] = np.round(aligned_pts, 2).tolist()
+                json.dump(marks, open(marks_path, "w"))
             print(
                 f"{view}: the AI moved the lids {moved[: len(clay_eyes)].mean():.1f} px on average "
                 f"(worst {moved[: len(clay_eyes)].max():.0f}, {len(clay_eyes)} points), the lips "

@@ -745,6 +745,20 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            scalp didn't drift as its face did); pores mixed (cheek R 3.64 / L 5.38 / forehead 4.00 against the
            painting's 4.14 / 7.66 / 6.17; round 56: 5.85 / 6.04 / 4.12); the scalp still less red than the painting
            (green/red 0.69 against 0.64).
+           THE EYE CLOSE-UP after round 57 (painting / ours, 2.5x): ours stares - the painting's upper lid covers the
+           iris' top quarter, ours barely touches it. Measured by geometry (our iris middle projected into the face
+           camera against MediaPipe's on the aligned painting): ours 16 px higher; the face, front and 30-degree views
+           all put the irises at -13 to -16 deg elevation where ours looked at -6.5 (MediaPipe on our renders and clay
+           reads our iris ~10 px low - the earlier "3-4 deg" came from that). Not the lids: against the hero painting
+           the clay's lids in the face view sit 13-22 px higher together (the AI paints the eyes lower; the warp moves
+           them), in the front view within 1-3 px. Built: `_aim_eyes` turns each eye to the views' mean elevation
+           (-14.8 / -15.5 deg), the azimuth kept (the views scatter -7 to +9 deg - an oblique iris through the cornea);
+           `align_paintings.py` writes MediaPipe's points on each aligned picture to aligned_marks.json, which the eye
+           calibration now uses too (it had the unaligned painting's, ~10 px off). Also: the lashes at the measured
+           range's low end (rise 0, curl 20: the painting's lashes lie forward under the hooded lid; Asian lashes lift
+           less, Na et al. 2006) and the lower ones finer (0.05 mm; ticks along the lid before) - CPU render: a line
+           at the margin, not a fringe; the iris calibrated per channel, pooled over both eyes' lower irises (by
+           brightness only it stayed grey-green beside the painting's warm brown). The round to run.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

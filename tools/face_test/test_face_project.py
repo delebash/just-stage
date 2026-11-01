@@ -414,9 +414,13 @@ def _iris_texture(eye_name):
 #: measured on 50 Japanese adults from the side (oatext.com, "A study of normal eyelashes in Japanese individuals"):
 #: upper 61 deg from vertical in men (29 above straight ahead; women 72), 7.3 mm, 60% straight in men; lower 90 deg
 #: (straight ahead; women 100), 5.0 mm, all curly. Round 54's trial off the eyeball's radius instead: the middle lashes
-#: ran sideways (22 px across, 7 up) and the outer ones flat outward - curly clumps at the corners.
-LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": 15.0, "curl": 30.0, "band": (0.2, 1.0), "radius": 0.00005}
-LASH_LOWER = {"count": 75, "long": 5.0, "short": 3.0, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000035}
+#: ran sideways (22 px across, 7 up) and the outer ones flat outward - curly clumps at the corners. Round 57 at the
+#: measured mean (15 up, curling 30): a fringe standing above the lid, the eye wide open, where this man's painting has
+#: the lashes forward under his hooded lid - a dark line at the margin - so the measured range's low end (Asian lashes
+#: lift less: Na et al. 2006): about 10 deg above straight ahead on average (80 from vertical, the men's 61 +/- 14);
+#: the lower ones finer (ticks along the lid where the painting shows none).
+LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": 0.0, "curl": 20.0, "band": (0.2, 1.0), "radius": 0.00005}
+LASH_LOWER = {"count": 75, "long": 4.5, "short": 2.5, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000025}
 #: the fan seen from the front: (share of the way from the inner corner to the outer, the lash's angle from the line
 #: through the corners toward the outer one, degrees) - measured on the lower lid of Korean adults (Korea University,
 #: "Changes in the horizontal angular direction of lower eyelashes with age": medial 137, central 72, lateral 25);
@@ -578,10 +582,55 @@ def _head_tile(body):
     print(f"head tile: {int(pick.sum())} polygons packed into their own map")
 
 
+def _aim_eyes():
+    """Each eye turned about its middle to the elevation the paintings' irises show: per view, the ray from its camera
+    through MediaPipe's iris centre on the aligned painting (aligned_marks.json, by align_paintings.py) meets the
+    eyeball; the elevations of those points averaged; the azimuth kept. Measured 2026-11-01 (the round-57 sequence): the
+    face, front and 30-degree views put both irises at -13 to -16 deg where ours looked at -6.5 (geometry: our iris
+    middle 16 px above the aligned close painting's - MediaPipe on our renders read it ~10 px low, hence an earlier 3-4
+    deg guess); their azimuths scatter -7 to +9 deg between views (an iris seen obliquely through the cornea), so ours -
+    ~5 deg outward, the usual angle between the pupil's axis and the line of sight - stays."""
+    cams = json.load(open(DIR + "cameras.json"))
+    marks = json.load(open(DIR + "aligned_marks.json"))
+    for eye_name, iris in (("Face.eyeRight", 468), ("Face.eyeLeft", 473)):
+        eye = bpy.data.objects[eye_name]
+        pts = face_shape.world_points(eye)
+        centre = (pts.min(axis=0) + pts.max(axis=0)) / 2
+        radius = float(np.median(np.linalg.norm(pts - centre, axis=1)))
+        elevations = []
+        for view in ("face", "front", "faceleft30", "faceright30"):
+            if view not in marks:
+                continue
+            cam = cams[view]
+            mw = np.array(cam["matrix_world"])
+            f = cam["lens"] / cam["sensor_width"] * cam["size"]
+            x, y = marks[view][iris]
+            ray = mw[:3, :3] @ np.array([(x - cam["size"] / 2) / f, -(y - cam["size"] / 2) / f, -1.0])
+            ray /= np.linalg.norm(ray)
+            to_centre = mw[:3, 3] - centre
+            b = to_centre @ ray
+            disc = b * b - (to_centre @ to_centre - radius**2)
+            if disc >= 0.0:
+                hit = mw[:3, 3] + (-b - np.sqrt(disc)) * ray
+                elevations.append(float(face_shape.angles(hit[None], centre)[1][0]))
+        if not elevations:
+            continue
+        az, el = face_shape.gaze(eye)
+        have = face_shape.direction(np.array([az]), np.array([el]))[0]
+        want = face_shape.direction(np.array([az]), np.array([np.mean(elevations)]))[0]
+        axis = np.cross(have, want)
+        angle = float(np.arctan2(np.linalg.norm(axis), have @ want))
+        rotation = Matrix.Rotation(angle, 4, axis / max(np.linalg.norm(axis), 1e-12))
+        eye.matrix_world = Matrix.Translation(centre) @ rotation @ Matrix.Translation(-centre) @ eye.matrix_world
+        print(f"{eye_name}: elevation {el:.1f} -> {face_shape.gaze(eye)[1]:.1f} deg (the paintings: "
+              f"{', '.join(f'{e:.1f}' for e in elevations)})")
+
+
 def test_face_project():
     t0 = time.time()
     bpy.ops.wm.open_mainfile(filepath=DIR + "face.blend")
     body = bpy.data.objects["Face"]
+    _aim_eyes()
     # each eye's opening, once, from the untouched eye (its iris marks the gaze; later its materials are replaced and
     # its cornea split off, which moves its bounding box): for the lashes, the occlusion and the tearline
     skin = importlib.import_module("bl_ext.system.juststage.modules.body.build").shaped_coords(body)[:13380].astype(np.float64)
@@ -1199,11 +1248,11 @@ def test_face_project():
     # 0.22 in the middle band while the white's colour was fixed). Measured the same way on the painting and the render
     # (at 512 px): around each iris (MediaPipe's, on the painting) the white is the pale, unsaturated pixels of the
     # eye's box outside 1.1 iris radii (brighter than its 60th percentile there, saturation under 0.35); the iris its
-    # median brightness at 0.4-0.85 of its radius, lower half. One white and one iris gain for both eyes, pooled - one
+    # median colour at 0.4-0.85 of its radius, lower half. One white and one iris gain for both eyes, pooled - one
     # person's eyes, the render makes the light's difference between them (round 55's first try, a 7x7 spot per white
     # and three per iris, per channel: a pink white where a spot met the outer corner's tissue, one iris orange, one
-    # green). The iris keeps the texture's hue: its brightness only.
-    marks = json.load(open(DIR + "landmarks.json"))["face"]["painted"]
+    # green; round 56-57's brightness only left the iris grey-green beside the painting's warm brown).
+    marks = json.load(open(DIR + "aligned_marks.json"))["face"]  # the photo is the aligned painting
     photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
     yy, xx = np.mgrid[0:512, 0:512]
     regions = []
@@ -1219,7 +1268,7 @@ def test_face_project():
         sat = (img.max(axis=2) - img.min(axis=2)) / np.maximum(img.max(axis=2), 1e-6)
         pale = [box & (sat < 0.35) & (lum_i > np.percentile(lum_i[box], 60)) for box, _iris in regions]
         return (np.median(np.concatenate([img[m] for m in pale]), axis=0),
-                float(np.median(np.concatenate([lum_i[iris] for _box, iris in regions]))))
+                np.median(np.concatenate([img[iris] for _box, iris in regions]), axis=0))
 
     want_white, want_iris = eye_colours(photo_half)
     for _ in range(2):
@@ -1230,11 +1279,12 @@ def test_face_project():
             socket.default_value = (*np.clip(white_now * want_white / np.maximum(got_white, 1e-4), 0.05, 0.95), 1.0)
         for socket in iris_gains.values():
             gain_now = np.array(socket.default_value)
-            socket.default_value = tuple(np.clip(gain_now * want_iris / max(got_iris, 1e-5), 0.1, 10.0))
+            socket.default_value = tuple(np.clip(gain_now * want_iris / np.maximum(got_iris, 1e-5), 0.1, 10.0))
     white_set = np.round(next(iter(whites.values())).default_value[:3], 3).tolist()
     print(f"  the eyes: the white {white_set} (the painting's {np.round(want_white, 3).tolist()}, ours before the last "
-          f"step {np.round(got_white, 3).tolist()}); the iris brightness {want_iris:.3f} wanted, {got_iris:.3f} before"
-          + (f", its texture's gain {next(iter(iris_gains.values())).default_value[0]:.2f}" if iris_gains else ""))
+          f"step {np.round(got_white, 3).tolist()}); the iris {np.round(want_iris, 3).tolist()} wanted, "
+          f"{np.round(got_iris, 3).tolist()} before" + (f", its texture's gain "
+          f"{np.round(next(iter(iris_gains.values())).default_value, 2).tolist()}" if iris_gains else ""))
 
     bpy.ops.wm.save_as_mainfile(filepath=f"{DIR}round.blend", copy=True)  # the finished scene, for quick trials
     _gpu(scene, 256)
