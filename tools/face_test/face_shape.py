@@ -18,7 +18,9 @@ import numpy as np
 #: unwarped (round 51's lid_fit). Not MediaPipe on the clay: its lid contour there is a learned guess (it read a
 #: near-shut clay eye as matching), nor an iris-radius ruler fitted to the clay's colours (it under-read the iris by
 #: a quarter). At 5 / 1.6 the front view's clay opening was ~2.5 mm short of the painting's (upper lid 3-5 px low,
-#: lower 5 px high at 0.88 px a degree): our neutral eye is the smaller one, so the key opens it
+#: lower 5 px high at 0.88 px a degree): our neutral eye is the smaller one, so the key opens it. At 1 / -4.4 the
+#: front view's lids sit 0.7-2.1 px from the painting's; the close view's opening heights within ~3 px (its lids both
+#: 13-22 px higher - the AI's drift there, which the landmark warp takes out)
 UPPER_LID, LOWER_LID = 1.0, -4.4
 
 

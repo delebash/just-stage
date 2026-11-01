@@ -428,12 +428,14 @@ def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour
 
 
 LASHES = os.environ.get("FACETEST_LASHES", "cards")  # rec 7's strands at real counts, or "cards" (MakeHuman's)
-#: per eye and lid: count, length at the longest and at the corners (mm), the angle off the eyeball at the root and the
-#: curl to the tip (degrees). Counts: StatPearls' 90-160 upper, 75-80 lower; lengths and curl starting values
-LASH_UPPER = {"count": 120, "long": 10.0, "short": 6.0, "rise": 15.0, "curl": 60.0}
-LASH_LOWER = {"count": 75, "long": 6.0, "short": 3.5, "rise": 10.0, "curl": 25.0}
+#: per eye and lid: count, length at the longest and at the corners (mm), the angle off the eyeball at the root away
+#: from the eye (- toward it: upper lashes leave the margin forward and a little down, then curl up), the curl to the
+#: tip (degrees), how far past the opening's edge the roots sit (degrees), the root radius (m). Counts: StatPearls'
+#: 90-160 upper, 75-80 lower. Round 53's trial at 10 mm, +15 / 60 deg, roots 0.5-2 deg out: a fan standing off the lid
+LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": -10.0, "curl": 45.0, "band": (0.2, 1.0), "radius": 0.00005}
+LASH_LOWER = {"count": 75, "long": 5.0, "short": 2.5, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000035}
 LASH_POINTS = 12  # the research: 10+ points each for the curl (the pack's lashes have 5)
-LASH_RADIUS = (0.00005, 0.000012)  # at the root and the tip (m): 0.1 mm thick at the root
+LASH_TIP = 0.25  # the tip's radius as a share of the root's
 LASH_MELANIN, LASH_REDNESS = 0.95, 0.25  # near black-brown
 
 
@@ -442,9 +444,9 @@ def _strand_lashes(body, openings, seed=7):
     `../plans/2026-10-30-research-hair-eyes-teeth.md`: 90-160 upper in 5-6 rows, 75-80 lower in 3-4, per eye, 10+ points
     each for the curl). MetaHuman's way - strand grooms - as Blender hair curves: roots on the lid's front skin just past
     the opening's edge (face_shape.eye_opening), found by rays from in front onto the subdivided surface the camera
-    sees, in a band 0.5-2 deg wide (the rows), none by the inner corner; each lash grows out from the eyeball and curls
-    away from the eye, longest just outside the middle, the outer ones leaning outward; Principled Hair BSDF by melanin,
-    rendered as 3D curves."""
+    sees, in a band just past the edge (the rows), none by the inner corner; each lash leaves the lid forward and
+    curls away from the eye, longest just outside the middle, the outer ones leaning outward; Principled Hair BSDF by
+    melanin, rendered as 3D curves."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
@@ -452,29 +454,37 @@ def _strand_lashes(body, openings, seed=7):
     to_local = np.array(body.matrix_world.inverted())
     to_world = np.array(body.matrix_world)
     tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())  # its local space
-    strands, missed = [], 0
+    strands, radii, missed = [], [], 0
     for o in openings.values():
         outward = np.sign(o.outer - o.inner)
         for spec, side in ((LASH_UPPER, 1.0), (LASH_LOWER, -1.0)):
             n = spec["count"]
             f = np.sort(rng.uniform(0.06, 0.97, n))  # the share of the way from the inner corner to the outer
             az = o.inner + f * (o.outer - o.inner)
-            el = np.interp(az, o.centres, o.upper if side > 0 else o.lower) + side * rng.uniform(0.5, 2.0, n)
-            dirs = face_shape.direction(az, el)
+            el = np.interp(az, o.centres, o.upper if side > 0 else o.lower) + side * rng.uniform(*spec["band"], n)
             for k in range(n):
-                start = o.centre + dirs[k] * (o.radius + 0.02)
-                s_local = to_local[:3, :3] @ start + to_local[:3, 3]
-                hit = tree.ray_cast(Vector(s_local), Vector(to_local[:3, :3] @ -dirs[k]), 0.025)
+                # from in front onto the lid; this close to its edge a ray can slip past the margin (round 53's second
+                # trial: 148 of 390 missed) - then a little further onto the lid, up to 3 deg
+                for extra in (0.0, 0.5, 1.0, 2.0, 3.0):
+                    el_k = el[k] + side * extra
+                    d_k = face_shape.direction(az[k:k + 1], np.array([el_k]))[0]
+                    start = o.centre + d_k * (o.radius + 0.02)
+                    s_local = to_local[:3, :3] @ start + to_local[:3, 3]
+                    hit = tree.ray_cast(Vector(s_local), Vector(to_local[:3, :3] @ -d_k), 0.025)
+                    if hit[0] is not None:
+                        break
                 if hit[0] is None:
                     missed += 1
                     continue
+                el[k] = el_k
                 normal = to_world[:3, :3] @ np.array(hit[1])
                 root = to_world[:3, :3] @ np.array(hit[0]) + to_world[:3, 3] - 0.0001 * normal / np.linalg.norm(normal)
                 radial = (root - o.centre) / np.linalg.norm(root - o.centre)
-                away = (face_shape.direction(az[k:k + 1], el[k:k + 1] + side)[0] - dirs[k])  # up for the upper lid
+                d_k = face_shape.direction(az[k:k + 1], el[k:k + 1])[0]
+                away = (face_shape.direction(az[k:k + 1], el[k:k + 1] + side)[0] - d_k)  # up for the upper lid
                 away -= (away @ radial) * radial
                 away /= np.linalg.norm(away)
-                along = face_shape.direction(az[k:k + 1] + outward, el[k:k + 1])[0] - dirs[k]  # toward the outer corner
+                along = face_shape.direction(az[k:k + 1] + outward, el[k:k + 1])[0] - d_k  # toward the outer corner
                 along -= (along @ radial) * radial
                 along /= np.linalg.norm(along)
                 length = 0.001 * rng.uniform(0.85, 1.1) * (spec["short"] + (spec["long"] - spec["short"]) * np.sin(np.pi * f[k] ** 1.3))
@@ -484,11 +494,11 @@ def _strand_lashes(body, openings, seed=7):
                 d /= np.linalg.norm(d, axis=1, keepdims=True)
                 steps = np.vstack([np.zeros(3), d[:-1] * length / (LASH_POINTS - 1)])
                 strands.append(root + np.cumsum(steps, axis=0))
+                radii.append(spec["radius"] * np.interp(t, [0.0, 1.0], [1.0, LASH_TIP]))
     curves = bpy.data.hair_curves.new(f"{body.name} lashes")
     curves.add_curves([LASH_POINTS] * len(strands))
     curves.position_data.foreach_set("vector", np.concatenate(strands).astype(np.float32).ravel())
-    t = np.tile(np.linspace(0.0, 1.0, LASH_POINTS), len(strands))
-    curves.attributes.new("radius", "FLOAT", "POINT").data.foreach_set("value", np.interp(t, [0.0, 1.0], LASH_RADIUS).astype(np.float32))
+    curves.attributes.new("radius", "FLOAT", "POINT").data.foreach_set("value", np.concatenate(radii).astype(np.float32))
     obj = bpy.data.objects.new(f"{body.name} lashes", curves)
     bpy.context.scene.collection.objects.link(obj)
     mat = bpy.data.materials.new(f"{body.name} lashes")

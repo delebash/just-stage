@@ -126,17 +126,24 @@ def flow_for(view, others, dis):
         mine_g, theirs_g = grey(view.albedo, overlap), grey(theirs, overlap)
         theirs_g = np.where(w > 0.05, theirs_g, mine_g)  # elsewhere nothing to match: the flow stays near zero
         f = dis.calc(theirs_g, mine_g, None)  # theirs(x) ~ mine(x + f(x))
-        total += f * w[..., None]
-        weight += w
+        back = warp(dis.calc(mine_g, theirs_g, None), f, cv2.INTER_LINEAR)  # the reverse flow, where f lands
+        # forward-backward consistency (Sundaram, Brox & Keutzer, ECCV 2010): kept only where the reverse flow returns
+        # - on smooth skin whose shading differs between paintings DIS matches noise (round 52: raw flows 20-37 px at
+        # the median, the mean at its 15 px cap over half the face)
+        ok = (f + back) ** 2 @ np.ones(2) < 0.01 * ((f**2) @ np.ones(2) + (back**2) @ np.ones(2)) + 0.5
+        kept = w * ok
+        total += f * kept[..., None]
+        weight += kept
     mean = total / np.maximum(weight[..., None], 1e-6)
     mean *= np.minimum(1.0, MAX_FLOW / np.maximum(np.linalg.norm(mean, axis=2, keepdims=True), 1e-6))
     return masked_blur(mean, view.inner.astype(np.float32), SMOOTH) * view.inner[..., None]
 
 
-def warp(img, flow):
+def warp(img, flow, interpolation=cv2.INTER_LANCZOS4):
+    """`img` resampled at each pixel plus its flow - Lanczos by default: bilinear softened the pores ~20% (round 52)."""
     h, w = img.shape[:2]
     jj, ii = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
-    return cv2.remap(img, jj + flow[..., 0], ii + flow[..., 1], cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    return cv2.remap(img, jj + flow[..., 0], ii + flow[..., 1], interpolation, borderMode=cv2.BORDER_REPLICATE)
 
 
 def blended_at(view, others, attr):

@@ -13,7 +13,7 @@ onto the opening's edge - and the painting's outer lips onto the clay's; a thin-
 RBFInterpolator) carries them, the picture's border pinned, everything between interpolated (the flow step,
 flow_views.py, refines between the views). Views where a face or an eye isn't found keep what they can.
 
-Run (the tool environment, .dev/venv-tools): .dev/venv-tools/Scripts/python tools/face_test/align_paintings.py
+Run (the tool environment, .dev/venv-tools): .dev/venv-tools/Scripts/python tools/face_test/align_paintings.py [VIEW ...]
 """
 
 import sys
@@ -106,7 +106,7 @@ def warp(painted: np.ndarray, clay_pts: np.ndarray, painted_pts: np.ndarray) -> 
 def main() -> int:
     options = vision.FaceLandmarkerOptions(base_options=mp_tasks.BaseOptions(model_asset_path=str(MODEL)), num_faces=1)
     with vision.FaceLandmarker.create_from_options(options) as detector:
-        for view in VIEWS:
+        for view in sys.argv[1:] or VIEWS:
             clay_path, painted_path = DIR / f"clay_{view}.png", DIR / f"painted_{view}.png"
             out = DIR / f"aligned_{view}.png"
             clay_pts, painted_pts = landmarks(detector, clay_path), landmarks(detector, painted_path)

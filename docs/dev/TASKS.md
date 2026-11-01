@@ -618,7 +618,9 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (26-29 px against the geometry's 36.4). The ruler now: the clay's eye opening segmented from its colours
            against the painting's lid lines (MediaPipe on the painting), column by column, in px. By it our neutral
            opening is the smaller one - ~2.5 mm short of the painting's in the front view - so the key opens the eye
-           (upper +1, lower -4.4 deg to start; to verify on the clay). The landmark warp anchors on the same: the
+           (upper +1, lower -4.4 deg; on the clay the front view's lids then sit 0.7-2.1 px from the painting's, the close
+           view's opening heights within ~3 px; our iris sits a little higher in the opening than the painting's - the
+           eyeball's gaze, a degree or two, open). The landmark warp anchors on the same: the
            painting's lid points moved straight up or down onto the clay's opening edge, the outer lips (stable), the
            border; MediaPipe's other clay points left out (they made the brows jump 40 px between rounds 50 and 51).
            (2) FLOW ALIGNMENT BUILT (`flow_views.py`, Floating Textures with OpenCV DIS on the light-free paintings, each
@@ -628,13 +630,41 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            the close "face" painting its own brows, eye bags and moles - flow there only fits noise (first run: worse
            on all three). Flow at feature scale (DIS from a quarter resolution), the blend's outlines masked: face
            0.147 -> 0.177 (3-8 px band), 0.411 -> 0.445 (6-16 px); front 0.444 -> 0.481, 0.554 -> 0.568; left40 (13% of
-           its picture) 0.060 -> 0.049, 0.345 -> 0.350; the blend's sharpness up, not down (less ghosting, not blur). ON
-           from round 51 (`FACETEST_FLOW=1`).
+           its picture) 0.060 -> 0.049, 0.345 -> 0.350; the blend's sharpness up, not down (less ghosting, not blur). Used in
+           round 52 (`FACETEST_FLOW=1`) - and OFF again after it: on round 52's paintings DIS's raw flows between views
+           ran 20-37 px at the median (p90 to 83), the mean flow sat at its 15 px cap over half the face, the pores lost
+           ~20% (right cheek 3.97 -> 2.93) and the eye bags and brow shadows went flat. A forward-backward check
+           (Sundaram et al. 2010) cleared the features (lids, lip line: near zero - the landmark warp already placed
+           them) but left 15 px patches on forehead, cheeks and chin: smooth skin is DIS's aperture problem, consistent
+           both ways and still wrong. The warp now resamples with Lanczos (bilinear softened the pores). Open, per the
+           approved rec ("RAFT if needed"): a learned flow (RAFT / SEA-RAFT) through the same held-out judge.
            (3) TEARLINE BUILT - ICT's lacrimal-fluid strip (a ring: its rim on the eyeball at the lid margins a median
            0.3 mm off it, its other rim under the lids 1.6 mm off; measured) placed by its angle past ICT's lid edge on
            each side and its share of the way between the corners, its height scaled to our eyeball and kept under our
            lid's skin; shaded as a tear film - water's Fresnel (IOR 1.336) over a transparent film, roughness 0.3 (CC5's
            examples 0.25-0.45), faded in from its eyeball rim; camera and reflections only.
+           ROUNDS 52-53 (2026-10-31; the lids at +1 / -4.4, the warp on the clay's real eye openings, occlusion and
+           tearline on the true openings). Against the painting (face view, MediaPipe on the renders, share of the eye's
+           width): eye 0's upper lid 0.217 / 0.256 / 0.191 at 25 / 50 / 75% (painting 0.215 / 0.253 / 0.187), lower
+           -0.081 / -0.068 / -0.027 (-0.079 / -0.067 / -0.029); eye 1 within 0.01 too - round 50 had the lower lid 0.025
+           high. The white's top third 0.146 (round 52) / 0.100 (round 53, its light 45 deg higher) against the
+           painting's 0.156 - round 50's 0.066 came from the misplaced occlusion. Round 52 had the flow on: pores -20%,
+           eye bags flat (see (2)); round 53 the same without it: pores back (right cheek 4.24, left 8.53; painting 4.14,
+           7.66), forehead still low (3.99 against 6.17). The light fit's choice moves between rounds (azimuth -45 deg,
+           elevation 25 or 45, fill 1.0 since the warp changed; round 50 -25 / 45 / 0.3): a grid of 126, errors
+           0.117-0.131 - to watch. LASH TRIAL on round 53's scene: rec 7's strands at 10 mm, rising 15 deg and curling
+           60, rooted 0.5-2 deg past the opening, fanned out above the lid - less like the painting than the cards;
+           re-tuned (8 / 4.5 mm, leaving the margin 10 deg down, curl 45, roots 0.2-1 deg out, the lower ones thinner)
+           for the next trial.
+           ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
+           paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
+           eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
+           Rec 1's second half (my call under the user's go, 2026-10-30, above: "one face across views from painting
+           each next view on a render of the paint already projected") was never built. Now `face_paint_seq.py`: the
+           close painting the hero; each next view (30-degree pair, front, 40s, above / below, profiles) starts from
+           what is painted so far re-projected into its camera through our mesh (flow_views' depth re-projection, the
+           clay elsewhere, feathered), FLUX 3 edits it with the hero as its second reference, and the result is aligned
+           before the next view uses it. The independent paintings kept in `.dev/facetest/paintings_independent/`.
            (4) WHAT THE EYE CLOSE-UPS SHOW (painting / round 50 / clay, 3x): the biggest tells left are the lashes -
            sparse thick black card spikes across the iris, where the painting has a dense fine dark lash line - then
            the iris (lighter, pinkish, a contrasty fibre pattern, the pupil a smeared blob), a flat dry white with a

@@ -1844,7 +1844,11 @@ every one logged; key claims page-read):
   at pore scale (difference of Gaussians 1.5-4 px) the paintings don't correspond at all - correlation 0.03-0.14 -
   each view invents its own pores, and the close view its own brows, eye bags and moles; at feature scale (3-16 px)
   flow from a quarter resolution raises agreement on two of three held-out views (face 0.411 -> 0.445, front 0.554 ->
-  0.568 at 6-16 px) without blurring.
+  0.568 at 6-16 px) without blurring. But in a full round (52) it hurt: raw DIS flows between views 20-37 px at the
+  median (p90 up to 83 px), the mean at its 15 px cap over half the face, pores -20%, the eye bags flattened. With a
+  forward-backward check (Sundaram, Brox & Keutzer, ECCV 2010: |w + w'|^2 < 0.01 (|w|^2 + |w'|^2) + 0.5) the features
+  (lids, lip line) stay near zero but smooth skin keeps 15 px patches - DIS's aperture problem on low-texture skin
+  whose shading differs between paintings. Bilinear resampling alone costs pore-scale detail; Lanczos keeps it.
 
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0

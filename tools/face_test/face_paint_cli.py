@@ -29,14 +29,26 @@ PROMPT = (
 )
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
 
-seed = int(sys.argv[1])
-for view in sys.argv[2:] or VIEWS:
-    t = time.time()
+
+
+def paint(refs, prompt, seed, out):
+    """One FLUX 3 Image Klein edit: the reference pictures (the first is the one edited), the prompt, the seed."""
     subprocess.run(
         [str(ENGINE), "--diffusion-model", str(MODEL), "--vae", str(VAE), "--llm", str(LLM),
-         "-r", str(DIR / f"clay_{view}.png"), "-p", PROMPT, "--cfg-scale", "1", "--steps", "16",
-         "--sampling-method", "euler", "-W", "1024", "-H", "1024", "-s", str(seed), "--offload-to-cpu",
-         "-o", str(DIR / f"painted_{view}.png")],
+         *[a for r in refs for a in ("-r", str(r))], "-p", prompt, "--cfg-scale", "1", "--steps", "16",
+         "--sampling-method", "euler", "-W", "1024", "-H", "1024", "-s", str(seed), "--offload-to-cpu", "-o", str(out)],
         check=True, capture_output=True,
     )
-    print(f"{view}: {time.time() - t:.0f}s", flush=True)
+
+
+def main(argv) -> int:
+    seed = int(argv[0])
+    for view in argv[1:] or VIEWS:
+        t = time.time()
+        paint([DIR / f"clay_{view}.png"], PROMPT, seed, DIR / f"painted_{view}.png")
+        print(f"{view}: {time.time() - t:.0f}s", flush=True)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
