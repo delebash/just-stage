@@ -666,7 +666,33 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            and 14 up, no lower lash in the skin; the render (CPU, the card lent) a fine fringe along the whole upper
            lid - clearly ahead of the cards, so the strands are the one way now (the cards and FACETEST_LASHES removed).
            Left: the inner upper lashes graze the skin by the nose (6-8% of their points; 50-70% of them touch); the
-           painting's dark line at the margin itself (ours a fringe standing off it).
+           painting's dark line at the margin itself (ours a fringe standing off it). The grazing fixed by a collision
+           pass (each point inside the skin pushed out along the surface's normal, the rest of the lash following):
+           probe, no point in the skin.
+           ROUND 55 PREPARED 2026-10-31 (the card lent to JustDirect; built, to run): (1) SEAMS - the approved order of
+           work (`../plans/2026-10-31-choices-audit.md`: alignment -> seams -> eye layers -> mouth and lids) has seams
+           next, and round 54's close-ups show a step under each eye. Diagnosed from the face camera (each view's
+           light-free albedo re-projected with its facing weight): the dominant view switches between front, below and
+           the 30-degree views in blocks there, and the views disagree locally by 15-35% (each view's tone over the
+           blend, p10-p90: front 0.88-1.35, left40 0.72-1.03, above 0.70-1.04). Built: Waechter et al. 2014's global
+           seam levelling as a smooth gain field per view and channel over the texture (cells of 8 texels, smoothed
+           ~4 mm, where a view meets no other its one gain) in place of one gain per view; prototyped in the face
+           camera first: the spread halves (front 0.93-1.14, left40 0.88-1.16, above 0.86-1.05). The small brown blotch
+           under the left-hand eye stays - it is in the fine band (the views' eye-bag shading in different places: the
+           alignment's job). (2) THE WHITES calibrated like the skin, every round: round 54's white read 0.19 / 0.34 /
+           0.32 against the painting's 0.156 / 0.222 / 0.231 because the light fit moved (45 deg up, 1.6 m in round 53;
+           25 deg, 3.0 m in 54) while the white's colour was fixed (round 46's). Two quick renders after the eyes are
+           built scale each eye's white to the painting at round 46's spots (7x7, 1.4 iris radii out on the outer side).
+           (3) THE IRIS - measured against the painting (face view, around MediaPipe's iris points): ours less
+           saturated (green/red 0.72-0.78, blue/red 0.65-0.69 against 0.62-0.64, 0.49-0.55), no dark inner zone (the
+           painting's inner iris 0.03, its outer 0.17-0.22), fibre speckle; MPFB2's iris is hard rings around a Voronoi
+           fibre band and can't make the painting's iris. Built, the research's untested option 3 (§5c of the eyes
+           research: an image model paints a flat, centred macro iris): `iris_paint.py` (FLUX 3 Image Klein, no
+           reference; the pupil as the darkest blob, the rim as the strongest outward rise - checked on a synthetic
+           iris: radius 379 for 380; catch-lights out ring by ring; cropped to radius 0.40; colour scaled to the
+           painting's iris, linear (0.152, 0.096, 0.083)); `_iris_texture` puts it in MPFB2's iris rings through a gain
+           calibrated with the white (three spots in the iris' lower half), its rim ring still blending to the white,
+           its bump off. Used when `iris_texture.png` exists.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

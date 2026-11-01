@@ -48,6 +48,7 @@ DIR = "E:/Dev/3D/just-stage/.dev/facetest/"
 HDRI = "E:/Dev/3D/just-stage/.dev/cache/hdri/studio_small_09_2k.hdr"
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
 SIZE = 4096
+LEVEL_CELL, LEVEL_SIGMA = 8, 3.0  # the gain fields' grid (texels a cell: ~1.3 mm) and smoothing (cells: ~4 mm)
 FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam where it ends
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
@@ -374,6 +375,36 @@ def _tearline(o, skin, name):
 
 
 LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
+IRIS_TEXTURE = DIR + "iris_texture.png"  # iris_paint.py: a photographic iris, centred, its radius 0.40 of the width
+IRIS_TEXTURE_RADIUS = 0.40
+EYE_UV_IRIS = 0.46 * 0.40  # our eye's UVs: the eyeball out to 0.46 from the map's centre, the iris 0.40 of that
+
+
+def _iris_texture(eye_name):
+    """The research's iris from an image model (`../plans/2026-10-30-research-hair-eyes-teeth.md` §5c, 3: a flat,
+    centred macro iris by the image model, onto the eye's UVs) in MPFB2's iris rings instead of its Voronoi fibres: the
+    inner ring, the fibre band and the flat band take the texture, through a colour gain calibrated against the
+    painting; the border ring still blends from it to the white. Its bump off (MPFB2's fibres no longer under it).
+    Returns the gain node."""
+    tree = bpy.data.node_groups[f"mpfb_eye.{eye_name}.IrisMain"]
+    nodes, links = tree.nodes, tree.links
+    mapping = nodes.new("ShaderNodeMapping")
+    scale = IRIS_TEXTURE_RADIUS / EYE_UV_IRIS
+    mapping.inputs["Scale"].default_value = (scale, scale, 1.0)
+    mapping.inputs["Location"].default_value = (0.5 - 0.5 * scale, 0.5 - 0.5 * scale, 0.0)
+    tex = nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(IRIS_TEXTURE, check_existing=True)
+    tex.extension = "EXTEND"
+    gain = nodes.new("ShaderNodeVectorMath")
+    gain.operation = "MULTIPLY"
+    gain.inputs[1].default_value = (1.0, 1.0, 1.0)
+    links.new(nodes.new("ShaderNodeTexCoord").outputs["UV"], mapping.inputs["Vector"])
+    links.new(mapping.outputs["Vector"], tex.inputs["Vector"])
+    links.new(tex.outputs["Color"], gain.inputs[0])
+    for socket in ("Section1Color", "Section2Color", "Section3Color"):
+        links.new(gain.outputs["Vector"], nodes["IrisSectionsColorSwitch"].inputs[socket])
+    links.new(gain.outputs["Vector"], nodes["IrisBorder"].inputs["MinColor"])
+    return gain
 
 
 #: per eye and lid: count, length at the longest and at the corners (mm), the angle off straight ahead at the root seen
@@ -450,7 +481,14 @@ def _strand_lashes(body, openings, seed=7):
                 theta = np.radians(spec["rise"] + rng.normal(0.0, 5.0)) + np.radians(spec["curl"] + rng.normal(0.0, 10.0)) * t ** 1.5
                 d = np.cos(theta)[:, None] * FACE_FORWARD + np.sin(theta)[:, None] * away
                 steps = np.vstack([np.zeros(3), d[:-1] * length / (LASH_POINTS - 1)])
-                strands.append(root + np.cumsum(steps, axis=0))
+                strand = root + np.cumsum(steps, axis=0)
+                for i in range(1, LASH_POINTS):  # out of the skin (a groom's collision pass): by the nose
+                    q = to_local[:3, :3] @ strand[i] + to_local[:3, 3]
+                    near, n_near = (np.array(x) for x in tree.find_nearest(Vector(q))[:2])
+                    if (q - near) @ n_near < 0.0001:
+                        moved = near + 0.0001 * n_near - q
+                        strand[i:] += to_world[:3, :3] @ moved  # the rest of the lash follows
+                strands.append(strand)
                 radii.append(spec["radius"] * np.interp(t, [0.0, 1.0], [1.0, LASH_TIP]))
     curves = bpy.data.hair_curves.new(f"{body.name} lashes")
     curves.add_curves([LASH_POINTS] * len(strands))
@@ -589,8 +627,11 @@ def test_face_project():
     print(f"\nrasterised {head.sum()} head triangles → {mask.sum()} texels in {time.time() - t0:.0f}s")
 
     # each view's albedo and relief (delight_views.py), two-band (Burt & Adelson): the broad part from every view that
-    # sees a texel (cos⁴), the fine part from its best view (cos¹⁶); each view's brightness levelled to the others where
-    # they overlap (a global gain per view — the simplest form of Waechter et al.'s seam levelling), the front the anchor
+    # sees a texel (cos⁴), the fine part from its best view (cos¹⁶); each view's colour levelled to the others where
+    # they overlap - Waechter et al. 2014's global seam levelling ("Let there be color!", `mvs-texturing`, BSD-3: a
+    # smooth correction per view that makes the views agree), here as a smooth gain field per view and channel over the
+    # texture (until round 54 one gain per view: the views still disagreed by 15-35% locally - p10-p90 of each view's
+    # tone over the blend under the eyes; the fields halve that, measured in the face camera); the front the anchor
     cams = json.load(open(DIR + "cameras.json"))
 
     def view_samples(view, idx):
@@ -615,22 +656,41 @@ def test_face_project():
         return facing * frame * clear_of_edge, col, row
 
     lum = np.array(sd.LUMA)
+    texel_row, texel_col = np.nonzero(mask)  # each texel's place on the map, in `points`' order
+    grid = SIZE // LEVEL_CELL
+
+    def field_at(field, idx):
+        """A view's gain field (grid × grid × 3) at texels, bilinear between the cells' centres."""
+        return up.sample(field, (texel_col[idx] + 0.5) / LEVEL_CELL - 0.5, (texel_row[idx] + 0.5) / LEVEL_CELL - 0.5)
+
     sub = np.arange(0, len(points), 16)
+    cell = (texel_row[sub] // LEVEL_CELL) * grid + texel_col[sub] // LEVEL_CELL
     looks = {}
     for view in VIEWS:
         w, col, row = view_samples(view, sub)
-        looks[view] = (w, up.sample(_blur(_view_map("albedo", view), 6.0), col, row) @ lum)
-    gains = dict.fromkeys(VIEWS, 1.0)
+        looks[view] = (w, up.sample(_blur(_view_map("albedo", view), 6.0), col, row))
+    fields = {v: np.ones((grid, grid, 3)) for v in VIEWS}
     for _ in range(4):
-        num = sum(w * gains[v] * l for v, (w, l) in looks.items())
+        gained = {v: field_at(fields[v], sub) * l for v, (_w, l) in looks.items()}
         den = sum(w for w, _l in looks.values())
-        mean = num / np.maximum(den, 1e-9)
+        mean = sum(w[:, None] * gained[v] for v, (w, _l) in looks.items()) / np.maximum(den, 1e-9)[:, None]
         for v, (w, l) in looks.items():
-            sel = (w > 0.05) & (l > 1e-4) & (den > 1e-6)
-            gains[v] = float(np.median(mean[sel] / l[sel])) if sel.sum() > 100 else gains[v]
-        anchor = gains["front"]
-        gains = {v: g / anchor for v, g in gains.items()}
-    print("  view gains: " + ", ".join(f"{v} {g:.2f}" for v, g in gains.items()))
+            sel = (w > 0.05) & (l @ lum > 1e-4) & (den > 1e-6)
+            if sel.sum() < 100:
+                continue
+            ratio = mean[sel] / np.maximum(l[sel], 1e-6)
+            overall = np.median(ratio, axis=0)  # where the view meets no other: its one gain
+            weight = np.bincount(cell[sel], w[sel], grid * grid).reshape(grid, grid, 1)
+            sums = np.stack([np.bincount(cell[sel], w[sel] * ratio[:, c], grid * grid) for c in range(3)], axis=1)
+            sums = sums.reshape(grid, grid, 3)
+            prior = 1e-3 * float(weight.max())
+            fields[v] = (_blur(sums, LEVEL_SIGMA) + prior * overall) / (_blur(weight, LEVEL_SIGMA) + prior)
+        anchor = float(np.median(field_at(fields["front"], sub[looks["front"][0] > 0.05]) @ lum))
+        fields = {v: f / anchor for v, f in fields.items()}
+    for v, (w, _l) in looks.items():
+        seen_g = field_at(fields[v], sub[w > 0.05]) @ lum
+        p10, p50, p90 = np.percentile(seen_g, [10, 50, 90])
+        print(f"  {v} gain field: {p10:.2f} / {p50:.2f} / {p90:.2f} (p10 / median / p90 over what it sees)")
 
     every = np.arange(len(points))
     low_sum, low_w = np.zeros((len(points), 3)), np.zeros(len(points))
@@ -638,12 +698,12 @@ def test_face_project():
     nlow_sum, nhigh_best = np.zeros((len(points), 3)), np.zeros((len(points), 3))
     for view in VIEWS:
         w, col, row = view_samples(view, every)
-        albedo = _view_map("albedo", view) * gains[view]
+        albedo = _view_map("albedo", view)
         nworld = _view_map("nworld", view)
         low_img, nlow_img = _blur(albedo, 6.0), _blur(nworld, 6.0)
         low, nlow = up.sample(low_img, col, row), up.sample(nlow_img, col, row)
         soft, sharp = w**4, w**16
-        low_sum += soft[:, None] * low
+        low_sum += soft[:, None] * low * field_at(fields[view], every)  # levelled; the fine band below is a ratio
         nlow_sum += soft[:, None] * nlow
         low_w += soft
         better = sharp > high_w  # the fine band from the single best view: no blur from views that disagree by pixels
@@ -936,6 +996,7 @@ def test_face_project():
         aligned = Path(f"{DIR}aligned_{view}.png")
         eye_paintings[view] = (_linear(_pixels(str(aligned) if aligned.exists() else f"{DIR}painted_{view}.png")[..., :3]),
                                _pixels(f"{DIR}depth_{view}.exr")[..., 0])
+    whites, iris_gains = {}, {}  # each eye's EyeWhiteColor input and its iris texture's gain, calibrated below
     for eye_name in ("Face.eyeLeft", "Face.eyeRight"):
         eye = bpy.data.objects.get(eye_name)
         if eye is None:
@@ -1053,7 +1114,11 @@ def test_face_project():
         # round 46, measured at the white's outer side (7x7 spots beside each iris, where the painting's white is clean -
         # its inner corners are dark red tissue, which made a whole-white median read as matching): painting/ours
         # (0.240, 0.205, 0.186) / (0.333, 0.241, 0.202) = (0.72, 0.85, 0.92) on (0.94, 0.70, 0.59)
-        eye_in["EyeWhiteColor"].default_value = (0.68, 0.60, 0.54, 1.0)
+        eye_in["EyeWhiteColor"].default_value = (0.68, 0.60, 0.54, 1.0)  # the start; calibrated below
+        whites[eye_name] = eye_in["EyeWhiteColor"]
+        if Path(IRIS_TEXTURE).exists():
+            iris_gains[eye_name] = _iris_texture(eye_name).inputs[1]
+            eye_in["IrisBumpStrength"].default_value = 0.0
         eye_in["Clearcoat"].default_value = 0.0  # its coat mirrored the grey studio over the iris
         if os.environ.get("EYE_STYLE", "mpfb") == "mh":  # rounds 30–31: its brown read red-orange; MPFB2 kept
             import zipfile
@@ -1120,6 +1185,39 @@ def test_face_project():
         colour = np.zeros((1, 3)) + major  # for the print below
         white = np.array([True])
         print(f"  {eye_name}: {seen.mean():.0%} of its painted texels seen; white {np.median(colour[white], axis=0).round(3).tolist()}")
+
+    # the whites calibrated like the skin, against the painting in the face view, at the same spots as round 46's
+    # measurement (7x7 beside each iris on its outer side, 1.4 iris radii out, where the painting's white is clean): the
+    # light fit changes from round to round (round 53 from 45 deg up, 1.6 m; round 54 from 25 deg, 3.0 m - the white
+    # 0.34 against the painting's 0.22 in the middle band), so a fixed white colour follows the light, not the painting
+    # the iris texture's gain the same way, at three spots in the iris' lower half (0.65 of its radius, 60 / 90 / 120
+    # deg below its centre - the upper half lies under the lid and the catch light)
+    marks = json.load(open(DIR + "landmarks.json"))["face"]["painted"]
+    spots, iris_spots = {}, {}
+    for eye_name, (c_i, ring, outward) in (("Face.eyeRight", (468, range(469, 473), -1.0)),
+                                           ("Face.eyeLeft", (473, range(474, 478), 1.0))):
+        cx, cy = marks[c_i]
+        r_img = float(np.mean([np.hypot(marks[i][0] - cx, marks[i][1] - cy) for i in ring]))
+        spots[eye_name] = (int(round(cx + outward * 1.4 * r_img)), int(round(cy)))
+        iris_spots[eye_name] = [(int(round(cx + 0.65 * r_img * np.cos(np.radians(a)))),
+                                 int(round(cy + 0.65 * r_img * np.sin(np.radians(a))))) for a in (60, 90, 120)]
+    for _ in range(2):
+        shot = _render_linear(scene, f"{DIR}calib.exr") * 2.0 ** scene.view_settings.exposure
+        for eye_name, (sx, sy) in spots.items():
+            want = _patch_colour(_linear(photo), [(sx, sy)], 3)
+            got = _patch_colour(shot, [(sx // 2, sy // 2)], 2)
+            new = np.clip(np.array(whites[eye_name].default_value[:3]) * want / np.maximum(got, 1e-4), 0.05, 0.95)
+            whites[eye_name].default_value = (*new, 1.0)
+            if eye_name in iris_gains:
+                want = _patch_colour(_linear(photo), iris_spots[eye_name], 3)
+                got = _patch_colour(shot, [(x // 2, y // 2) for x, y in iris_spots[eye_name]], 2)
+                gain_now = np.array(iris_gains[eye_name].default_value)
+                iris_gains[eye_name].default_value = tuple(np.clip(gain_now * want / np.maximum(got, 1e-5), 0.1, 10.0))
+    for eye_name, socket in whites.items():
+        print(f"  {eye_name}: the white {np.round(socket.default_value[:3], 3).tolist()} (painting at the spot "
+              f"{np.round(_patch_colour(_linear(photo), [spots[eye_name]], 3), 3).tolist()})"
+              + (f"; the iris texture's gain {np.round(iris_gains[eye_name].default_value, 2).tolist()}"
+                 if eye_name in iris_gains else ""))
 
     bpy.ops.wm.save_as_mainfile(filepath=f"{DIR}round.blend", copy=True)  # the finished scene, for quick trials
     _gpu(scene, 256)
