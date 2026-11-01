@@ -789,6 +789,15 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            eye: the whites bright and even (the painting's shaded under the upper lid, pinkish toward the corners), the
            upper lid's margin shadow; the iris calibration now three passes (two left it 20-50% off after the layout
            change).
+           ROUNDS 63-65: the white measured on all its pale pixels (the 30th percentile, not the 60th) - barely moved
+           (the painting's (0.261, 0.218, 0.199) against (0.267, 0.226, 0.206)); its middle band beside the iris stays
+           ~15% brighter than the painting's, whose white darkens toward the iris. The iris: a secant step (round 64)
+           drove the gain to its floor - a dark green iris - because the measured region barely answered the gain: it
+           was MediaPipe's radius (~20% wide), so it took in white and the lid's shadow (the "sheen" behind round 58's
+           lilac too). Now the iris region is 0.35-0.8 of its edges' radius (ours calibrated to it), lower half, the
+           median colour per channel, four passes: round 65 converged ((0.069, 0.034, 0.022) against (0.064, 0.031,
+           0.019) before the last pass), a dark warm brown iris as the painting's, 0.332 of the eyeball. Left at the
+           eye: the even, bright whites; the hooded lid's shading.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

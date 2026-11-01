@@ -1297,25 +1297,16 @@ def test_face_project():
     # the whites and the iris calibrated like the skin, against the painting in the face view, every round (the light
     # fit moves: round 53 from 45 deg up, 1.6 m; round 54 from 25 deg, 3.0 m - its white 0.34 against the painting's
     # 0.22 in the middle band while the white's colour was fixed). Measured the same way on the painting and the render
-    # (at 512 px): around each iris (MediaPipe's, on the painting) the white is the pale, unsaturated pixels of the
-    # eye's box outside 1.1 iris radii (brighter than its 60th percentile there, saturation under 0.35); the iris its
-    # pigment at 0.4-0.85 of its radius, lower half: the median colour of its darker half (the painting's iris is dark
-    # warm pigment, (0.058, 0.028, 0.019), under a bright cornea sheen that the render makes itself - round 58, matched
-    # on all its pixels, took a x4 blue gain and turned lilac). One white and one iris gain for both eyes, pooled - one
-    # person's eyes, the render makes the light's difference between them (round 55's first try, a 7x7 spot per white
-    # and three per iris, per channel: a pink white where a spot met the outer corner's tissue, one iris orange, one
-    # green).
+    # (at 512 px): around each iris (MediaPipe's centre, on the aligned painting) the white is the pale, unsaturated
+    # pixels of the eye's box outside 1.1 of MediaPipe's iris radii (brighter than its 30th percentile there, saturation
+    # under 0.35); the iris the median colour at 0.35-0.8 of its edges' radius, lower half. Rounds 55-64 measured the
+    # iris inside MediaPipe's radius (~20% wide): the region took in white and lid shadow - a lilac iris matching all of
+    # it per channel (round 58), a dark green one by its darker half (64). One white and one iris gain for both eyes,
+    # pooled - one person's eyes, the render makes the light's difference between them (round 55's spots per eye: a pink
+    # white at the outer corner's tissue, one iris orange, one green).
     marks = json.load(open(DIR + "aligned_marks.json"))["face"]  # the photo is the aligned painting
     photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
     yy, xx = np.mgrid[0:512, 0:512]
-    regions = []
-    for c_i, ring in ((468, range(469, 473)), (473, range(474, 478))):
-        cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
-        r_eye = float(np.mean([np.hypot(*(np.array(marks[i]) - marks[c_i])) for i in ring])) / 2
-        rr = np.hypot(xx - cx, yy - cy) / r_eye
-        box = (np.abs(xx - cx) < 2.2 * r_eye) & (np.abs(yy - cy) < r_eye) & (rr > 1.1)
-        regions.append((box, (rr > 0.4) & (rr < 0.85) & (yy > cy)))
-
     def iris_half_width(img):
         """The iris' half-width at its widest, from where the white starts left and right (the strongest fall and
         rise of brightness along rows through its middle) - MediaPipe's iris radius on the painting is ~20% wide."""
@@ -1329,18 +1320,27 @@ def test_face_project():
                 widths.append((np.argmax(grad[28:]) + 28 - np.argmin(grad[:28])) / 2)
         return float(np.percentile(widths, 75))
 
+    want_width = iris_half_width(photo_half)
+    regions = []
+    for c_i, ring in ((468, range(469, 473)), (473, range(474, 478))):
+        cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
+        r_eye = float(np.mean([np.hypot(*(np.array(marks[i]) - marks[c_i])) for i in ring])) / 2
+        rr = np.hypot(xx - cx, yy - cy) / r_eye
+        box = (np.abs(xx - cx) < 2.2 * r_eye) & (np.abs(yy - cy) < r_eye) & (rr > 1.1)
+        # the iris by its edges' radius (ours is calibrated to it): by MediaPipe's, ~20% wide, the region reached past
+        # our iris into the white and the lid's shadow - the gain hardly moved it (round 64: a dark green iris)
+        re = np.hypot(xx - cx, yy - cy) / want_width
+        regions.append((box, (re > 0.35) & (re < 0.8) & (yy > cy)))
+
     def eye_colours(img):
         lum_i = img @ lum
         sat = (img.max(axis=2) - img.min(axis=2)) / np.maximum(img.max(axis=2), 1e-6)
-        pale = [box & (sat < 0.35) & (lum_i > np.percentile(lum_i[box], 60)) for box, _iris in regions]
-        iris_px = np.concatenate([img[iris] for _box, iris in regions])
-        iris_l = iris_px @ lum
+        pale = [box & (sat < 0.35) & (lum_i > np.percentile(lum_i[box], 30)) for box, _iris in regions]
         return (np.median(np.concatenate([img[m] for m in pale]), axis=0),
-                np.median(iris_px[iris_l < np.median(iris_l)], axis=0))
+                np.median(np.concatenate([img[iris] for _box, iris in regions]), axis=0))
 
     want_white, want_iris = eye_colours(photo_half)
-    want_width = iris_half_width(photo_half)
-    for _ in range(3):  # two left the iris 20-50% off when its layout changed (round 62)
+    for _ in range(4):
         shot = _render_linear(scene, f"{DIR}calib.exr") * 2.0 ** scene.view_settings.exposure
         got_white, got_iris = eye_colours(shot)
         got_width = iris_half_width(shot)
