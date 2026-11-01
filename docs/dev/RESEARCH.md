@@ -1849,6 +1849,24 @@ every one logged; key claims page-read):
   forward-backward check (Sundaram, Brox & Keutzer, ECCV 2010: |w + w'|^2 < 0.01 (|w|^2 + |w'|^2) + 0.5) the features
   (lids, lip line) stay near zero but smooth skin keeps 15 px patches - DIS's aperture problem on low-texture skin
   whose shading differs between paintings. Bilinear resampling alone costs pore-scale detail; Lanczos keeps it.
+- Painting the views in sequence with FLUX 3 Image Klein (sd-cli edit mode, measured 2026-10-31): given two pictures
+  - the re-projected composite first, the hero painting second - it painted the hero's own front view into the
+  30-degree view (lips 180 px off); given the composite alone it keeps the pose (lids 1.8-5.4 px, lips 4-12.5 px) and
+  carries the painted part's person into the rest of the head, 100 s a view on the 8 GB card. Over nine views in a
+  chain the skin tone drifts darker and more orange.
+- Eyelash angles, measured (searched 2026-10-31: "human eyelash curvature angle upper lash lift angle measurement
+  study" - a Korean cilia-angle table, the SNU Asian/Caucasian curl-up and lift-up study (Na et al., BJD 2006: Asian
+  lashes lower lift-up and curl-up angles, fewer, thicker; numbers not in the snippets, the page didn't load), a
+  cadaver root angle 75 +/- 11 deg to the skin; "Asian Caucasian eyelash lift-up angle curl-up angle degrees lateral
+  photograph"; "upper eyelash angle to horizontal degrees Asian downward lashes eyelid margin inclination"; "how to
+  groom realistic eyelashes 3D strands direction curl tips Blender MetaHuman" - only Fab groom listings: 182-270
+  curves, ~19 points each). Page read, oatext.com "A study of normal eyelashes in Japanese individuals" (50 adults,
+  lateral photographs, primary gaze; angle between the lash root and the vertical): upper 61.4 +/- 13.7 deg men,
+  71.8 +/- 13.5 women; lower 90.0 +/- 10.1 / 99.8 +/- 10.8; upper length 7.33 / 7.47 mm, lower 4.98 / 5.56; upper
+  lashes curly in 40% of men, 76% of women, the lower all curly. Page read, Korea University "Changes in the horizontal
+  angular direction of lower eyelashes with age in Korean patients" (frontal photographs, tangential to the line
+  through the canthi): adults medial 137.1 +/- 13.8, central 71.8 +/- 14.5, lateral 25.3 +/- 9.3 deg. No frontal
+  measurement of the upper lid's fan was found - a gap in these searches.
 
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0

@@ -655,7 +655,18 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            0.117-0.131 - to watch. LASH TRIAL on round 53's scene: rec 7's strands at 10 mm, rising 15 deg and curling
            60, rooted 0.5-2 deg past the opening, fanned out above the lid - less like the painting than the cards;
            re-tuned (8 / 4.5 mm, leaving the margin 10 deg down, curl 45, roots 0.2-1 deg out, the lower ones thinner)
-           for the next trial.
+           for the next trial. Its trial on round 54's scene (every root found, 0 of 390 missed with the fallback): the
+           middle upper lashes ran sideways (22 px across, 7 up in the face view) and the outer ones flat outward - curly
+           clumps at the corners - and 8-36% of the lower ones dipped into the lid skin: dark specks. The direction
+           off the eyeball's radius was the fault (at the opening's middle it already points 17 deg outward). Now in the
+           face's frame on measured angles: from the side 15 deg above straight ahead curling 30 more (the measured
+           29 deg mean for men, 61 from vertical; oatext's 50 Japanese adults), the lower ones straight ahead (90 deg)
+           curling 20 down; from the front the fan Korea University measured on lower lids (137 / 72 / 25 deg from the
+           corner line, the upper lid mirrored). Probe: the middle upper lashes 11 px out and 23 up, the outer 20 out
+           and 14 up, no lower lash in the skin; the render (CPU, the card lent) a fine fringe along the whole upper
+           lid - clearly ahead of the cards, so the strands are the one way now (the cards and FACETEST_LASHES removed).
+           Left: the inner upper lashes graze the skin by the nose (6-8% of their points; 50-70% of them touch); the
+           painting's dark line at the margin itself (ours a fringe standing off it).
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
@@ -665,6 +676,15 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            what is painted so far re-projected into its camera through our mesh (flow_views' depth re-projection, the
            clay elsewhere, feathered), FLUX 3 edits it with the hero as its second reference, and the result is aligned
            before the next view uses it. The independent paintings kept in `.dev/facetest/paintings_independent/`.
+           Run 2026-10-31 (seed 1): with the hero as the second reference FLUX painted the hero's front view into the
+           30-degree view (the lips 180 px off) - so the composite alone is edited, the person coming from its painted
+           part (as TEXTure / StableGen inpaint the projected texture); the feather moved inside the painted border
+           (eroded, then blurred, 12 px; it was cut at the border, a hard half-edge across the forehead). Result: one
+           man across all ten views (contact sheet against the independent ten: three or four men there); 100 s a view;
+           the AI moved the lids 1.8-5.4 px (the 30-degree right view 11.5: the eye openings are clay in the composite -
+           the depth-edge mask drops them - so FLUX paints its own, wider eyes; the alignment pulls them back) and the
+           lips 4-12.5 px. Left: the skin tone drifts darker and more orange view by view, and the profiles carry dark
+           patches on the scalp.
            (4) WHAT THE EYE CLOSE-UPS SHOW (painting / round 50 / clay, 3x): the biggest tells left are the lashes -
            sparse thick black card spikes across the iris, where the painting has a dense fine dark lash line - then
            the iris (lighter, pinkish, a contrasty fibre pattern, the pupil a smeared blob), a flat dry white with a

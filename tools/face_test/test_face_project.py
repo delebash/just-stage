@@ -376,64 +376,21 @@ def _tearline(o, skin, name):
 LASH_PACK = "E:/Dev/3D/just-stage/.dev/cache/mh_packs/makehuman_system_assets_cc0.zip"  # sha256 b542127a…, CC0
 
 
-def _add_lashes(body, style="eyelashes01", kind="eyelashes", shorten=0.6, colour=(0.012, 0.009, 0.008), lower=False):
-    """MakeHuman's lash cards (its CC0 system assets: a strip mesh, an MHCLO binding to hm08, a lash texture with
-    transparency) fitted to our head by MHCLO — MakeHuman's own way, and the card lashes CC5 and MetaHuman use. Fitted
-    after the lid keys, so they sit on the lids as shaped."""
-    import zipfile
-
-    mhclo = importlib.import_module("bl_ext.system.juststage.core.mhclo")
-    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
-    pack = zipfile.ZipFile(LASH_PACK)
-    folder = f"{kind}/{style}/{style}"
-    binding = mhclo.parse(pack.read(folder + ".mhclo").decode("utf-8", "replace"))
-    co = mhclo.fit(binding, build.shaped_coords(body))
-    uvs, faces = [], []
-    for line in pack.read(folder + ".obj").decode("utf-8", "replace").splitlines():
-        if line.startswith("vt "):
-            uvs.append([float(x) for x in line.split()[1:3]])
-        elif line.startswith("f "):
-            faces.append([tuple(int(x) - 1 if x else -1 for x in (c.split("/") + [""])[:2]) for c in line.split()[1:]])
-    skin = build.shaped_coords(body)[:13380]  # the body's own vertices, not its helpers
-    near = np.array([skin[np.argmin(np.linalg.norm(skin - v, axis=1))] for v in co])
-    co = near + (co - near) * shorten
-    if not lower:  # eyelashes01's texture holds two upper strips (its top half) and two lower ones (bottom right): a card
-        # is a lower lash when its UV centre lies there (the root-height rule dropped most upper cards too - round 45)
-        centre = [np.mean([uvs[c[1]] for c in face], axis=0) for face in faces]
-        down = [v < 0.41 or u > 0.74 for u, v in centre]
-        faces = [face for face, d in zip(faces, down) if not d]
-        print(f"{kind}: {sum(down)} lower cards dropped")
-    mesh = bpy.data.meshes.new(f"{body.name} {style}")
-    mesh.from_pydata(co.tolist(), [], [[c[0] for c in f] for f in faces])
-    layer = mesh.uv_layers.new(name="UVMap")
-    flat = [uvs[c[1]] for f in faces for c in f]
-    for loop, uv in zip(layer.data, flat):
-        loop.uv = uv
-    obj = bpy.data.objects.new(f"{body.name} {style}", mesh)
-    bpy.context.scene.collection.objects.link(obj)
-    tex_path = DIR + f"{style}.png"
-    Path(tex_path).write_bytes(pack.read(folder + ".png"))
-    mat = bpy.data.materials.new(f"{body.name} {style}")
-    nt = mat.node_tree
-    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
-    tex = nt.nodes.new("ShaderNodeTexImage")
-    tex.image = bpy.data.images.load(tex_path)
-    bsdf.inputs["Base Color"].default_value = (*colour, 1.0)  # dark brown-black hair
-    bsdf.inputs["Roughness"].default_value = 0.45
-    bsdf.inputs["Specular IOR Level"].default_value = 0.0  # the asset's .mhmat: specularColor 0 0 0
-    nt.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
-    mesh.materials.append(mat)
-    obj.visible_shadow = False  # the asset's .mhmat: castShadows False
-    print(f"{kind}: {style}, {len(co)} vertices, {len(faces)} cards, {shorten:.0%} length")
-
-
-LASHES = os.environ.get("FACETEST_LASHES", "cards")  # rec 7's strands at real counts, or "cards" (MakeHuman's)
-#: per eye and lid: count, length at the longest and at the corners (mm), the angle off the eyeball at the root away
-#: from the eye (- toward it: upper lashes leave the margin forward and a little down, then curl up), the curl to the
-#: tip (degrees), how far past the opening's edge the roots sit (degrees), the root radius (m). Counts: StatPearls'
-#: 90-160 upper, 75-80 lower. Round 53's trial at 10 mm, +15 / 60 deg, roots 0.5-2 deg out: a fan standing off the lid
-LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": -10.0, "curl": 45.0, "band": (0.2, 1.0), "radius": 0.00005}
-LASH_LOWER = {"count": 75, "long": 5.0, "short": 2.5, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000035}
+#: per eye and lid: count, length at the longest and at the corners (mm), the angle off straight ahead at the root seen
+#: from the side (+ away from the eye: up for the upper lid), the curl to the tip (degrees), how far past the opening's
+#: edge the roots sit (degrees), the root radius (m). Counts: StatPearls' 90-160 upper, 75-80 lower. Angles and lengths
+#: measured on 50 Japanese adults from the side (oatext.com, "A study of normal eyelashes in Japanese individuals"):
+#: upper 61 deg from vertical in men (29 above straight ahead; women 72), 7.3 mm, 60% straight in men; lower 90 deg
+#: (straight ahead; women 100), 5.0 mm, all curly. Round 54's trial off the eyeball's radius instead: the middle lashes
+#: ran sideways (22 px across, 7 up) and the outer ones flat outward - curly clumps at the corners.
+LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": 15.0, "curl": 30.0, "band": (0.2, 1.0), "radius": 0.00005}
+LASH_LOWER = {"count": 75, "long": 5.0, "short": 3.0, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000035}
+#: the fan seen from the front: (share of the way from the inner corner to the outer, the lash's angle from the line
+#: through the corners toward the outer one, degrees) - measured on the lower lid of Korean adults (Korea University,
+#: "Changes in the horizontal angular direction of lower eyelashes with age": medial 137, central 72, lateral 25);
+#: the upper lid mirrored, no measurement found
+LASH_FAN = ((1 / 6, 137.0), (0.5, 72.0), (5 / 6, 25.0))
+FACE_FORWARD = np.array([0.0, -1.0, 0.0])  # the body faces -Y (the front camera looks along +Y)
 LASH_POINTS = 12  # the research: 10+ points each for the curl (the pack's lashes have 5)
 LASH_TIP = 0.25  # the tip's radius as a share of the root's
 LASH_MELANIN, LASH_REDNESS = 0.95, 0.25  # near black-brown
@@ -444,9 +401,9 @@ def _strand_lashes(body, openings, seed=7):
     `../plans/2026-10-30-research-hair-eyes-teeth.md`: 90-160 upper in 5-6 rows, 75-80 lower in 3-4, per eye, 10+ points
     each for the curl). MetaHuman's way - strand grooms - as Blender hair curves: roots on the lid's front skin just past
     the opening's edge (face_shape.eye_opening), found by rays from in front onto the subdivided surface the camera
-    sees, in a band just past the edge (the rows), none by the inner corner; each lash leaves the lid forward and
-    curls away from the eye, longest just outside the middle, the outer ones leaning outward; Principled Hair BSDF by
-    melanin, rendered as 3D curves."""
+    sees, in a band just past the edge (the rows), none by the inner corner; each lash leaves the lid at the measured
+    angle off straight ahead and curls away from the eye, fanned as measured from the front (LASH_FAN), longest just
+    outside the middle; Principled Hair BSDF by melanin, rendered as 3D curves."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
@@ -456,7 +413,14 @@ def _strand_lashes(body, openings, seed=7):
     tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())  # its local space
     strands, radii, missed = [], [], 0
     for o in openings.values():
-        outward = np.sign(o.outer - o.inner)
+        corner_az = np.array([o.inner, o.outer])
+        corner_el = np.interp(corner_az, o.centres, (o.upper + o.lower) / 2)
+        corners = o.centre + o.radius * face_shape.direction(corner_az, corner_el)
+        lateral = corners[1] - corners[0]  # along the line through the corners, toward the outer one
+        lateral -= (lateral @ FACE_FORWARD) * FACE_FORWARD
+        lateral /= np.linalg.norm(lateral)
+        up = np.cross(lateral, FACE_FORWARD)
+        up *= np.sign(up[2])
         for spec, side in ((LASH_UPPER, 1.0), (LASH_LOWER, -1.0)):
             n = spec["count"]
             f = np.sort(rng.uniform(0.06, 0.97, n))  # the share of the way from the inner corner to the outer
@@ -479,19 +443,12 @@ def _strand_lashes(body, openings, seed=7):
                 el[k] = el_k
                 normal = to_world[:3, :3] @ np.array(hit[1])
                 root = to_world[:3, :3] @ np.array(hit[0]) + to_world[:3, 3] - 0.0001 * normal / np.linalg.norm(normal)
-                radial = (root - o.centre) / np.linalg.norm(root - o.centre)
-                d_k = face_shape.direction(az[k:k + 1], el[k:k + 1])[0]
-                away = (face_shape.direction(az[k:k + 1], el[k:k + 1] + side)[0] - d_k)  # up for the upper lid
-                away -= (away @ radial) * radial
-                away /= np.linalg.norm(away)
-                along = face_shape.direction(az[k:k + 1] + outward, el[k:k + 1])[0] - d_k  # toward the outer corner
-                along -= (along @ radial) * radial
-                along /= np.linalg.norm(along)
+                fan = np.radians(np.interp(f[k], *zip(*LASH_FAN)) + rng.normal(0.0, 8.0))
+                away = np.cos(fan) * lateral + side * np.sin(fan) * up  # seen from the front
                 length = 0.001 * rng.uniform(0.85, 1.1) * (spec["short"] + (spec["long"] - spec["short"]) * np.sin(np.pi * f[k] ** 1.3))
                 t = np.linspace(0.0, 1.0, LASH_POINTS)
                 theta = np.radians(spec["rise"] + rng.normal(0.0, 5.0)) + np.radians(spec["curl"] + rng.normal(0.0, 10.0)) * t ** 1.5
-                d = np.cos(theta)[:, None] * radial + np.sin(theta)[:, None] * away + 0.3 * (f[k] - 0.5) * along
-                d /= np.linalg.norm(d, axis=1, keepdims=True)
+                d = np.cos(theta)[:, None] * FACE_FORWARD + np.sin(theta)[:, None] * away
                 steps = np.vstack([np.zeros(3), d[:-1] * length / (LASH_POINTS - 1)])
                 strands.append(root + np.cumsum(steps, axis=0))
                 radii.append(spec["radius"] * np.interp(t, [0.0, 1.0], [1.0, LASH_TIP]))
@@ -594,7 +551,8 @@ def test_face_project():
     for eye_name in ("Face.eyeLeft", "Face.eyeRight"):
         eye = bpy.data.objects[eye_name]
         openings[eye_name] = face_shape.eye_opening(face_shape.world_points(eye), skin, polys, face_shape.gaze(eye), 0.003, 0.008)
-    _strand_lashes(body, openings) if LASHES == "strands" else _add_lashes(body)
+    # lashes: rec 7's strands - MakeHuman's lash cards (until round 54) were sparse thick black spikes beside the painting
+    _strand_lashes(body, openings)
     _head_tile(body)
     # brows: the painted ones in the skin - MakeHuman's brow cards (010, 011, 012, masked or not) all sat higher and more
     # arched than the painting's and doubled them; without cards the painted brows read as hair (round 43 trials)
