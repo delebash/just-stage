@@ -134,6 +134,23 @@ scans of uneven quality, to be judged by downloading (a Sketchfab login).
 | "Nils Head Scan" by Simsallabim | 69 MB FBX | diffuse 8192² | an automatic photogrammetry atlas of ~100 fragments, warm baked light - little use |
 | "Very detailed face" by Theworkings | 118 MB OBJ | textures inside a nested archive (not opened yet) | face only |
 
+**The scan hunt (the user's go: "make sure you find the best sites to search, go")** - sites: Sketchfab (the
+largest CC-BY set of real-person scans, searchable through its API); commercial-use free scans whose licences usually
+don't allow redistributing the files - Renderbot (nine people, 8K, commercial use, "for a period of one year" per CG
+Channel), xoio (15 people, 2K textures), Ten24's 2016 full-body male (commercial use with credit), 3DCAP (three people)
+*[snippets]*; research sets behind institutional agreements (3DBodyTex.v2, ~3,000 scans); CC0 skin: "Human Materials
+1" on Sketchfab (CC0, 2K skin materials: colour, AO, roughness, normal, displacement) *[snippet]*, ShareTextures' Human
+Skin 5 (CC0). Sketchfab API queries (`downloadable=true`, `license=by` or `cc0`, `sort_by=-likeCount`): "woman head
+scan", "bust scan", "photogrammetry portrait", "head scan" (cc0: carvings only), "face scan", "head scan". Real-person
+CC BY candidates (celebrities and public figures left out - likeness): "My bald father bust" (Coltranne, d281e5e1),
+"Eddy's Bust made with 3DF Zephyr" (100 Canon 5D III photos, fd9ba129), "Asian Woman Photogrammetry" (daydev,
+8c7bb1f3), "ESTHER" (videophage, 074e5680), "Rudavin Sergey 3d portrait" (e1fe8610), "Kitbash 3D Self potrait"
+(Krishna Prakash, 42cf3aee), "Scan - Léo-Paul" (72199517), "Female head scan" (whynotmeebaby, b157e280), "Head 03 A"
+(Nikitos & 3130, 04a94494), "Joan" and "Red Lady" (Veterock, d471e24a / 8dc6e53c, scanned heads, 0.8 / 2.9M faces),
+"Female Head 3D Scan" (Konstantin Martens, Meshroom, 3ec26904), "Ammamma Head Scan Polycam" (64fda4f6), "Jared Head Scan
+3D" (08f691ec), "Head scan 13" (yaro.pro, 5e6d2804), "John Cleaver" (Artec Eva Lite, 70c53edc), "Woman With Hair"
+(Matter and Form, eb5895cd).
+
 ## 2 · The rec (attacked)
 
 **Rec:** follow Headshot's structure, in measured steps.
