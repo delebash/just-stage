@@ -848,6 +848,13 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            painting's darkest row against the clay's (close view 8.1 px, the rest 0.4-2.1). The warp itself fell 6 px
            short there: solved on a 64-point grid (16 px apart) the lips' stretch and squeeze within ~20 px was smoothed
            away - now 256 (4 px): the close seam 1-2 px off the clay's. Round 67: those two, aligned again.
+           ROUND 67: the irises grey-blue, the painting's iris "wanted" (0.198, 0.133, 0.110) against round 65's
+           (0.064, 0.031, 0.019): the 4-px warp pinned MediaPipe's lid lines (along the painting's thick margins'
+           outer edges) one by one onto our lids and squeezed the painted eye - its opening narrower than ours, so the
+           calibration's regions took lid and white for iris. On the 16-px grid the same pins had been smoothed. Now
+           each painted eye moves whole, straight up or down by its lid points' median offset (close view 19.6 px; the
+           AI's drift), not reshaped - our lids follow the painting's own shape (the lid key, measured from its
+           corners). The aligned eyes look as painted; the calibration's half-width 15.5 px (round 65's 15.4). Round 68.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it

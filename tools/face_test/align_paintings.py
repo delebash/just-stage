@@ -32,8 +32,8 @@ from scipy.interpolate import RBFInterpolator
 DIR = Path("E:/Dev/3D/just-stage/.dev/facetest")
 MODEL = Path("E:/Dev/3D/just-stage/.dev/cache/mediapipe/face_landmarker.task")
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
-#: the warp is solved on a grid and smoothly scaled up to the full picture: 4 px apart - at 16 px (64, until round 66)
-#: the lips' stretch and squeeze within ~20 px was smoothed away, the close painting's seam left 6 px short of the clay's
+#: the warp is solved on a grid and smoothly scaled up to the full picture: 4 px apart - at 16 px (64, until round
+#: 66) the lips' stretch and squeeze within ~20 px was smoothed away, the close painting's seam 6 px short of the clay's
 GRID = 256
 #: MediaPipe's inner lip ring, left out of the warp: the head's lips are closed (face_shape.py), so there is no inner
 #: edge to find on the clay - the detector guesses one at the crease, and the warp pulled the painting's lips apart
@@ -56,11 +56,12 @@ def landmarks(detector, path: Path) -> np.ndarray | None:
 
 
 def clay_eye_points(clay: np.ndarray, painted_pts: np.ndarray):
-    """For each of the painting's lid points (its eye rings without the corners), the clay's: straight up or down at
-    the same column, on the top (upper lid) or bottom edge of the clay's eye opening - its pixels not skin-coloured,
-    the region nearest the painted eye. Only vertical, and no corners: MediaPipe's corners sit at the canthi, past
-    the inner corner's pink tissue, while the clay's opening ends where the eyeball stops showing - matched, they
-    squashed the painted eye sideways (round 51). Returns (painting points, clay points) for the eyes found."""
+    """For each of the painting's lid points (its eye rings without the corners), where it goes on the clay: the clay's
+    lid edges found straight up or down at the same column, on the top (upper lid) or bottom edge of the clay's eye
+    opening - its pixels not skin-coloured, the region nearest the painted eye - and the eye moved by their median
+    offset (below). Only vertical, and no corners: MediaPipe's corners sit at the canthi, past the inner corner's
+    pink tissue, while the clay's opening ends where the eyeball stops showing - matched, they squashed the painted
+    eye sideways (round 51). Returns (painting points, clay points) for the eyes found."""
     h, w = clay.shape[:2]
     skin = np.median(clay[h // 4 : 3 * h // 4, w // 4 : 3 * w // 4].reshape(-1, 3).astype(float), axis=0)
     eye_px = (np.linalg.norm(clay.astype(float) - skin, axis=2) > SKIN_DISTANCE).astype(np.uint8)
@@ -77,13 +78,25 @@ def clay_eye_points(clay: np.ndarray, painted_pts: np.ndarray):
         region = labels == labels[ys[near], xs[near]]
         if region.sum() > 0.02 * h * w:  # not an eye: the background or the face's outline
             continue
+        eye_src, eye_dst = [], []
         for ids, top in ((upper, True), (lower, False)):
             for i in ids[1:-1]:
                 x = int(round(painted_pts[i, 0]))
                 rows = np.flatnonzero(region[:, x]) if 0 <= x < w else []
                 if len(rows):
-                    src.append([painted_pts[i, 0], rows.min() if top else rows.max()])
-                    dst.append(painted_pts[i])
+                    eye_src.append([painted_pts[i, 0], rows.min() if top else rows.max()])
+                    eye_dst.append(painted_pts[i])
+        if eye_src:
+            # the eye moved whole, straight up or down by its points' median offset, not reshaped: MediaPipe's lid lines
+            # on a painting run along its thick lid margins' outer edges (~2 px above the upper lid, ~6 below the lower
+            # in the close view), so pinned one by one onto the clay's edges they squeezed the painted eye - harmless
+            # on round 65's 16-px warp grid, which smoothed them, but on round 67's 4-px one the painting's opening came
+            # out narrower than ours and the calibration took lid and white for iris (a grey-blue iris). Our lids
+            # follow the painting's own shape (face_shape.UPPER_LID / LOWER_LID), so the move is what's left.
+            eye_src, eye_dst = np.array(eye_src), np.array(eye_dst)
+            shift = np.median(eye_src[:, 1] - eye_dst[:, 1])
+            src.extend(eye_dst + [0.0, shift])
+            dst.extend(eye_dst)
     return np.array(dst).reshape(-1, 2), np.array(src).reshape(-1, 2)
 
 
