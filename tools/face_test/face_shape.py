@@ -20,8 +20,14 @@ import numpy as np
 #: a quarter). At 5 / 1.6 the front view's clay opening was ~2.5 mm short of the painting's (upper lid 3-5 px low,
 #: lower 5 px high at 0.88 px a degree): our neutral eye is the smaller one, so the key opens it. At 1 / -4.4 the
 #: front view's lids sit 0.7-2.1 px from the painting's; the close view's opening heights within ~3 px (its lids both
-#: 13-22 px higher - the AI's drift there, which the landmark warp takes out)
-UPPER_LID, LOWER_LID = 1.0, -4.4
+#: 13-22 px higher - the AI's drift there, which the landmark warp takes out). But MediaPipe's lid lines on the
+#: painting run along the outer edges of its thick lid margins (the lower one ~6 px below where the eyeball stops
+#: showing, close view) and on our thin-margined render at the edge itself, so matching them opened our eye too far:
+#: round 65 against the unwarped close painting, read by eye at 4x from the line through MediaPipe's corners (in eye
+#: widths, both eyes): upper lid 0.26-0.28 above it against the painting's 0.23-0.25, lower 0.06-0.09 below against
+#: 0.02-0.05 - the opening ~26% taller, white under the iris. Closed by 4.7 / 7 px at ~1.7 px a degree (the front
+#: view's 0.88, the close camera 1.95x nearer): 3.7 / -0.3 (round 66, 2026-11-02).
+UPPER_LID, LOWER_LID = 3.7, -0.3
 
 
 def close_mouth(body):

@@ -428,14 +428,15 @@ def set_iris_size(eye_in, mapping, relation):
 #: from the side (+ away from the eye: up for the upper lid), the curl to the tip (degrees), how far past the opening's
 #: edge the roots sit (degrees), the root radius (m). Counts: StatPearls' 90-160 upper, 75-80 lower. Angles and lengths
 #: measured on 50 Japanese adults from the side (oatext.com, "A study of normal eyelashes in Japanese individuals"):
-#: upper 61 deg from vertical in men (29 above straight ahead; women 72), 7.3 mm, 60% straight in men; lower 90 deg
-#: (straight ahead; women 100), 5.0 mm, all curly. Round 54's trial off the eyeball's radius instead: the middle lashes
-#: ran sideways (22 px across, 7 up) and the outer ones flat outward - curly clumps at the corners. Round 57 at the
-#: measured mean (15 up, curling 30): a fringe standing above the lid, the eye wide open, where this man's painting has
-#: the lashes forward under his hooded lid - a dark line at the margin - so the measured range's low end (Asian lashes
-#: lift less: Na et al. 2006): about 10 deg above straight ahead on average (80 from vertical, the men's 61 +/- 14);
-#: the lower ones finer (ticks along the lid where the painting shows none).
-LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": 0.0, "curl": 20.0, "band": (0.2, 1.0), "radius": 0.00005}
+#: upper 61 deg from vertical in men (women 72), 7.3 mm, 60% straight in men; lower 90 deg (straight ahead; women 100),
+#: 5.0 mm, all curly. The paper doesn't say which way its vertical points; its remark that the lower lashes "grow in
+#: the upward direction against gravity" (women's 100 above straight ahead) fits only a vertical pointing down - so the
+#: men's upper lashes leave the lid ~29 deg BELOW straight ahead (women's ~18), as this man's painting shows them: down
+#: and forward over the top of the eyeball, a dark band at the margin (the 30-degree painting shows them hanging).
+#: Rounds 57-65 read it the other way (rise 0 to +15, curling up): a fringe of spikes standing above the lid, the iris
+#: uncovered - the painting's lid covers ~30% of the iris' height, ours ~14%. 60% of men's straight: a light curl.
+#: The lower ones finer (ticks along the lid where the painting shows none).
+LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": -25, "curl": 10.0, "band": (0.2, 1.0), "radius": 0.00005}
 LASH_LOWER = {"count": 75, "long": 4.5, "short": 2.5, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000025}
 #: the fan seen from the front: (share of the way from the inner corner to the outer, the lash's angle from the line
 #: through the corners toward the outer one, degrees) - measured on the lower lid of Korean adults (Korea University,
@@ -462,9 +463,14 @@ def _strand_lashes(body, openings, seed=7):
     rng = np.random.default_rng(seed)
     to_local = np.array(body.matrix_world.inverted())
     to_world = np.array(body.matrix_world)
-    tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())  # its local space
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    tree = BVHTree.FromObject(body, depsgraph)  # its local space
     strands, radii, missed = [], [], 0
-    for o in openings.values():
+    for eye_name, o in openings.items():
+        # the eye still whole in a round (its cornea is split off later); a saved round's has it apart (the lash trials)
+        eyes = [bpy.data.objects[n] for n in (eye_name, f"{eye_name} cornea") if n in bpy.data.objects]
+        eye_trees = [(BVHTree.FromObject(e, depsgraph), np.array(e.matrix_world.inverted()),
+                      np.array(e.matrix_world), 0.0002) for e in eyes]
         corner_az = np.array([o.inner, o.outer])
         corner_el = np.interp(corner_az, o.centres, (o.upper + o.lower) / 2)
         corners = o.centre + o.radius * face_shape.direction(corner_az, corner_el)
@@ -496,19 +502,25 @@ def _strand_lashes(body, openings, seed=7):
                 normal = to_world[:3, :3] @ np.array(hit[1])
                 root = to_world[:3, :3] @ np.array(hit[0]) + to_world[:3, 3] - 0.0001 * normal / np.linalg.norm(normal)
                 fan = np.radians(np.interp(f[k], *zip(*LASH_FAN)) + rng.normal(0.0, 8.0))
-                away = np.cos(fan) * lateral + side * np.sin(fan) * up  # seen from the front
                 length = 0.001 * rng.uniform(0.85, 1.1) * (spec["short"] + (spec["long"] - spec["short"]) * np.sin(np.pi * f[k] ** 1.3))
                 t = np.linspace(0.0, 1.0, LASH_POINTS)
                 theta = np.radians(spec["rise"] + rng.normal(0.0, 5.0)) + np.radians(spec["curl"] + rng.normal(0.0, 10.0)) * t ** 1.5
-                d = np.cos(theta)[:, None] * FACE_FORWARD + np.sin(theta)[:, None] * away
+                # seen from the side, theta off straight ahead, away from the opening when positive (up for the upper
+                # lid) and toward it when negative (a drooping lash); seen from the front, fanned (LASH_FAN) - the
+                # sideways part always toward its own corner, so an outer lash that droops still points outward
+                d = (np.cos(theta)[:, None] * FACE_FORWARD + (side * np.sin(theta) * np.sin(fan))[:, None] * up
+                     + (np.abs(np.sin(theta)) * np.cos(fan))[:, None] * lateral)
+                d /= np.linalg.norm(d, axis=1, keepdims=True)
                 steps = np.vstack([np.zeros(3), d[:-1] * length / (LASH_POINTS - 1)])
                 strand = root + np.cumsum(steps, axis=0)
                 for i in range(1, LASH_POINTS):  # out of the skin (a groom's collision pass): by the nose
-                    q = to_local[:3, :3] @ strand[i] + to_local[:3, 3]
-                    near, n_near = (np.array(x) for x in tree.find_nearest(Vector(q))[:2])
-                    if (q - near) @ n_near < 0.0001:
-                        moved = near + 0.0001 * n_near - q
-                        strand[i:] += to_world[:3, :3] @ moved  # the rest of the lash follows
+                    for bvh, local, world, gap in [(tree, to_local, to_world, 0.0001)] + eye_trees:
+                        # and off the eye: a drooping lash meets the cornea
+                        q = local[:3, :3] @ strand[i] + local[:3, 3]
+                        near, n_near = (np.array(x) for x in bvh.find_nearest(Vector(q))[:2])
+                        if (q - near) @ n_near < gap:
+                            moved = near + gap * n_near - q
+                            strand[i:] += world[:3, :3] @ moved  # the rest of the lash follows
                 strands.append(strand)
                 radii.append(spec["radius"] * np.interp(t, [0.0, 1.0], [1.0, LASH_TIP]))
     curves = bpy.data.hair_curves.new(f"{body.name} lashes")
@@ -627,29 +639,64 @@ def _linear_iris_uvs(eye, ids=None):
     return rho_max, r_max
 
 
+def _iris_circle(lum_img, seed, reach):
+    """An iris' circle in a picture (column, row, radius in px): on each row within `reach` of `seed`, its edges where
+    the white starts - the strongest fall of brightness left of the middle and rise right of it - then the
+    least-squares circle through them (Kasa 1976), the worst fifth dropped twice (rows a lid crosses), rows with weak
+    edges left out. MediaPipe's iris centre sits ~10 px low on the close painting (1024 px; 4-6 px on the front one):
+    the hooded lid hides the iris' top and MediaPipe takes the middle of what shows (round 66, 2026-11-02: circles
+    30.8-31.0 px round, 9.4-11.9 px above MediaPipe's centre; the same at half size)."""
+    sx, sy = seed
+    half, x0, y0 = int(round(reach)), int(round(sx)), int(round(sy))
+    inner = max(2, half // 5)  # the pupil's edge stays out
+    rows = []
+    for y in range(y0 - half, y0 + half + 1):
+        grad = np.gradient(lum_img[y, x0 - half:x0 + half + 1])  # index i is column x0 - half + i
+        i_l = int(np.argmin(grad[:half - inner]))
+        i_r = half + inner + int(np.argmax(grad[half + inner:]))
+        rows.append((x0 - half + i_l, x0 - half + i_r, y, min(-grad[i_l], grad[i_r])))
+    rows = np.array(rows, dtype=np.float64)
+    rows = rows[rows[:, 3] >= 0.35 * np.percentile(rows[:, 3], 80)]
+    pts = np.concatenate([rows[:, [0, 2]], rows[:, [1, 2]]])
+    for _ in range(3):
+        cx, cy, c = np.linalg.lstsq(np.c_[2 * pts, np.ones(len(pts))], (pts**2).sum(axis=1), rcond=None)[0]
+        r = float(np.sqrt(c + cx * cx + cy * cy))
+        miss = np.abs(np.hypot(pts[:, 0] - cx, pts[:, 1] - cy) - r)
+        pts = pts[miss <= np.percentile(miss, 80)]
+    return float(cx), float(cy), r
+
+
+def _iris_seed(marks, iris):
+    """MediaPipe's iris centre and a reach of 1.2 of its iris radius (~20% wide) for _iris_circle."""
+    ring = range(iris + 1, iris + 5)
+    return marks[iris], 1.2 * float(np.mean([np.hypot(*(np.array(marks[i]) - marks[iris])) for i in ring]))
+
+
 def _aim_eyes():
     """Each eye turned about its middle to the elevation the paintings' irises show: per view, the ray from its camera
-    through MediaPipe's iris centre on the aligned painting (aligned_marks.json, by align_paintings.py) meets the
-    eyeball; the elevations of those points averaged; the azimuth kept. Measured 2026-11-01 (the round-57 sequence): the
-    face, front and 30-degree views put both irises at -13 to -16 deg where ours looked at -6.5 (geometry: our iris
-    middle 16 px above the aligned close painting's - MediaPipe on our renders read it ~10 px low, hence an earlier 3-4
-    deg guess); their azimuths scatter -7 to +9 deg between views (an iris seen obliquely through the cornea), so ours -
-    ~5 deg outward, the usual angle between the pupil's axis and the line of sight - stays."""
+    through the iris' centre on the aligned painting (_iris_circle, seeded by MediaPipe's points from
+    align_paintings.py) meets the eyeball; the elevations of those points averaged; the azimuth kept. Rounds 57-65
+    took MediaPipe's centre itself - ~10 px low on the close painting (_iris_circle), so the eyes looked ~5 deg too
+    low: round 65's irises 6-9 px under the close painting's, 3-6 under the front one's, the lower lid showing white
+    beneath them. Only the face and front views: from 30 degrees the iris is an ellipse seen through the cornea. Their
+    azimuths disagree (our right iris 6 px off the close painting's, 0.7 px off the front one's), so ours - ~5 deg
+    outward, the usual angle between the pupil's axis and the line of sight - stays."""
     cams = json.load(open(DIR + "cameras.json"))
     marks = json.load(open(DIR + "aligned_marks.json"))
+    lums = {view: _blur(_pixels(f"{DIR}aligned_{view}.png")[..., :3] @ np.array(sd.LUMA)[:, None], 1.2)[..., 0]
+            for view in ("face", "front") if view in marks}
     for eye_name, iris in (("Face.eyeRight", 468), ("Face.eyeLeft", 473)):
         eye = bpy.data.objects[eye_name]
         pts = face_shape.world_points(eye)
         centre = (pts.min(axis=0) + pts.max(axis=0)) / 2
         radius = float(np.median(np.linalg.norm(pts - centre, axis=1)))
         elevations = []
-        for view in ("face", "front", "faceleft30", "faceright30"):
-            if view not in marks:
-                continue
+        for view, lum_view in lums.items():
             cam = cams[view]
             mw = np.array(cam["matrix_world"])
             f = cam["lens"] / cam["sensor_width"] * cam["size"]
-            x, y = marks[view][iris]
+            x, y, _r = _iris_circle(lum_view, *_iris_seed(marks[view], iris))
+            x, y = x + 0.5, y + 0.5  # pixel centres, in MediaPipe's (and the ray's) coordinates
             ray = mw[:3, :3] @ np.array([(x - cam["size"] / 2) / f, -(y - cam["size"] / 2) / f, -1.0])
             ray /= np.linalg.norm(ray)
             to_centre = mw[:3, 3] - centre
@@ -1307,29 +1354,23 @@ def test_face_project():
     marks = json.load(open(DIR + "aligned_marks.json"))["face"]  # the photo is the aligned painting
     photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
     yy, xx = np.mgrid[0:512, 0:512]
-    def iris_half_width(img):
-        """The iris' half-width at its widest, from where the white starts left and right (the strongest fall and
-        rise of brightness along rows through its middle) - MediaPipe's iris radius on the painting is ~20% wide."""
-        lum_s = img @ lum
-        widths = []
-        for c_i in (468, 473):
-            cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
-            for dy in range(-3, 4):
-                row = lum_s[int(round(cy + dy)), int(cx - 28):int(cx + 28)]
-                grad = np.gradient(row)
-                widths.append((np.argmax(grad[28:]) + 28 - np.argmin(grad[:28])) / 2)
-        return float(np.percentile(widths, 75))
+    marks_half = {i: (np.array(marks[i]) + 0.5) / 2 - 0.5 for i in range(468, 478)}
 
-    want_width = iris_half_width(photo_half)
+    def iris_circles(img):
+        """Both irises' circles at 512 px (_iris_circle): MediaPipe's radius is ~20% wide, its centre ~5 px low."""
+        lum_b = _blur((img @ lum)[..., None] ** (1 / 2.2), 0.6)[..., 0]
+        return [_iris_circle(lum_b, *_iris_seed(marks_half, c_i)) for c_i in (468, 473)]
+
+    want_circles = iris_circles(photo_half)
+    want_width = float(np.mean([r for _x, _y, r in want_circles]))
     regions = []
-    for c_i, ring in ((468, range(469, 473)), (473, range(474, 478))):
-        cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
-        r_eye = float(np.mean([np.hypot(*(np.array(marks[i]) - marks[c_i])) for i in ring])) / 2
+    for cx, cy, r_iris in want_circles:
+        r_eye = 1.2 * r_iris  # the white's box as before (MediaPipe's radius, ~20% wide), on the iris' own centre
         rr = np.hypot(xx - cx, yy - cy) / r_eye
         box = (np.abs(xx - cx) < 2.2 * r_eye) & (np.abs(yy - cy) < r_eye) & (rr > 1.1)
         # the iris by its edges' radius (ours is calibrated to it): by MediaPipe's, ~20% wide, the region reached past
         # our iris into the white and the lid's shadow - the gain hardly moved it (round 64: a dark green iris)
-        re = np.hypot(xx - cx, yy - cy) / want_width
+        re = np.hypot(xx - cx, yy - cy) / r_iris
         regions.append((box, (re > 0.35) & (re < 0.8) & (yy > cy)))
 
     def eye_colours(img):
@@ -1343,7 +1384,7 @@ def test_face_project():
     for _ in range(4):
         shot = _render_linear(scene, f"{DIR}calib.exr") * 2.0 ** scene.view_settings.exposure
         got_white, got_iris = eye_colours(shot)
-        got_width = iris_half_width(shot)
+        got_width = float(np.mean([r for _x, _y, r in iris_circles(shot)]))
         for eye_in, iris_map in iris_sizes.values():
             relation = eye_in["IrisToEyeWhiteRelation"].default_value * want_width / max(got_width, 1.0)
             set_iris_size(eye_in, iris_map, float(np.clip(relation, 0.30, 0.45)))
@@ -1355,7 +1396,7 @@ def test_face_project():
             socket.default_value = tuple(np.clip(gain_now * want_iris / np.maximum(got_iris, 1e-5), 0.1, 10.0))
     white_set = np.round(next(iter(whites.values())).default_value[:3], 3).tolist()
     relation_set = next(iter(iris_sizes.values()))[0]["IrisToEyeWhiteRelation"].default_value
-    print(f"  the iris' half-width (512 px): the painting's {want_width:.1f}, ours {got_width:.1f} before the last "
+    print(f"  the iris' radius (512 px): the painting's {want_width:.1f}, ours {got_width:.1f} before the last "
           f"step; its size {relation_set:.3f} of the eyeball (0.40 before)")
     print(f"  the eyes: the white {white_set} (the painting's {np.round(want_white, 3).tolist()}, ours before the last "
           f"step {np.round(got_white, 3).tolist()}); the iris {np.round(want_iris, 3).tolist()} wanted, "

@@ -1871,6 +1871,34 @@ every one logged; key claims page-read):
   angular direction of lower eyelashes with age in Korean patients" (frontal photographs, tangential to the line
   through the canthi): adults medial 137.1 +/- 13.8, central 71.8 +/- 14.5, lateral 25.3 +/- 9.3 deg. No frontal
   measurement of the upper lid's fan was found - a gap in these searches.
+- The study's angle reference, re-read 2026-11-02 (search: "\"A study of normal eyelashes in Japanese individuals\"
+  oatext angle vertical"; the page fetched): "The angle was defined as the angle between the root of the eyelashes and
+  the vertical line shown in Figure 2" - the text doesn't say which way that vertical points (the figure wasn't
+  readable). Its discussion: the lower lashes "grow in the upward direction against gravity" - which fits only a
+  vertical pointing down (lower 90 deg straight ahead, women's 100 above it); so men's upper lashes leave the lid ~29
+  deg below straight ahead (women's ~18). The close 30-degree painting shows them that way (hanging over the eyeball).
+- TEXTure's trimap (Richardson et al. 2023, read 2026-11-02 at ar5iv.labs.arxiv.org/html/2302.01721; searches
+  "TEXTure trimap keep refine generate z-normals ..."): a meta-texture keeps, per texel, the face normal's z
+  component it was painted from; a region painted before is "refine" when "the current view provides a better
+  colorization angle", otherwise "keep" (frozen); "generate" where unpainted. Refine regions are repainted with a
+  checkerboard mask over the first 25 sampling steps; the paper gives no threshold.
+- *measured, 2026-11-02 (round 65's paintings)*: under that rule (the current view's cosine 0.2 better than the best
+  earlier view's), 0-23% of each view's painted part would be repainted (the profiles most); it would not have kept
+  left40's grey scalp out of left90's start - left40 supplies 84% of left90's scalp there and is kept. The profiles'
+  scalp blotches (grey-green on left90, dark smudges on right90) are FLUX's own, where that painted grey meets the
+  clay. The paintings' backdrop inside our mesh's outline (head painted smaller than the mesh at the scalp): 0.1-4.6%
+  of each view's head pixels, nearly all weighted under 0.05 by facing - not the bright streak on the 40-degree
+  view's forehead edge (that render clips to white there; the coat lobe at grazing is the next suspect).
+- *measured, 2026-11-02*: MediaPipe's iris centre on the close painting sits 9.4-11.9 px (1024 px) below the circle
+  through the iris' edges (row chords where the white starts, least-squares circle, Kasa 1976), 4-6 px on the front
+  painting: the hooded lid hides the iris' top and MediaPipe takes the middle of what shows. On our renders, whose
+  lids cover less, the two agree within ~4 px. The circles: the painting's 30.8-31.0 px round, ours 29.7-30.2.
+- *measured, 2026-11-02*: MediaPipe's lid lines on the close painting run along the outer edges of its thick lid
+  margins - the lower one at 311 px where the eyeball stops showing at ~305 (by eye at 4x) - while on our render
+  (thin margins) they sit at the edge (315-319 against ~318). In eye widths from the line through MediaPipe's corners
+  (by eye at 4x, unwarped painting): the painting's upper lid 0.23 / 0.25 above it, lower 0.05 / 0.02 below, iris
+  centre 0.17 / 0.20 above; round 65's 0.26 / 0.28, 0.09 / 0.06, 0.13 / 0.16. Colour segmentation and gradient
+  searches for the lid edges failed here (the nose shadow, eye-bag creases).
 
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0

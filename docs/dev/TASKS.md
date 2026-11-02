@@ -798,6 +798,28 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            median colour per channel, four passes: round 65 converged ((0.069, 0.034, 0.022) against (0.064, 0.031,
            0.019) before the last pass), a dark warm brown iris as the painting's, 0.332 of the eyeball. Left at the
            eye: the even, bright whites; the hooded lid's shading.
+           ROUND 66 2026-11-02 (the whole head against the paintings, then the close eye at 4x; RESEARCH.md beside the
+           lash angles has the measurements). Found: (a) the 40-degree view's grey-green scalp is the left profile
+           painting's - FLUX's blotches where left40's painted grey meets the clay in its start picture (TEXTure's
+           keep/refine rule would not have changed that start); the right profile has dark smudges too. (b) The
+           forehead-edge streak is not projected backdrop (those pixels weigh under 0.05); the coat lobe at grazing is
+           the next suspect - a render trial. (c) THE EYE, the biggest tell in the close view: ours rounder and more
+           open, white under the iris, lashes standing up as spikes. Three measured causes: MediaPipe's iris centre
+           on the painting sits ~10 px low (the hooded lid hides the iris' top), so round 57's aim turned our eyes
+           ~5 deg too far down; MediaPipe's lid lines on the painting run along its thick margins' outer edges, so the
+           lid key (tuned to them) opened our lids too far - in eye widths from the corners, upper 0.26-0.28 against
+           0.23-0.25, lower 0.06-0.09 against 0.02-0.05; and the lash study's angle was read upside down - its own
+           remark (the lower lashes "grow in the upward direction against gravity") puts men's upper lashes ~29 deg
+           below straight ahead, as the 30-degree painting shows them. Built: `_iris_circle` (the circle through the
+           iris' edges, Kasa 1976) for the aim (face and front views; elevation only - the two views disagree on
+           azimuth) and the eye calibration (the size from its radius, the regions on its centre); the lid key 3.7 /
+           -0.3 (was 1.0 / -4.4); the upper lashes at -25 deg, curl 10, drooping lashes kept pointing outward at the
+           outer corner, the collision pass now off the eye and cornea too (CPU trial on round 65's scene: the spikes
+           gone, a dark band at the margin). The chain to run: clay, align, normals, light removal, the round.
+           NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
+           adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
+           the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
+           was not permitted from this session - left for the user. Trials pass -k from now on.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
