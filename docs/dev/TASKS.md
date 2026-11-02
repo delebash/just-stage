@@ -868,6 +868,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            edge) put the painted eye 4-9 px high in the close view - now by the upper lid alone, so the painted iris
            keeps its place under the lid it matches. The lower lid: the key moves its edge a degree a degree (a CPU dry
            run: eye_opening -34 / -30 / -26 deg at -4.4 / -0.3 / +4), ~1.1 px a degree - +4.5. Round 70: clay again.
+           ROUND 70 2026-11-02: the eyes read as the painting's - an almond opening, the hooded upper lid over the iris'
+           top quarter, the iris' bottom at the lower lid, its colour (wanted (0.047, 0.023, 0.016), matched) and size
+           (0.371 of the eyeball; half-width 15.0 against 15.4) right; the same hooded eyes in the front and 40-degree
+           views; the lips meet in a thin line; the scalp even. Left: our lips fuller and the upper one taller, the
+           mouth's corners level where the painting's turn down (rec 17's sliders, measured in the front view); a
+           green tint at one nostril's rim; the whites flat and bright beside the painting's shaded ones; a crease left
+           at the forehead's top in the front view (the 30-degree paintings', above the close view's frame); the skin
+           smoother than the painting's.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
