@@ -648,7 +648,8 @@ def _iris_circle(lum_img, seed, reach):
     least-squares circle through them (Kasa 1976), the worst fifth dropped twice (rows a lid crosses), rows with weak
     edges left out. MediaPipe's iris centre sits ~10 px low on the close painting (1024 px; 4-6 px on the front one):
     the hooded lid hides the iris' top and MediaPipe takes the middle of what shows (round 66, 2026-11-02: circles
-    30.8-31.0 px round, 9.4-11.9 px above MediaPipe's centre; the same at half size)."""
+    30.8-31.0 px round, 9.4-11.9 px above MediaPipe's centre). Reliable at full size within 1.2 of MediaPipe's radius;
+    wider, or at half size, it flips on the hooded painting (rows of lid creases and eye bags outvote the iris')."""
     sx, sy = seed
     half, x0, y0 = int(round(reach)), int(round(sx)), int(round(sy))
     inner = max(2, half // 5)  # the pupil's edge stays out
@@ -1365,23 +1366,33 @@ def test_face_project():
     marks = json.load(open(DIR + "aligned_marks.json"))["face"]  # the photo is the aligned painting
     photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
     yy, xx = np.mgrid[0:512, 0:512]
-    marks_half = {i: (np.array(marks[i]) + 0.5) / 2 - 0.5 for i in range(468, 478)}
+    def iris_half_width(img):
+        """The iris' half-width, from where the white starts left and right (the strongest fall and rise of
+        brightness along rows a little under its middle - MediaPipe's centre sits ~5 px low here), the same rows on
+        the painting and the render: biased short alike, so the sizes match. Round 66 measured both by _iris_circle
+        instead (the aim's): at this size the fit flipped with the window and the resampling (the painting's left
+        iris 14.5 or 16.6 px; with a 1.6x window, centres 17 px low), and starting large our iris outgrew the window,
+        read small, and was grown again - to the 0.45 clip, a third too big. MediaPipe's radius is ~20% wide."""
+        lum_s = img @ lum
+        widths = []
+        for c_i in (468, 473):
+            cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
+            for dy in range(-3, 4):
+                row = lum_s[int(round(cy + dy)), int(cx - 28):int(cx + 28)]
+                grad = np.gradient(row)
+                widths.append((np.argmax(grad[28:]) + 28 - np.argmin(grad[:28])) / 2)
+        return float(np.percentile(widths, 75))
 
-    def iris_circles(img):
-        """Both irises' circles at 512 px (_iris_circle): MediaPipe's radius is ~20% wide, its centre ~5 px low."""
-        lum_b = _blur((img @ lum)[..., None] ** (1 / 2.2), 0.6)[..., 0]
-        return [_iris_circle(lum_b, *_iris_seed(marks_half, c_i)) for c_i in (468, 473)]
-
-    want_circles = iris_circles(photo_half)
-    want_width = float(np.mean([r for _x, _y, r in want_circles]))
+    want_width = iris_half_width(photo_half)
     regions = []
-    for cx, cy, r_iris in want_circles:
-        r_eye = 1.2 * r_iris  # the white's box as before (MediaPipe's radius, ~20% wide), on the iris' own centre
+    for c_i, ring in ((468, range(469, 473)), (473, range(474, 478))):
+        cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
+        r_eye = float(np.mean([np.hypot(*(np.array(marks[i]) - marks[c_i])) for i in ring])) / 2
         rr = np.hypot(xx - cx, yy - cy) / r_eye
         box = (np.abs(xx - cx) < 2.2 * r_eye) & (np.abs(yy - cy) < r_eye) & (rr > 1.1)
         # the iris by its edges' radius (ours is calibrated to it): by MediaPipe's, ~20% wide, the region reached past
         # our iris into the white and the lid's shadow - the gain hardly moved it (round 64: a dark green iris)
-        re = np.hypot(xx - cx, yy - cy) / r_iris
+        re = np.hypot(xx - cx, yy - cy) / want_width
         regions.append((box, (re > 0.35) & (re < 0.8) & (yy > cy)))
 
     def eye_colours(img):
@@ -1395,7 +1406,7 @@ def test_face_project():
     for _ in range(4):
         shot = _render_linear(scene, f"{DIR}calib.exr") * 2.0 ** scene.view_settings.exposure
         got_white, got_iris = eye_colours(shot)
-        got_width = float(np.mean([r for _x, _y, r in iris_circles(shot)]))
+        got_width = iris_half_width(shot)
         for eye_in, iris_map in iris_sizes.values():
             relation = eye_in["IrisToEyeWhiteRelation"].default_value * want_width / max(got_width, 1.0)
             set_iris_size(eye_in, iris_map, float(np.clip(relation, 0.30, 0.45)))
@@ -1407,7 +1418,7 @@ def test_face_project():
             socket.default_value = tuple(np.clip(gain_now * want_iris / np.maximum(got_iris, 1e-5), 0.1, 10.0))
     white_set = np.round(next(iter(whites.values())).default_value[:3], 3).tolist()
     relation_set = next(iter(iris_sizes.values()))[0]["IrisToEyeWhiteRelation"].default_value
-    print(f"  the iris' radius (512 px): the painting's {want_width:.1f}, ours {got_width:.1f} before the last "
+    print(f"  the iris' half-width (512 px): the painting's {want_width:.1f}, ours {got_width:.1f} before the last "
           f"step; its size {relation_set:.3f} of the eyeball (0.40 before)")
     print(f"  the eyes: the white {white_set} (the painting's {np.round(want_white, 3).tolist()}, ours before the last "
           f"step {np.round(got_white, 3).tolist()}); the iris {np.round(want_iris, 3).tolist()} wanted, "

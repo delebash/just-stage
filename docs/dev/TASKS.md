@@ -834,6 +834,20 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            like the 40-degree paintings' grey back, where seeds 1 and 3 have grey-green blotches and 4 is flat (a
            band-pass blotch score didn't separate them: shading and the views' own grey backs dominate it; the old ones
            in `.dev/facetest/inputs65/`, with round 65's other inputs); then normals, light removal, the round.
+           ROUND 66 RESULT: the stare gone - the hooded lids cover the irises' tops as the painting's, the irises where
+           the painting has them (the aim by circle: -9.2 / -10.1 deg, was -14.8 / -15.5); the lashes read as a dark
+           margin; the 40-degree view's scalp even (the new profiles), its forehead-edge streak gone; the close view's
+           forehead the painting's own fine lines (one thin crease left at the very top, in the border fade). Wrong:
+           the irises a third too big and amber - the size calibration, moved to _iris_circle, ran to its 0.45 clip
+           (starting at 0.40 our iris outgrew the fit's window, read small, was grown again; at half size the fit
+           flips between 14.5 and 16.6 px on the painting with the resampling) - back to round 65's half-width
+           measure (biased alike on both, so the sizes match); the circle stays for the aim only (full size, 1.2 of
+           MediaPipe's radius: checked on both paintings). And the lips' grey band only narrowed: the seam points
+           paired MediaPipe's inner points with the clay's line - on the painting MediaPipe sits off its own line, and
+           every view but the close one was already within 0-2 px (round 66 pushed theirs 4-10 px past ours); now the
+           painting's darkest row against the clay's (close view 8.1 px, the rest 0.4-2.1). The warp itself fell 6 px
+           short there: solved on a 64-point grid (16 px apart) the lips' stretch and squeeze within ~20 px was smoothed
+           away - now 256 (4 px): the close seam 1-2 px off the clay's. Round 67: those two, aligned again.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it

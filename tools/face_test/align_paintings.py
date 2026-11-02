@@ -32,7 +32,9 @@ from scipy.interpolate import RBFInterpolator
 DIR = Path("E:/Dev/3D/just-stage/.dev/facetest")
 MODEL = Path("E:/Dev/3D/just-stage/.dev/cache/mediapipe/face_landmarker.task")
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
-GRID = 64  # the warp is solved on a coarse grid and smoothly scaled up to the full picture
+#: the warp is solved on a grid and smoothly scaled up to the full picture: 4 px apart - at 16 px (64, until round 66)
+#: the lips' stretch and squeeze within ~20 px was smoothed away, the close painting's seam left 6 px short of the clay's
+GRID = 256
 #: MediaPipe's inner lip ring, left out of the warp: the head's lips are closed (face_shape.py), so there is no inner
 #: edge to find on the clay - the detector guesses one at the crease, and the warp pulled the painting's lips apart
 INNER_LIPS = (78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191)
@@ -85,26 +87,36 @@ def clay_eye_points(clay: np.ndarray, painted_pts: np.ndarray):
     return np.array(dst).reshape(-1, 2), np.array(src).reshape(-1, 2)
 
 
-def clay_seam_points(clay: np.ndarray, painted_pts: np.ndarray):
-    """For each of the painting's inner-lip points but the corners, the clay's seam straight up or down at the same
-    column: its darkest row within 16 px - the contact's shadow line in the evenly lit clay (MediaPipe's own inner
-    ring on the clay is a guess at the crease: INNER_LIPS), kept where it is clearly darker than the column around
-    it. Left out of the warp, the lips' seam stayed where the AI painted it: round 65's close painting has it 9 px
-    above ours, its dark line laid on our upper lip's underside - a grey band between the lips. Returns (painting
-    points, clay points)."""
-    grey = cv2.GaussianBlur(cv2.cvtColor(clay, cv2.COLOR_BGR2GRAY).astype(np.float32), (0, 0), 1.0)
+def _darkest_row(grey: np.ndarray, x: float, y: float, reach: int):
+    """The darkest row within `reach` of (x, y) in its column, if clearly darker than the column around it."""
     h, w = grey.shape
+    col_i, top = int(x), max(int(y) - reach, 0)
+    column = grey[top : min(int(y) + reach + 1, h), col_i] if 0 <= col_i < w else np.empty(0)
+    if len(column) < 9 or column.min() > 0.85 * np.median(column):
+        return None
+    return top + int(np.argmin(column)) + 0.5  # the pixel's centre, in MediaPipe's coordinates
+
+
+def clay_seam_points(clay: np.ndarray, painted: np.ndarray, painted_pts: np.ndarray):
+    """The lips' seam, the same on both: at each of the painting's inner-lip points but the corners, the painting's
+    contact line (its darkest row within 8 px - MediaPipe's inner points sit a few px off it) and the clay's straight
+    up or down at the same column (its darkest row within 16 px of the painting's - the contact's shadow line in the
+    evenly lit clay; MediaPipe's own inner ring on the clay is a guess at the crease: INNER_LIPS). Left out of the
+    warp, the seam stayed where the AI painted it - round 65's close painting has its dark line 13 px above ours, on
+    our upper lip's underside: a grey band between the lips; matched to MediaPipe's points instead of the line
+    (round 66), it moved 5 px. Returns (painting points, clay points)."""
+    grey_c, grey_p = (cv2.GaussianBlur(cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype(np.float32), (0, 0), 1.0)
+                      for im in (clay, painted))
     src, dst = [], []
     for i in INNER_LIPS:
         if i in (78, 308):  # the corners: the seam fades into the corner's shadow there
             continue
         x, y = painted_pts[i]
-        col_i, top = int(x), max(int(y) - 16, 0)
-        column = grey[top : int(y) + 17, col_i] if 0 <= col_i < w else np.empty(0)
-        if len(column) < 9 or column.min() > 0.85 * np.median(column):
-            continue
-        src.append([x, top + int(np.argmin(column)) + 0.5])  # pixel centres, in MediaPipe's coordinates
-        dst.append([x, y])
+        y_p = _darkest_row(grey_p, x, y, 8)
+        y_c = _darkest_row(grey_c, x, y_p, 16) if y_p is not None else None
+        if y_c is not None:
+            src.append([x, y_c])
+            dst.append([x, y_p])
     return np.array(dst).reshape(-1, 2), np.array(src).reshape(-1, 2)
 
 
@@ -140,15 +152,15 @@ def main() -> int:
                 out.unlink(missing_ok=True)
                 print(f"{view}: face not found in {'the clay view' if clay_pts is None else 'the painting'} — kept")
                 continue
-            clay = cv2.imread(str(clay_path))
+            clay, painted = cv2.imread(str(clay_path)), cv2.imread(str(painted_path))
             painted_eyes, clay_eyes = clay_eye_points(clay, painted_pts)
-            painted_seam, clay_seam = clay_seam_points(clay, painted_pts)
+            painted_seam, clay_seam = clay_seam_points(clay, painted, painted_pts)
             lips = list(OUTER_LIPS)
             src = np.vstack([clay_eyes, clay_pts[lips], clay_seam])
             dst = np.vstack([painted_eyes, painted_pts[lips], painted_seam])
             moved = np.linalg.norm(src - dst, axis=1)
             seam = moved[len(moved) - len(clay_seam):]
-            cv2.imwrite(str(out), warp(cv2.imread(str(painted_path)), src, dst))
+            cv2.imwrite(str(out), warp(painted, src, dst))
             aligned_pts = landmarks(detector, out)
             if aligned_pts is not None:
                 marks_path = DIR / "aligned_marks.json"
