@@ -1906,6 +1906,14 @@ every one logged; key claims page-read):
   corners and nose), in the front view 3.0 px - there the painting's mouth is as wide (158.8 against 156.1 px) and
   as high at the top, its corners ~10 px lower and its lower edge ~5 px lower: a thinner upper lip, a taller lower
   one, the corners turned down (MakeHuman's upperlip-height-decr, lowerlip-height-incr, angles-down).
+- *2026-11-02, the skin's source* (`../plans/2026-11-02-research-texture-source.md`): Headshot 3 textures from ONE
+  photo plus "a skin-base preset by age and facial hair" merged by blend masks (ai-texturing §6) - we paint ten AI
+  views instead. MakeHuman's CC0 skins (Skins 02, downloaded, measured): 2048² whole-body maps in our UV layout, the
+  face ~250 px across, painted with shading baked in - not a base. Free scanned heads (Ten24, Digital Emily 2) are
+  non-commercial; the Lee Perry-Smith scan stays the one CC-BY head. Nano Banana Pro: ~$0.24 a 4K picture on Google's
+  API; Google "won't claim ownership" of outputs and bars using the service "to develop models that compete". SkinGen:
+  a skin base under masked layers (blend modes, normal and micro-normal strengths, region tools). Histogram-preserving
+  blending (Heitz & Neyret 2018) tiles skin swatches; pores need their own layer. Claude makes no images.
 
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0
