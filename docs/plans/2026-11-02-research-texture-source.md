@@ -123,6 +123,17 @@ commercial use"; 1.9 GB - a reference for real skin, not shippable unless 3D Sca
 The high-end free scans (Ten24, Digital Emily 2, Eisko) are non-commercial, "Sky" is paid; the open ones are CC-BY
 scans of uneven quality, to be judged by downloading (a Sketchfab login).
 
+**Downloaded 2026-11-02 through the user's Sketchfab login** (original formats, saved to Chrome's folder and moved to
+`.dev/downloads/scans/<name>/`, each unpacked in its own `x/`) *[measured]*:
+
+| Scan (credit, CC BY) | Archive | Maps measured | What it shows |
+|---|---|---|---|
+| "Head scan 02 (Optimized PBR)" by Cratera Games, scan by yaro.pro - sketchfab.com/3d-models/2f1978b43032415c8fdf911c7acfb1a4 | 132 MB glTF | diffuse 4096², normal 4096², roughness 2048² | a bald man's whole head, scalp included, in clean panels; real scalp skin (fine mottling), real pores on the cheek, fairly even light (a gradient on one cheek) |
+| "Head (Lee Perry Smith)" uploaded by Paul (Sketchfab); "Infinite, 3D Head Scan by Lee Perry-Smith", CC BY 3.0, based on a work at www.triplegangers.com | 96 MB OBJ | lambertian 4096², bump 6000², cavity 512² | evenly lit real skin with stubble, one wrapped head - the 4K original of three.js' 1024² copy |
+| "Marcus - Free 3D Head Sample Model Scan" by Digital Reality Lab | 51 MB OBJ | one map 4096² | a black marker cap over the scalp; face and neck usable, neck tattoos |
+| "Nils Head Scan" by Simsallabim | 69 MB FBX | diffuse 8192² | an automatic photogrammetry atlas of ~100 fragments, warm baked light - little use |
+| "Very detailed face" by Theworkings | 118 MB OBJ | textures inside a nested archive (not opened yet) | face only |
+
 ## 2 · The rec (attacked)
 
 **Rec:** follow Headshot's structure, in measured steps.
