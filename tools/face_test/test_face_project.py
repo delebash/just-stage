@@ -681,8 +681,9 @@ def _aim_eyes():
     align_paintings.py) meets the eyeball; the elevations of those points averaged; the azimuth kept. Rounds 57-65
     took MediaPipe's centre itself - ~10 px low on the close painting (_iris_circle), so the eyes looked ~5 deg too
     low: round 65's irises 6-9 px under the close painting's, 3-6 under the front one's, the lower lid showing white
-    beneath them. Only the face and front views: from 30 degrees the iris is an ellipse seen through the cornea. Their
-    azimuths disagree (our right iris 6 px off the close painting's, 0.7 px off the front one's), so ours - ~5 deg
+    beneath them. Only the face and front views (from 30 degrees the iris is an ellipse seen through the cornea),
+    weighted by their pixels per metre at the eye (round 66's right eye: -10.8 close, -6.7 front). Their azimuths
+    disagree (our right iris 6 px off the close painting's, 0.7 px off the front one's), so ours - ~5 deg
     outward, the usual angle between the pupil's axis and the line of sight - stays."""
     cams = json.load(open(DIR + "cameras.json"))
     marks = json.load(open(DIR + "aligned_marks.json"))
@@ -693,7 +694,7 @@ def _aim_eyes():
         pts = face_shape.world_points(eye)
         centre = (pts.min(axis=0) + pts.max(axis=0)) / 2
         radius = float(np.median(np.linalg.norm(pts - centre, axis=1)))
-        elevations = []
+        elevations, weights = [], []
         for view, lum_view in lums.items():
             cam = cams[view]
             mw = np.array(cam["matrix_world"])
@@ -708,11 +709,12 @@ def _aim_eyes():
             if disc >= 0.0:
                 hit = mw[:3, 3] + (-b - np.sqrt(disc)) * ray
                 elevations.append(float(face_shape.angles(hit[None], centre)[1][0]))
+                weights.append(f / float(np.linalg.norm(to_centre)))  # its pixels per metre there: the close view ~2x
         if not elevations:
             continue
         az, el = face_shape.gaze(eye)
         have = face_shape.direction(np.array([az]), np.array([el]))[0]
-        want = face_shape.direction(np.array([az]), np.array([np.mean(elevations)]))[0]
+        want = face_shape.direction(np.array([az]), np.array([np.average(elevations, weights=weights)]))[0]
         axis = np.cross(have, want)
         angle = float(np.arctan2(np.linalg.norm(axis), have @ want))
         rotation = Matrix.Rotation(angle, 4, axis / max(np.linalg.norm(axis), 1e-12))
