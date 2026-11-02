@@ -123,7 +123,8 @@ def project(points, cam):
     return torch.stack([f * p[:, 0] / -p[:, 2] + c, -f * p[:, 1] / -p[:, 2] + c], 1)
 
 
-def infer():
+def load_rdf(device="cuda"):
+    """RealDenseFace (ViT-B) ready to read pictures - on the card, or on the processor when the card is someone else's."""
     sys.path.insert(0, str(RDF_REPO / "models"))
     from realdenseface.model import RealDenseFace  # noqa: E402
 
@@ -131,37 +132,51 @@ def infer():
     config["dino_pretrained"] = False
     model = RealDenseFace(**config)
     model.load_state_dict(torch.load(RDF / "weights" / "realdenseface" / "vitb.pth", map_location="cpu", weights_only=True))
-    model = model.cuda().eval()
+    model = model.to(device).eval()
     model.build_inference_cache()
-    size = int(config["target_size"])
     assets = np.load(RDF / "weights" / "flame_assets.npz")
-    grid = torch.tensor(assets["vertex_uvs"], dtype=torch.float32, device="cuda")[None, :, None] * 2.0 - 1.0
-    mean = torch.tensor([0.485, 0.456, 0.406], device="cuda").view(1, 3, 1, 1)
-    std = torch.tensor([0.229, 0.224, 0.225], device="cuda").view(1, 3, 1, 1)
+    grid = torch.tensor(assets["vertex_uvs"], dtype=torch.float32, device=device)[None, :, None] * 2.0 - 1.0
+    return {"model": model, "config": config, "grid": grid, "device": device, "size": int(config["target_size"])}
+
+
+def rdf_points(rdf, img, pts):
+    """RealDenseFace's own inference on one picture (RGB, H x W x 3): the face box (from a face's points - here
+    MediaPipe's) enlarged 1.3x and squared, a 512 px crop, its UV-space maps sampled at FLAME's vertex UVs. Returns
+    where each of FLAME's 5,023 vertices lies in the picture (px, x right / y down, pixel centres at whole numbers), its
+    log variance (how unsure), and the box."""
+    model, config, grid, device, size = rdf["model"], rdf["config"], rdf["grid"], rdf["device"], rdf["size"]
+    pts = np.asarray(pts)
+    (x0, y0), (x1, y1) = pts.min(0), pts.max(0)
+    cx, cy, half = (x0 + x1) / 2, (y0 + y1) / 2, max(x1 - x0, y1 - y0) * 1.3 / 2  # its enlarge 1.3, squared
+    box = np.round([cx - half, cy - half, cx + half, cy + half]).astype(int)
+    pad = int(max(0, -box[0], -box[1], box[2] - img.shape[1], box[3] - img.shape[0]))
+    padded = cv2.copyMakeBorder(np.ascontiguousarray(img), pad, pad, pad, pad, cv2.BORDER_CONSTANT)
+    crop = cv2.resize(padded[box[1] + pad:box[3] + pad, box[0] + pad:box[2] + pad], (size, size),
+                      interpolation=cv2.INTER_LINEAR)
+    mean = torch.tensor([0.485, 0.456, 0.406], device=device).view(1, 3, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225], device=device).view(1, 3, 1, 1)
+    x = (torch.tensor(crop, dtype=torch.float32, device=device).permute(2, 0, 1)[None] / 255.0 - mean) / std
+    with torch.no_grad(), torch.autocast(device, dtype=torch.bfloat16, enabled=device == "cuda"):
+        coords, coord_lv, _, _ = model(x)
+    coords = coords.float() / config.get("scale_coord", 1.0) * 0.5 + 0.5
+
+    def at_vertices(t):
+        return torch.nn.functional.grid_sample(t.float(), grid, mode="bilinear", align_corners=False)[0, :, :, 0].T
+
+    uv = at_vertices(coords).cpu().numpy()
+    lv = at_vertices(torch.clamp(coord_lv.float(), -8.0, 3.0)).cpu().numpy()[:, 0]
+    px = np.c_[uv[:, 0] * (box[2] - box[0]) + box[0], uv[:, 1] * (box[3] - box[1]) + box[1]]
+    return px.astype(np.float32), lv.astype(np.float32), box
+
+
+def infer():
+    rdf = load_rdf("cuda")
     marks = json.loads((DIR / "landmarks.json").read_text())
     for kind, path in SOURCES.items():
         for view in VIEWS:
             img = cv2.imread(str(path(view)))[..., ::-1]
-            pts = np.asarray(marks[view][kind])
-            (x0, y0), (x1, y1) = pts.min(0), pts.max(0)
-            cx, cy, half = (x0 + x1) / 2, (y0 + y1) / 2, max(x1 - x0, y1 - y0) * 1.3 / 2  # its enlarge 1.3, squared
-            box = np.round([cx - half, cy - half, cx + half, cy + half]).astype(int)
-            pad = int(max(0, -box[0], -box[1], box[2] - img.shape[1], box[3] - img.shape[0]))
-            padded = cv2.copyMakeBorder(np.ascontiguousarray(img), pad, pad, pad, pad, cv2.BORDER_CONSTANT)
-            crop = cv2.resize(padded[box[1] + pad:box[3] + pad, box[0] + pad:box[2] + pad], (size, size),
-                              interpolation=cv2.INTER_LINEAR)
-            x = (torch.tensor(crop, dtype=torch.float32, device="cuda").permute(2, 0, 1)[None] / 255.0 - mean) / std
-            with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
-                coords, coord_lv, _, _ = model(x)
-            coords = coords.float() / config.get("scale_coord", 1.0) * 0.5 + 0.5
-
-            def at_vertices(t):
-                return torch.nn.functional.grid_sample(t.float(), grid, mode="bilinear", align_corners=False)[0, :, :, 0].T
-
-            uv = at_vertices(coords).cpu().numpy()
-            lv = at_vertices(torch.clamp(coord_lv.float(), -8.0, 3.0)).cpu().numpy()[:, 0]
-            px = np.c_[uv[:, 0] * (box[2] - box[0]) + box[0], uv[:, 1] * (box[3] - box[1]) + box[1]]
-            np.savez(DIR / f"rdf_{kind}_{view}.npz", px=px.astype(np.float32), log_var=lv.astype(np.float32), box=box)
+            px, lv, box = rdf_points(rdf, img, marks[view][kind])
+            np.savez(DIR / f"rdf_{kind}_{view}.npz", px=px, log_var=lv, box=box)
             print(f"{kind} {view}: box {box.tolist()}, log variance median {np.median(lv):.2f}")
 
 

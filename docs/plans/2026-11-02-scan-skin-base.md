@@ -25,8 +25,8 @@ tone, age, mottling, redness, freckles, moles, stubble.
 
 ## 3 · Where things stand (update at every step)
 
-**2026-11-02 evening — STOPPED by the user; no building until the word "go".** Done since the stop: research gap F
-(saved), the picks in §4 attacked (§4b), the rec list shown in chat. WAITING for the user's go on that list.
+**2026-11-02 late — GO on all six recs** (the user: "your rec on all go"; recorded verbatim in TASKS "THE SCAN
+ROUTE"). Building in the order of §6. Current step: see the run log (§7).
 
 Done and kept:
 - Scans downloaded (Sketchfab, CC Attribution, licences read from `/v3/models/{uid}`), each in
@@ -93,9 +93,47 @@ Coverage map: what our research already says, where, and whether our code follow
 - Repo tests: always `-k`; the bare suite starts the Blender suite and an sd-server.
 - Chrome blocks repeated downloads per site until "Always allow" (now allowed for sketchfab.com).
 
-## 6 · Next steps (in order)
+## 6 · The build (approved; all on the processor while JustDirect has the card)
 
-1. Research F (skin / hair masks) the user's way; log the queries in the research file.
-2. Attack every pick in §4, then show one numbered rec list in chat; wait for "go".
-3. On go: run `scan_convert.py` on scan02 first, rebuild the fit by §4, check it against the old fit (median 1.2 mm),
-   then the keepers one by one; record each result here and in the research file.
+Scripts in `tools/face_test/`, outputs in `.dev/facetest/scans/<name>/`:
+1. `scan_convert.py` (Blender) - the scan → `src.npz` (vertices, triangles, corner UVs, materials). WRITTEN.
+2. `scan_views.py` (Blender) - flat-lit (emission of its own colour) orthographic renders from 12 turns about the
+   vertical, framed on the head (the top ~16% of a full body), and a position picture per view (the clay script's
+   depth-override pattern: emission of the world position, 1 sample, filter 0.01, 32-bit EXR → `.npy`).
+3. `scan_marks.py` (tool env, MediaPipe) - the turn that shows the face best, and the face box; also the box on our
+   side's pictures.
+4. `scan_pairs.py` (RealDenseFace env) - `flame_fit.py`'s reading moved into one shared function (one way per job);
+   the 5,023 points kept in FLAME's face / nose / lips / eye-region / forehead masks, weighted by both sides'
+   confidence; back-projected - the scan through its position picture, our head through round 73's renders, the
+   clay depth maps and `cameras.json` (the same cameras); check: our back-projected points within ~0.5 mm of
+   `head_export.npz`'s surface.
+5. `scan_fit.py` (tool env) - `procrustes` on the pairs, the scan cropped to our head, `nricp_amberg` with the pairs.
+6. `scan_bake.py` (Blender) - Selected to Active: the scan's colour (emission) onto our fitted head's HeadTile, and a
+   white-emission bake for coverage.
+7. `scan_skin.py` - SegFace views voted onto the scan, baked as the skin mask (after 1-6 work on scan02).
+8. `skin_base.split` / `compose` moved to the bake's coverage + skin mask, and the fine layer selected from one scan.
+Check on scan02: the fit against the old one (median 1.2 mm), the base map beside the old `base_scan02.png`.
+
+## 7 · Run log (newest last)
+
+- 2026-11-02 late: go received; build plan above written; starting step 1 on scan02.
+- Steps 1-2 on scan02 WORK: `scan_list.py` (one list: source, colour map per material, bald flag, credit,
+  `flip_v`), `scan_convert.py scan02` (3 s; 6 meshes, 21,494 triangles), `scan_views.py scan02` (12 turns, 19 s CPU).
+  Found: scan02's glTF stores V upward against the glTF spec (21.5% of skin triangles on black read the spec's way,
+  0.6% flipped) → `flip_v` in the list, applied at conversion; PNG bit depth must be reset to 8 after each EXR.
+- Step 3 WORKS (`scan_marks.py`): scan02's square-on turn is turn 0 (nose off-centre 0.019 of the eye span); no face
+  in the back turns; our round 73 face / front views found.
+- Step 4 WORKS (`scan_pairs.py`; `flame_fit.py`'s RealDenseFace reading now `load_rdf` / `rdf_points`, shared):
+  first try 48 pairs - the whole-bust render is 1.4 mm a pixel, too coarse for the edge test → a zoomed square-on
+  render (`scan_views.py NAME face`, ~0.25 mm a pixel) and an edge test in pixel footprints → 1,511 pairs of 1,883
+  face points; our two views agree to 0.53 mm (median). CPU, 13 s. Depth EXRs read by `flow_views.depth` (OpenCV
+  can't read them here); rays through pixel centres (+0.5), flow_views' convention.
+- Step 5 WORKS (`scan_fit.py`, 44 s, peak RAM 460 MB): placed by 1,345 pairs (scale 0.295 - scan02's file isn't in
+  metres; residual median 3.7 mm = the two faces' real differences); after the wrap above the neck 0.9-1.0 mm median
+  (old fit 1.2), scalp 0.6 mm; the far 10% is our neck below 1.45 m, which the bust doesn't cover (its shirt) - the
+  bake's coverage leaves it out. Pairs held to 1.96 mm median after the wrap.
+- Step 6 WORKS (`scan_bake.py`, 10 s CPU): colour + coverage baked, 52.4% of the tile (81.5% of our UV islands).
+  Against the old copy (`base_scan02.png`): face and scalp alike (colour difference median 12 / 255); the old copy
+  had smeared streaked skin over our neck panel where the scan has its shirt, the bake shows the shirt there and
+  leaves uncovered what nothing reaches (nostrils' and ear canals' depths, a mouth corner) → step 7's skin mask must
+  drop the shirt, eyes and teeth the bake honestly carries. `bake_vs_old.png` in scans/scan02.

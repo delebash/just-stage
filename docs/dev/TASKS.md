@@ -934,6 +934,22 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
            was not permitted from this session - left for the user. Trials pass -k from now on.
+           THE SCAN ROUTE - APPROVED 2026-11-02, the user, verbatim: "your rec on all go", on the list as shown (picks,
+           sources and attacks in `../plans/2026-11-02-scan-skin-base.md` §4-4b): (1) read the scan files with
+           Blender's own importers; (2) match points on the scan's face to points on ours with RealDenseFace - a
+           flat-lit front render of the scan and of our TEXTURED head, the same network on both, MediaPipe only for the
+           face box and the facing (MetaHuman From Mesh's markers-on-a-render, Wrap's point pairs); (3) line up by
+           those pairs (trimesh `procrustes`), then our wrap (`nricp_amberg`, as `libs/wrap/gnm_to_hm08.py`) held by
+           the same pairs, the scan cropped to the head and memory watched on the first scan; (4) copy the colour with
+           Blender's bake "Selected to Active" - replacing the hand-written copy; (5) skin vs hair, brows, beard,
+           clothes by SegFace on renders from several sides, labels voted onto the scan and baked into our layout as a
+           skin mask, a per-scan bald flag keeping bald crowns - NOT STANDARD (the industry paints this mask by hand;
+           the voting is our code of Pixels2Points' published baseline, whose own model has no code), named in the list
+           the user approved, under the user's standing word on researched NOT STANDARD pieces (2026-10-17: "im ok with
+           non standard as long as we have done the research and this is the best way"); (6) each character's pores from
+           ONE scan (MetaHuman's index), the broad blotchiness mixed from 2-3, the tone from our skin colour model. Run
+           order: scan02 first through the new route, checked against the old fit (1.2 mm), then the other keepers one
+           by one, each result in the working doc.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
