@@ -78,24 +78,25 @@ def clay_eye_points(clay: np.ndarray, painted_pts: np.ndarray):
         region = labels == labels[ys[near], xs[near]]
         if region.sum() > 0.02 * h * w:  # not an eye: the background or the face's outline
             continue
-        eye_src, eye_dst = [], []
+        eye_dst, offsets = [], []
         for ids, top in ((upper, True), (lower, False)):
             for i in ids[1:-1]:
                 x = int(round(painted_pts[i, 0]))
                 rows = np.flatnonzero(region[:, x]) if 0 <= x < w else []
-                if len(rows):
-                    eye_src.append([painted_pts[i, 0], rows.min() if top else rows.max()])
-                    eye_dst.append(painted_pts[i])
-        if eye_src:
-            # the eye moved whole, straight up or down by its points' median offset, not reshaped: MediaPipe's lid lines
-            # on a painting run along its thick lid margins' outer edges (~2 px above the upper lid, ~6 below the lower
-            # in the close view), so pinned one by one onto the clay's edges they squeezed the painted eye - harmless
-            # on round 65's 16-px warp grid, which smoothed them, but on round 67's 4-px one the painting's opening came
-            # out narrower than ours and the calibration took lid and white for iris (a grey-blue iris). Our lids
-            # follow the painting's own shape (face_shape.UPPER_LID / LOWER_LID), so the move is what's left.
-            eye_src, eye_dst = np.array(eye_src), np.array(eye_dst)
-            shift = np.median(eye_src[:, 1] - eye_dst[:, 1])
-            src.extend(eye_dst + [0.0, shift])
+                eye_dst.append(painted_pts[i])
+                if top and len(rows):
+                    offsets.append(rows.min() - painted_pts[i, 1])
+        if offsets:
+            # the eye moved whole, straight up or down by its upper lid's median offset, not reshaped: MediaPipe's
+            # lid lines on a painting run along its thick lid margins' outer edges (~2 px above the upper lid, ~6
+            # below the lower in the close view), so pinned one by one onto the clay's edges they squeezed the painted
+            # eye - harmless on round 65's 16-px warp grid, which smoothed them, but on round 67's 4-px one the
+            # opening came out narrower than ours and the calibration took lid and white for iris (a grey-blue iris).
+            # By the upper lid alone: with the lower one too (round 68) the move came out 4-9 px high in the close
+            # view and our irises, aimed at the painted ones, sat high under the lid. Our lids follow the painting's
+            # own shape (face_shape.UPPER_LID / LOWER_LID), so the move is what's left.
+            eye_dst = np.array(eye_dst)
+            src.extend(eye_dst + [0.0, float(np.median(offsets))])
             dst.extend(eye_dst)
     return np.array(dst).reshape(-1, 2), np.array(src).reshape(-1, 2)
 

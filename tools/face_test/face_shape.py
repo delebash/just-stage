@@ -26,8 +26,10 @@ import numpy as np
 #: round 65 against the unwarped close painting, read by eye at 4x from the line through MediaPipe's corners (in eye
 #: widths, both eyes): upper lid 0.26-0.28 above it against the painting's 0.23-0.25, lower 0.06-0.09 below against
 #: 0.02-0.05 - the opening ~26% taller, white under the iris. Closed by 4.7 / 7 px at ~1.7 px a degree (the front
-#: view's 0.88, the close camera 1.95x nearer): 3.7 / -0.3 (round 66, 2026-11-02).
-UPPER_LID, LOWER_LID = 3.7, -0.3
+#: view's 0.88, the close camera 1.95x nearer): 3.7 / -0.3 (round 66, 2026-11-02). Round 69 the same way: the upper
+#: lids 0.235 / 0.258 (matched), the lower still 0.074 / 0.065 below; the key moves the lower edge a degree a degree
+#: (eye_opening at the iris: -34 / -30 / -26 deg at -4.4 / -0.3 / +4), ~1.1 px a degree here - +4.5.
+UPPER_LID, LOWER_LID = 3.7, 4.5
 
 
 def close_mouth(body):

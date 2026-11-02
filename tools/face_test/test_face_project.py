@@ -1366,13 +1366,25 @@ def test_face_project():
     marks = json.load(open(DIR + "aligned_marks.json"))["face"]  # the photo is the aligned painting
     photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
     yy, xx = np.mgrid[0:512, 0:512]
+    # the white's box and the iris sample about the painting's iris centres - the circles through its edges at full
+    # size (_iris_circle, as the aim takes them): our irises are aimed there. MediaPipe's centre, ~10 px low, served
+    # while ours looked low too (round 65); aimed right, the iris sample under it ran off our iris into the white
+    # (round 68: ours read (0.20, 0.18, 0.17) at the gain's 0.1 floor - a flat dark disc), and on the painting it
+    # half sat on the iris' bottom edge. The width keeps MediaPipe's rows (below)
+    photo_lum = _blur(photo @ np.array(sd.LUMA)[:, None], 1.2)[..., 0]
+    centres = {}
+    for c_i in (468, 473):
+        x_c, y_c, _r = _iris_circle(photo_lum, *_iris_seed(marks, c_i))
+        centres[c_i] = np.array([x_c, y_c]) / 2 - 0.25  # 1024 px index to 512 (pixel centres)
+
     def iris_half_width(img):
         """The iris' half-width, from where the white starts left and right (the strongest fall and rise of
-        brightness along rows a little under its middle - MediaPipe's centre sits ~5 px low here), the same rows on
-        the painting and the render: biased short alike, so the sizes match. Round 66 measured both by _iris_circle
-        instead (the aim's): at this size the fit flipped with the window and the resampling (the painting's left
-        iris 14.5 or 16.6 px; with a 1.6x window, centres 17 px low), and starting large our iris outgrew the window,
-        read small, and was grown again - to the 0.45 clip, a third too big. MediaPipe's radius is ~20% wide."""
+        brightness along rows a little under its middle - MediaPipe's centre - where the hooded lid leaves the whole
+        chord in view; through the middle the lid's edge stretched it to 20.9 px against ~15.5), the same rows on
+        the painting and the render: biased short alike, so the sizes match. Round 66 measured
+        both by _iris_circle instead (the aim's): at this size the fit flipped with the window and the resampling
+        (the painting's left iris 14.5 or 16.6 px; with a 1.6x window, centres 17 px low), and starting large our
+        iris outgrew the window, read small, and was grown again - to the 0.45 clip, a third too big."""
         lum_s = img @ lum
         widths = []
         for c_i in (468, 473):
@@ -1386,7 +1398,7 @@ def test_face_project():
     want_width = iris_half_width(photo_half)
     regions = []
     for c_i, ring in ((468, range(469, 473)), (473, range(474, 478))):
-        cx, cy = (np.array(marks[c_i]) + 0.5) / 2 - 0.5
+        cx, cy = centres[c_i]
         r_eye = float(np.mean([np.hypot(*(np.array(marks[i]) - marks[c_i])) for i in ring])) / 2
         rr = np.hypot(xx - cx, yy - cy) / r_eye
         box = (np.abs(xx - cx) < 2.2 * r_eye) & (np.abs(yy - cy) < r_eye) & (rr > 1.1)

@@ -855,6 +855,19 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            each painted eye moves whole, straight up or down by its lid points' median offset (close view 19.6 px; the
            AI's drift), not reshaped - our lids follow the painting's own shape (the lid key, measured from its
            corners). The aligned eyes look as painted; the calibration's half-width 15.5 px (round 65's 15.4). Round 68.
+           ROUND 68: the lips' grey band gone - they meet in a thin dark line as the painting's (our upper lip still the
+           taller: rec 17). The irises flat dark discs: the iris sample sat on MediaPipe's centre, ~10 px under the
+           true one - while ours looked low (round 65) it fell inside our iris; aimed right, it ran off into the white
+           (ours (0.20, 0.18, 0.17) at the gain's 0.1 floor); on the painting it half sat on the iris' bottom edge. Now
+           the white's box and the iris sample on the painting's circles (the aim's), the width on MediaPipe's rows
+           (through the true middle the hooded lid's edge stretched the chord to 20.9 px).
+           ROUND 69: the iris colour right ((0.047, 0.023, 0.016) wanted), size 0.348; but the irises high under the lids
+           - in eye widths from the corners (unwarped painting / ours): iris centre 0.17 / 0.20 against 0.20 / 0.217,
+           upper lid 0.23 / 0.25 against 0.235 / 0.258 (matched), lower lid 0.05 / 0.02 against 0.074 / 0.065. The
+           whole-eye move took the median of both lids' offsets, and MediaPipe's lower line (~6 px off the painting's
+           edge) put the painted eye 4-9 px high in the close view - now by the upper lid alone, so the painted iris
+           keeps its place under the lid it matches. The lower lid: the key moves its edge a degree a degree (a CPU dry
+           run: eye_opening -34 / -30 / -26 deg at -4.4 / -0.3 / +4), ~1.1 px a degree - +4.5. Round 70: clay again.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
