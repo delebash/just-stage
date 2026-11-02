@@ -828,8 +828,12 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            view 6.8). `align_paintings.clay_seam_points`: each painted inner-lip point but the corners straight up or
            down onto the clay's contact line (its darkest row within 16 px), as the lids are. Our upper lip stays
            taller than the painting's (MediaPipe: 0.190 of the mouth's width against 0.144) - rec 17's sliders, next.
-           The chain to run: clay, align, the profiles repainted by seed (picked by eye), normals, light removal, the
-           round.
+           Run 2026-11-02 12:16 (the card JustDirect's until then): clay and alignment 79 s (the seam moved 3.7-9.9 px
+           onto the clay's in the seven views that see it; the close view's lids 17.8 px); the profiles repainted from
+           their start pictures, seeds 2-4 each (5 min a profile), seed 2 taken for both by eye - an even shaved scalp
+           like the 40-degree paintings' grey back, where seeds 1 and 3 have grey-green blotches and 4 is flat (a
+           band-pass blotch score didn't separate them: shading and the views' own grey backs dominate it; the old ones
+           in `.dev/facetest/inputs65/`, with round 65's other inputs); then normals, light removal, the round.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
