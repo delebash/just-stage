@@ -72,7 +72,13 @@ def main(name):
                 if upright and (best is None or square < best[0]):
                     best = (square, label, k, unturn(pts, k, rgb.shape[0]))
     if best is None:
-        raise SystemExit(f"{name}: no upright face in any of the 26 directions")
+        # a full body's face is too small seen whole from 26 directions (both deep3dstudio scans and Renderpeople's,
+        # 2026-11-02); scan studios export bodies standing, so it stays as imported - the turns, framed on the head,
+        # check it (scan_marks.py fails a face that isn't upright there)
+        (out / "orient.json").write_text(json.dumps({"turn": np.eye(3).tolist(), "total": np.eye(3).tolist(),
+                                                     "picture": None, "kept_as_imported": True}))
+        print(f"{name}: no upright face in the 26 directions - kept as imported (the turns check it)")
+        return
     square, label, k, pts = best
     pos = np.load(out / f"pos_{label}.npy")
 

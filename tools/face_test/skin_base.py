@@ -28,6 +28,7 @@ import numpy as np
 DIR = Path("E:/Dev/3D/just-stage/.dev/facetest/scans")
 FINE_SIGMA, MID_SIGMA = 6.0, 48.0  # texels of the 4096 HeadTile (~6 texels a mm on the face)
 FEATHER = 6.0  # texels: a scan's edge fades in over this, so where one scan hands over to the next leaves no seam
+EDGE = 12  # texels (~2 mm on the face): a scan's skin is used this far inside its mask's edge
 
 
 def linear(srgb):
@@ -52,6 +53,9 @@ def split(name):
     skin = cv2.resize(cv2.imread(str(d / "skin.png"), 0), (size, size), interpolation=cv2.INTER_LINEAR) > 127
     mask = cover  # what this scan reached; the head's whole layout is the union over scans
     valid = cover & skin & (srgb.max(axis=2) > 0.05)
+    # pulled in ~2 mm from its edges: the collar's and hairline's shadows sit just inside a skin mask (round 74's dark
+    # squiggles low on the neck)
+    valid = cv2.erode(valid.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
     lin = np.maximum(linear(srgb), 1e-4)
     b_fine = masked_blur(lin, valid, FINE_SIGMA)
     b_mid = masked_blur(lin, valid, MID_SIGMA)
@@ -138,6 +142,9 @@ def compose(seed, params=None):
     spots = cv2.GaussianBlur(spots, (0, 0), 1.0)
     ratio_log -= spots[..., None] * np.array([0.8, 1.0, 1.2], np.float32)  # brown: blue darkest
     ratio = np.exp(ratio_log).astype(np.float32)
+    # a ratio around 1: each channel's mean over what the scans covered set to 1 - the scans' own shading had left it
+    # below (round 74's scalp darker and more orange than the face); the character's tone is the projection's
+    ratio /= ratio[cover].mean(axis=0)
     return ratio, cover, p
 
 

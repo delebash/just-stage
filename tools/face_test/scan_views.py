@@ -97,7 +97,9 @@ def main(argv):
     co = src["co"]
     lo, hi = co.min(0), co.max(0)
     height, width = hi[2] - lo[2], max(hi[0] - lo[0], hi[1] - lo[1])
-    full_body = height > FULL_BODY * width
+    # a full body framed on its head; `body` forces it (a body whose spread arms make it wide: Renderpeople's A-pose,
+    # deep3dstudio's walker - scan_route.py tries it when the turns found no face)
+    full_body = height > FULL_BODY * width or (len(argv) > 1 and argv[1] == "body")
     frame = HEAD_SHARE * height if full_body else height
     top = co[co[:, 2] > hi[2] - frame]
     centre = Vector(((top[:, 0].min() + top[:, 0].max()) / 2, (top[:, 1].min() + top[:, 1].max()) / 2,

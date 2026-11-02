@@ -116,6 +116,31 @@ def _blur(img, sigma):
     return out
 
 
+def _carried_tone(points, colour, weight, fallback, cell=0.005, sigma=0.03, prior=0.02):
+    """Colour carried out over the head's surface from where `weight` trusts it: a normalised convolution (the
+    push-pull fill) on a `cell`-metre grid in 3D, Gaussian `sigma` metres wide; far from any trusted texel it settles
+    to `fallback` (the prior's share of the largest weight). In 3D, so it doesn't leak across the texture's islands."""
+    lo = points.min(axis=0) - 3 * sigma
+    idx = np.floor((points - lo) / cell).astype(np.int64)
+    shape = tuple(idx.max(axis=0) + 1 + int(3 * sigma / cell))
+    num, den = np.zeros((*shape, 3)), np.zeros(shape)
+    np.add.at(num, tuple(idx.T), colour * weight[:, None])
+    np.add.at(den, tuple(idx.T), weight)
+    s = sigma / cell
+
+    def blur(a):
+        for ax in range(3):
+            x = np.arange(a.shape[ax])
+            g = np.exp(-0.5 * ((x[:, None] - x[None, :]) / s) ** 2)
+            a = np.moveaxis(np.tensordot(g, a, axes=([1], [ax])), 0, ax)
+        return a
+
+    num, den = blur(num), blur(den)
+    k = prior * float(den.max())
+    at = tuple(idx.T)
+    return (num[at] + k * np.asarray(fallback)) / (den[at] + k)[:, None]
+
+
 def _patch_colour(img, centres=PATCHES, half=18):
     return np.median(np.concatenate([img[r - half : r + half, c - half : c + half].reshape(-1, 3) for c, r in centres]),
                      axis=0)
@@ -819,7 +844,7 @@ def test_face_project():
         smooth_here = ((depth < 0.999) & (hi - lo < 0.01)).astype(np.float32)
         inside = _blur(smooth_here[..., None], 4.0)
         clear_of_edge = up.sample(np.clip((inside - 0.5) / 0.45, 0.0, 1.0), col, row)[:, 0]
-        return facing * clear_of_edge, border * density, col, row
+        return facing * clear_of_edge, border * density, col, row, border
 
     lum = np.array(sd.LUMA)
     texel_row, texel_col = np.nonzero(mask)  # each texel's place on the map, in `points`' order
@@ -833,7 +858,7 @@ def test_face_project():
     cell = (texel_row[sub] // LEVEL_CELL) * grid + texel_col[sub] // LEVEL_CELL
     looks = {}
     for view in COLOUR_VIEWS:
-        w, border, col, row = view_samples(view, sub)
+        w, border, col, row, _ = view_samples(view, sub)
         w = w * border
         looks[view] = (w, up.sample(_blur(_view_map("albedo", view), 6.0), col, row))
     fields = {v: np.ones((grid, grid, 3)) for v in COLOUR_VIEWS}
@@ -864,8 +889,10 @@ def test_face_project():
     high_best, high_w = np.ones((len(points), 3)), np.zeros(len(points))
     best_facing = np.zeros(len(points))  # how squarely the best view sees each texel
     nlow_sum, nhigh_best = np.zeros((len(points), 3)), np.zeros((len(points), 3))
+    best_soft = np.zeros(len(points))  # the same with the picture's border fading it in (the base's hand-over)
     for view in COLOUR_VIEWS:
-        w, border, col, row = view_samples(view, every)
+        w, border, col, row, edge_fade = view_samples(view, every)
+        best_soft = np.maximum(best_soft, w * edge_fade)
         albedo = _view_map("albedo", view)
         nworld = _view_map("nworld", view)
         low_img, nlow_img = _blur(albedo, 6.0), _blur(nworld, 6.0)
@@ -928,15 +955,22 @@ def test_face_project():
     # 0.25), not by the views' summed weight against its median (until round 71): seen at ~0.6 by the view from
     # below alone, the nostrils' insides fell under that bar (the close views' weight sets it) and turned skin-light
     # where every painting has them dark
-    fade = (t * t * (3 - 2 * t)) * np.clip((best_facing - 0.25) / 0.25, 0.0, 1.0) ** 2
+    # with the skin base the face pictures' own border fades the painting out too: with three views nothing covers past
+    # their frame, and `best_facing` (border > 0, a step) left a hard line across the forehead and neck (round 74)
+    trust = best_soft if BASE else best_facing
+    fade = (t * t * (3 - 2 * t)) * np.clip((trust - 0.25) / 0.25, 0.0, 1.0) ** 2
     face_zone = covered & (points[:, 2] > 1.5) & (fade > 0.9)
     fallback = np.median(albedo[face_zone], axis=0)
     under = np.broadcast_to(fallback, albedo.shape)
     if BASE:
         # the character's skin base (skin_base.py: a ratio around 1 in this same HeadTile layout, rows from v = 1 as
-        # raster_uv's) times its tone - the painted face's median skin - where the face views see poorly or not at all
+        # raster_uv's) times its tone where the face views see poorly or not at all. The tone: the painted face's own
+        # broad colour carried out over the head's surface - a normalised convolution (the push-pull fill) on a 5 mm
+        # grid in 3D, ~3 cm wide, so it doesn't leak across the texture's island gaps - settling to the face's median
+        # far from it (a single median tone met the face's local colour with a step, round 74)
         ratio = np.load(f"{DIR}scans/base_char{BASE}.npy").astype(np.float32)
-        under = fallback * ratio[mask]
+        tone = _carried_tone(points, albedo, fade, fallback)
+        under = tone * ratio[mask]
         print(f"  skin base {BASE}: under {(fade < 0.5).mean():.0%} of the head's texels")
     albedo = under + (albedo - under) * fade[:, None]
     nrm = normals + (nrm - normals) * fade[:, None]

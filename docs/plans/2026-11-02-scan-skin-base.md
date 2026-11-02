@@ -168,6 +168,42 @@ Check on scan02: the fit against the old one (median 1.2 mm), the base map besid
   rudavin then OK (turned 153.6 deg; 1.75 mm; skin 43%). (b) the fit's closest-point search on 1.3M triangles →
   the wrap now fits to 500k points sampled on the scan (trimesh's documented `use_faces=False`, a k-d tree).
   All scans re-run through the full route for one way (batch 2).
+- Batch 2 (peak 4.5 GB): above the neck (median / beyond 1 cm), skin share of what the views see -
+  scan02 1.07 mm / 3.4%, 90% · lps 1.18 / 3.0%, 88% · yaro13 1.73 / 14.2%, 44% (hair) · female_wnmb 1.76 / 15.3%,
+  45% (turned upright 93 deg, half-turn check fired) · head03a 1.68 / 11.7%, 33% (76 deg, check fired) ·
+  portrait_3130 1.61 / 13.5%, 51%. (The "beyond 1 cm" on haired scans is our scalp under their hair - masked.)
+  FAILED at the upright step: ammamma (its Polycam GLB stores V upward like scan02's glTF - renders scrambled;
+  `flip_v` → she renders right) and the three full bodies (the face too small in whole-body views → kept as
+  imported, scan studios export standing; `scan_marks.py` now fails a turn whose face isn't upright: eye line
+  > 25 deg or forehead below chin). Batch 3 re-runs those four.
+- Batch 3: ammamma OK (upright 65 deg with the half-turn check; 2.06 mm, beyond 1 cm 18.9% - hair; skin 54%);
+  d3d_african_woman through but her big curly hair and a raised arm cover our scalp (3.81 mm, 40% beyond 1 cm -
+  under hair, masked); her face and neck give 5.7% of the tile as skin - kept as a dark-skin face/neck source;
+  d3d_african_man and rp_carla FAILED (no face in the turns: their spread arms made the bodies wide, so the
+  "tall and narrow = full body" rule framed them whole). Fix: `scan_views.py NAME body` frames the head, and
+  `scan_route.py` tries it when the turns show no face. Batch 4: d3d_african_man 1.50 mm, skin 50%; rp_carla
+  1.03 mm, skin 39%. ALL 11 KEEPERS THROUGH (peak 4.5 GB).
+- Composed chars 1-6 (`compose_sheet.py` in the job tmp; `scans/compose_sheet.png`, 18 s each): each takes its pores
+  from a different scan (rp_carla, d3d_african_woman, scan02, d3d_african_man, yaro13, head03a) and its mid layer
+  from 2-3 others; the fine detail visibly differs (scan02's scalp stubble, yaro13's wrinkles, head03a smooth). The
+  base also carries the scans' own eye, nostril, lip and ear shading - it only shows where the face views don't
+  reach (the ears: real ear detail there). Covered 46% of the tile.
+- Round 74 started on the card (web-4c's go): `FACETEST_BASE=3 FACETEST_ROUND=74` against round 73 (all ten views).
+- ROUND 74 RESULT (6 min 49 s; `.dev/facetest/compare_73_74.png`): the face (close view) as round 73's - three
+  views carry it; the scalp shows real scanned scalp skin instead of smooth paint. Three faults, causes found:
+  (1) hard seams across the forehead top and the neck - the fade trusts a texel fully up to the face pictures'
+  frame edge (`best_facing` takes `border > 0`, a step; with ten views another view always covered past it);
+  (2) scalp and neck darker and more orange than the face - the base is one tone x the scans' ratio, whose mean
+  sits below 1 (their own shading) and whose tone doesn't continue the face's local colour at the boundary;
+  (3) dark squiggles low on the neck - shadow lines at the scans' collar and hair edges inside the skin mask.
+  Fixes: (1) the fade by the soft border too; (2) the ratio's mean set to 1 per channel (compose) and the tone
+  carried out from the face's own broad colour (a normalised-convolution fill, the push-pull way), to the median
+  far away; (3) each scan's skin pulled in from its mask's edges by ~2 mm (split).
+- Fixes BUILT: `view_samples` also returns the plain border fade; with a base the fade uses `best_soft` (facing x
+  border fade); `_carried_tone` (3D grid 5 mm, Gaussian 3 cm, prior 2% → the median far away; tested alone on a
+  sphere: 0.2 s, the face side keeps its colour, the back settles to the median); `skin_base.split` erodes each
+  scan's skin by 12 texels (all 11 re-split: skin 4.7-37% of the tile each); `compose` sets the ratio's per-channel
+  mean to 1. char 3 recomposed (covered 44%). Round 75 waits for the card (asked web-4c).
 
 - Wired (not run yet): `test_face_project.py` `FACETEST_BASE=SEED` - colour from the hero and the two 30-degree
   views only (levelled to the hero), and where they see poorly (the existing grazing / neck fade) the base

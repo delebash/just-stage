@@ -53,6 +53,14 @@ def main(names):
             for ln in lines[-4:]:
                 print(f"  {ln[:240]}")
             ok = run.returncode == 0 and not any("Traceback" in ln for ln in lines)
+            if not ok and label == "marks" and "no face in any turn" in run.stdout + run.stderr:
+                # a wide full body (spread arms) framed whole: its face too small - the turns again, framed on the head
+                print(f"{name}: no face in the turns - framing on the head", flush=True)
+                subprocess.run(blender("scan_views.py", name, "body"), capture_output=True, text=True)
+                run = subprocess.run(cmd, capture_output=True, text=True, errors="replace")
+                ok = run.returncode == 0
+                for ln in [x for x in (run.stdout + run.stderr).splitlines() if x.startswith(name)][-2:]:
+                    print(f"  {ln[:240]}")
             print(f"{name}: {label} {'ok' if ok else 'FAILED'} ({time.time() - t:.0f}s)", flush=True)
             if not ok:
                 print("\n".join((run.stdout + run.stderr).splitlines()[-12:]))

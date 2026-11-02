@@ -68,6 +68,7 @@ SCANS = {
         "source": S + "ammamma/x/source/raw.glb",
         "textures": {"*": S + "ammamma/x/textures/gltf_embedded_0.jpeg"},
         "bald": False,
+        "flip_v": True,  # Polycam's GLB, like scan02's glTF: renders scrambled read the spec's way (2026-11-02)
         "credit": '"Ammamma Head Scan Polycam" by Krishna Prakash - sketchfab.com/3d-models/64fda4f6914d40b89bc07a9f5927357e '
         "(CC BY)",
     },

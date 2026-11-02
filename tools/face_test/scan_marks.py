@@ -11,6 +11,7 @@ Run (the tool environment): .dev/venv-tools/Scripts/python -I tools/face_test/sc
 """
 
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -76,6 +77,12 @@ def main(argv):
         best = min((v for v in views if views[v]), key=lambda v: views[v]["squareness"], default=None)
         if best is None:
             raise SystemExit(f"{argv[0]}: no face in any turn")
+        pts = views[best]["points"]
+        r, l = (pts[33][0] + pts[133][0]) / 2, (pts[263][0] + pts[362][0]) / 2
+        dy = (pts[263][1] + pts[362][1]) / 2 - (pts[33][1] + pts[133][1]) / 2
+        tilt = abs(math.degrees(math.atan2(dy, l - r)))
+        if tilt > 25.0 or pts[10][1] > pts[152][1]:  # the eye line's tilt; the forehead below the chin
+            raise SystemExit(f"{argv[0]}: the face in {best} isn't upright (eye line {tilt:.0f} deg) - scan_orient.py")
         (out / "marks.json").write_text(json.dumps({"best": best, "views": views}))
         print(f"{argv[0]}: best {best}")
     return 0
