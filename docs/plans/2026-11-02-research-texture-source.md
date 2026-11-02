@@ -106,6 +106,19 @@ occlusion, proximity, translucency, curvature (resolutions not stated). Their te
 API; phone photogrammetry bakes the light in. Downloading needs a Sketchfab login. The CC0 search returned museum
 objects only.
 
+**More free scans (the user: "i think there are lots of free cc headscans out there you just did not look
+correctly")** - right: one narrow API query had been run. The Sketchfab API with `q=face scan&downloadable=true&license=by`
+*[page]* returns 19 more scans of real people under CC Attribution - Trnio app scans ("Face Scan example", "Face Scan #2",
+"Scan - Stewart", "Face #1", "Andrew K. Face Scan"), Thunk3D scanner demos (0.6-6.7M faces), Scandy, an Artec scan
+(CIMtech), an EinScan-Pro scan (Aniwaa), "Very detailed face" (Theworkings), "Harsha Face Scan" (Perspectiv); `q=head scan`
+gave ~15 (above). Most are face-only phone or handheld scans with the room's light in the texture; texture sizes aren't
+in the API. The user's ArtStation link (`artstation.com/artwork/GXJrLz`, read in Chrome): 3D Scan Store's "Free 3D Head
+Scan" - a bald man, "ZBrush tool / OBJ / FBX / uncompressed TGA textures / Marmoset Toolbag scene / jacket included",
+download through their blog (the browser may not read 3dscanstore.com); CG Channel on Ten24's 2019 free male head (this
+one, by the description): "not licensed for commercial use … private or non-commercial … internal tests" *[snippet]*.
+The high-end free scans (Ten24, Digital Emily 2, Eisko) are non-commercial, "Sky" is paid; the open ones are CC-BY
+scans of uneven quality, to be judged by downloading (a Sketchfab login).
+
 ## 2 · The rec (attacked)
 
 **Rec:** follow Headshot's structure, in measured steps.
