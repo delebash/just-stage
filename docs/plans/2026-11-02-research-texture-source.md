@@ -116,6 +116,10 @@ in the API. The user's ArtStation link (`artstation.com/artwork/GXJrLz`, read in
 Scan" - a bald man, "ZBrush tool / OBJ / FBX / uncompressed TGA textures / Marmoset Toolbag scene / jacket included",
 download through their blog (the browser may not read 3dscanstore.com); CG Channel on Ten24's 2019 free male head (this
 one, by the description): "not licensed for commercial use … private or non-commercial … internal tests" *[snippet]*.
+The blog post itself, read in Chrome on the user's word: "FREE HD HEAD" - "TGA / JPG (8192 x 8192 pixels) / Albedo,
+Normal, displacement, Roughness, Specular", a 16-bit 8K displacement TIF, "Pore / fine wrinkle level detail with micro
+map", head, teeth, tongue, eyes, lens, eye wet, lashes, brows; "License: Personal use only please contact us for
+commercial use"; 1.9 GB - a reference for real skin, not shippable unless 3D Scan Store grants commercial use.
 The high-end free scans (Ten24, Digital Emily 2, Eisko) are non-commercial, "Sky" is paid; the open ones are CC-BY
 scans of uneven quality, to be judged by downloading (a Sketchfab login).
 
