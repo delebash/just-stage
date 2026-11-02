@@ -821,8 +821,15 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            normal map, the fine bump and the pore tile each off (CPU trials): it is the 30-degree paintings' own deep
            wrinkles, split at the midline, winning the blend because each view's picture-border fade sat inside the
            blend's powers (w**4, w**16) - the hero, a quarter faded there, scored ~50 against their ~1e7. The border
-           fade now 12-48 px (the warp smears 4-8 px) and outside the powers. The chain to run: clay, align, the
-           profiles repainted by seed (picked by eye), normals, light removal, the round.
+           fade now 12-48 px (the warp smears 4-8 px) and outside the powers. (f) The grey band between the lips (the
+           mouth read as parted) is not the shape - the clay's depth runs smoothly through a closed seam - but the
+           painting's seam laid on our upper lip's underside: left out of the warp since round 44 (MediaPipe guesses an
+           inner lip on the clay), the AI's seam sits 3.6-9.9 px above the clay's in every view that sees it (close
+           view 6.8). `align_paintings.clay_seam_points`: each painted inner-lip point but the corners straight up or
+           down onto the clay's contact line (its darkest row within 16 px), as the lids are. Our upper lip stays
+           taller than the painting's (MediaPipe: 0.190 of the mouth's width against 0.144) - rec 17's sliders, next.
+           The chain to run: clay, align, the profiles repainted by seed (picked by eye), normals, light removal, the
+           round.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it

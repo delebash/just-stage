@@ -9,7 +9,8 @@ but on a clay render - no brows, no colour - it guesses: between two clays that 
 brows moved 9-11 px, its nose 5.5 px (the nose unchanged), its eye rings 6 px and its lid contour read a near-shut eye
 as matching the painting; only its lips held (1.3 px; round 51, 2026-10-31). So the painting's lid lines (its eye
 rings) go onto the clay's eye openings - segmented from the clay's colours, each lid point moved straight up or down
-onto the opening's edge - and the painting's outer lips onto the clay's; a thin-plate-spline warp (SciPy's
+onto the opening's edge - the painting's outer lips onto the clay's, and its lips' seam straight up or down onto the
+clay's contact line (clay_seam_points); a thin-plate-spline warp (SciPy's
 RBFInterpolator) carries them, the picture's border pinned, everything between interpolated (the flow step,
 flow_views.py, refines between the views). Views where a face or an eye isn't found keep what they can. MediaPipe's
 points on each aligned picture go to aligned_marks.json (the projection aims the eyes at the aligned face's irises).
@@ -84,6 +85,29 @@ def clay_eye_points(clay: np.ndarray, painted_pts: np.ndarray):
     return np.array(dst).reshape(-1, 2), np.array(src).reshape(-1, 2)
 
 
+def clay_seam_points(clay: np.ndarray, painted_pts: np.ndarray):
+    """For each of the painting's inner-lip points but the corners, the clay's seam straight up or down at the same
+    column: its darkest row within 16 px - the contact's shadow line in the evenly lit clay (MediaPipe's own inner
+    ring on the clay is a guess at the crease: INNER_LIPS), kept where it is clearly darker than the column around
+    it. Left out of the warp, the lips' seam stayed where the AI painted it: round 65's close painting has it 9 px
+    above ours, its dark line laid on our upper lip's underside - a grey band between the lips. Returns (painting
+    points, clay points)."""
+    grey = cv2.GaussianBlur(cv2.cvtColor(clay, cv2.COLOR_BGR2GRAY).astype(np.float32), (0, 0), 1.0)
+    h, w = grey.shape
+    src, dst = [], []
+    for i in INNER_LIPS:
+        if i in (78, 308):  # the corners: the seam fades into the corner's shadow there
+            continue
+        x, y = painted_pts[i]
+        col_i, top = int(x), max(int(y) - 16, 0)
+        column = grey[top : int(y) + 17, col_i] if 0 <= col_i < w else np.empty(0)
+        if len(column) < 9 or column.min() > 0.85 * np.median(column):
+            continue
+        src.append([x, top + int(np.argmin(column)) + 0.5])  # pixel centres, in MediaPipe's coordinates
+        dst.append([x, y])
+    return np.array(dst).reshape(-1, 2), np.array(src).reshape(-1, 2)
+
+
 def warp(painted: np.ndarray, clay_pts: np.ndarray, painted_pts: np.ndarray) -> np.ndarray:
     """The painting resampled so its points land on the clay's: each output pixel looks up where it was painted."""
     h, w = painted.shape[:2]
@@ -116,11 +140,14 @@ def main() -> int:
                 out.unlink(missing_ok=True)
                 print(f"{view}: face not found in {'the clay view' if clay_pts is None else 'the painting'} — kept")
                 continue
-            painted_eyes, clay_eyes = clay_eye_points(cv2.imread(str(clay_path)), painted_pts)
+            clay = cv2.imread(str(clay_path))
+            painted_eyes, clay_eyes = clay_eye_points(clay, painted_pts)
+            painted_seam, clay_seam = clay_seam_points(clay, painted_pts)
             lips = list(OUTER_LIPS)
-            src = np.vstack([clay_eyes, clay_pts[lips]])
-            dst = np.vstack([painted_eyes, painted_pts[lips]])
+            src = np.vstack([clay_eyes, clay_pts[lips], clay_seam])
+            dst = np.vstack([painted_eyes, painted_pts[lips], painted_seam])
             moved = np.linalg.norm(src - dst, axis=1)
+            seam = moved[len(moved) - len(clay_seam):]
             cv2.imwrite(str(out), warp(cv2.imread(str(painted_path)), src, dst))
             aligned_pts = landmarks(detector, out)
             if aligned_pts is not None:
@@ -134,6 +161,8 @@ def main() -> int:
                 f"{moved[len(clay_eyes):].mean():.1f} px - warped onto the clay's"
                 if len(clay_eyes) else f"{view}: no eye opening found; the lips moved {moved.mean():.1f} px - warped"
             )
+            print(f"{view}: the lips' seam {seam.mean():.1f} px off the clay's ({len(seam)} points)" if len(seam)
+                  else f"{view}: no seam seen")
     return 0
 
 
