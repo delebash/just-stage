@@ -797,7 +797,11 @@ def test_face_project():
         # its border lost to any other - the hero, a quarter faded at the forehead's top, scored ~50 against the
         # 30-degree views' ~1e7 there, and their painted wrinkles (deep, FLUX's own) took the close view's forehead
         border = np.clip((np.nan_to_num(edge) - 12.0) / 36.0, 0.0, 1.0)
-        frame = (0.78 / np.nan_to_num(dist, nan=1e3)) ** 2
+        # and its texel density (a close camera's ~3.8x) the same way: inside the powers it gave the close views ~200x
+        # in the broad band wherever they saw a surface at all - the hero won the nostrils' rims and the upper lip's
+        # underside edge-on, where its light removal is worst (a light from above predicts nearly none on a surface
+        # facing down: the rims glowed orange-white, green after levelling); now the angle decides, density tips it
+        density = (0.78 / np.nan_to_num(dist, nan=1e3)) ** 2
         # away from the view's silhouettes: pixels on an outline are part background (the pale ear rims and neck streak)
         # ...and its depth jumps (a jaw in front of the neck: pixels on that edge blend both — the neck's pale line)
         near = np.where(depth < 0.999, depth, 1.0).astype(np.float32)
@@ -809,7 +813,7 @@ def test_face_project():
         smooth_here = ((depth < 0.999) & (hi - lo < 0.01)).astype(np.float32)
         inside = _blur(smooth_here[..., None], 4.0)
         clear_of_edge = up.sample(np.clip((inside - 0.5) / 0.45, 0.0, 1.0), col, row)[:, 0]
-        return facing * frame * clear_of_edge, border, col, row
+        return facing * clear_of_edge, border * density, col, row
 
     lum = np.array(sd.LUMA)
     texel_row, texel_col = np.nonzero(mask)  # each texel's place on the map, in `points`' order
@@ -852,6 +856,7 @@ def test_face_project():
     every = np.arange(len(points))
     low_sum, low_w = np.zeros((len(points), 3)), np.zeros(len(points))
     high_best, high_w = np.ones((len(points), 3)), np.zeros(len(points))
+    best_facing = np.zeros(len(points))  # how squarely the best view sees each texel
     nlow_sum, nhigh_best = np.zeros((len(points), 3)), np.zeros((len(points), 3))
     for view in VIEWS:
         w, border, col, row = view_samples(view, every)
@@ -874,6 +879,7 @@ def test_face_project():
         high_best[better] = (up.sample(albedo, col, row) / np.maximum(low, 1e-4))[better]
         nhigh_best[better] = (up.sample(nworld, col, row) - nlow)[better]
         high_w[better] = sharp[better]
+        best_facing = np.maximum(best_facing, w * (border > 0))
         print(f"  {view}: sees {(w > 1e-3).mean():.0%} of the head's texels")
     covered = low_w > 1e-6
     albedo = np.zeros((len(points), 3))
@@ -881,7 +887,14 @@ def test_face_project():
     nrm = normals.copy()
     nrm[covered] = nlow_sum[covered] / low_w[covered, None]
     detail_ok = high_w > 1e-9
+    broad = albedo.copy()
     albedo[detail_ok] *= np.clip(high_best[detail_ok], 0.3, 3.0)
+    # skin keeps skin's hue order (red over green over blue): at a sharp edge between a pale pixel and a dark red
+    # surround (a nostril's rim, round 70) the ratio clips per channel - red's less than green's and blue's - and the
+    # texel turns green; such texels keep the broad band's colour
+    off_hue = covered & ((albedo[:, 1] > 1.02 * albedo[:, 0]) | (albedo[:, 2] > 1.05 * albedo[:, 1]))  # grey hairs pass
+    albedo[off_hue] = broad[off_hue]
+    print(f"  fine band: {off_hue.sum()} texels out of skin's hue order kept their broad colour")
     nrm[detail_ok] += nhigh_best[detail_ok]
     nrm /= np.linalg.norm(nrm, axis=1, keepdims=True) + 1e-12
     eye_gap = np.full(len(points), 1.0)
@@ -905,7 +918,11 @@ def test_face_project():
     # the lips' contact takes the painting's own colours: the clay views now have the closed lips (face_shape.py), so no
     # view sees teeth or a gap there (round 44: the flat colour that replaced them read as a strip under the upper lip)
     t = np.clip((points[:, 2] - FADE_FROM) / (FADE_TO - FADE_FROM), 0.0, 1.0)
-    fade = (t * t * (3 - 2 * t)) * np.clip(low_w / (0.4 * np.median(low_w[covered])), 0.0, 1.0) ** 2  # grazing-only texels fade to the skin's median
+    # grazing-only texels fade to the skin's median - by how squarely their best view sees them (from 0.5 down to
+    # 0.25), not by the views' summed weight against its median (until round 71): seen at ~0.6 by the view from
+    # below alone, the nostrils' insides fell under that bar (the close views' weight sets it) and turned skin-light
+    # where every painting has them dark
+    fade = (t * t * (3 - 2 * t)) * np.clip((best_facing - 0.25) / 0.25, 0.0, 1.0) ** 2
     face_zone = covered & (points[:, 2] > 1.5) & (fade > 0.9)
     fallback = np.median(albedo[face_zone], axis=0)
     albedo = fallback + (albedo - fallback) * fade[:, None]
@@ -920,7 +937,13 @@ def test_face_project():
     target = float(np.array(bsdf.inputs["Base Color"].default_value[:3]) @ lum)
     scale = target / float(np.median(albedo[face_zone] @ lum))  # the skin model's brightness, the AI's colour
     albedo *= scale
-    print(f"albedo scaled to the skin model's luminance {target:.3f}")
+    # no channel past 0.9, the texel scaled down whole: the light removal leaves a few texels 2-4x too bright (a
+    # surface facing away from its fitted light: the nostrils' rims), and clipped channel by channel in the 8-bit map,
+    # red first, they went pale and near grey - a green-grey line round the nostrils under the studio light (round 72)
+    peak = albedo.max(axis=1)
+    over = peak > 0.9
+    albedo[over] *= (0.9 / peak[over])[:, None]
+    print(f"albedo scaled to the skin model's luminance {target:.3f}; {over.sum()} texels capped at 0.9")
 
     albedo_map = np.zeros((SIZE, SIZE, 3), dtype=np.float32)
     albedo_map[...] = fallback * scale

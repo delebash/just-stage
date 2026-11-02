@@ -876,6 +876,21 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            green tint at one nostril's rim; the whites flat and bright beside the painting's shaded ones; a crease left
            at the forehead's top in the front view (the 30-degree paintings', above the close view's frame); the skin
            smoother than the painting's.
+           ROUNDS 71-73 (the projection only): the lips' shape stays - the close painting puts the seam ~5 mm nearer the
+           nose with a thin upper lip (MediaPipe: 0.136 of the mouth's width against our 0.205), the front painting
+           as ours (0.203 / 0.227 against 0.218 / 0.221, seam 1.6 mm); the close view drifts most (eyes 13-22 px), and
+           the shape follows what the views agree on (the FLAME fit's verdict, 2026-10-31) while the hero leads the
+           texture; rec 17's sliders wait for a reason the views share. The nostrils' green-grey rims and light
+           insides: the close view won surfaces it sees edge-on - its texel density (3.8x) sat inside the blend's
+           powers (~200x in the broad band) - where its light removal is worst (a fitted light from above predicts
+           nearly none on a surface facing down: the rims glowed 2-4x); density now outside the powers, as the border
+           (round 71: the green 37 -> 21 px). Not the fine band's hue (a guard - skin's red over green over blue - kept
+           970 texels' broad colour, no change at the rims), not the scattering (a CPU trial with it off: the line
+           stays, pale grey-green): those texels' channels passed 1.0 and the 8-bit map clipped them one by one, red
+           first, to a pale near-grey. Now every texel scaled down whole to no channel past 0.9 (2,762 at 255 before;
+           round 73). The grazing fallback by how squarely the best view sees a texel (0.25-0.5), not by the summed
+           weight against its median, which the close views set - the nostrils' insides, seen at ~0.6 from below
+           alone, had faded to skin-light (round 72: still light; open).
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
