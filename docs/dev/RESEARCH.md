@@ -1914,6 +1914,8 @@ every one logged; key claims page-read):
   API; Google "won't claim ownership" of outputs and bars using the service "to develop models that compete". SkinGen:
   a skin base under masked layers (blend modes, normal and micro-normal strengths, region tools). Histogram-preserving
   blending (Heitz & Neyret 2018) tiles skin swatches; pores need their own layer. Claude makes no images.
+  The scans downloaded and checked, and the method for each step of carrying a scan's skin onto our head (with the
+  research each pick rests on): `../plans/2026-11-02-scan-skin-base.md`.
 
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0

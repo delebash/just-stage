@@ -133,6 +133,65 @@ scans of uneven quality, to be judged by downloading (a Sketchfab login).
 | "Marcus - Free 3D Head Sample Model Scan" by Digital Reality Lab | 51 MB OBJ | one map 4096² | a black marker cap over the scalp; face and neck usable, neck tattoos |
 | "Nils Head Scan" by Simsallabim | 69 MB FBX | diffuse 8192² | an automatic photogrammetry atlas of ~100 fragments, warm baked light - little use |
 | "Very detailed face" by Theworkings | 118 MB OBJ | textures inside a nested archive (not opened yet) | face only |
+| "Head scan 13 (photogrammetry)" by yaro.pro - sketchfab.com/3d-models/5e6d2804405449e6b3bd96cd12d8b1ab (383,563 faces; iPhone 12 Pro Max, Photocatch) | 140 MB FBX | baseColor 8192² | a mature man: real wrinkles, stubble, grey hair; a fragmented photogrammetry atlas with blurred fill between pieces - KEEP (older man) |
+| "Rudavin Sergey 3d portrait" by rudavin - e1fe86107058409c9fb88b50f5ef80fd (194,614 faces) | 13 MB (OBJ in a RAR) | 8192² | a younger man: stubble, a mole, even light; a bust in a red jersey - KEEP (younger man) |
+| "Female head scan" by whynotmeebaby - b157e28076484a3f9f4f41b5e0f70770 (1,326,812 faces) | 36 MB (OBJ in a RAR) | 4096² | a woman: real pores on cheek, nose and lips, sun spots - KEEP (the best woman's skin) |
+| "Head 03 A" by Nikitos & 3130 (@vrcityphoto) - 04a94494d88d48d18c46b82c7ab7c7b8 (1,273,836 faces; "75 images not corrected") | 38 MB (OBJ in a RAR) | three maps 4096² | a young woman: smooth, soft skin, even light, green-screen spill at the hair - KEEP (young, smooth; weak pores) |
+| "Ammamma Head Scan Polycam" by Krishna Prakash - 64fda4f6914d40b89bc07a9f5927357e (73,097 faces) | 23 MB GLB | 4096² | an elderly woman: wrinkles, red mottling, a few white flakes (marks to remove) - KEEP (old age) |
+| "Jared Head Scan 3D" by ARmediaLab - 08f691ec9d2a43eea699638877df5674 | 9 MB OBJ | 4096×2048 | a front projection, a full beard over the lower face, ~2.8K across the face - weak |
+| "Eddy's Bust made with 3DF Zephyr" by Eddy Adams - fd9ba129 | 53 MB FBX | 5536² | streaked, broken bake - out |
+| "Joan", "Red Lady" by Veterock | 132 / 140 MB FBX | 4096² (+ a near-flat normal) | flat, smooth colour, no skin detail (game characters) - out |
+| "Kitbash 3D Self potrait" by Krishna Prakash | 50 MB FBX | clothes 4096², a KeenTools FaceBuilder photo projection 2048² | not a scan's skin - out |
+| "Scan - Léo-Paul" by Yannoid | 20 MB FBX | one grey map 4096² | no colour - out |
+| "Asian Woman Photogrammetry" by daydev | 4 MB FBX | 2048² | the file name ("_refine") and the body read as an AI-made model, 2K - out |
+| "John Cleaver" by toolsbyhollie | 40 MB OBJ | none in the archive | no texture - out |
+
+Licences read from Sketchfab's API (`/v3/models/{uid}`, 2026-11-02): all of the above "CC Attribution". Measured
+*[measured]*: each map's size; a contact sheet of the maps; the most detailed all-skin 384-px window per map at full
+resolution and three typical ones (30th/60th/85th percentile of fine detail). Gap: no dark-skinned scan among them.
+
+**Second batch - the dark-skin gap** (Sketchfab API, `downloadable=true&license=by&sort_by=-likeCount`; queries:
+"african head scan", "black man head scan", "black woman head scan", "african american bust scan", "african man scan",
+"dark skin face scan", "afro head scan", "man bust photogrammetry", "woman bust photogrammetry", "old man head scan",
+"indian man head scan", "person scan photogrammetry", "portrait scan", "selfie scan", "renderpeople", "deep3dstudio
+free download" - most hits museum objects; the people found: Renderpeople's and deep3dstudio's free full-body scans,
+"portrait of model" by 3130). Texture sizes from the download endpoint (`/i/models/{uid}/download`, signed in). All
+"CC Attribution":
+
+| Scan (credit, CC BY) | Archive | Maps measured | What it shows |
+|---|---|---|---|
+| "FREE DOWNLOAD: Attractive African woman 236" by deep3dstudio - f2c29b6947f34237a0bfdc777120ef28 (100k faces, full body) | 89 MB OBJ | diffuse 8192², normal, specular | dark skin with visible pores and follicles - KEEP |
+| "FREE DOWNLOAD Athletic African man walking 223" by deep3dstudio - f9a8e3b108f04e998815593f78f163b1 (full body) | 84 MB OBJ | diffuse 8192², normal, specular | dark skin, stubble, softer - KEEP (mid layer) |
+| "Carla Rigged 001" by Renderpeople - acf520f450d14dd799f98a6fede3edf5 (full body) | 90 MB FBX | diffuse 8192², normal | medium-olive skin, clean - KEEP |
+| "portrait of model 2.0" by 3130 - 6832a653f9c647aba01f77b5d774e9ba (bust) | 45 MB (OBJ in a RAR) | 8192² (UDIM 1001) | a light-skinned woman, fine detail, textured lips - KEEP |
+| "FREE DOWNLOAD: Sexy woman in bodysuit posing 233" by deep3dstudio - 3fcc62089501452393dee0f7dc2c0613 | 56 MB OBJ | 8192² | blurry patches - weak |
+| "Fabienne & Percy 001" by Renderpeople - 8c9bfd4fb8a444b3a42a4fc31935a2fb | 20 MB FBX | 8192² | the skin windows found only shoes and hair - out (face not checked) |
+| "Tony "Mcfly" Hodges" by William Pedersen (conjurer) - 226ac4d5b5a94996b1e3373e60cbf651 | 14 MB OBJ | 4096² | a broken, blurred atlas - out |
+
+**Telling skin from hair, brows, beard and clothes on a scan (2026-11-02; 7 of the 9 keepers have hair)** - our files
+had only "CelebAMask-HQ 19-class parsers exist" (`2026-10-31-audit-eyes.md:323`). Queries (standard search): "best face
+parsing model 2026 open source skin hair segmentation" -> LaPa leaderboard (a general facial-representation model 93.88,
+SegFace 93.03, RTNet 92.5), yakhyo/face-parsing (BiSeNet), jonathandinu/face-parsing (SegFormer, non-commercial
+licence), FPLNet (LaPa, ~2 years old); "latest techniques skin segmentation hair beard mask face texture 3D scan
+cleanup" -> **Pixels2Points** (Eurographics 2025, arXiv 2504.19718; Chen, Bolkart, Beeler et al.): skin / non-skin
+predicted per vertex ON the scan mesh from multi-view foundation-model features plus geometry, "8.89% and 14.3%" better
+registration than pure 2D or pure 3D segmentation, trained on synthetic data - the abstract (page read) names hair,
+beard and accessories as non-skin; no code, data or weights linked (arXiv page read; search "Pixels2Points ... github
+code weights" found none) - its "pure 2D" baseline, multi-view 2D segmentation lifted onto the mesh, is the training-free
+route; older patents (Canny texture + colour clustering for hair); "face parsing model with beard facial hair class
+segmentation dataset" -> no dataset with a beard class; CelebAMask-HQ labels a full beard as hair (snippet: a SegFormer
+project's notes); EasyPortrait counts a sparse beard as skin and a defined one as occlusion; "remove hair from head scan
+texture photogrammetry skin only mask workflow" -> the industry does it by hand: sculpt or mask-by-smoothness the
+geometry (3D Scan Store's ZBrush tutorial), paint out hair in Mari / Photoshop (Gnomon workshop), Headshot's Custom
+Mask; HairFree (NeurIPS 2025) synthesises bald textures from skin masks + FLAME (research code); "SegFace ... github
+weights license" and "EasyPortrait dataset license ..." -> the candidates' terms, read through GitHub's and Hugging
+Face's APIs *[API]*:
+- **SegFace** (AAAI 2025, `Kartik-3004/SegFace`): code MIT, pushed 2025-09-30, 112 stars; weights `kartiknarayan/SegFace`
+  card MIT (ConvNeXt / EfficientNet / MobileNet / ResNet / Swin-B, CelebAMask-HQ 512 and Helen); mean F1 88.96 on
+  CelebAMask-HQ, 93.03 on LaPa (arXiv listing). Trained on CelebAMask-HQ (non-commercial data) - a label, not a filter.
+- **yakhyo/face-parsing** (BiSeNet): MIT, pushed 2026-10-26, 331 stars, ONNX weights - lighter, below SegFace.
+- **EasyPortrait** (`hukenovs/easyportrait`): no licence file on the repo (API), data "a variant of" CC BY-SA 4.0; the
+  only beard-aware rules found.
 
 **The scan hunt (the user's go: "make sure you find the best sites to search, go")** - sites: Sketchfab (the
 largest CC-BY set of real-person scans, searchable through its API); commercial-use free scans whose licences usually

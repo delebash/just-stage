@@ -893,7 +893,8 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            alone, had faded to skin-light (round 72: still light; open).
            ROUND 73: the nostrils' green-grey rims gone (15,788 texels capped); the face, front and 40-degree views as
            round 70's otherwise. Open: the nostrils' insides lighter than the painting's.
-           THE SKIN'S SOURCE 2026-11-02 (research: `../plans/2026-11-02-research-texture-source.md`). The user, verbatim:
+           THE SKIN'S SOURCE 2026-11-02 (research: `../plans/2026-11-02-research-texture-source.md`; the working doc -
+           state, method picks, next step - `../plans/2026-11-02-scan-skin-base.md`). The user, verbatim:
            "so why havent you been trying these other methods why did you not do these in the first place if they are in
            research, you need to think before you act!  your rec on all go" - on the recs shown: (1) Headshot's
            structure in measured steps - a sharper face painting first (2K-4K: FLUX 3 locally at 2K, then SeedVR2, Nano
