@@ -815,7 +815,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            azimuth) and the eye calibration (the size from its radius, the regions on its centre); the lid key 3.7 /
            -0.3 (was 1.0 / -4.4); the upper lashes at -25 deg, curl 10, drooping lashes kept pointing outward at the
            outer corner, the collision pass now off the eye and cornea too (CPU trial on round 65's scene: the spikes
-           gone, a dark band at the margin). The chain to run: clay, align, normals, light removal, the round.
+           gone, a dark band at the margin). (d) The forehead-edge streak is the coat lobe (CPU trial: 82 px clipped,
+           none with the coat off or at 0.44): its roughness now 0.75 of the skin's, Unreal's sharper lobe, 0.44.
+           (e) The embossed wrinkle band across the close view's upper forehead (not in the painting) stays with the
+           normal map, the fine bump and the pore tile each off (CPU trials): it is the 30-degree paintings' own deep
+           wrinkles, split at the midline, winning the blend because each view's picture-border fade sat inside the
+           blend's powers (w**4, w**16) - the hero, a quarter faded there, scored ~50 against their ~1e7. The border
+           fade now 12-48 px (the warp smears 4-8 px) and outside the powers. The chain to run: clay, align, the
+           profiles repainted by seed (picked by eye), normals, light removal, the round.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it

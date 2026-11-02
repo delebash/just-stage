@@ -53,7 +53,10 @@ HERO_VIEW, HERO_WEIGHT = "face", 4.0  # face_paint_seq.py's hero: the other view
 FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam where it ends
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
-COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.3, 0.1  # the oil lobe and the fine hair (research rec 5)
+#: the oil lobe and the fine hair (research rec 5); the oil lobe at 0.75 of the skin's roughness - Unreal's sharper
+#: lobe (SubsurfaceProfile's roughness0 0.75, RESEARCH) - not 0.3: at grazing its Fresnel drew a hard white streak along
+#: the 40-degree view's forehead edge (round 66's CPU trial: 82 px clipped, none at 0.44 or with the coat off)
+COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.44, 0.1
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
 ROUND = int(os.environ.get("FACETEST_ROUND", 49))  # each round's pictures get their own names (an open picture can't be overwritten)
 FLOW = os.environ.get("FACETEST_FLOW", "0") == "1"  # flow_views.py's nudged paintings (the approved alignment rec)
@@ -786,7 +789,12 @@ def test_face_project():
         col, row, dist = up.project(points[idx], mw, cam["lens"], cam["sensor_width"], cam["size"])
         facing = up.view_weights(points[idx], normals[idx], col, row, dist, depth, mw[:3, 3], sharpness=1.0)
         edge = np.minimum.reduce([col, row, cam["size"] - 1 - col, cam["size"] - 1 - row])
-        frame = np.clip(np.nan_to_num(edge) / 80.0, 0.0, 1.0) * (0.78 / np.nan_to_num(dist, nan=1e3)) ** 2
+        # the picture's border faded in over 12-48 px (the warp smears its outermost 4-8 px: align_paintings), apart
+        # from the weight the blend raises to powers (w**4, w**16): inside them (until round 65, 0-80 px) a view near
+        # its border lost to any other - the hero, a quarter faded at the forehead's top, scored ~50 against the
+        # 30-degree views' ~1e7 there, and their painted wrinkles (deep, FLUX's own) took the close view's forehead
+        border = np.clip((np.nan_to_num(edge) - 12.0) / 36.0, 0.0, 1.0)
+        frame = (0.78 / np.nan_to_num(dist, nan=1e3)) ** 2
         # away from the view's silhouettes: pixels on an outline are part background (the pale ear rims and neck streak)
         # ...and its depth jumps (a jaw in front of the neck: pixels on that edge blend both — the neck's pale line)
         near = np.where(depth < 0.999, depth, 1.0).astype(np.float32)
@@ -798,7 +806,7 @@ def test_face_project():
         smooth_here = ((depth < 0.999) & (hi - lo < 0.01)).astype(np.float32)
         inside = _blur(smooth_here[..., None], 4.0)
         clear_of_edge = up.sample(np.clip((inside - 0.5) / 0.45, 0.0, 1.0), col, row)[:, 0]
-        return facing * frame * clear_of_edge, col, row
+        return facing * frame * clear_of_edge, border, col, row
 
     lum = np.array(sd.LUMA)
     texel_row, texel_col = np.nonzero(mask)  # each texel's place on the map, in `points`' order
@@ -812,7 +820,8 @@ def test_face_project():
     cell = (texel_row[sub] // LEVEL_CELL) * grid + texel_col[sub] // LEVEL_CELL
     looks = {}
     for view in VIEWS:
-        w, col, row = view_samples(view, sub)
+        w, border, col, row = view_samples(view, sub)
+        w = w * border
         looks[view] = (w, up.sample(_blur(_view_map("albedo", view), 6.0), col, row))
     fields = {v: np.ones((grid, grid, 3)) for v in VIEWS}
     for _ in range(4):
@@ -842,12 +851,12 @@ def test_face_project():
     high_best, high_w = np.ones((len(points), 3)), np.zeros(len(points))
     nlow_sum, nhigh_best = np.zeros((len(points), 3)), np.zeros((len(points), 3))
     for view in VIEWS:
-        w, col, row = view_samples(view, every)
+        w, border, col, row = view_samples(view, every)
         albedo = _view_map("albedo", view)
         nworld = _view_map("nworld", view)
         low_img, nlow_img = _blur(albedo, 6.0), _blur(nworld, 6.0)
         low, nlow = up.sample(low_img, col, row), up.sample(nlow_img, col, row)
-        soft, sharp = w**4, w**16
+        soft, sharp = w**4 * border, w**16 * border
         if view == HERO_VIEW:
             # the hero leads where it sees: the views painted from it carry its features, but a feature painted and not
             # modelled (the eye bag's crease) lands elsewhere on the mesh from 30 degrees - round 56's straight-edged
