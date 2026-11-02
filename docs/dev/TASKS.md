@@ -915,6 +915,20 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            Leads for the base (research file §1b): CC-BY head scans on Sketchfab (yaro.pro's series, a bald man re-baked
            by Cratera Games, "Nils", the Lee Perry-Smith upload "with all textures"), ShareTextures' CC0 "Human Skin 5" -
            sizes and lighting unknown; Sketchfab downloads need the user's login.
+           THE BASE MUST NOT MAKE EVERYONE ALIKE - the user, verbatim (2026-11-02): "we have to be able to make any human
+           look real they cant keep looking like the same character or base, it has to be completelety adjustable like
+           methuman if we can take the base and make any for examlple methauman example characters than that is ik, but
+           if all chracters looks the same but with is slightly differnt skin tone that is not acceptable". So the scans
+           are raw material, not a skin to copy: each split into layers - pores and fine lines (high-frequency), mottling
+           and redness (mid), tone (low, per character from our skin colour model) - with the scanned person's own marks
+           (moles, blemishes) taken out; per character the layers mixed from several scans, shifted and weighted, and
+           its own features (freckles, moles, stubble, wrinkles by age) placed as parameters - MetaHuman's way (a scanned
+           "Face Texture Index" with wrinkle density, stubble, freckles and moles as controls, RESEARCH skin §2.1); the
+           face from each character's own painting. First transfer (`.dev/tmp/r74/scan_to_base.py`, 70 s): the bald
+           scan lined up by the eyes, ICP with scale (1.036), our head wrapped onto it (trimesh's Amberg NICP, the
+           repo's GNM wrap's tool) - median 1.2 mm, 90% within 5.6 mm; its skin carried into the HeadTile layout (2,165
+           of 39,750 triangles cross the scan's seams, looked up texel by texel). Junk where our mouth interior and ear
+           folds met the scan's teeth and eye panels, and the ears smear - not base regions.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
