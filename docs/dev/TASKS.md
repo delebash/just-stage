@@ -891,6 +891,8 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            round 73). The grazing fallback by how squarely the best view sees a texel (0.25-0.5), not by the summed
            weight against its median, which the close views set - the nostrils' insides, seen at ~0.6 from below
            alone, had faded to skin-light (round 72: still light; open).
+           ROUND 73: the nostrils' green-grey rims gone (15,788 texels capped); the face, front and 40-degree views as
+           round 70's otherwise. Open: the nostrils' insides lighter than the painting's.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
