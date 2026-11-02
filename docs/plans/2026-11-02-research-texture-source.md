@@ -82,9 +82,14 @@ minus its 2-px blur, in 2K pixels) 6.96 against 2.92 for the 1024² painting ups
 Its nose came out strongly red (the prompt's "slight redness on the nose" reads stronger at 2K). Step 1's local route
 works; the face texture's density (6.0 texels a mm) is now the limit, not the painting.
 
-**The user's pasted leads, checked** (the paste reads as another AI's summary): "Human Male Head 3D Scan Sky" (Sketchfab,
-"Canon 5DSR … strict cross-polarization") and "Marcus - Free 3D Head Sample" (Digital Reality Lab) - not found by
-search; Digital Reality Lab exists and sells on TurboSquid. "PolFace" = *High-Res Facial Appearance Capture from
+**The user's pasted leads, checked**: "Human Male Head 3D Scan Sky" and "Marcus - Free 3D Head Sample" - the searches
+missed both (wrongly called "not found" at first); the user's links, read through the Sketchfab API *[page]*:
+`human-male-head-3d-scan-sky-0db5a34268d8498ea7acb7e3698f5cbd` by Sky Tesi - "Canon 5DSR and macro lens …
+cross-polarization lighting", 4K diffuse and normal, 2K displacement and specular roughness, quads with UVs, of the
+author himself; licence "Standard" (a paid Sketchfab Store item), `isDownloadable: false` - usable in a buyer's own
+work, not redistributable, so not shippable in an open-source app. `marcus-free-3d-head-sample-model-scan-
+1aef740047ba4214998f068355a5f034` by Digital Reality Lab - CC BY 4.0, downloadable, 498,162 faces, one texture
+(size and lighting not stated), 2022-07-14 - the best open lead. "PolFace" = *High-Res Facial Appearance Capture from
 Polarized Smartphone Images* (Azinović, Maury, Hery, Nießner, Thies; CVPR 2023) - real; a capture method (phone flash +
 polarisers, cross- and parallel-polarised) - code and licence not found. 3D Scan Store's free scans - the Ten24 ones,
 non-commercial. ShareTextures "Human Skin 5" *[page]* - CC0 ("CC0 Textures of human skin with several maps"): diffuse,
