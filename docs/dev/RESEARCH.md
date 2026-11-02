@@ -1899,6 +1899,13 @@ every one logged; key claims page-read):
   (by eye at 4x, unwarped painting): the painting's upper lid 0.23 / 0.25 above it, lower 0.05 / 0.02 below, iris
   centre 0.17 / 0.20 above; round 65's 0.26 / 0.28, 0.09 / 0.06, 0.13 / 0.16. Colour segmentation and gradient
   searches for the lid edges failed here (the nose shadow, eye-bag creases).
+- *measured, 2026-11-02*: the lips' seam - the clay's contact line (its darkest row in the evenly lit render) against
+  MediaPipe's inner lip points on each painting: the clay's sits 3.6-9.9 px lower in every view that sees it (close
+  view 6.8, front 4.2 - about 1.3-1.7 mm). The outer lips with the painting brought into the clay's frame (a
+  similarity on eye corners and nose): in the close view that fit errs 11.6 px (MediaPipe on the clay misreads the
+  corners and nose), in the front view 3.0 px - there the painting's mouth is as wide (158.8 against 156.1 px) and
+  as high at the top, its corners ~10 px lower and its lower edge ~5 px lower: a thinner upper lip, a taller lower
+  one, the corners turned down (MakeHuman's upperlip-height-decr, lowerlip-height-incr, angles-down).
 
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0
