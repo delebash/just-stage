@@ -1916,6 +1916,15 @@ every one logged; key claims page-read):
   blending (Heitz & Neyret 2018) tiles skin swatches; pores need their own layer. Claude makes no images.
   The scans downloaded and checked, and the method for each step of carrying a scan's skin onto our head (with the
   research each pick rests on): `../plans/2026-11-02-scan-skin-base.md`.
+- *2026-11-02, the scan route measured on scan02* (`tools/face_test/scan_*.py`; run log in the working doc §7):
+  RealDenseFace on the CPU reads a 1024² picture in a few seconds - 1,511 pairs on a zoomed square-on render
+  (~0.25 mm a pixel; the whole-bust render at 1.4 mm a pixel gave 48 usable); our two round views put the same FLAME
+  point within 0.53 mm (median). Pairs → `procrustes` → `nricp_amberg` held by the pairs: above the neck 0.9-1.0 mm
+  from the scan (the eye-aligned fit without pairs: 1.2), 44 s, 460 MB. Blender's Selected-to-Active bake of the
+  scan's colour onto HeadTile at 4096²: 6 s on the CPU. SegFace ConvNeXt-512 on the CPU: 13 views in under a minute,
+  2.2 GB; it labels flat-lit scan renders cleanly from the front and calls part of a bald crown "hair" from a side
+  turn. A file can break its format's UV convention: scan02's glTF stores V upward (21.5% of skin triangles on black
+  read the spec's way, 0.6% flipped).
 
 *from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
 (`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0

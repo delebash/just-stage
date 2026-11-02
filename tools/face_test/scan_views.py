@@ -120,7 +120,21 @@ def main(argv):
     pos_mat = position_material()
     cams = {}
     t0 = time.time()
-    shots = [(f"turn{k:02d}", 2 * math.pi * k / TURNS, centre, span) for k in range(TURNS)]
+    def turn(a):
+        return Vector((math.sin(a), -math.cos(a), 0.0))
+
+    shots = [(f"turn{k:02d}", turn(2 * math.pi * k / TURNS), centre, span) for k in range(TURNS)]
+    if len(argv) > 1 and argv[1] == "sphere":
+        # for finding which way is up (scan_orient.py): the whole mesh from 26 directions (a cube's faces, edges and
+        # corners); straight up and down tilted a hair, where "up" in the picture is undefined (the roll is tried later)
+        mid = Vector(((lo + hi) / 2).tolist())
+        radius = float(np.linalg.norm(co - np.asarray(mid), axis=1).max())
+        dirs = [Vector((i, j, k)).normalized() for i in (-1, 0, 1) for j in (-1, 0, 1) for k in (-1, 0, 1)
+                if (i, j, k) != (0, 0, 0)]
+        dirs = [d if abs(d.z) < 0.99 else (d + Vector((0.0, -0.01, 0.0))).normalized() for d in dirs]
+        reach, span = radius, 2.1 * radius
+        scene.render.resolution_x = scene.render.resolution_y = 768
+        shots = [(f"sphere{n:02d}", d, mid, span) for n, d in enumerate(dirs)]
     if len(argv) > 1 and argv[1] == "face":
         marks = json.loads((out / "marks.json").read_text())
         best = marks["best"].replace("view_", "")
@@ -136,15 +150,18 @@ def main(argv):
         dx, dy = ((x0 + x1) / 2 + 0.5 - SIZE / 2) * per_px, -((y0 + y1) / 2 + 0.5 - SIZE / 2) * per_px
         face_centre = Vector(M[:3, 3] + right * dx + up * dy)
         face_centre += Vector(M[:3, 2]) * float(np.dot(M[:3, 3] - mid, M[:3, 2])) * -1.0  # onto the face's depth
-        shots = [("face", math.radians(old["turn_deg"]), face_centre, float(max(x1 - x0, y1 - y0) * per_px * 1.9))]
-    for label, a, aim, frame_span in shots:
+        shots = [("face", turn(math.radians(old["turn_deg"])), face_centre,
+                  float(max(x1 - x0, y1 - y0) * per_px * 1.9))]
+    size = scene.render.resolution_x
+    cam.data.clip_end = 10 * (reach + span)
+    for label, direction, aim, frame_span in shots:
         cam.data.ortho_scale = frame_span
-        offset = Vector((math.sin(a), -math.cos(a), 0.0)) * (reach + span) * 2
+        offset = direction * (reach + span) * 2
         cam.location = aim + offset
         cam.rotation_euler = (-offset).to_track_quat("-Z", "Y").to_euler()
         bpy.context.view_layer.update()
-        cams[label] = {"matrix_world": [list(r) for r in cam.matrix_world], "ortho_scale": frame_span, "size": SIZE,
-                       "turn_deg": math.degrees(a)}
+        cams[label] = {"matrix_world": [list(r) for r in cam.matrix_world], "ortho_scale": frame_span, "size": size,
+                       "turn_deg": math.degrees(math.atan2(direction.x, -direction.y))}
         scene.view_layers[0].material_override = None
         scene.cycles.samples, scene.cycles.use_denoising, scene.cycles.filter_width = 16, False, 1.5
         scene.render.image_settings.file_format, scene.render.image_settings.color_mode = "PNG", "RGBA"
@@ -159,14 +176,15 @@ def main(argv):
         scene.render.filepath = str(exr)
         bpy.ops.render.render(write_still=True)
         img = bpy.data.images.load(str(exr))
-        px = np.empty(SIZE * SIZE * 4, np.float32)
+        px = np.empty(size * size * 4, np.float32)
         img.pixels.foreach_get(px)
         bpy.data.images.remove(img)
-        np.save(out / f"pos_{label}.npy", np.flipud(px.reshape(SIZE, SIZE, 4)))  # row 0 at the top, as the PNG
+        np.save(out / f"pos_{label}.npy", np.flipud(px.reshape(size, size, 4)))  # row 0 at the top, as the PNG
         exr.unlink()
         print(f"{label}: {time.time() - t0:.0f}s")
     views = out / "views.json"
-    data = json.loads(views.read_text()) if views.exists() and len(shots) == 1 else {}
+    keep_old = len(argv) > 1 and argv[1] == "face"  # the zoomed view joins the turns; turns or the sphere start afresh
+    data = json.loads(views.read_text()) if views.exists() and keep_old else {}
     data.update({"full_body": bool(full_body), "centre": [float(c) for c in centre], "span": span})
     data.setdefault("cams", {}).update(cams)
     views.write_text(json.dumps(data, indent=1))

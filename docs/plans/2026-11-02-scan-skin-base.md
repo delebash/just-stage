@@ -110,7 +110,13 @@ Scripts in `tools/face_test/`, outputs in `.dev/facetest/scans/<name>/`:
 5. `scan_fit.py` (tool env) - `procrustes` on the pairs, the scan cropped to our head, `nricp_amberg` with the pairs.
 6. `scan_bake.py` (Blender) - Selected to Active: the scan's colour (emission) onto our fitted head's HeadTile, and a
    white-emission bake for coverage.
-7. `scan_skin.py` - SegFace views voted onto the scan, baked as the skin mask (after 1-6 work on scan02).
+7. `scan_skin.py` - SegFace (ConvNeXt 512, CelebAMask-HQ: mean F1 89.22, the README's best there; its 19 classes;
+   RGB, 512 bicubic, ImageNet normalisation - its dataset code) on every scan view; the votes go straight into OUR
+   layout the face test's projection way (`core/uv_projection.py`: each texel of our fitted head projected into the
+   view, kept only where the scan's position picture shows that same point within 4 mm, weighted by how squarely the
+   view sees it) - no third bake, full view resolution. Skin = skin, neck, nose, ears; a bald scan counts "hair" on
+   its crown as skin. torchvision's ImageNet start weights are not downloaded (SegFace's checkpoint replaces them;
+   the default cache is on C:).
 8. `skin_base.split` / `compose` moved to the bake's coverage + skin mask, and the fine layer selected from one scan.
 Check on scan02: the fit against the old one (median 1.2 mm), the base map beside the old `base_scan02.png`.
 
@@ -137,3 +143,37 @@ Check on scan02: the fit against the old one (median 1.2 mm), the base map besid
   had smeared streaked skin over our neck panel where the scan has its shirt, the bake shows the shirt there and
   leaves uncovered what nothing reaches (nostrils' and ear canals' depths, a mouth corner) → step 7's skin mask must
   drop the shirt, eyes and teeth the bake honestly carries. `bake_vs_old.png` in scans/scan02.
+- Step 7 WORKS (`scan_skin.py`, CPU, peak 2.2 GB): SegFace code cloned to `.dev/cache/src/SegFace` (9416628, MIT),
+  weights `.dev/cache/segface/convnext_celeba_512_model_299.pt` (1,102,518,358 bytes, sha256 3cd535bf…c507 = the
+  Hugging Face LFS oid). scan02: our texels seen 68.0%, skin there 89.6%. The parser labels the front views cleanly
+  (skin, neck, ears, nose, brows, eyes, lips, cloth); one side turn calls part of the bald crown hair (the bald flag
+  covers it). Excluded in our layout: shirt, mouth inside, eye panels, nostril hole, lip centres, the skin under the
+  collar (no view sees it), and the chin's underside and an inner eye-corner strip (unseen - all turns are level).
+  `skin_check.png`, `skin_check_mouth.png`, `parse_sheet.png` in scans/scan02.
+- Step 8 (`skin_base.py`): `split` reads `scans/NAME/bake_colour.png`, `bake_cover.png`, `skin.png` and writes
+  `scans/NAME/layers.npz` (the old `layers_*.npz` / `base_*` files in scans/ are the old copy's, no longer read);
+  scan02: skin on 74% of what it reached, fine spread 0.131 (old 0.143), 10 s. `compose` rewritten to rec (6): the
+  fine layer from ONE scan (the character's order: the next ones only fill where it didn't reach, edges feathered
+  6 texels), the mid layer from 2-3 scans as their weighted sum over sqrt(sum of squared weights) (keeps one scan's
+  strength), own noise / age / redness / freckles / moles as before. Not yet run (needs the other scans' layers).
+- `scan_route.py NAME...` runs steps 1-8 per scan (each in its environment; stops a scan at its first failure).
+  Batch 1 (lps, yaro13, rudavin, female_wnmb, head03a; RAM guard 6 GB, as told to web-4c): lps OK (above the neck
+  1.09 mm, skin 86% of what the views see), yaro13 OK (1.64 mm, skin 45% - his hair out); rudavin FAILED (no face in
+  the zoom) and female_wnmb's fit hit 10 GB (the guard stopped it; no leftover processes, checked). Causes: (a) some
+  scans arrive lying down (rudavin flat, female_wnmb ~60 degrees) and the turns spin about the vertical only →
+  NEW step `scan_orient.py` (after `scan_views.py NAME sphere`: 26 directions, each picture tried at 4 rolls;
+  MediaPipe's upright, square-on face; its 3D eye corners / chin / forehead give the head's axes; the scan turned to
+  Z up, face -Y). MediaPipe laid an upright face over rudavin's upside-down picture (chin and forehead swapped, left
+  and right with them) → a 3D check: a head reaches farther below its eyes than above, else turned back half round.
+  rudavin then OK (turned 153.6 deg; 1.75 mm; skin 43%). (b) the fit's closest-point search on 1.3M triangles →
+  the wrap now fits to 500k points sampled on the scan (trimesh's documented `use_faces=False`, a k-d tree).
+  All scans re-run through the full route for one way (batch 2).
+
+- Wired (not run yet): `test_face_project.py` `FACETEST_BASE=SEED` - colour from the hero and the two 30-degree
+  views only (levelled to the hero), and where they see poorly (the existing grazing / neck fade) the base
+  `scans/base_char{SEED}.npy` × the painted face's median skin instead of the flat median; unset = all ten views as
+  before (the test round's comparison).
+
+Next after the batches: compose a few characters, look at them; then run the wired `test_face_project.py`
+(the face from the hero painting plus the two 30-degree views, the rest from base x tone, soft masks - task #3),
+then the test round (40-degree, front, close - task #4; Cycles on the card: ask web-4c first).

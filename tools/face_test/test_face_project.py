@@ -60,6 +60,12 @@ COAT_WEIGHT, COAT_ROUGHNESS, SHEEN_WEIGHT = 0.12, 0.44, 0.1
 BUMP_STRENGTH, BUMP_DISTANCE = 0.15, 0.0004  # pores only: the normal map carries the larger relief
 ROUND = int(os.environ.get("FACETEST_ROUND", 49))  # each round's pictures get their own names (an open picture can't be overwritten)
 FLOW = os.environ.get("FACETEST_FLOW", "0") == "1"  # flow_views.py's nudged paintings (the approved alignment rec)
+#: Headshot's structure (TASKS "THE SKIN'S SOURCE" rec 1): the face from the hero painting and the two 30-degree views,
+#: the rest of the head from the character's skin base (skin_base.py compose SEED: scans' layers, its own marks) times
+#: its tone - FACETEST_BASE=SEED; unset, all ten views as before (the test round compares the two)
+BASE = os.environ.get("FACETEST_BASE")
+COLOUR_VIEWS = (HERO_VIEW, "faceleft30", "faceright30") if BASE else VIEWS
+ANCHOR = HERO_VIEW if BASE else "front"  # the gain fields' reference view
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
 #: skin patches in the "face" view (column, row of their centres, 1024² pictures): forehead, both cheeks, chin
 PATCHES = ((512, 170), (330, 540), (700, 540), (512, 900))
@@ -826,11 +832,11 @@ def test_face_project():
     sub = np.arange(0, len(points), 16)
     cell = (texel_row[sub] // LEVEL_CELL) * grid + texel_col[sub] // LEVEL_CELL
     looks = {}
-    for view in VIEWS:
+    for view in COLOUR_VIEWS:
         w, border, col, row = view_samples(view, sub)
         w = w * border
         looks[view] = (w, up.sample(_blur(_view_map("albedo", view), 6.0), col, row))
-    fields = {v: np.ones((grid, grid, 3)) for v in VIEWS}
+    fields = {v: np.ones((grid, grid, 3)) for v in COLOUR_VIEWS}
     for _ in range(4):
         gained = {v: field_at(fields[v], sub) * l for v, (_w, l) in looks.items()}
         den = sum(w for w, _l in looks.values())
@@ -846,7 +852,7 @@ def test_face_project():
             sums = sums.reshape(grid, grid, 3)
             prior = 1e-3 * float(weight.max())
             fields[v] = (_blur(sums, LEVEL_SIGMA) + prior * overall) / (_blur(weight, LEVEL_SIGMA) + prior)
-        anchor = float(np.median(field_at(fields["front"], sub[looks["front"][0] > 0.05]) @ lum))
+        anchor = float(np.median(field_at(fields[ANCHOR], sub[looks[ANCHOR][0] > 0.05]) @ lum))
         fields = {v: f / anchor for v, f in fields.items()}
     for v, (w, _l) in looks.items():
         seen_g = field_at(fields[v], sub[w > 0.05]) @ lum
@@ -858,7 +864,7 @@ def test_face_project():
     high_best, high_w = np.ones((len(points), 3)), np.zeros(len(points))
     best_facing = np.zeros(len(points))  # how squarely the best view sees each texel
     nlow_sum, nhigh_best = np.zeros((len(points), 3)), np.zeros((len(points), 3))
-    for view in VIEWS:
+    for view in COLOUR_VIEWS:
         w, border, col, row = view_samples(view, every)
         albedo = _view_map("albedo", view)
         nworld = _view_map("nworld", view)
@@ -925,7 +931,14 @@ def test_face_project():
     fade = (t * t * (3 - 2 * t)) * np.clip((best_facing - 0.25) / 0.25, 0.0, 1.0) ** 2
     face_zone = covered & (points[:, 2] > 1.5) & (fade > 0.9)
     fallback = np.median(albedo[face_zone], axis=0)
-    albedo = fallback + (albedo - fallback) * fade[:, None]
+    under = np.broadcast_to(fallback, albedo.shape)
+    if BASE:
+        # the character's skin base (skin_base.py: a ratio around 1 in this same HeadTile layout, rows from v = 1 as
+        # raster_uv's) times its tone - the painted face's median skin - where the face views see poorly or not at all
+        ratio = np.load(f"{DIR}scans/base_char{BASE}.npy").astype(np.float32)
+        under = fallback * ratio[mask]
+        print(f"  skin base {BASE}: under {(fade < 0.5).mean():.0%} of the head's texels")
+    albedo = under + (albedo - under) * fade[:, None]
     nrm = normals + (nrm - normals) * fade[:, None]
     nrm /= np.linalg.norm(nrm, axis=1, keepdims=True) + 1e-12
     print(f"maps built at {time.time() - t0:.0f}s; covered {covered.mean():.0%} of the head's texels")

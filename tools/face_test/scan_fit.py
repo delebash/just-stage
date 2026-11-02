@@ -20,10 +20,15 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
+from scipy.spatial import cKDTree
 from trimesh import registration
 
 SCANS = Path("E:/Dev/3D/just-stage/.dev/facetest/scans")
 REACH = 0.03  # m: the scan kept within this of our head's bounds (a full body's rest goes)
+#: the wrap's target: points sampled on the scan's surface (~0.5 mm apart over a bust), searched by a k-d tree - the
+#: option trimesh's Amberg fit documents (use_faces=False); its closest-point search on a 1.3M-triangle scan reached
+#: 10 GB (female_wnmb, 2026-11-02; the Marcus run's 38 GB the same search)
+SAMPLES = 500_000
 STEPS = [[0.01, 10, 0.5, 10], [0.02, 5, 0.5, 10], [0.03, 2.5, 0.5, 10], [0.01, 1, 0.0, 10]]  # Amberg's, see above
 THRESHOLD = 0.01  # m: farther than this a point finds no match (keeps our scalp off a scan's hair)
 
@@ -59,7 +64,9 @@ def main(name):
     faces = src["tris"][inside[src["tris"]].all(1)]
     scan = trimesh.Trimesh(scan_v, faces, process=False)
     scan.remove_unreferenced_vertices()
-    d0 = trimesh.proximity.closest_point(scan, ours.vertices)[1]
+    cloud, _ = trimesh.sample.sample_surface(scan, SAMPLES, seed=0)
+    tree = cKDTree(cloud)
+    d0 = tree.query(ours.vertices)[0]
     print(f"{name}: scan cropped to {len(scan.faces)} of {len(src['tris'])} triangles; our head to it after placing: "
           f"median {np.median(d0) * 1000:.2f} mm, 90% {np.percentile(d0, 90) * 1000:.2f} mm ({time.time() - t0:.0f}s)")
 
@@ -68,9 +75,9 @@ def main(name):
     bary = trimesh.triangles.points_to_barycentric(ours.triangles[tri], pts)
     print(f"{name}: our pair points off our surface: median {np.median(gap) * 1000:.2f} mm, max {gap.max() * 1000:.2f} mm")
     target = trimesh.transform_points(a[keep], M)
-    fitted = registration.nricp_amberg(ours, scan, source_landmarks=(tri, bary), target_positions=target,
-                                       steps=STEPS, distance_threshold=THRESHOLD, use_faces=True)
-    _, dist, _ = trimesh.proximity.closest_point(scan, fitted)
+    fitted = registration.nricp_amberg(ours, cloud, source_landmarks=(tri, bary), target_positions=target,
+                                       steps=STEPS, distance_threshold=THRESHOLD, use_faces=False)
+    dist = tree.query(fitted)[0]
     land = (fitted[ours.faces[tri]] * bary[:, :, None]).sum(1)
     land_err = np.linalg.norm(land - target, axis=1)
     np.savez(out / "fit.npz", placement=M, fitted=fitted, used=used, dist=dist, scale=scale)
