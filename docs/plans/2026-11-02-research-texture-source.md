@@ -74,6 +74,33 @@ smartphone + polarisers → albedo / normal / specular UV maps) - capture method
 light baked in; FFHQ and CelebA are non-commercial as datasets; none is a head texture. They'd matter only for training
 a model, which is not the bottleneck.
 
+## 1b · Follow-ups the same day
+
+**FLUX 3 Image Klein at 2048² on this card** *[measured, `.dev/tmp/r74/`]*: the close clay view (upscaled 2x) painted in
+355 s, peak 7,540 MiB of 8,192 (`--offload-to-cpu --vae-tiling --diffusion-fa`); the cheek's fine detail (brightness
+minus its 2-px blur, in 2K pixels) 6.96 against 2.92 for the 1024² painting upscaled - real pores, stubble, fine lines.
+Its nose came out strongly red (the prompt's "slight redness on the nose" reads stronger at 2K). Step 1's local route
+works; the face texture's density (6.0 texels a mm) is now the limit, not the painting.
+
+**The user's pasted leads, checked** (the paste reads as another AI's summary): "Human Male Head 3D Scan Sky" (Sketchfab,
+"Canon 5DSR … strict cross-polarization") and "Marcus - Free 3D Head Sample" (Digital Reality Lab) - not found by
+search; Digital Reality Lab exists and sells on TurboSquid. "PolFace" = *High-Res Facial Appearance Capture from
+Polarized Smartphone Images* (Azinović, Maury, Hery, Nießner, Thies; CVPR 2023) - real; a capture method (phone flash +
+polarisers, cross- and parallel-polarised) - code and licence not found. 3D Scan Store's free scans - the Ten24 ones,
+non-commercial. ShareTextures "Human Skin 5" *[page]* - CC0 ("CC0 Textures of human skin with several maps"): diffuse,
+normal, height, smoothness, AO; body part and resolution not stated.
+
+**Sketchfab, searched through its API** (`api.sketchfab.com/v3/search?type=models&q=head%20scan&downloadable=true&license=by`
+*[page]*): downloadable CC-BY head scans of real people exist - "Head scan 13 (photogrammetry)" by yaro.pro (CC BY 4.0;
+"Shot on iPhone 12 Pro Max, edited in Luminar AI, processed in Photocatch"; a numbered series), "Head scan 02 (Optimized
+PBR)" (a bald man, yaro.pro's scan re-baked by Cratera Games; CC BY 4.0; 12 textures), "Nils Head Scan" ("80 pictures
+captured with a Canon EOS 550D"), "Jared Head Scan 3D", "Steven Novak's Head Scan", "Ammamma Head Scan Polycam", female
+heads ("Female head scan", Nikitos & 3130's "Head 03 A", "HEAD 3 scan", "Lmdclub Nastya"), and "Head (Lee Perry
+Smith)" - "Perry Smith head with all textures": lambert, high-res bump, normal, cavity, thickness, derivatives,
+occlusion, proximity, translucency, curvature (resolutions not stated). Their texture sizes and lighting aren't in the
+API; phone photogrammetry bakes the light in. Downloading needs a Sketchfab login. The CC0 search returned museum
+objects only.
+
 ## 2 · The rec (attacked)
 
 **Rec:** follow Headshot's structure, in measured steps.
@@ -104,7 +131,7 @@ a model, which is not the bottleneck.
 - What the attack changed: step 1 first (it helps whichever way the rest goes); the 30-degree views kept; the base
   tried on the 40-degree view before any view is retired.
 
-## 3 · Search log (WebSearch, standard mode - 13)
+## 3 · Search log (WebSearch, standard mode - 16)
 
 1. "Nano Banana Pro consistent character same person multiple angles turnaround photorealistic" - invideo, letz.ai,
    Google's tips blog, Artlist, selfielabstudio guides: turnaround sheets, "not perfect" consistency.
@@ -125,8 +152,13 @@ a model, which is not the bottleneck.
     Heitz & Neyret 2018, Laplacian-pyramid synthesis.
 13. "AI generated human skin texture close-up tileable pores for 3D character skin material workflow" - Morphic, Pixa,
     "AI Texture" (vendor pages).
+14. "sketchfab human male head 3D scan downloadable CC attribution 4K diffuse normal photogrammetry" - Captured
+    Dimensions full-body scans, a CC BY-NC body, Ten24.
+15. "\"Marcus\" free 3D head scan sample Digital Reality Lab" - no such sample; Digital Reality Lab on TurboSquid.
+16. "High-Res Facial Appearance Capture from Polarized Smartphone Images code release license" - the CVPR 2023 paper;
+    no code found.
 
-Fetched: aistudio.google.com/docs/terms; static.makehumancommunity.org/assets/assetpacks.html and
+Fetched: aistudio.google.com/docs/terms; sharetextures.com human-skin-5; the Sketchfab API (two searches, three models); static.makehumancommunity.org/assets/assetpacks.html and
 `assetpacks/skins02.html`; casual-effects.com/data (no content); opengameart.org Toigo skin (403).
 
 ## 4 · Couldn't verify

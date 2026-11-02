@@ -907,6 +907,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            ~7.5 px a mm, so the texture is the limit; step 1 needs the face's texture denser too (a face tile of its own,
            CC5's way - UDIM 1001 is its head), and first a measurement: does FLUX 3 at 2K fit this card and add real
            detail.
+           Then the user, verbatim: "you can do non stnadar if you cant get standard to work, as in you case trying 70
+           times to fix the issue when you could have tried something tototally different even non standard that is also
+           part of rule" - the word for (2), the skin-base builder (NOT STANDARD: no standard tool builds it). Measured:
+           FLUX 3 at 2048² fits (355 s, 7,540 MiB peak) and paints real pores (the cheek's fine detail 6.96 against 2.92
+           for the 1024² painting upscaled) - step 1's local route works, the face texture's density is the limit.
+           Leads for the base (research file §1b): CC-BY head scans on Sketchfab (yaro.pro's series, a bald man re-baked
+           by Cratera Games, "Nils", the Lee Perry-Smith upload "with all textures"), ShareTextures' CC0 "Human Skin 5" -
+           sizes and lighting unknown; Sketchfab downloads need the user's login.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
