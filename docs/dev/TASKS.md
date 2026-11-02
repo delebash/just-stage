@@ -893,6 +893,20 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            alone, had faded to skin-light (round 72: still light; open).
            ROUND 73: the nostrils' green-grey rims gone (15,788 texels capped); the face, front and 40-degree views as
            round 70's otherwise. Open: the nostrils' insides lighter than the painting's.
+           THE SKIN'S SOURCE 2026-11-02 (research: `../plans/2026-11-02-research-texture-source.md`). The user, verbatim:
+           "so why havent you been trying these other methods why did you not do these in the first place if they are in
+           research, you need to think before you act!  your rec on all go" - on the recs shown: (1) Headshot's
+           structure in measured steps - a sharper face painting first (2K-4K: FLUX 3 locally at 2K, then SeedVR2, Nano
+           Banana Pro at ~$0.24 as the paid fallback), then the face from that painting (the two 30-degree views kept)
+           and the rest of the head from a skin base, retiring the other seven AI views after a test on the 40-degree
+           view; (2) the skin-base builder, SkinGen's way (tone from our skin colour model, masked region layers, the
+           Lee Perry-Smith pores, colour tiled from skin swatches) - NOT STANDARD as code, so it waits for the user's
+           word by name (a blanket go doesn't cover it); (3) Nano Banana Pro only if the local route falls short (needs
+           the user's Gemini API key). Re-checked before building (the user: "think before you act"): step 1 as shown
+           adds nothing alone - round 49 measured the face texture at 6.0 texels a mm and the 1024-px painting already at
+           ~7.5 px a mm, so the texture is the limit; step 1 needs the face's texture denser too (a face tile of its own,
+           CC5's way - UDIM 1001 is its head), and first a measurement: does FLUX 3 at 2K fit this card and add real
+           detail.
            NOT DONE: a test run of the trial on 2026-11-02 started the repo's whole Blender suite (tests/run.py always
            adds tests/blender; earlier runs filtered it with -k), whose AI tests started JustStage's image server on
            the card while JustDirect had it; that server (sd-server, node serve.js) was left running and stopping it
