@@ -27,7 +27,12 @@ import numpy as np
 
 DIR = Path("E:/Dev/3D/just-stage/.dev/facetest/scans")
 FINE_SIGMA, MID_SIGMA = 6.0, 48.0  # texels of the 4096 HeadTile (~6 texels a mm on the face)
-FEATHER = 6.0  # texels: a scan's edge fades in over this, so where one scan hands over to the next leaves no seam
+FEATHER = 48.0  # texels (~8 mm): a scan's edge fades in over this - at 6 every hand-over between the partial scans
+#               showed as an edge (round 78: a smooth patch beside a stubbly one on the scalp)
+#: skin's own range for the layers: colour shifts (a channel off the texel's brightness) and brightness swings beyond
+#: these are a scan's leftovers - an ear's red inside, a necklace, a lip's edge (red minus blue to 0.4-0.5 at the 99th
+#: percentile in ammamma's and yaro13's mid layers, lps 0.09) - soft-clipped (tanh) to them
+HUE_RANGE, LUM_RANGE = 0.08, 0.35
 EDGE = 12  # texels (~2 mm on the face): a scan's skin is used this far inside its mask's edge
 
 
@@ -75,6 +80,11 @@ def split(name):
     mid[marks] = masked_blur(mid, keep, 12.0)[marks]
     fine[~valid], mid[~valid] = 0.0, 0.0
     np.clip(fine, -0.5, 0.12, out=fine)  # the scan's own shine (white specks in a photogrammetry colour map) out
+    luma = np.array([0.2126, 0.7152, 0.0722], np.float32)
+    for layer in (mid, fine):
+        lum = layer @ luma
+        hue = layer - lum[..., None]
+        layer[...] = (LUM_RANGE * np.tanh(lum / LUM_RANGE))[..., None] + HUE_RANGE * np.tanh(hue / HUE_RANGE)
     np.savez_compressed(d / "layers.npz", fine=fine.astype(np.float16), mid=mid.astype(np.float16), valid=valid)
     print(f"{name}: skin on {valid.mean() / mask.mean():.0%} of the texels the scan reached ({valid.mean():.1%} of the "
           f"tile); {count - 1} dark spots, "
@@ -121,13 +131,18 @@ def compose(seed, params=None):
     cover = left < 0.5
     # mid: the chosen scans' weighted sum over sqrt(sum of squared weights) - for unrelated patterns that keeps one
     # scan's strength (a plain mean shrinks it); where none of them reached, the fine order's mid layer
-    num, sq = np.zeros((*shape, 3), np.float32), np.zeros(shape, np.float32)
+    num, sq, total = np.zeros((*shape, 3), np.float32), np.zeros(shape, np.float32), np.zeros(shape, np.float32)
     for n, w in p["mid_from"].items():
         a = w * _feathered(layers[n]["valid"])
         num += a[..., None] * layers[n]["mid"].astype(np.float32)
         sq += a * a
-    has = sq > 1e-4
-    mid = np.where(has[..., None], num / np.sqrt(np.maximum(sq, 1e-8))[..., None], mid_fill)
+        total += a
+    # the fine order's mid layer joins as one more part wherever the chosen scans fall short - a weight, not a switch
+    # (where their coverage ended, the switch drew an edge, round 78)
+    b = np.clip(1.0 - total, 0.0, 1.0)
+    num += b[..., None] * mid_fill
+    sq += b * b
+    mid = num / np.sqrt(np.maximum(sq, 1e-8))[..., None]
     # its own mottling, so two characters from the same scans still differ (and texels no scan reached get some)
     own = 0.04 * noise(shape, rng, 10.0)[..., None] * np.array([1.0, 0.9, 0.85], np.float32)
     ratio_log = p["age"] * fine + p["mottle"] * mid + own

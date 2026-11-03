@@ -204,6 +204,40 @@ Check on scan02: the fit against the old one (median 1.2 mm), the base map besid
   sphere: 0.2 s, the face side keeps its colour, the back settles to the median); `skin_base.split` erodes each
   scan's skin by 12 texels (all 11 re-split: skin 4.7-37% of the tile each); `compose` sets the ratio's per-channel
   mean to 1. char 3 recomposed (covered 44%). Round 75 waits for the card (asked web-4c).
+- ROUND 75 (`compare_73_75.png`): the forehead seam gone; the scalp now in the face's own tone - real scanned
+  scalp skin running smoothly into the painted forehead. Left: a horizontal line across the neck under the jaw -
+  the jaw hides the neck from the face views, the visibility test is binary, so the painting's share drops from
+  full to none along the jaw's shadow line. Fix: `_ramp_inside` (the fade blurred over the surface, 1 cm, stretched
+  so a step's edge reads 0 and ~1.5 cm inside reads 1, never above the fade): the ramp lies wholly on the seen side.
+  Shared `_surface_blur` (the 3D normalised blur) now feeds both it and `_carried_tone`. Tested on a sphere with a
+  step: 1.00 2 cm inside, 0.70 at 1 cm, 0.10 at the edge, 0 outside. Round 76 waits for the card.
+- ROUND 76 WORSE (`compare_73_76.png`): the neck line gone, but the face lost much of its painting - the base under
+  94% of the texels (87% before), the scan's brows showing through above the painted ones, lips and nose
+  colourless. Cause: the 3D blur also mixes surfaces close in space but hidden - the mouth's inside behind the lips,
+  the nostrils, the sockets (fade 0) - so the ramp ate into the lips, nose and eyes. Inside the face the hidden sides
+  are cavities the painting keeps, not skin for the base. Fix: the ramp only below the chin (the lowest well-seen
+  texel on the middle line, measured per head), blended in over 1 cm. Round 77 next.
+- ROUND 77 (`compare_73_77.png`, `neck_75_77.png`): the face back as round 73 / 75; the neck line under the jaw gone
+  in the close crop (a soft transition left); scalp and neck real scanned skin in the face's tone, no hard seams.
+- ROUND 78 (char 5: pores yaro13, mid ammamma + d3d_african_man): variety shows, but a flaw in the mix - hard-edged
+  patches on scalp and neck (a dark crown blob, red and blue-green marks low on the neck), a smooth / stubbly
+  boundary on the scalp. Causes: (1) the partial scans hand over with a 1 mm feather (6 texels) and the mid layer
+  SWITCHED to the fill where the chosen scans' coverage ended; (2) leftovers past SegFace's mask - an ear's red
+  inside, ammamma's necklace and sari colours, hairline fringes (mid-layer red minus blue to 0.40-0.53 at p99 in
+  ammamma / yaro13, lps 0.09; brightness spread 0.17-0.18, lps 0.04). Fixes: FEATHER 48 texels (~8 mm); the fill
+  joins the mid mix as a weight (no switch); `split` soft-clips (tanh) each layer's colour shift to ±0.08 and its
+  brightness to ±0.35 (log) - mid spreads now 0.04-0.14.
+- ROUND 79 (char 5 again, `compare_77_79.png`): the red marks and the crown blob gone, hand-overs no longer show;
+  an older man's mottled, wrinkled neck and scalp against char 3's smoother, stubblier skin - two people's skin
+  under one painted face. THE 40-DEGREE TEST THE APPROVED REC SET IS DONE: three views + base against ten views -
+  the face the same, scalp and neck real scanned skin → the seven other AI views retired: `FACETEST_BASE` defaults
+  to 3, `off` keeps the ten-view path for comparisons. Card rounds 74-79 under web-4c's go (~7 min each).
+
+Open after this stage: (a) task #5 - the sharper face (2K hero, a denser face texture tile); (b) stubble as a
+per-character setting (scan02's scalp stubble sits in its fine layer: char 3's scalp reads stubbly); (c) each
+character's face from its own painting - the base varies only what the paintings don't cover, so true variety
+needs varied paintings and shapes too (the face test has one painted man); (d) the base carries the scans' own eye /
+nostril / lip shading, hidden under the painting now - masked out when a base is shown bare.
 
 - Wired (not run yet): `test_face_project.py` `FACETEST_BASE=SEED` - colour from the hero and the two 30-degree
   views only (levelled to the hero), and where they see poorly (the existing grazing / neck fade) the base

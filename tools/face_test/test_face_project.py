@@ -62,8 +62,10 @@ ROUND = int(os.environ.get("FACETEST_ROUND", 49))  # each round's pictures get t
 FLOW = os.environ.get("FACETEST_FLOW", "0") == "1"  # flow_views.py's nudged paintings (the approved alignment rec)
 #: Headshot's structure (TASKS "THE SKIN'S SOURCE" rec 1): the face from the hero painting and the two 30-degree views,
 #: the rest of the head from the character's skin base (skin_base.py compose SEED: scans' layers, its own marks) times
-#: its tone - FACETEST_BASE=SEED; unset, all ten views as before (the test round compares the two)
-BASE = os.environ.get("FACETEST_BASE")
+#: its tone - FACETEST_BASE=SEED (default 3). The other seven AI views retired after the 40-degree test the rec set
+#: (rounds 73 / 77 / 79, 2026-11-02: the face the same, scalp and neck real scanned skin); FACETEST_BASE=off brings
+#: all ten views back, for comparisons
+BASE = None if os.environ.get("FACETEST_BASE", "3") == "off" else os.environ.get("FACETEST_BASE", "3")
 COLOUR_VIEWS = (HERO_VIEW, "faceleft30", "faceright30") if BASE else VIEWS
 ANCHOR = HERO_VIEW if BASE else "front"  # the gain fields' reference view
 PORES = "E:/Dev/3D/just-stage/.dev/facetest/pores.png"  # a seamless pore tile from juststage.skin.add_detail
@@ -116,15 +118,15 @@ def _blur(img, sigma):
     return out
 
 
-def _carried_tone(points, colour, weight, fallback, cell=0.005, sigma=0.03, prior=0.02):
-    """Colour carried out over the head's surface from where `weight` trusts it: a normalised convolution (the
-    push-pull fill) on a `cell`-metre grid in 3D, Gaussian `sigma` metres wide; far from any trusted texel it settles
-    to `fallback` (the prior's share of the largest weight). In 3D, so it doesn't leak across the texture's islands."""
+def _surface_blur(points, values, weight, sigma, cell=0.005):
+    """A normalised convolution over the head's surface: `values` (N x C) weighted by `weight`, gathered on a
+    `cell`-metre grid in 3D, Gaussian `sigma` metres wide, read back at the points as (sum, weight sum) - in 3D, so it
+    doesn't leak across the texture's islands."""
     lo = points.min(axis=0) - 3 * sigma
     idx = np.floor((points - lo) / cell).astype(np.int64)
     shape = tuple(idx.max(axis=0) + 1 + int(3 * sigma / cell))
-    num, den = np.zeros((*shape, 3)), np.zeros(shape)
-    np.add.at(num, tuple(idx.T), colour * weight[:, None])
+    num, den = np.zeros((*shape, values.shape[1])), np.zeros(shape)
+    np.add.at(num, tuple(idx.T), values * weight[:, None])
     np.add.at(den, tuple(idx.T), weight)
     s = sigma / cell
 
@@ -135,10 +137,26 @@ def _carried_tone(points, colour, weight, fallback, cell=0.005, sigma=0.03, prio
             a = np.moveaxis(np.tensordot(g, a, axes=([1], [ax])), 0, ax)
         return a
 
-    num, den = blur(num), blur(den)
-    k = prior * float(den.max())
     at = tuple(idx.T)
-    return (num[at] + k * np.asarray(fallback)) / (den[at] + k)[:, None]
+    return blur(num)[at], blur(den)[at]
+
+
+def _carried_tone(points, colour, weight, fallback, sigma=0.03, prior=0.02):
+    """Colour carried out over the head's surface from where `weight` trusts it (the push-pull fill); far from any
+    trusted texel it settles to `fallback` (the prior's share of the largest weight)."""
+    num, den = _surface_blur(points, colour, weight, sigma)
+    k = prior * float(den.max())
+    return (num + k * np.asarray(fallback)) / (den + k)[:, None]
+
+
+def _ramp_inside(points, fade, sigma=0.01):
+    """`fade` with its steps turned into ramps that lie wholly on the seen side: blurred over the surface (a step's
+    edge reads 0.5), stretched so the edge reads 0 and ~1.5 sigma inside reads 1, never above the fade itself - where
+    a picture stops seeing (the jaw hiding the neck from the face views: a hard line, round 75) it now fades out
+    before the edge instead of at it."""
+    num, den = _surface_blur(points, fade[:, None], np.ones(len(points)), sigma)
+    soft = np.clip((num[:, 0] / np.maximum(den, 1e-9) - 0.5) * 2.0, 0.0, 1.0)
+    return np.minimum(fade, soft)
 
 
 def _patch_colour(img, centres=PATCHES, half=18):
@@ -959,6 +977,16 @@ def test_face_project():
     # their frame, and `best_facing` (border > 0, a step) left a hard line across the forehead and neck (round 74)
     trust = best_soft if BASE else best_facing
     fade = (t * t * (3 - 2 * t)) * np.clip((trust - 0.25) / 0.25, 0.0, 1.0) ** 2
+    if BASE:
+        # only on the neck below the chin, where the jaw hides it from the face views and the base takes over: inside
+        # the face the hidden sides are cavities (the mouth behind the lips, the nostrils, the sockets) the painting
+        # keeps - the ramp everywhere took the lips', nose's and brows' painting (round 76: the base under 94% of the
+        # texels, not 87%; the scan's brows showed through). The chin: the lowest well-seen texel on the middle line
+        middle = (fade > 0.9) & (np.abs(points[:, 0]) < 0.015)
+        chin = float(np.percentile(points[middle, 2], 1)) if middle.sum() > 100 else FADE_TO
+        below = np.clip((chin + 0.01 - points[:, 2]) / 0.01, 0.0, 1.0)  # 0 above the chin, 1 a cm below it
+        fade = fade * (1.0 - below) + _ramp_inside(points, fade) * below
+        print(f"  neck ramp below the chin at {chin:.3f} m")
     face_zone = covered & (points[:, 2] > 1.5) & (fade > 0.9)
     fallback = np.median(albedo[face_zone], axis=0)
     under = np.broadcast_to(fallback, albedo.shape)

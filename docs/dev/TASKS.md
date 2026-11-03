@@ -950,6 +950,15 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            ONE scan (MetaHuman's index), the broad blotchiness mixed from 2-3, the tone from our skin colour model. Run
            order: scan02 first through the new route, checked against the old fit (1.2 mm), then the other keepers one
            by one, each result in the working doc.
+           DONE 2026-11-02 (run log: the working doc §7): all 11 keepers through the route (Blender import; stood
+           upright from 26 directions - four arrived lying down or tilted; RealDenseFace pairs; wrap above the neck
+           1.03-2.06 mm; bake; SegFace skin mask; layers). Rounds 74-79: the 40-degree test rec (1) set - three views +
+           base against ten views (round 73): the face the same, scalp and neck real scanned skin, no seams after the
+           fixes (the fade by the pictures' soft border, the base's tone carried from the face in 3D, a ramp under
+           the jaw, 8 mm hand-overs between scans, skin-range clipping) - so the seven other AI views are retired
+           (`FACETEST_BASE` defaults to 3; `off` keeps the ten-view path). Two bases under one painted face (chars 3
+           and 5) read as two people's skin. Open: the sharper face (2K hero + denser face tile), stubble as a
+           per-character setting, varied paintings and shapes for true variety.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
