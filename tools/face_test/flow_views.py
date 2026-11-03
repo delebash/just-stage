@@ -78,8 +78,11 @@ class View:
         self.points = p @ self.mw[:3, :3].T + self.mw[:3, 3]
         self.normals = n @ self.mw[:3, :3].T
         self.facing = self._facing(self.points, self.normals)
-        self.albedo = np.load(DIR / f"albedo_{name}.npy").astype(np.float32)
-        self.nworld = np.load(DIR / f"nworld_{name}.npy").astype(np.float32)
+        # its painting's light-free colour and normals (delight_views.py), when it has a painting yet: re-projecting
+        # (seen_from) needs only the geometry - a new character's views are painted one by one (face_paint_seq.py)
+        albedo, nworld = DIR / f"albedo_{name}.npy", DIR / f"nworld_{name}.npy"
+        self.albedo = np.load(albedo).astype(np.float32) if albedo.exists() else None
+        self.nworld = np.load(nworld).astype(np.float32) if nworld.exists() else None
 
     def _facing(self, points, normals):
         to_cam = self.mw[:3, 3] - points

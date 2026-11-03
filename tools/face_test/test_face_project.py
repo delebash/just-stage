@@ -47,8 +47,11 @@ sd = importlib.import_module("bl_ext.system.juststage.core.skin_detail")
 DIR = "E:/Dev/3D/just-stage/.dev/facetest/"
 HDRI = "E:/Dev/3D/just-stage/.dev/cache/hdri/studio_small_09_2k.hdr"
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
-SIZE = 4096
-LEVEL_CELL, LEVEL_SIGMA = 8, 3.0  # the gain fields' grid (texels a cell: ~1.3 mm) and smoothing (cells: ~4 mm)
+#: the head tile's size (our spec: tile 1001, head and neck, up to 8192 - docs/standards/character-data-model.md
+#: §3.1); every length below in texels was tuned at 4096 and scales with it (TEXEL), so it keeps its millimetres
+SIZE = int(os.environ.get("FACETEST_SIZE", "4096"))
+TEXEL = SIZE / 4096
+LEVEL_CELL, LEVEL_SIGMA = round(8 * TEXEL), 3.0  # the gain fields' grid (texels a cell: ~1.3 mm), smoothing (cells: ~4 mm)
 HERO_VIEW, HERO_WEIGHT = "face", 4.0  # face_paint_seq.py's hero: the other views were painted from it (see below)
 FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam where it ends
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
@@ -196,6 +199,12 @@ def _studio_world(scene):
     nt.links.new(grey.outputs["Background"], mix.inputs[2])
     nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
     return grey
+
+
+def _at_1024(img):
+    """A picture at 1024 px (a larger one - the 2K hero - area-averaged down): what calibration was tuned on."""
+    k = img.shape[0] // 1024
+    return img if k <= 1 else img.reshape(1024, k, 1024, k, img.shape[2]).mean(axis=(1, 3))
 
 
 def _render(scene, path, size=1024):
@@ -594,9 +603,10 @@ def _strand_lashes(body, openings, seed=7):
     print(f"lashes: {len(strands)} strands ({missed} roots missed), {LASH_POINTS} points each")
     return obj
 
-def _pad(img, mask, px=16):
+def _pad(img, mask, px=None):
     """Each UV island grown outward by `px` texels with its own edge values (a bake's "margin"): filtering at UV seams
-    otherwise blends in the fill outside the islands — the pale line on the neck's seam."""
+    otherwise blends in the fill outside the islands — the pale line on the neck's seam. 16 texels at 4096."""
+    px = round(16 * TEXEL) if px is None else px
     out = img.astype(np.float32).copy()
     known = mask.copy()
     for _ in range(px):
@@ -997,6 +1007,9 @@ def test_face_project():
         # grid in 3D, ~3 cm wide, so it doesn't leak across the texture's island gaps - settling to the face's median
         # far from it (a single median tone met the face's local colour with a step, round 74)
         ratio = np.load(f"{DIR}scans/base_char{BASE}.npy").astype(np.float32)
+        if ratio.shape[0] != SIZE:  # the base is made at 4096 (the scans' own detail); an 8K tile takes it doubled
+            k = SIZE // ratio.shape[0]
+            ratio = np.repeat(np.repeat(ratio, k, axis=0), k, axis=1)
         tone = _carried_tone(points, albedo, fade, fallback)
         under = tone * ratio[mask]
         print(f"  skin base {BASE}: under {(fade < 0.5).mean():.0%} of the head's texels")
@@ -1112,9 +1125,9 @@ def test_face_project():
         subsurf.adaptive_pixel_size = 1.0
 
     lum_map = albedo_map @ lum
-    pad = 13
+    pad = round(13 * TEXEL)
     high = np.log(np.maximum(lum_map, 1e-4))
-    high = high - sd.gaussian_blur(np.pad(high, pad, mode="reflect"), 2.0)[pad:-pad, pad:-pad]  # pores, fine lines
+    high = high - sd.gaussian_blur(np.pad(high, pad, mode="reflect"), 2.0 * TEXEL)[pad:-pad, pad:-pad]  # pores, lines
     high[~mask] = 0.0
     height = np.clip(0.5 + high / (6.0 * high[mask].std()), 0.0, 1.0)
     height = _pad(height, mask)
@@ -1182,7 +1195,7 @@ def test_face_project():
     scene.render.image_settings.file_format = "PNG"
     cam = scene.camera
     cam.matrix_world = Matrix(cams["face"]["matrix_world"])
-    photo = _pixels(f"{DIR}aligned_face.png")[..., :3]
+    photo = _at_1024(_pixels(f"{DIR}aligned_face.png")[..., :3])  # calibration was tuned on the 1024-px photo
 
     # the photo's light: one large soft light whose direction and size give the render the photo's shading (compared
     # low-passed, so shading and not detail decides), the HDRI kept as a dim fill
@@ -1252,7 +1265,8 @@ def test_face_project():
     # the eyes: iris, pupil and white painted from the views that see them, projected onto each eyeball's own UVs (the
     # cornea, a clear shell in front, stays clear); the painting's catch-lights clipped so the cornea's own shine isn't
     # doubled; the white's brightness set to a sclera's (~0.55)
-    eye_views = ("face", "faceleft30", "faceright30", "front", "left40", "right40")
+    # with a skin base only the three face views are painted (the others retired): the eyes from those
+    eye_views = COLOUR_VIEWS if BASE else ("face", "faceleft30", "faceright30", "front", "left40", "right40")
     eye_paintings = {}
     for view in eye_views:
         aligned = Path(f"{DIR}aligned_{view}.png")
@@ -1462,6 +1476,7 @@ def test_face_project():
     # pooled - one person's eyes, the render makes the light's difference between them (round 55's spots per eye: a pink
     # white at the outer corner's tissue, one iris orange, one green).
     marks = json.load(open(DIR + "aligned_marks.json"))["face"]  # the photo is the aligned painting
+    marks = (np.asarray(marks) * 1024 / cams["face"]["size"]).tolist()  # in the 1024-px photo's pixels, as the photo
     photo_half = _linear(photo).reshape(512, 2, 512, 2, 3).mean(axis=(1, 3))
     yy, xx = np.mgrid[0:512, 0:512]
     # the white's box and the iris sample about the painting's iris centres - the circles through its edges at full
@@ -1540,7 +1555,9 @@ def test_face_project():
     for view in ("face", "front", "left40"):
         cam.matrix_world = Matrix(cams[view]["matrix_world"])
         t = time.time()
-        render = _render(scene, f"{DIR}round{ROUND}_{view}.png")
-        photo_v = _pixels(f"{DIR}painted_{view}.png")[..., :3]  # the AI's own photo, as it painted it
+        render = _render(scene, f"{DIR}round{ROUND}_{view}.png", cams[view]["size"])  # the 2K hero: a 2K render
+        # the AI's own photo, as it painted it - the clay where a view isn't painted (the base's characters)
+        painted_v = Path(f"{DIR}painted_{view}.png")
+        photo_v = _pixels(str(painted_v if painted_v.exists() else Path(f"{DIR}clay_{view}.png")))[..., :3]
         _image(f"compare{ROUND} {view}", np.concatenate([photo_v, render], axis=1), "sRGB")
         print(f"rendered {view} in {time.time() - t:.1f}s")

@@ -21,11 +21,16 @@ MODEL = Path("E:/Dev/3D/just-stage/.dev/cache/mediapipe/face_landmarker.task")
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
 
 
-def points(detector, path: Path, size: int = 1024):
-    result = detector.detect(mp.Image.create_from_file(str(path)))
+def points(detector, path: Path):
+    """MediaPipe's 478 points in the picture's own pixels; None if there's no picture (a view a character's face test
+    doesn't paint) or no face in it."""
+    if not path.exists():
+        return None
+    image = mp.Image.create_from_file(str(path))
+    result = detector.detect(image)
     if not result.face_landmarks:
         return None
-    return [[p.x * size - 0.5, p.y * size - 0.5] for p in result.face_landmarks[0]]
+    return [[p.x * image.width - 0.5, p.y * image.height - 0.5] for p in result.face_landmarks[0]]
 
 
 def main() -> int:

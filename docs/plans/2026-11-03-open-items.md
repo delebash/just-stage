@@ -24,6 +24,19 @@ shading (hidden under the painting now). Under a finish-everything go I decide e
 
 2026-11-03: (b) DONE; starting (c). The user asked to see the app: JustStage (Blender 5.3 with our template) opened
 on round 79's scene (`tools/dev.py blender .dev/facetest/round.blend`), comparison pictures sent.
+2026-11-03 later: that session closed by accident; the user saw the grey Solid view. The scene checked in a
+background Blender: Cycles on the GPU, camera `cam`, 512x512, all six 4096 face maps on disk; the Shading tab
+opens in Material Preview. (c) NOT started - its paintings need the card; web-9e (just-mocap) asked for a card
+run, told to wait until the user is done viewing, then "card free" goes to web-9e first.
+2026-11-03, the card order agreed with the peers (from the just-stage foreground session, which only opens Blender
+windows for the user): 1) the user's Cycles view, 2) web-9e 3-5 min, 3) web-4c's planner test 30-40 min, 4) this
+session's FLUX paintings - after web-4c's "card free". (c) is BUILT and waits for the card: `face_character.py`
+(amara - a woman in her thirties, dark brown skin; walter - a man in his sixties, light weathered skin, grey stubble;
+mei - a young East Asian woman), `test_face_clay.py` takes FACETEST_GENDER / AGE / ETHNIC / IDENTITY /
+IDENTITY_STRENGTH / MELANIN, the paint prompts FACETEST_PERSON, `flow_views.View` loads a view's albedo / normals only
+if painted, `test_face_project.py` eyes from the three face views with a base and the clay as the comparison where a
+view isn't painted, `skin_base compose SEED 'json'` with `pores_first`. The runner clears the working folder (copied
+to chars/<name>/ first) - not while the user has round.blend open. Meanwhile: (a) audited (CPU).
 
 ## 4 · Run log (newest last)
 
@@ -37,4 +50,18 @@ on round 79's scene (`tools/dev.py blender .dev/facetest/round.blend`), comparis
   floor 0.30 - beard 1.40 (smoother than the face), at floor 0.55 - beard 1.86, scalp 1.63, elsewhere 1.96 → 0.55.
   Crops: `scans/stubble_crops.png`, regions `scans/regions_check.png`. A woman (char 11) took head03a /
   d3d_african_woman / portrait_3130 for her pores, her mid from women's scans.
+- (c) BUILT, not run (waits for the card and the user's viewing): see §3; plus `landmarks.py` skips a view without a
+  picture and reads each picture's own size (it assumed 1024), and the runner runs it (the iris band reads
+  `landmarks.json`).
+- (a) BUILT, not run - every face-test tool audited for 1024-px assumptions: `test_face_clay` renders the face view at
+  FACETEST_HERO_SIZE (default 1024); `face_paint_cli` paints at the edited picture's own size (PNG header);
+  `align_paintings` scales its pixel lengths (warp grid 4 px apart, the seam's 8 / 16 px reaches, the 40 px eye
+  search) by width / 1024; `delight_views` its 9-px inset; `view_normals` reads a picture over 1024 at 1024 (its two
+  768-px windows cover 1024 only - at 2048 the middle got nothing) and scales the normals up; `test_face_project`
+  takes FACETEST_SIZE (default 4096) with its texel lengths scaled (TEXEL = SIZE / 4096: the levelling cell, the
+  pad, the pore high-pass), doubles the 4K base for an 8K tile, gives calibration the photo and its points at 1024
+  (`_at_1024`: what it was tuned on), and renders each view at its camera's size. All defaults keep today's numbers.
+  Why it waits: the face view renders at 1024 px (~4.7 px a mm) - below today's 6 texels a mm - so an 8K tile shows
+  only in a 2K close render; the test is a 2K hero + 8192 tile + a 2K render, after (c). Memory at 8192 (~16M head
+  texels) to be measured on a maps-only run first.
 

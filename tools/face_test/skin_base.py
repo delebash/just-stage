@@ -181,6 +181,8 @@ def compose(seed, params=None):
          "age": float(rng.uniform(0.7, 1.3)), "mottle": float(rng.uniform(0.6, 1.2)),
          "redness": float(rng.uniform(0.0, 0.06)), "freckles": float(rng.uniform(0.0, 1.0)),
          "moles": int(rng.integers(2, 12)), **(params or {})}
+    if p.get("pores_first"):  # a chosen scan's pores first (a character made to a description), the order kept after it
+        p["fine_from"] = [p["pores_first"]] + [n for n in p["fine_from"] if n != p["pores_first"]]
     layers = {n: np.load(DIR / n / "layers.npz") for n in set(p["fine_from"]) | set(p["mid_from"])}
     shape = layers[p["fine_from"][0]]["fine"].shape[:2]
     beard, scalp = (m.astype(np.float32) for m in regions(shape[0]))
@@ -236,9 +238,9 @@ def main(argv):
     if argv[0] == "split":
         for name in argv[1:]:
             split(name)
-    elif argv[0] == "compose":
+    elif argv[0] == "compose":  # compose SEED ['{"sex": "f", "fine_from": [...], ...}']
         seed = int(argv[1])
-        ratio, cover, p = compose(seed)
+        ratio, cover, p = compose(seed, json.loads(argv[2]) if len(argv) > 2 else None)
         out = np.clip(0.45 * ratio, 0, 1) ** (1 / 2.2)  # a flat mid-skin tone, only to look at it
         cv2.imwrite(str(DIR / f"base_char{seed}.png"), (out[..., ::-1] * 255).astype(np.uint8))
         cv2.imwrite(str(DIR / f"base_char{seed}_small.png"),

@@ -78,7 +78,8 @@ def main() -> int:
         clay = linear(cv2.imread(str(DIR / f"clay_{view}.png"))[..., ::-1].astype(np.float64) / 255.0)
         dist = depth(view)
         n_mesh, covered = mesh_normals(dist, cam)
-        inner = cv2.erode(covered.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool)
+        k = 9 * cam["size"] // 1024 | 1  # 9 px at the 1024 px it was tuned on (the 2K hero: 19)
+        inner = cv2.erode(covered.astype(np.uint8), np.ones((k, k), np.uint8)).astype(bool)
         n_ai = np.load(DIR / f"normal_{view}.npy").astype(np.float64)
 
         # 1. relief: the painting's small shapes on our mesh's broad shape

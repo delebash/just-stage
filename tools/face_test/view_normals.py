@@ -60,7 +60,14 @@ def main() -> int:
         src = DIR / f"aligned_{view}.png"
         src = src if src.exists() else DIR / f"painted_{view}.png"
         t = time.time()
-        n = estimate(model, cv2.imread(str(src)))
+        img = cv2.imread(str(src))
+        h, w = img.shape[:2]
+        if w > 1024:  # its two 768-px windows cover a 1024-px picture; a larger one (the 2K hero) is read at 1024
+            small = cv2.resize(img, (1024, round(1024 * h / w)), interpolation=cv2.INTER_AREA)
+            n = cv2.resize(estimate(model, small), (w, h), interpolation=cv2.INTER_LINEAR)
+            n /= np.maximum(np.linalg.norm(n, axis=2, keepdims=True), 1e-8)
+        else:
+            n = estimate(model, img)
         np.save(DIR / f"normal_{view}.npy", n.astype(np.float16))
         cv2.imwrite(str(DIR / f"normal_{view}.png"), ((n * 0.5 + 0.5)[..., ::-1] * 255).clip(0, 255).astype(np.uint8))
         print(f"{view}: {src.name}, {time.time() - t:.1f}s", flush=True)

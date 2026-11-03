@@ -50,7 +50,7 @@ ORDER = ("faceleft30", "faceright30", "front", "left40", "right40", "above", "be
 FEATHER = 12  # px: the painted part fades into the clay over this, inside its own border
 PROMPT = (
     "Make image 1 a real photograph. Keep its head shape, pose, camera angle and framing exactly, and keep every part "
-    "that is already a photograph; the rest is the same man: the same face, skin tone, eyes, brows, nose and lips. "
+    "that is already a photograph; the rest is the same person: the same face, skin tone, eyes, brows, nose and lips. "
     "Completely bald, smooth scalp with no hair and no stubble, mouth closed. Natural skin with visible "
     "pores and fine lines. Soft even studio light from every side, no shadows, plain grey background. Sharp focus, "
     "high detail, professional portrait photo."

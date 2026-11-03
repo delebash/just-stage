@@ -33,8 +33,10 @@ DIR = Path("E:/Dev/3D/just-stage/.dev/facetest")
 MODEL = Path("E:/Dev/3D/just-stage/.dev/cache/mediapipe/face_landmarker.task")
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
 #: the warp is solved on a grid and smoothly scaled up to the full picture: 4 px apart - at 16 px (64, until round
-#: 66) the lips' stretch and squeeze within ~20 px was smoothed away, the close painting's seam 6 px short of the clay's
+#: 66) the lips' stretch and squeeze within ~20 px was smoothed away, the close painting's seam 6 px short of the clay's.
+#: Every pixel length here was tuned on 1024-px pictures and scales with a picture's width (the 2K hero: x2)
 GRID = 256
+TUNED_WIDTH = 1024
 #: MediaPipe's inner lip ring, left out of the warp: the head's lips are closed (face_shape.py), so there is no inner
 #: edge to find on the clay - the detector guesses one at the crease, and the warp pulled the painting's lips apart
 INNER_LIPS = (78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191)
@@ -73,7 +75,8 @@ def clay_eye_points(clay: np.ndarray, painted_pts: np.ndarray):
         if not len(xs):
             continue
         near = np.argmin((xs - cx) ** 2 + (ys - cy) ** 2)
-        if (xs[near] - cx) ** 2 + (ys[near] - cy) ** 2 > 40**2:  # no opening near the painted eye: hidden from here
+        reach = 40 * w / TUNED_WIDTH
+        if (xs[near] - cx) ** 2 + (ys[near] - cy) ** 2 > reach**2:  # no opening near the painted eye: hidden from here
             continue
         region = labels == labels[ys[near], xs[near]]
         if region.sum() > 0.02 * h * w:  # not an eye: the background or the face's outline
@@ -122,12 +125,13 @@ def clay_seam_points(clay: np.ndarray, painted: np.ndarray, painted_pts: np.ndar
     grey_c, grey_p = (cv2.GaussianBlur(cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype(np.float32), (0, 0), 1.0)
                       for im in (clay, painted))
     src, dst = [], []
+    s = clay.shape[1] / TUNED_WIDTH
     for i in INNER_LIPS:
         if i in (78, 308):  # the corners: the seam fades into the corner's shadow there
             continue
         x, y = painted_pts[i]
-        y_p = _darkest_row(grey_p, x, y, 8)
-        y_c = _darkest_row(grey_c, x, y_p, 16) if y_p is not None else None
+        y_p = _darkest_row(grey_p, x, y, round(8 * s))
+        y_c = _darkest_row(grey_c, x, y_p, round(16 * s)) if y_p is not None else None
         if y_c is not None:
             src.append([x, y_c])
             dst.append([x, y_p])
@@ -149,8 +153,9 @@ def warp(painted: np.ndarray, clay_pts: np.ndarray, painted_pts: np.ndarray) -> 
     src = np.vstack([clay_pts, border])
     dst = np.vstack([painted_pts, border])
     rbf = RBFInterpolator(src, dst, kernel="thin_plate_spline", smoothing=0.3)  # tight: the lips need it
-    gy, gx = np.mgrid[0 : h : complex(GRID), 0 : w : complex(GRID)]
-    coarse = rbf(np.c_[gx.ravel(), gy.ravel()]).reshape(GRID, GRID, 2).astype(np.float32)
+    grid = round(GRID * w / TUNED_WIDTH)  # 4 px apart at any size
+    gy, gx = np.mgrid[0 : h : complex(grid), 0 : w : complex(grid)]
+    coarse = rbf(np.c_[gx.ravel(), gy.ravel()]).reshape(grid, grid, 2).astype(np.float32)
     full = cv2.resize(coarse, (w, h), interpolation=cv2.INTER_CUBIC)
     return cv2.remap(painted, full[..., 0], full[..., 1], cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
 

@@ -11,6 +11,7 @@ import importlib
 import importlib.util
 import json
 import math
+import os
 import time
 from pathlib import Path
 
@@ -38,6 +39,9 @@ VIEWS = (
     ("faceright30", -30, 0, 0.42, FACE),
 )
 LENS, SIZE = 85, 1024
+#: the close "face" view - the hero the face is painted from - may be larger (the open item: a 2K hero for a sharper
+#: face; FLUX 3 at 2048 measured to fit and to paint real pores, TASKS ~913)
+HERO_SIZE = int(os.environ.get("FACETEST_HERO_SIZE", "1024"))
 
 
 def _depth_material():
@@ -59,11 +63,16 @@ def test_face_clay():
     t0 = time.time()
     for name in [o.name for o in bpy.data.objects]:  # the empty scene's cube, light and camera
         bpy.data.objects.remove(bpy.data.objects[name])
-    r = api.run("juststage.body.create", name="Face", gender=1.0)
+    # the character (face_character.py sets these for each new person; the defaults are the face test's first man)
+    env = os.environ.get
+    african, asian, caucasian = (float(v) for v in env("FACETEST_ETHNIC", "0.33,0.33,0.33").split(","))
+    r = api.run("juststage.body.create", name="Face", gender=float(env("FACETEST_GENDER", "1.0")),
+                age=float(env("FACETEST_AGE", "0.5")), african=african, asian=asian, caucasian=caucasian)
     c = r.character
-    api.run("juststage.head.set_identity", character=c, seed=3, strength=0.6)
+    api.run("juststage.head.set_identity", character=c, seed=int(env("FACETEST_IDENTITY", "3")),
+            strength=float(env("FACETEST_IDENTITY_STRENGTH", "0.6")))
     api.run("juststage.head.add_parts", character=c)
-    api.run("juststage.skin.set_tone", character=c, melanin=0.025)
+    api.run("juststage.skin.set_tone", character=c, melanin=float(env("FACETEST_MELANIN", "0.025")))
     api.run("juststage.body.subdivide", character=c, levels=1, viewport_level=1)
     face_shape.export_neutral(bpy.data.objects["Face"], f"{OUT}head_neutral.npz")  # for flame_fit.py
     face_shape.close_mouth(bpy.data.objects["Face"])  # the shape the paintings are projected onto
@@ -97,11 +106,13 @@ def test_face_clay():
         cam.location = target + offset
         cam.rotation_euler = (-offset).to_track_quat("-Z", "Y").to_euler()
         bpy.context.view_layer.update()
+        size = HERO_SIZE if name == "face" else SIZE
+        scene.render.resolution_x = scene.render.resolution_y = size
         cams[name] = {
             "matrix_world": [list(r) for r in cam.matrix_world],
             "lens": LENS,
             "sensor_width": cam.data.sensor_width,
-            "size": SIZE,
+            "size": size,
         }
         scene.view_layers[0].material_override = None
         scene.view_settings.exposure = 0.0
