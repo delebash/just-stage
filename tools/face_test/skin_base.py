@@ -34,6 +34,57 @@ FEATHER = 48.0  # texels (~8 mm): a scan's edge fades in over this - at 6 every 
 #: percentile in ammamma's and yaro13's mid layers, lps 0.09) - soft-clipped (tanh) to them
 HUE_RANGE, LUM_RANGE = 0.08, 0.35
 EDGE = 12  # texels (~2 mm on the face): a scan's skin is used this far inside its mask's edge
+#: stubble: on a stubbled scan's fine layer the small dark marks (its black top-hat, up to ~1 mm) in the beard and scalp
+#: regions are kept by the character's stubble setting; at 0 they go - all but STUBBLE_FLOOR of them (the pores there
+#: go with them: a shaved face still shows its follicles). Measured 2026-11-03 (char 12, fine detail = |lum - blur3|):
+#: stubble 1 - beard 2.76, scalp 2.40, elsewhere 1.96; stubble 0 at floor 0.3 - beard 1.40, scalp 1.25 (smoother than
+#: the rest of the face); 0.55 puts a shaved beard near the face's own 1.95 (the trend between the two)
+STUBBLE_KERNEL, STUBBLE_FLOOR = 7, 0.55
+
+
+def _module(name, path):
+    import importlib.util  # noqa: PLC0415
+
+    spec = importlib.util.spec_from_file_location(name, str(path))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _smooth(x, lo, hi):
+    t = np.clip((x - lo) / (hi - lo), 0.0, 1.0)
+    return t * t * (3 - 2 * t)
+
+
+def regions(size=4096):
+    """Where stubble grows, as soft masks in our HeadTile layout (cached in scans/regions.npz): the beard (upper lip,
+    chin, jaw and the throat) and the scalp (above the hairline, the back and sides above the ears) - from our head's
+    own geometry, measured from the eyes. Every identity shares this layout (one topology, one unwrap)."""
+    cache = DIR / "regions.npz"
+    if cache.exists():
+        z = np.load(cache)
+        return z["beard"], z["scalp"]
+    up = _module("up", "E:/Dev/3D/just-stage/extension/juststage/core/uv_projection.py")
+    E = np.load(DIR / "head_export.npz")
+    (pts,), covered = up.raster_uv(E["tri_uv"], [E["co"][E["tris"]].astype(np.float32)], size)
+    eye = (np.asarray(E["eye_left"]) + np.asarray(E["eye_right"])) / 2
+    x, y, z = (pts[..., i] - eye[i] for i in range(3))
+    front = 1.0 - _smooth(y, 0.06, 0.09)  # ahead of the ears
+    beard = front * _smooth(-z, 0.035, 0.050) * (1.0 - _smooth(-z, 0.19, 0.22)) * (1.0 - _smooth(np.abs(x), 0.07, 0.09))
+    scalp = np.maximum(_smooth(z, 0.05, 0.075), _smooth(y, 0.08, 0.11) * _smooth(z, -0.04, -0.01))
+    beard, scalp = (np.where(covered, m, 0.0).astype(np.float16) for m in (beard, scalp))
+    np.savez_compressed(cache, beard=beard, scalp=scalp)
+    return beard, scalp
+
+
+def _without_stubble(fine, keep):
+    """A fine layer with its small dark marks (stubble and pores: closing minus itself, in brightness) lifted where
+    `keep` (0-1 per texel) is below 1 - all but STUBBLE_FLOOR of them at 0."""
+    luma = np.array([0.2126, 0.7152, 0.0722], np.float32)
+    lum = fine @ luma
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (STUBBLE_KERNEL, STUBBLE_KERNEL))
+    dark = cv2.morphologyEx(lum, cv2.MORPH_CLOSE, k) - lum  # >= 0 on the dark marks
+    return fine + ((1.0 - STUBBLE_FLOOR) * (1.0 - keep) * dark)[..., None]
 
 
 def linear(srgb):
@@ -109,23 +160,41 @@ def compose(seed, params=None):
     SCAN ROUTE" (6), MetaHuman's index): the pores and fine lines from ONE scan - averaging several people's pores at a
     texel cancels them (~1/sqrt(n)) - the next scans in this character's order only filling where that one didn't
     reach; the blotchiness (mid layer) mixed from 2-3 scans, scaled back to one scan's strength; the tone is the
-    character's own (the projection multiplies it in)."""
+    character's own (the projection multiplies it in). Its sex picks the scans first (a woman's pores from women's
+    scans; the others only fill where those didn't reach), and its stubble settings (beard, scalp; 0 for a woman)
+    decide how much of a stubbled scan's stubble stays."""
     rng = np.random.default_rng(seed)
+    scans = _module("scan_list", Path(__file__).with_name("scan_list.py")).SCANS
     names = sorted(f.parent.name for f in DIR.glob("*/layers.npz"))
-    order = [str(n) for n in rng.permutation(names)]
-    k = int(min(len(names), rng.integers(2, 4)))
-    mixed = [str(n) for n in rng.choice(names, k, replace=False)]
-    p = {"fine_from": order, "mid_from": dict(zip(mixed, (float(w) for w in rng.dirichlet(np.ones(k))), strict=True)),
+    sex = (params or {}).get("sex") or str(rng.choice(["m", "f"]))
+    own_sex = [str(n) for n in rng.permutation([n for n in names if scans[n]["sex"] == sex])]
+    others = [str(n) for n in rng.permutation([n for n in names if scans[n]["sex"] != sex])]
+    others.sort(key=lambda n: scans[n]["stubble"])  # a smooth scan fills before a stubbled one
+    pool = own_sex if len(own_sex) >= 2 else names
+    k = int(min(len(pool), rng.integers(2, 4)))
+    mixed = [str(n) for n in rng.choice(pool, k, replace=False)]
+    male = sex == "m"
+    p = {"sex": sex, "fine_from": own_sex + others,
+         "mid_from": dict(zip(mixed, (float(w) for w in rng.dirichlet(np.ones(k))), strict=True)),
+         "stubble": float(rng.uniform(0.0, 1.0)) if male else 0.0,
+         "scalp_stubble": float(rng.uniform(0.0, 1.0)) if male else 0.0,
          "age": float(rng.uniform(0.7, 1.3)), "mottle": float(rng.uniform(0.6, 1.2)),
          "redness": float(rng.uniform(0.0, 0.06)), "freckles": float(rng.uniform(0.0, 1.0)),
          "moles": int(rng.integers(2, 12)), **(params or {})}
     layers = {n: np.load(DIR / n / "layers.npz") for n in set(p["fine_from"]) | set(p["mid_from"])}
     shape = layers[p["fine_from"][0]]["fine"].shape[:2]
+    beard, scalp = (m.astype(np.float32) for m in regions(shape[0]))
+    keep = 1.0 - np.clip(beard * (1.0 - p["stubble"]) + scalp * (1.0 - p["scalp_stubble"]), 0.0, 1.0)
     # fine: the first scan over the next, each only where the ones before it left room
     fine, mid_fill, left = np.zeros((*shape, 3), np.float32), np.zeros((*shape, 3), np.float32), np.ones(shape, np.float32)
     for n in p["fine_from"]:
         a = left * _feathered(layers[n]["valid"])
-        fine += a[..., None] * layers[n]["fine"].astype(np.float32)
+        if not a.any():
+            continue
+        f = layers[n]["fine"].astype(np.float32)
+        if scans[n]["stubble"]:
+            f = _without_stubble(f, keep)
+        fine += a[..., None] * f
         mid_fill += a[..., None] * layers[n]["mid"].astype(np.float32)
         left -= a
     cover = left < 0.5

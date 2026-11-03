@@ -6,6 +6,8 @@ scan_fit, scan_bake, skin_base). Each: its source file, its colour map per mater
 packed, so the files are named here; "*" for any other material, None = flat grey), whether its crown is bald skin
 (a parser may call a bald crown hair), and its credit - every scan here is CC Attribution (licences read from
 Sketchfab's API, `docs/plans/2026-11-02-research-texture-source.md`); credit them wherever their skin is used.
+`sex` and `stubble` as seen at 1:1 (the research file's tables): skin_base.compose takes a character's pores from scans
+of its sex first and keeps a stubbled scan's stubble only as far as the character's own stubble setting.
 Kept: `docs/plans/2026-11-02-scan-skin-base.md` §3."""
 
 S = "E:/Dev/3D/just-stage/.dev/downloads/scans/"
@@ -20,6 +22,8 @@ SCANS = {
             "*": S + "head_scan_02/x/textures/head_scan_02_photogammetry_diffuse_3.png",
         },
         "bald": True,
+        "sex": "m",
+        "stubble": True,
         # its glTF stores V upward, against the glTF spec (V down): read the spec's way, 21.5% of the skin's
         # triangles land on the map's black, flipped 0.6% (measured 2026-11-02; trimesh's reading needed the same)
         "flip_v": True,
@@ -30,6 +34,8 @@ SCANS = {
         "source": S + "lee_perry_smith/x/src7z/head.obj",
         "textures": {"*": S + "lee_perry_smith/x/src7z/lambertian.jpg"},
         "bald": False,
+        "sex": "m",
+        "stubble": True,
         "credit": '"Infinite, 3D Head Scan" by Lee Perry-Smith, CC BY 3.0, based on a work at www.triplegangers.com '
         '(Sketchfab upload "Head (Lee Perry Smith)" by Paul) - sketchfab.com/3d-models/4d07eb2030db4406bc7eee971d1d3a97',
     },
@@ -37,6 +43,8 @@ SCANS = {
         "source": S + "yaro13/x/source/5.fbx",
         "textures": {"*": S + "yaro13/x/textures/texture_0_baseColor.png"},
         "bald": False,
+        "sex": "m",
+        "stubble": True,
         "credit": '"Head scan 13 (photogrammetry)" by yaro.pro - sketchfab.com/3d-models/5e6d2804405449e6b3bd96cd12d8b1ab '
         "(CC BY)",
     },
@@ -44,12 +52,16 @@ SCANS = {
         "source": S + "rudavin/x/src/Rudavin_portrat_retop.obj",
         "textures": {"*": S + "rudavin/x/src/Rudavin_portrat_retop_u1_v1.jpg"},
         "bald": False,
+        "sex": "m",
+        "stubble": True,
         "credit": '"Rudavin Sergey 3d portrait" by rudavin - sketchfab.com/3d-models/e1fe86107058409c9fb88b50f5ef80fd (CC BY)',
     },
     "female_wnmb": {
         "source": S + "female_whynotmeebaby/x/src/FEMALE.obj",
         "textures": {"*": S + "female_whynotmeebaby/x/src/FEMALE.jpg"},
         "bald": False,
+        "sex": "f",
+        "stubble": False,
         "credit": '"Female head scan" by whynotmeebaby - sketchfab.com/3d-models/b157e28076484a3f9f4f41b5e0f70770 (CC BY)',
     },
     "head03a": {
@@ -61,6 +73,8 @@ SCANS = {
             "*": None,
         },
         "bald": False,
+        "sex": "f",
+        "stubble": False,
         "credit": '"Head 03 A" by Nikitos & 3130 (@vrcityphoto) - sketchfab.com/3d-models/04a94494d88d48d18c46b82c7ab7c7b8 '
         "(CC BY)",
     },
@@ -68,6 +82,8 @@ SCANS = {
         "source": S + "ammamma/x/source/raw.glb",
         "textures": {"*": S + "ammamma/x/textures/gltf_embedded_0.jpeg"},
         "bald": False,
+        "sex": "f",
+        "stubble": False,
         "flip_v": True,  # Polycam's GLB, like scan02's glTF: renders scrambled read the spec's way (2026-11-02)
         "credit": '"Ammamma Head Scan Polycam" by Krishna Prakash - sketchfab.com/3d-models/64fda4f6914d40b89bc07a9f5927357e '
         "(CC BY)",
@@ -76,12 +92,16 @@ SCANS = {
         "source": S + "portrait_3130/x/src/portrait of female model.obj",
         "textures": {"*": S + "portrait_3130/x/src/portrait of female model.1001.jpg"},
         "bald": False,
+        "sex": "f",
+        "stubble": False,
         "credit": '"portrait of model 2.0" by 3130 - sketchfab.com/3d-models/6832a653f9c647aba01f77b5d774e9ba (CC BY)',
     },
     "d3d_african_woman": {
         "source": S + "d3d_african_woman/x/src/050F_05SET_03SHOT.obj",
         "textures": {"*": S + "d3d_african_woman/x/textures/050F_05SET_03SHOT_Diffuse.jpg"},
         "bald": False,
+        "sex": "f",
+        "stubble": False,
         "credit": '"FREE DOWNLOAD: Attractive African woman 236" by deep3dstudio - '
         "sketchfab.com/3d-models/f2c29b6947f34237a0bfdc777120ef28 (CC BY)",
     },
@@ -89,6 +109,8 @@ SCANS = {
         "source": S + "d3d_african_man/x/src/031M_04SET_01SHOT.obj",
         "textures": {"*": S + "d3d_african_man/x/textures/031M_04SET_01SHOT_Diffuse.jpg"},
         "bald": False,
+        "sex": "m",
+        "stubble": True,
         "credit": '"FREE DOWNLOAD Athletic African man walking 223" by deep3dstudio - '
         "sketchfab.com/3d-models/f9a8e3b108f04e998815593f78f163b1 (CC BY)",
     },
@@ -96,6 +118,8 @@ SCANS = {
         "source": S + "rp_carla/x/source/rp_carla_rigged_001_yup_a.fbx",
         "textures": {"*": S + "rp_carla/x/textures/rp_carla_rigged_001_dif.jpeg"},
         "bald": False,
+        "sex": "f",
+        "stubble": False,
         "credit": '"Carla Rigged 001 - Rigged 3D Business Women" by Renderpeople - '
         "sketchfab.com/3d-models/acf520f450d14dd799f98a6fede3edf5 (CC BY)",
     },
