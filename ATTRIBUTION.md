@@ -52,3 +52,4 @@ licences (FLUX Kommunity licence / Apache-2.0) are labels.
 | What | Source | Author | Licence |
 |---|---|---|---|
 | HSRD-100 raw scans (13 poses of 10 people) | huggingface.co/datasets/digitalrealitylab/HSRD-100 | Digital Reality Lab | CC BY 4.0 |
+| Ten24 sample scan, OBJ package (full body and head, 16K colour, normal levels) | ten24.info/sample-scan (S3 `samplescan/OBJ+Package.zip`) | Ten24 Media | "use this scan as you wish for both commercial and personal projects", credit asked; shipping waits for Ten24's word (their shop licence bars character makers) |
