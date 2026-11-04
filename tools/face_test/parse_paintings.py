@@ -47,6 +47,13 @@ def main(views):
         rgb = cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB)
         labels = scan_skin.parse(model, rgb).argmax(-1)
         mask = np.isin(labels, eyes).astype(np.uint8) * 255
+        # the lower half of each eye only (round 81): our upper lid sits 8-10 px above the paintings' (their hooded
+        # lids), so its margin lands on the painted iris and lashes, which read as its dark lash line; masked, the
+        # margin turned a pale beige rim. The upper lid's own fix is its shape (the lid line), not this mask
+        count, blobs = cv2.connectedComponents(mask)
+        for blob in range(1, count):
+            rows = np.nonzero(blobs == blob)[0]
+            mask[(blobs == blob) & (np.arange(mask.shape[0])[:, None] < rows.mean())] = 0
         grow = 2 * EYE_GROW + 1
         mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (grow, grow)))
         cv2.imwrite(str(DIR / f"eyes_{view}.png"), mask)
