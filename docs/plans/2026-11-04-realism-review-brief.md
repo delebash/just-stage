@@ -119,8 +119,27 @@ From the Hugging Face + Zenodo deep search (`2026-11-04-research-hf-assets.md`, 
 | yoso-delight-v0-4 (a delighting model) | Apache-2.0 | candidate for removing light left in scans (rec 3) |
 | HairDeck (image -> stylised hair cards with UVs) | Apache-2.0 | its card method only (rec 11); not realistic |
 
-Confirmed gaps (searched on Hugging Face and Zenodo, nothing shippable): eye / iris imagery, realistic hair strands,
-UV skin textures, nails, lips, facial and body hair, children's 3D data.
+From the other-sites search (`2026-11-04-research-other-sites.md`: Wikimedia Commons, Flickr, Kaggle, GitHub,
+Smithsonian, Europeana, OpenGameArt, itch.io, texture sites, Blender's demo files, and the user's Pexels, Unsplash,
+Nexus Mods, ShareTextures, BlenderKit; samples in `.dev/downloads/other_samples/`):
+
+| What | Licence | Use |
+|---|---|---|
+| Real iris macro photos: Commons' "Close-up photographs of 1 human eye" (462 files, 158 at 2000 px+), e.g. Lizapopova143 (studio cut-outs, iris 3,417 px across), Thomas Tolkien (5906²), Osmo Lundell, Mattis2412, Kamil Saitov (whole eyes with lids), CC0 brown / amber eyes, central heterochromia, children's eyes; brown, hazel, amber, green, blue, grey | CC BY / CC BY-SA / CC0 (per file) | real iris textures (rec 12) |
+| Blender's demo "Hair Styles" (Daniel Bystedt): Geometry Nodes grooms - tight curls 22,418 strands, box braids 18,535, long 11,193, brows, lashes | CC BY-SA | library styles and the generator's techniques (rec 11) |
+| OpenGameArt "Hair Alphas For Days": 85 rendered hair-card alphas, 2048² | CC0 | hair cards (rec 11) |
+| Commons CC0 stubble series (two days, a week, greying; 4032 x 3024) | CC0 | the stubble layer's reference (rec 9) |
+| Foot3D: 118 scanned feet with 4K textures, sex / ethnicity / age | repo MIT; scan terms behind a request form | feet (rec 7), if its terms allow |
+| Smithsonian life masks (Lincoln, Washington) | CC0 | face-shape references only |
+
+Not shippable, from the user's sites: Pexels and Unsplash (custom licences: no compiling into a competing service, no
+redistribution as-is - references only); Nexus Mods 13537 (built from Cyberpunk's assets, no reuse); ShareTextures
+(now "Custom CC0 ... No asset redistribution ... in plugins" - a correction to our 2026-11-02 file); BlenderKit's
+royalty-free assets (no redistribution in asset packs; a few CC0 skins and sculpt brushes exist).
+
+Confirmed gaps (searched on Sketchfab, Hugging Face, Zenodo and the sites above, nothing shippable at the bar):
+realistic hair strands beyond the Blender demo (coily scans, beards), UV skin textures, nails and lips (references
+only), children's 3D data.
 
 Candidates found, not yet fetched: Sketchfab CC-BY scans (Renderpeople "Mei Posed 001" East Asian woman 8K; 3D
 Selfie Scans "Malcolm", "Bryan", "Shelley", "Matt Chua", "Pete", "Ben"; "Hector Navarro Bust" older Latino man; more —
@@ -257,9 +276,17 @@ know it worked). Standard / NOT STANDARD marked.
   libraries (Code My Crown — no licence; OSAHL — no redistribution) — reference only; HairDeck (Apache-2.0) makes
   stylised cards from an image — its card layout method may help our card baker, not its look. No realistic open
   strand dataset was found on Hugging Face or Zenodo.
+- **Changed by the other-sites search:** Blender's own "Hair Styles" demo (CC BY-SA) has a real tight-curl groom and
+  box braids in Geometry Nodes - as library styles (share-alike label) and as the generator's starting technique, ahead
+  of writing coils from scratch; OpenGameArt's 85 CC0 hair-card alphas for the live-view cards.
 
-### 12 · Eyes (part 6)
-- **Method:** on MPFB2's eye: crypts, furrows, pigment spots, Wölfflin nodules, collarette, heterochromia (each eye its
+### 12 · Eyes (part 6) — changed by the other-sites search
+- **Changed:** real iris photos exist under open licences (Commons and Flickr, CC BY / BY-SA / CC0, up to ~6K, all
+  the common colours, heterochromia). So: a library of real irises - each photo unwrapped to polar coordinates,
+  delit, its catch light removed, into MPFB2's iris layout - with the procedural features below for variety between
+  them and for features a photo lacks. Attack: CC BY-SA photos make the derived iris textures share-alike (a licence
+  label per iris); photo grain at 1:1; ethnicity rarely stated.
+- **Method (procedural part):** on MPFB2's eye: crypts, furrows, pigment spots, Wölfflin nodules, collarette, heterochromia (each eye its
   own colour), arcus with age, drawn by population (Edwards et al. 2016's table; e.g. pigment spots 22% East Asian /
   58% European / 17% South Asian); sclera veins denser at the corners, redness, yellowing with age, melanosis.
 

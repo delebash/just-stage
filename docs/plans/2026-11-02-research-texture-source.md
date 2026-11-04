@@ -93,7 +93,9 @@ work, not redistributable, so not shippable in an open-source app. `marcus-free-
 Polarized Smartphone Images* (Azinović, Maury, Hery, Nießner, Thies; CVPR 2023) - real; a capture method (phone flash +
 polarisers, cross- and parallel-polarised) - code and licence not found. 3D Scan Store's free scans - the Ten24 ones,
 non-commercial. ShareTextures "Human Skin 5" *[page]* - CC0 ("CC0 Textures of human skin with several maps"): diffuse,
-normal, height, smoothness, AO; body part and resolution not stated.
+normal, height, smoothness, AO; body part and resolution not stated. **Corrected 2026-11-04:** ShareTextures' licence
+page now says "Custom CC0 ... with specific restrictions", incl. "No asset redistribution on other websites, in
+plugins, or as part of collections without our written permission" - not shippable (`2026-11-04-research-other-sites.md`).
 
 **Sketchfab, searched through its API** (`api.sketchfab.com/v3/search?type=models&q=head%20scan&downloadable=true&license=by`
 *[page]*): downloadable CC-BY head scans of real people exist - "Head scan 13 (photogrammetry)" by yaro.pro (CC BY 4.0;
@@ -199,7 +201,7 @@ don't allow redistributing the files - Renderbot (nine people, 8K, commercial us
 Channel), xoio (15 people, 2K textures), Ten24's 2016 full-body male (commercial use with credit), 3DCAP (three people)
 *[snippets]*; research sets behind institutional agreements (3DBodyTex.v2, ~3,000 scans); CC0 skin: "Human Materials
 1" on Sketchfab (CC0, 2K skin materials: colour, AO, roughness, normal, displacement) *[snippet]*, ShareTextures' Human
-Skin 5 (CC0). Sketchfab API queries (`downloadable=true`, `license=by` or `cc0`, `sort_by=-likeCount`): "woman head
+Skin 5 (custom "CC0" with no redistribution in plugins - corrected 2026-11-04). Sketchfab API queries (`downloadable=true`, `license=by` or `cc0`, `sort_by=-likeCount`): "woman head
 scan", "bust scan", "photogrammetry portrait", "head scan" (cc0: carvings only), "face scan", "head scan". Real-person
 CC BY candidates (celebrities and public figures left out - likeness): "My bald father bust" (Coltranne, d281e5e1),
 "Eddy's Bust made with 3DF Zephyr" (100 Canon 5D III photos, fd9ba129), "Asian Woman Photogrammetry" (daydev,
