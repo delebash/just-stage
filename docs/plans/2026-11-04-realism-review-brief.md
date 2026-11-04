@@ -437,6 +437,9 @@ detail source) → 2 + 3 (bases, tone) → 17 + 7 (shared detail layers incl. th
 nails, ears) → 16's probe volume → 11 (styles, with cards for dense hair). (Changed by the redo: 7 moved up beside 17
 - every character shows plain body skin today, and the bodies are on hand.)
 
+**Superseded 2026-11-04 by §10** (the review adopted): the gate first, then the half it points to, then 18 → 2 +
+delighting → 3 → 17 + 7 (skeleton first) → 12 → 1 → 4 → 6, 5 → 8-10 → 13-15 → the import command → 16's probe → 11.
+
 ## 8 · How each is checked
 
 Renders of the default as the user sees it (EEVEE live view and Cycles), side by side with the previous state, at
@@ -462,3 +465,46 @@ test per change; full suites at the end of each batch.
    those axes too? (Not researched.) And is a per-region band-energy floor the right quality check?
 9. **IMPORT route:** the best paid sources (deep3dstudio's polarised older heads, coily grooms, photographed sclera)
    allow a user's own purchase, not shipping - is an importer for user-bought scans worth building early?
+
+## 10 · Adopted from the review (2026-11-04, the user: "your rec on all go")
+
+From `2026-11-04-realism-review-fable.md` (Fable's 12 findings) and Opus's rethink appended to it. Where a rec above
+says otherwise, this section wins.
+
+- **The gate (§7)** runs first, before any build, with rec 16's EEVEE measurements beside it. Our character's baked
+  maps on an instance of MetaHuman's `M_skin_unified_baked` (`Basecolor Baked`, `Normal Baked`, `SRMF Baked`,
+  `Scatter Baked`), its micro-detail slot fed our own pore tile, region strengths uniform; a flat grey-map render first
+  to prove nothing region-masked leaks; the same stage (and an HDRI-only shot), the same camera; renders captured
+  linear and tone-mapped by the same AgX in Blender. Beside it EEVEE and Cycles; the MetaHuman preset as the
+  benchmark, inside Unreal only (MetaHuman's maps never leave Unreal - clean-room). The verdict picks the half: our
+  maps on MetaHuman's material still plastic → the maps first (18, 2, 3, 17); close to MetaHuman → EEVEE's shading
+  first (16, 1, the fallbacks).
+- **A live-view budget:** today's character measured in Material Preview (Blender's `wm.redraw_timer`, fps and VRAM,
+  `quality-gate.md:43`), the target set from that; every rec's gate reports its ms and MB.
+- **Rec 3:** the base picked by tone, sex and age from the 21; the broad layer's colour moved to the target by
+  colour-statistics transfer (Reinhard et al. 2001); chromophore inversion off the critical path (its own experiment,
+  gated on NIST's measured skins).
+- **Delighting** (new step with rec 2): broad and mid bands only, the fine band kept; candidates yoso-delight-v0-4,
+  Marigold IID, OpenDelight; measured by the light gradient and shine hotspots (forehead, nose) before and after -
+  skipped where both are small.
+- **Likeness:** a shipped character is never one scan's face (shape from GNM's space or the generator; broad and mid
+  colour from two or more scans; fine from one); written into the spec; a recognition test (library renders against
+  renders of each source scan at the same camera) when whole-face sources enter.
+- **Rec 17** is the spec's `micro_normal` channel (16-bit tileable + tiling scalar; CC5's defaults body 42, face 20),
+  exported as such; its floor measured on relief (height / normal) and roughness, colour judged per tone; colour fine
+  detail and relief pores from the same source (today they come from two people: one scan's colour, the Lee
+  Perry-Smith relief). Body tiles 2K (the spec's default) when body detail lands; library skins backed up before
+  every rebuild.
+- **Rec 7:** the spec's skeleton built first (UE5 bone names from MPFB2's joint cubes, `weights.game_engine.json` -
+  `character-data-model.md:170-171`), posed to each scan's pose from keypoints, wrapped in the matched pose (one
+  texture transfer); a body-model fit (MHR) only as the fallback.
+- **Import (with rec 2 and rec 11):** "Import a scan" and "Import a groom" as commands on the existing route; a no-AI
+  mode for sources whose licence bars AI software (Texturing.XYZ; deep3dstudio's "For non-AI use only"): manual
+  landmarks, classical wrap, no learned masks or delighting.
+- **Rec 1** bounded: two days to its 10% gate under both lights, then hair cards take the live view (strands for
+  close-ups and the film); moved after the eyes.
+- **Rec 16:** the closure count measured first (SSS, GGX, coat, sheen - possibly four); if noisy, the coat folded
+  into the main specular before the fuzz goes (MetaHuman keeps region peach fuzz).
+- **Smaller:** Poseidon3D is a "challenging cases" set - its arches are the extremes, GNM's directions the normal
+  space; the Hair Styles demo's BY-SA version decides whether its grooms ship inside the GPL extension; children are a
+  hole in the bar; lid shape and mouth corners named as shape items under recs 12 and 13.

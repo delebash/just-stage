@@ -1085,6 +1085,17 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            before lobes; the order; smaller corrections), answers to the brief's §9. WAITING on the user's word, finding
            by finding; the brief is unchanged until then. The gate run (Unreal) is NOT started: web-9e took the card
            first (15 min), web-4c is clear.
+           Then Opus's rethink in eight passes (appended to the review file) and, on the user's "just do another
+           rethink adverserily on these recs" / "keep going", the final list. APPROVED 2026-11-04 - the user,
+           verbatim: "your rec on all go", on: (1) adopt Fable's review with the rethink's changes (F1 reduced to an
+           HDRI-only shot, F1(b) rejected; F7 by the spec's own skeleton, posed to each scan; F9(i) dropped; F10
+           measures closures and keeps fuzz; F12's pore number corrected; F8's import with a no-AI mode; F4 measures
+           shine hotspots too; the gate on `M_skin_unified_baked` with our pore tile and a flat-grey leak check; rec
+           17 as the spec's `micro_normal`, measured on relief; colour and relief pores from one source; library
+           skins backed up before a rebuild), folded into the brief in one change; (2) the gate first, before any
+           build, rec 16's EEVEE measurements beside it, once web-4c hands over the card; (3) the order: the gate,
+           then the half it points to, then 18 -> 2 + delighting -> 3 -> 17 + 7 (skeleton first) -> 12 -> 1 -> the
+           rest.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
