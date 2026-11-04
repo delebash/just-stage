@@ -64,8 +64,8 @@ def srgb(path):
 def composite(view, done, views):
     """What is painted so far, seen from `view`'s camera, over its clay."""
     target = views[view]
-    num = np.zeros(target.albedo.shape, np.float32)
-    den = np.zeros(target.albedo.shape[:2], np.float32)
+    num = np.zeros((*target.covered.shape, 3), np.float32)  # its picture's size (a view not painted yet has no albedo)
+    den = np.zeros(target.covered.shape, np.float32)
     for name in done:
         col, row, w = views[name].seen_from(target)
         src = DIR / f"aligned_{name}.png"

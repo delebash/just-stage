@@ -12,7 +12,9 @@ import json
 import sys
 from pathlib import Path
 
+import cv2
 import mediapipe as mp
+import numpy as np
 from mediapipe.tasks import python as mp_tasks
 from mediapipe.tasks.python import vision
 
@@ -26,11 +28,14 @@ def points(detector, path: Path):
     doesn't paint) or no face in it."""
     if not path.exists():
         return None
-    image = mp.Image.create_from_file(str(path))
-    result = detector.detect(image)
-    if not result.face_landmarks:
-        return None
-    return [[p.x * image.width - 0.5, p.y * image.height - 0.5] for p in result.face_landmarks[0]]
+    img = cv2.imread(str(path))
+    h, w = img.shape[:2]
+    for pad in (0, w // 8):  # again with a margin when no face is found (align_paintings.landmarks: the close view)
+        x = cv2.copyMakeBorder(img, pad, pad, pad, pad, cv2.BORDER_REPLICATE) if pad else img
+        result = detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=np.ascontiguousarray(x[..., ::-1])))
+        if result.face_landmarks:
+            return [[p.x * (w + 2 * pad) - pad - 0.5, p.y * (h + 2 * pad) - pad - 0.5] for p in result.face_landmarks[0]]
+    return None
 
 
 def main() -> int:

@@ -50,11 +50,17 @@ SKIN_DISTANCE = 45  # colour distance from the clay's skin (8-bit RGB) that coun
 
 
 def landmarks(detector, path: Path) -> np.ndarray | None:
-    result = detector.detect(mp.Image.create_from_file(str(path)))
-    if not result.face_landmarks:
-        return None
-    h, w = cv2.imread(str(path)).shape[:2]
-    return np.array([(p.x * w, p.y * h) for p in result.face_landmarks[0]])
+    """MediaPipe's 478 points; when it finds no face, again on a copy with a margin around it (its edges repeated, an
+    eighth of the width): the close view crops forehead and chin, and its face finder needs room - amara's hero
+    (2026-11-03) was found only padded; brighter or contrast-boosted copies didn't help."""
+    img = cv2.imread(str(path))
+    h, w = img.shape[:2]
+    for pad in (0, w // 8):
+        x = cv2.copyMakeBorder(img, pad, pad, pad, pad, cv2.BORDER_REPLICATE) if pad else img
+        result = detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=np.ascontiguousarray(x[..., ::-1])))
+        if result.face_landmarks:
+            return np.array([(p.x * (w + 2 * pad) - pad, p.y * (h + 2 * pad) - pad) for p in result.face_landmarks[0]])
+    return None
 
 
 def clay_eye_points(clay: np.ndarray, painted_pts: np.ndarray):
