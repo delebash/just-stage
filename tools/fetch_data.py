@@ -44,6 +44,7 @@ SOURCES = {
             "src/mpfb/data/rigs/standard/weights.game_engine*.json",
             "src/mpfb/data/expressions/*",
             "src/mpfb/data/uv_layers/*",
+            "src/mpfb/data/node_trees/procedural_eyes.json",  # its procedural eye ("EnhancedEye", modules/head/eyes.py)
         ],
         "extra": {"LICENSE.md": "LICENSE.md"},
     },

@@ -72,4 +72,9 @@ def add(character: bpy.types.Object) -> list[str]:
         part_materials.assign(obj, part, groups)
         added.append(part)
     refit(character)
+    from . import eyes
+
+    for part in added:
+        if part in ("eyeLeft", "eyeRight"):  # the procedural iris and white (MPFB2's), on UVs by the 3D radius
+            eyes.shade(parts_of(character)[part])
     return added

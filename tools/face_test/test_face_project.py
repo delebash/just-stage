@@ -42,7 +42,8 @@ _spec.loader.exec_module(face_shape)
 _spec = importlib.util.spec_from_file_location("relief_geometry", str(Path(__file__).with_name("relief_geometry.py")))
 relief_geometry = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(relief_geometry)
-MPFB_EYES = "E:/Dev/3D/just-stage/.dev/cache/mpfb2_nodes/procedural_eyes.json"  # mpfb2 6ff1eb35 data/node_trees
+_paths = importlib.import_module("bl_ext.system.juststage.paths")
+MPFB_EYES = str(_paths.makehuman("node_trees", "procedural_eyes.json"))  # MPFB2 6ff1eb35, by tools/fetch_data.py
 sd = importlib.import_module("bl_ext.system.juststage.core.skin_detail")
 viewport = importlib.import_module("bl_ext.system.juststage.core.viewport")
 DIR = "E:/Dev/3D/just-stage/.dev/facetest/"
@@ -604,32 +605,9 @@ def _head_tile(body):
 
 
 def _linear_iris_uvs(eye, ids=None):
-    """The iris' and pupil's UVs laid out by their 3D radius, each loop's angle kept, out to the limbus where the
-    sclera's begin: GNM's eye squeezes its 2.7 mm pupil disc into UV radius 0-0.05 and its iris (2.55-5.5 mm) into
-    0.05-0.185 (measured 2026-11-01), so a texture or MPFB2's rings landed warped - the iris texture's pupil (0.24 of
-    the iris) at ~0.45 of the 3D radius, a dilated, ringed eye (round 61). `ids`: the iris' and pupil's material
-    indices, when their slots no longer say so."""
-    m = np.array(eye.matrix_world)
-    co = np.array([v.co for v in eye.data.vertices]) @ m[:3, :3].T + m[:3, 3]
-    centre = (co.min(axis=0) + co.max(axis=0)) / 2
-    names = [sl.material.name if sl.material else "" for sl in eye.material_slots]
-    ids = ids or {i for i, n in enumerate(names) if "Iris" in n or "Pupil" in n}
-    loops = [(li, vi) for p in eye.data.polygons if p.material_index in ids
-             for li, vi in zip(p.loop_indices, p.vertices, strict=True)]
-    verts = sorted({vi for _li, vi in loops})
-    axis = co[verts].mean(axis=0) - centre
-    axis /= np.linalg.norm(axis)
-    rel = co - centre
-    radial = np.linalg.norm(rel - np.outer(rel @ axis, axis), axis=1)
-    uv = eye.data.uv_layers[0].data
-    rho_max = max(float(np.hypot(*(np.array(uv[li].uv) - 0.5))) for li, _vi in loops)
-    r_max = float(radial[verts].max())
-    for li, vi in loops:
-        u, v = uv[li].uv
-        angle = np.arctan2(v - 0.5, u - 0.5)
-        rho = rho_max * radial[vi] / r_max
-        uv[li].uv = (0.5 + rho * np.cos(angle), 0.5 + rho * np.sin(angle))
-    return rho_max, r_max
+    """The iris' and pupil's UVs by their 3D radius - the app's (modules/head/eyes.py, moved there 2026-11-04; it runs
+    when the eyes are added, and again here changes nothing)."""
+    return importlib.import_module("bl_ext.system.juststage.modules.head.eyes").linear_iris_uvs(eye, ids)
 
 
 def _iris_circle(lum_img, seed, reach):

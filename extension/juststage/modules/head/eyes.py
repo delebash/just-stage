@@ -108,3 +108,79 @@ def openings(body: bpy.types.Object) -> dict[str, Opening]:
             raise CommandError(f"{body.name} has no {part}; run juststage.head.add_parts first")
         found[eye.name] = eye_opening(world_points(eye), skin, polys, gaze(eye), 0.003, 0.008)
     return found
+
+
+#: MPFB2's procedural eye ("EnhancedEye", CC0 data at its pinned commit - tools/fetch_data.py), the face test's way
+EYE_TREE = ("node_trees", "procedural_eyes.json")
+#: a brown eye: the face test's round 70 matched a painted dark-brown iris at (0.047, 0.023, 0.016) linear overall -
+#: the fibres' lighter and darker halves around it (MakeHuman's own "brown" texture reads red-orange: 0.08, 0.007, 0)
+IRIS_MAJOR, IRIS_MINOR = (0.06, 0.03, 0.02), (0.03, 0.014, 0.010)
+IRIS_SIZE = 0.371  # the iris' radius over the eyeball's on the eye's UVs (round 70's match: 0.371)
+PUPIL_SHARE = 0.22  # MPFB2's black pupil disc, of the iris' radius (the face test's)
+WHITE = (0.68, 0.60, 0.54)  # the face test's starting white (MPFB2's is pure white)
+#: the face test's settings for MPFB2's eye (rounds 33-38): a glossy iris and its clear coat mirrored the studio, its
+#: bump glittered under the catch light, its outer layer mirrored the studio from the side
+SETTINGS = {"InnerLayerRoughness": 0.35, "IrisBumpStrength": 0.1, "OuterLayerIOR": 1.15, "Clearcoat": 0.0}
+UV_EYE_RADIUS = 0.46  # GNM's eyeball on its UV map, centred at (0.5, 0.5) (measured 2026-10-30)
+
+
+def _iris_loops(eye, ids=None):
+    names = [sl.material.name if sl.material else "" for sl in eye.material_slots]
+    ids = ids or {i for i, n in enumerate(names) if "Iris" in n or "Pupil" in n}
+    return [(li, vi) for p in eye.data.polygons if p.material_index in ids
+            for li, vi in zip(p.loop_indices, p.vertices, strict=True)]  # fmt: skip
+
+
+def linear_iris_uvs(eye, ids=None):
+    """The iris' and pupil's UVs laid out by their 3D radius, each loop's angle kept, out to the limbus where the
+    sclera's begin: GNM's eye squeezes its 2.7 mm pupil disc into UV radius 0-0.05 and its iris (2.55-5.5 mm) into
+    0.05-0.185 (measured 2026-11-01), so MPFB2's rings landed warped - a dilated, ringed eye (the face test's round
+    61). In the eye's own space (a rigid matrix changes no radius). `ids`: the iris' and pupil's material indices,
+    when their slots no longer say so. Returns the UV and 3D radii at the limbus."""
+    co = np.array([v.co for v in eye.data.vertices])
+    centre = (co.min(axis=0) + co.max(axis=0)) / 2
+    loops = _iris_loops(eye, ids)
+    verts = sorted({vi for _li, vi in loops})
+    axis = co[verts].mean(axis=0) - centre
+    axis /= np.linalg.norm(axis)
+    rel = co - centre
+    radial = np.linalg.norm(rel - np.outer(rel @ axis, axis), axis=1)
+    uv = eye.data.uv_layers[0].data
+    rho_max = max(float(np.hypot(*(np.array(uv[li].uv) - 0.5))) for li, _vi in loops)
+    r_max = float(radial[verts].max())
+    for li, vi in loops:
+        u, v = uv[li].uv
+        angle = np.arctan2(v - 0.5, u - 0.5)
+        rho = rho_max * radial[vi] / r_max
+        uv[li].uv = (0.5 + rho * np.cos(angle), 0.5 + rho * np.sin(angle))
+    return rho_max, r_max
+
+
+def shade(eye) -> None:
+    """MPFB2's procedural eye on the iris, pupil and white (each keeps its material and name - the gaze and the face
+    test find the iris by them), one eye per UV map; the cornea keeps its own (modules/head/part_materials.py)."""
+    from ... import paths
+    from ...core import node_trees
+
+    linear_iris_uvs(eye)
+    prefix = f"mpfb_eye.{eye.name}."
+    tree = str(paths.makehuman(*EYE_TREE))
+    for slot in eye.material_slots:
+        mat = slot.material
+        if mat is None or not any(r in mat.name for r in ("Iris", "Pupil", "Sclera")):
+            continue
+        made = node_trees.build_material(tree, mat, prefix)
+        inputs = made["EnhancedEye"].inputs
+        inputs["IrisToEyeWhiteRelation"].default_value = IRIS_SIZE
+        inputs["PupilSize"].default_value = IRIS_SIZE * PUPIL_SHARE
+        inputs["IrisMajorColor"].default_value = (*IRIS_MAJOR, 1.0)
+        inputs["IrisMinorColor"].default_value = (*IRIS_MINOR, 1.0)
+        inputs["IrisSection4Color"].default_value = (*(0.9 * c for c in IRIS_MINOR), 1.0)  # a soft limbal ring
+        inputs["EyeWhiteColor"].default_value = (*WHITE, 1.0)
+        for name, value in SETTINGS.items():
+            inputs[name].default_value = value
+    centre = bpy.data.node_groups[prefix + "CenterCoordinates"]
+    combs = sorted((n for n in centre.nodes if n.type == "COMBXYZ"), key=lambda n: n.name)
+    combs[0].inputs["X"].default_value, combs[0].inputs["Y"].default_value = 0.5, 0.5
+    combs[1].inputs["X"].default_value, combs[1].inputs["Y"].default_value = 5.0, 5.0  # its two-eye sum: one eye a map
+    next(n for n in centre.nodes if n.type == "VALUE").outputs[0].default_value = UV_EYE_RADIUS
