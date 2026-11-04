@@ -10,6 +10,7 @@ targets as shape keys weighted by MakeHuman's macro blending.
 
 from __future__ import annotations
 
+import functools
 import json
 import uuid
 
@@ -55,12 +56,20 @@ def _mask_helpers(obj: bpy.types.Object) -> None:
     mask.vertex_group = "body"
 
 
-def _add_target(obj: bpy.types.Object, target: str, weight: float, basis: np.ndarray) -> None:
+@functools.cache
+def _target_offsets(target: str) -> tuple[np.ndarray, np.ndarray]:
+    """A target's vertex indices and offsets in metres, read once (a slider drag rebuilds the macro stack each step)."""
     rows = makehuman.read_target(paths.makehuman("targets", f"{target}.target.gz"))
+    index = np.fromiter((r[0] for r in rows), dtype=np.int64, count=len(rows))
+    delta = np.array([r[1:] for r in rows], dtype=np.float32).reshape(-1, 3) * makehuman.SCALE_TO_METRES
+    return index, delta
+
+
+def _add_target(obj: bpy.types.Object, target: str, weight: float, basis: np.ndarray) -> None:
+    index, delta = _target_offsets(target)
     co = basis.copy()
-    if rows:  # MakeHuman's "average" macro targets are empty on purpose: the base already is that shape
-        index = np.fromiter((r[0] for r in rows), dtype=np.int64, count=len(rows))
-        co[index] += np.array([r[1:] for r in rows], dtype=np.float32) * makehuman.SCALE_TO_METRES
+    if len(index):  # MakeHuman's "average" macro targets are empty on purpose: the base already is that shape
+        co[index] += delta
     key = obj.shape_key_add(name=MACRO_PREFIX + makehuman.target_shapekey_name(target), from_mix=False)
     key.data.foreach_set("co", co.ravel())
     key.value = weight
