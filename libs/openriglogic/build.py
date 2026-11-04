@@ -49,9 +49,14 @@ def run(args: list[str | Path]) -> None:
 
 
 def version() -> str:
+    """OpenRigLogic's version: its CMakeLists sets RL_VERSION and gives the project `VERSION ${RL_VERSION}`."""
+    import re
+
     text = (SOURCE / "CMakeLists.txt").read_text(encoding="utf-8")
-    start = text.index("VERSION", text.index("project("))
-    return text[start:].split()[1].strip(")")
+    found = re.search(r"set\(RL_VERSION\s+([0-9.]+)\)", text)
+    if found is None:
+        sys.exit(f"{SOURCE / 'CMakeLists.txt'}: no set(RL_VERSION ...)")
+    return found.group(1)
 
 
 def main() -> int:

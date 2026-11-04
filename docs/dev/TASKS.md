@@ -1037,9 +1037,10 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            the body's regions coloured. Working doc: `../plans/2026-11-04-realism.md`.
            OPENRIGLOGIC BUILD (the face rig's step 7; `python libs/openriglogic/build.py`, EpicGames/OpenRigLogic at
            ea253d5, MIT): refused by Claude Code's permission check 2026-11-03; on the user's "2 your rec go"
-           (2026-11-04) it ran - the libraries and benchmarks compiled, the RigLogic Python wrapper failed:
-           `RigLogicPYTHON_wrap.cxx(3247): error C2065: 'py3dna_13_5_2': undeclared identifier` and C3861
-           `SWIG_EXPAND_AND_QUOTE_STRING` not found (SWIG 4.5.1 from PyPI; the cause not yet traced). Open.
+           (2026-11-04) it ran. BUILT 2026-11-04: `libs/openriglogic/dist/openriglogic-13.5.2-cp313-cp313-win_amd64.whl`
+           (714 KB; `import dna, riglogic` in Blender 5.3's Python 3.13). Two fixes on the way: SWIG pinned to 4.3.1
+           (RigLogic.i calls `SWIG_EXPAND_AND_QUOTE_STRING`, gone in SWIG 4.5 - RESEARCH §1), the version read from
+           `set(RL_VERSION ...)`. Next: the extension ships the wheel (its manifest's `wheels`), then the face rig.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
