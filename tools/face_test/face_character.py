@@ -31,7 +31,7 @@ FACE_VIEWS = ("face", "faceleft30", "faceright30")
 PER_CHARACTER = ("clay_*.png", "depth_*.exr", "cameras.json", "face.blend", "head_neutral.npz", "painted_*.png",
                  "aligned_*.png", "aligned_marks.json", "seq_start_*.png", "albedo_*.npy", "albedo_*.png",
                  "nworld_*.npy", "normal_*.npy", "normal_*.png", "landmarks.json", "fit_offsets.npz", "rdf_*.npz",
-                 "round.blend", "round.blend1", "face_*.png", "calib.exr")
+                 "round.blend", "round.blend1", "face_*.png", "calib.exr", "eyes_*.png")
 #: MakeHuman's age macro: 0.5 is 25 years, 1.0 is 90
 CHARACTERS = {
     "amara": {"env": {"FACETEST_GENDER": "0.0", "FACETEST_AGE": "0.54", "FACETEST_ETHNIC": "0.9,0.05,0.05",
@@ -92,6 +92,8 @@ def main(name):
     run("hero painting", [PY_TOOLS, str(TOOLS / "face_paint_cli.py"), seed, "face"], env)
     run("hero aligned", [PY_TOOLS, str(TOOLS / "align_paintings.py"), "face"], env)
     run("30-degree paintings", [PY_RDF, "-I", str(TOOLS / "face_paint_seq.py"), seed, "faceleft30", "faceright30"], env)
+    # the aligned paintings' own eyes kept out of the lids' skin (SegFace masks, e2d31e4 - the foreground session)
+    run("eye masks", [PY_RDF, "-I", str(TOOLS / "parse_paintings.py"), *FACE_VIEWS], env)
     run("face points", [PY_TOOLS, "-I", str(TOOLS / "landmarks.py")], env)  # the iris band's (test_face_project)
     run("normals", [PY_RDF, "-I", str(TOOLS / "view_normals.py"), *FACE_VIEWS], env)
     run("light removed", [PY_RDF, "-I", str(TOOLS / "delight_views.py"), *FACE_VIEWS], env)
