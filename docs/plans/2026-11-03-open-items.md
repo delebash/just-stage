@@ -108,6 +108,29 @@ PROJECTION RE-RUN (481 s / 455 s; lowest free RAM 3.8 GB beside the user's CC5):
 albedo mean 158 (was 0). Found in them, to fix next: (1) a light band where the painted forehead hands over to the
 base scalp (all four, strongest on amara / walter / mei); (2) walter's scalp a little green and blotchy (his base's
 mid layer). Then (a)'s test.
+Measured (1): along the head's middle line from the eyes up, the painted forehead ~3 cm above the eyes is 10-17%
+brighter than the base above it (amara 0.82 / 0.68, walter 0.74 / 0.62, mei 0.72 / 0.64; the step within ~8 mm).
+Causes: the carried tone averaged the whole painted face (darker brows and sockets in it), and the base kept the
+scans' own broad brightness. FIXED (33efa83): the tone carried from the painting's edge band only (fade 0.5-0.97, or
+within ~1.5 cm of where it falls away), and the base divided by its own ~3 cm average (detail only) - Waechter's seam
+levelling between the painting and the base; (2) compose keeps skin's hue order (green at most 2% over red, blue over
+green). WAITING for the card (~25 min: `face_character.py amara walter mei --from "skin base"`).
+2026-11-04: that run (33efa83) changed the base a little but NOT the step (amara 0.82 → 0.67 still). Measured instead
+of guessed: `FACETEST_DUMP=1` stops the projection after the maps (CPU only) and saves every 4th texel's fade,
+painting, base, trust. mei's forehead: the close views' frames end ~3.5 cm above the eyes - the painting's share fell
+from full to none within 8 mm (trust 0.75 → 0.20) - and the "edge band" had taken 13% of the head (the 3D blur counts
+hidden cavities beside the features as outside). FIXED (commit after 33efa83): (1) the ramp also on the face's outer
+border - above 2.5 cm over the eyes, past |x| 5 cm, below the chin - never round the features (round 76); (2) the edge
+band only there; the tone carried 1.5 cm wide, prior 0.005 (offline: 3 cm gave 0.96 at the edge against the painting's
+1.20; 1.5 cm 1.10); (3) the base levelled to the painting in that band (a gain carried out, settling to 1). Mei's final
+forehead (dump): 1.23 / 1.19 / 1.14 / 1.13 / 1.09 / 1.05 / 1.02 at 1.8-5.4 cm - no step; the temple 0.80-0.85
+throughout. Waiting for the card to re-render the three (projection only).
+(a) MEASURED on the CPU (FACETEST_SIZE=8192 + FACETEST_DUMP, mei): the free-RAM guard stopped it at 1.7 GB free from
+21 GB - the whole head at 8192 needs > ~19 GB, not workable beside CC5 and web-4c. Options: (1) 8K only where the face
+views see, the rest at 4K (a rework of the projection's core); (2) the industry's close-up route already in our
+shader - the albedo at 4K plus a tiling pore detail (MetaHuman's tiling micro-normal, research skin-detail-shading
+:520). Decision rule: in the card slot, `render_close.py 2048` renders the finished 4K scene's close camera at 2048 px;
+if its skin holds against the painting, (a) closes without 8K; if soft, build (1).
 
 ## 4 · Run log (newest last)
 
