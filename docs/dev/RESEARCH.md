@@ -225,6 +225,13 @@ Subjects: [1 · The machine](#1--the-machine) ·
   15% darker and 28% harsher than Cycles'). Unreal 5.8 facts: commandlets can't spawn actors; `-ExecutePythonScript`
   quits the editor after the script; `name.1001.png` / `name_1001.png` import as a UDIM virtual texture; UV0 is the
   first UV layer.
+- **MetaHuman's character API in Unreal 5.8's Python** (listed headless 2026-11-04, `.dev/gate/out/mh_api.log`): 242
+  `MetaHuman*` names, among them `MetaHumanCharacterFactoryNew` (a character asset), `MetaHumanCharacterEditorSubsystem`
+  (`try_add_object_to_edit`, `commit_skin_settings` / `commit_face_state` / `commit_eyes_settings` /
+  `commit_makeup_settings`, `request_texture_sources`, `assemble_for_preview`, `build_meta_human`,
+  `spawn_meta_human_actor`, `import_from_template`, `conform_to_target_meshes`), `MetaHumanCharacterExportBlueprintLibrary`
+  (`export_dcc`, `export_dna`, `export_materials`). So the gate's preset benchmark can be scripted; whether texture
+  requests need Epic's cloud (and a login) is not yet known.
 - **MetaHuman's skin materials, read from the installed plugin** (Unreal 5.8, `Engine/Plugins/MetaHuman/
   MetaHumanCharacter/Content/Lookdev_UHM/Skin/Materials/`, 2026-11-04, names read from the `.uasset` files; nothing
   copied): presets use `MI_skin_unified_MH_preset_Baked` on parent `M_skin_unified` with region masks
