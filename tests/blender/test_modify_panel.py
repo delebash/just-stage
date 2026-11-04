@@ -54,3 +54,10 @@ def test_the_theme_is_dark_with_one_accent():
     assert max(tuple(ui.panel_header)[:3]) < 0.2  # quiet panel titles, not colour bars
     assert max(tuple(ui.panel_back)[:3]) < 0.2  # near-black panels
     assert t.view_3d.space.gradients.background_type == "LINEAR"  # CC5's blue-grey viewport
+
+
+def test_slider_names_read_as_words():
+    assert sliders.pretty("nose", "nose-nostrils-angle-down-up") == "Nostrils angle (down / up)"
+    assert sliders.pretty("nose", "nose-point-width-decr-incr") == "Point width (− / +)"
+    assert sliders.pretty("chin", "chin-triangle") == "Triangle"
+    assert sliders.catalog()["arms/l-lowerarm-scale-depth-decr-incr"].label == "Lowerarm scale depth (− / +), left"

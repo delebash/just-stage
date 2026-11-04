@@ -55,7 +55,7 @@ def open_sidebar(retries: int = 15) -> None:
                     continue
                 try:
                     region.active_panel_category = CATEGORY
-                except TypeError:  # not drawn yet: its tabs don't exist
+                except (TypeError, AttributeError):  # not drawn yet: no tabs, and the setting is read-only until then
                     done = False
                 area.tag_redraw()
         left[0] -= 1

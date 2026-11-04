@@ -85,6 +85,7 @@ class VIEW3D_PT_juststage_modify(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "JustStage"
     bl_label = "Modify"
+    bl_order = 0  # first in the JustStage tab
 
     def draw(self, context):
         layout = self.layout
@@ -191,7 +192,7 @@ CLASSES = (VIEW3D_PT_juststage_modify,)
 def register():
     wm = bpy.types.WindowManager
     wm.juststage_modify_tab = bpy.props.EnumProperty(
-        name="Modify", items=[(t[0], t[1], t[1], t[2], i) for i, t in enumerate(TABS)], default="MORPH"
+        name="Modify", items=[(t[0], t[1], t[1], i) for i, t in enumerate(TABS)], default="MORPH"
     )
     wm.juststage_morph_region = bpy.props.EnumProperty(name="Region", items=_REGION_ITEMS, default="NOSE")
     wm.juststage_slider_search = bpy.props.StringProperty(name="Search sliders", options={"TEXTEDIT_UPDATE"})

@@ -31,13 +31,30 @@ class Slider(NamedTuple):
     low: float  # -1.0, or 0.0 for a one-way slider
 
 
+#: target names' two ends, said plainly
+ENDS = {"decr": "−", "incr": "+", "less": "−", "more": "+"}
+
+
+def pretty(group: str, name: str) -> str:
+    """A target.json category name as words: `nose-nostrils-angle-down-up` → "Nostrils angle (down / up)", `decr` /
+    `incr` as − / +, the group's own name dropped."""
+    words = name.split("-")
+    if words and words[0] in (group, group.rstrip("s"), "l", "r"):
+        words = words[1:]
+    if len(words) >= 3:
+        core, ends = words[:-2], [ENDS.get(w, w) for w in words[-2:]]
+        return f"{' '.join(core).capitalize()} ({ends[0]} / {ends[1]})"
+    return " ".join(words).capitalize()
+
+
 @functools.cache
 def catalog() -> dict[str, Slider]:
     data = json.loads(paths.makehuman("targets", "target.json").read_text(encoding="utf-8"))
     found = {}
     for group, spec in data.items():
         for cat in spec["categories"]:
-            name, label = cat["name"], cat.get("label", cat["name"])
+            name = cat["name"]
+            label = pretty(group, name)
             opp = cat.get("opposites")
             if not opp:  # one target, 0..1
                 found[f"{group}/{name}"] = Slider(f"{group}/{name}", group, label, "", cat["targets"][0], 0.0)
@@ -45,7 +62,7 @@ def catalog() -> dict[str, Slider]:
                 for side, key in (("l", "left"), ("r", "right")):
                     sid = f"{group}/{side}-{name}"
                     neg, pos = opp[f"negative-{key}"], opp[f"positive-{key}"]
-                    found[sid] = Slider(sid, group, f"{label} ({key})", neg, pos, -1.0)
+                    found[sid] = Slider(sid, group, f"{label}, {key}", neg, pos, -1.0)
             else:
                 sid = f"{group}/{name}"
                 found[sid] = Slider(sid, group, label, opp["negative-unsided"], opp["positive-unsided"], -1.0)

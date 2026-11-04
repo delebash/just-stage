@@ -59,6 +59,7 @@ class VIEW3D_PT_juststage_ai(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "JustStage"
     bl_label = "AI"
+    bl_order = 10  # after the Modify panel
 
     def draw(self, context):
         layout = self.layout
