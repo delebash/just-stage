@@ -1,0 +1,26 @@
+{
+  "preset": "package",
+  "description": "The USD character package: the full record, no bake, no loss (docs/standards/import-export.md §3)",
+  "format": "usd",
+  "root_layer": "character.usda",
+  "usd_export": {
+    "root_prim_path": "/Character",
+    "selected_objects_only": true,
+    "export_meshes": true,
+    "export_shapekeys": true,
+    "export_armatures": true,
+    "export_hair": true,
+    "export_curves": true,
+    "export_uvmaps": true,
+    "export_normals": true,
+    "export_materials": true,
+    "generate_preview_surface": true,
+    "generate_materialx_network": true,
+    "export_textures_mode": "NEW",
+    "relative_paths": true,
+    "export_cameras": false,
+    "export_lights": false,
+    "triangulate_meshes": false,
+    "evaluation_mode": "RENDER"
+  }
+}

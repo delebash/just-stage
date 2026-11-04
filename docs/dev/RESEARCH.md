@@ -53,6 +53,14 @@ Subjects: [1 · The machine](#1--the-machine) ·
 - **Blender 5.3 opens a saved Rendered view as Solid; Material Preview survives** — a copy saved with every 3D view on
   Rendered read back Solid (saved from the GUI and from a background run alike); Material Preview in an EEVEE scene read
   back Material Preview. The Material Output's Target is `ALL` / `EEVEE` / `CYCLES` — *measured, 2026-11-03*.
+- **MakeHuman's MHM names for the macro sliders** (`makehuman/data/modifiers/modeling_modifiers.json`, MakeHuman's
+  repo, read 2026-11-03): `macrodetails/Gender`, `/Age`, `/African`, `/Asian`, `/Caucasian`;
+  `macrodetails-universal/Muscle`, `/Weight`; `macrodetails-height/Height`; `macrodetails-proportions/BodyProportions`;
+  `breast/BreastSize`, `/BreastFirmness` - the ids `juststage:sliderIds` carries (character-data-model §0, §1.3).
+- **Blender 5.3's USD exporter** (`bpy.ops.wm.usd_export`, listed 2026-11-03): `root_prim_path`, `selected_objects_only`,
+  `export_shapekeys`, `export_armatures`, `export_hair`, `export_materials`, `generate_materialx_network`,
+  `generate_preview_surface`, `export_textures_mode`, `relative_paths`, `export_custom_properties`,
+  `custom_properties_namespace`, `convert_orientation`, … ; `bpy.types.USDHook` is there for our attributes.
 - **Cycles' hair colour from melanin** (source read 2026-11-03: `intern/cycles/kernel/svm/closure.h`,
   `kernel/closure/bsdf_util.h` on GitHub's mirror): concentration m = −ln(max(1 − melanin, 0.0001)); eumelanin
   m·(1 − redness), pheomelanin m·redness; σ = eu·(0.506, 0.841, 1.653) + pheo·(0.343, 0.733, 1.924); a colour's σ is
