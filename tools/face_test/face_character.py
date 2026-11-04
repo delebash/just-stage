@@ -74,7 +74,27 @@ def run(label, cmd, env):
         raise SystemExit(f"{label} failed")
 
 
-def main(name):
+def steps(spec, seed):
+    return [
+        ("clay", [PY_TOOLS, str(ROOT / "tools/dev.py"), "test", str(TOOLS / "test_face_clay.py"), "-k", "face_clay",
+                  "-s"]),
+        ("hero painting", [PY_TOOLS, str(TOOLS / "face_paint_cli.py"), seed, "face"]),
+        ("hero aligned", [PY_TOOLS, str(TOOLS / "align_paintings.py"), "face"]),
+        ("30-degree paintings", [PY_RDF, "-I", str(TOOLS / "face_paint_seq.py"), seed, "faceleft30", "faceright30"]),
+        # the aligned paintings' own eyes kept out of the lids' skin (SegFace masks, e2d31e4 - the foreground session)
+        ("eye masks", [PY_RDF, "-I", str(TOOLS / "parse_paintings.py"), *FACE_VIEWS]),
+        ("face points", [PY_TOOLS, "-I", str(TOOLS / "landmarks.py")]),  # the iris band's (test_face_project)
+        ("normals", [PY_RDF, "-I", str(TOOLS / "view_normals.py"), *FACE_VIEWS]),
+        ("light removed", [PY_RDF, "-I", str(TOOLS / "delight_views.py"), *FACE_VIEWS]),
+        ("skin base", [PY_RDF, "-I", str(TOOLS / "skin_base.py"), "compose", str(spec["round"]),
+                       json.dumps(spec["base"])]),
+        ("projected and rendered", [PY_TOOLS, str(ROOT / "tools/dev.py"), "test", str(TOOLS / "test_face_project.py"),
+                                    "-k", "face_project", "-s"]),
+    ]
+
+
+def main(name, start=None):
+    """A character from scratch, or (`start`) from one of its steps on: its files from chars/NAME/ put back first."""
     spec = CHARACTERS[name]
     current = DIR / "current_char.txt"
     before = current.read_text().strip() if current.exists() else "man_a"  # the face test's first man
@@ -82,25 +102,20 @@ def main(name):
         print(f"keeping {before}'s working files in {keep(before)}")
     for p in working_files():  # a copy is kept: the new character starts clean
         p.unlink()
+    if start:  # its own files back, from the step before `start`'s run
+        for p in (CHARS / name).iterdir():
+            if any(p.match(pattern) for pattern in PER_CHARACTER):
+                shutil.copy2(p, DIR / p.name)
     current.write_text(name)
     env = {**os.environ, **spec["env"], "FACETEST_BASE": str(spec["round"]), "FACETEST_ROUND": str(spec["round"])}
     seed = spec["env"]["FACETEST_IDENTITY"]
     t0 = time.time()
-    print(f"{name}: {spec['env']['FACETEST_PERSON']}")
-    run("clay", [PY_TOOLS, str(ROOT / "tools/dev.py"), "test", str(TOOLS / "test_face_clay.py"), "-k", "face_clay",
-                 "-s"], env)
-    run("hero painting", [PY_TOOLS, str(TOOLS / "face_paint_cli.py"), seed, "face"], env)
-    run("hero aligned", [PY_TOOLS, str(TOOLS / "align_paintings.py"), "face"], env)
-    run("30-degree paintings", [PY_RDF, "-I", str(TOOLS / "face_paint_seq.py"), seed, "faceleft30", "faceright30"], env)
-    # the aligned paintings' own eyes kept out of the lids' skin (SegFace masks, e2d31e4 - the foreground session)
-    run("eye masks", [PY_RDF, "-I", str(TOOLS / "parse_paintings.py"), *FACE_VIEWS], env)
-    run("face points", [PY_TOOLS, "-I", str(TOOLS / "landmarks.py")], env)  # the iris band's (test_face_project)
-    run("normals", [PY_RDF, "-I", str(TOOLS / "view_normals.py"), *FACE_VIEWS], env)
-    run("light removed", [PY_RDF, "-I", str(TOOLS / "delight_views.py"), *FACE_VIEWS], env)
-    run("skin base", [PY_RDF, "-I", str(TOOLS / "skin_base.py"), "compose", str(spec["round"]),
-                      json.dumps(spec["base"])], env)
-    run("projected and rendered", [PY_TOOLS, str(ROOT / "tools/dev.py"), "test", str(TOOLS / "test_face_project.py"),
-                                   "-k", "face_project", "-s"], env)
+    print(f"{name}: {spec['env']['FACETEST_PERSON']}" + (f" (from '{start}')" if start else ""))
+    todo = steps(spec, seed)
+    if start:
+        todo = todo[[label for label, _ in todo].index(start):]
+    for label, cmd in todo:
+        run(label, cmd, env)
     dest = keep(name)
     for p in DIR.glob(f"*{spec['round']}_*.png"):
         shutil.copy2(p, dest / p.name)
@@ -108,5 +123,10 @@ def main(name):
 
 
 if __name__ == "__main__":
-    for character in sys.argv[1:]:
-        main(character)
+    # face_character.py NAME [NAME ...] [--from STEP]   (STEP: one of steps()' labels, e.g. "projected and rendered")
+    args, start = sys.argv[1:], None
+    if "--from" in args:
+        i = args.index("--from")
+        start, args = args[i + 1], args[:i] + args[i + 2:]
+    for character in args:
+        main(character, start)

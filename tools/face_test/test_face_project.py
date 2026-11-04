@@ -55,6 +55,24 @@ TEXEL = SIZE / 4096
 LEVEL_CELL, LEVEL_SIGMA = round(8 * TEXEL), 3.0  # the gain fields' grid (texels a cell: ~1.3 mm), smoothing (cells: ~4 mm)
 HERO_VIEW, HERO_WEIGHT = "face", 4.0  # face_paint_seq.py's hero: the other views were painted from it (see below)
 FADE_FROM, FADE_TO = 1.30, 1.40  # the painting fades in up the neck, so no seam where it ends
+#: the first man's eye centre (scans/head_export.npz): every height here was set on him, and moves with a character's
+#: own eyes (_eye_shift) - mei, shorter, had no "face zone" above 1.5 m: her calibration divided by nothing, the maps
+#: came out NaN and she rendered as chrome (2026-11-03). `_head_tile` picks its polygons on the rest mesh (hm08's
+#: neutral base, the same for every character), so the tile layout - and the skin bases baked into it - stays one
+FIRST_EYES = np.array([0.0, -0.131, 1.623])
+
+
+def _eye_shift():
+    """How far this character's eyes sit from the first man's, along y (front-back) and z (up): the eyeballs' box
+    centres, as test_face_export_head.py measured his."""
+    centres = []
+    for name in ("Face.eyeLeft", "Face.eyeRight"):
+        eye = bpy.data.objects[name]
+        m = np.array(eye.matrix_world)
+        p = np.array([v.co for v in eye.data.vertices]) @ m[:3, :3].T + m[:3, 3]
+        centres.append((p.min(axis=0) + p.max(axis=0)) / 2)
+    d = (centres[0] + centres[1]) / 2 - FIRST_EYES
+    return np.array([0.0, d[1], d[2]])
 ROUGH, ROUGH_TZONE = 0.59, 0.42  # the skin material's (√0.35, Donner & Jensen) and a shinier T-zone
 PORE_TILES = 20.0  # tiles per UV unit: the face is 1.13 m a UV unit (measured, median of 17,331 triangles), the tile ~5.6 cm
 #: the oil lobe and the fine hair (research rec 5); the oil lobe at 0.75 of the skin's roughness - Unreal's sharper
@@ -869,7 +887,10 @@ def test_face_project():
     mesh.uv_layers["HeadTile"].data.foreach_get("uv", uvs)  # the head's own tile (_head_tile)
     uvs = uvs.reshape(-1, 2)
     ev.to_mesh_clear()
-    head = (co[verts][:, :, 2] > FADE_FROM).all(axis=1)
+    shift = _eye_shift()
+    fade_from, fade_to = FADE_FROM + shift[2], FADE_TO + shift[2]
+    print(f"  heights moved {shift[2]:+.3f} m with this character's eyes")
+    head = (co[verts][:, :, 2] > fade_from).all(axis=1)
     (pos_map, nrm_map), mask = up.raster_uv(uvs[loops[head]], [co[verts[head]], vn[verts[head]]], SIZE)
     points = pos_map[mask].astype(np.float64)
     normals = nrm_map[mask].astype(np.float64)
@@ -1035,7 +1056,7 @@ def test_face_project():
     print(f"  lid rim: {rim.sum()} texels take the rim's colour")
     # the lips' contact takes the painting's own colours: the clay views now have the closed lips (face_shape.py), so no
     # view sees teeth or a gap there (round 44: the flat colour that replaced them read as a strip under the upper lip)
-    t = np.clip((points[:, 2] - FADE_FROM) / (FADE_TO - FADE_FROM), 0.0, 1.0)
+    t = np.clip((points[:, 2] - fade_from) / (fade_to - fade_from), 0.0, 1.0)
     # grazing-only texels fade to the skin's median - by how squarely their best view sees them (from 0.5 down to
     # 0.25), not by the views' summed weight against its median (until round 71): seen at ~0.6 by the view from
     # below alone, the nostrils' insides fell under that bar (the close views' weight sets it) and turned skin-light
@@ -1050,11 +1071,11 @@ def test_face_project():
         # keeps - the ramp everywhere took the lips', nose's and brows' painting (round 76: the base under 94% of the
         # texels, not 87%; the scan's brows showed through). The chin: the lowest well-seen texel on the middle line
         middle = (fade > 0.9) & (np.abs(points[:, 0]) < 0.015)
-        chin = float(np.percentile(points[middle, 2], 1)) if middle.sum() > 100 else FADE_TO
+        chin = float(np.percentile(points[middle, 2], 1)) if middle.sum() > 100 else fade_to
         below = np.clip((chin + 0.01 - points[:, 2]) / 0.01, 0.0, 1.0)  # 0 above the chin, 1 a cm below it
         fade = fade * (1.0 - below) + _ramp_inside(points, fade) * below
         print(f"  neck ramp below the chin at {chin:.3f} m")
-    face_zone = covered & (points[:, 2] > 1.5) & (fade > 0.9)
+    face_zone = covered & (points[:, 2] > 1.5 + shift[2]) & (fade > 0.9)
     fallback = np.median(albedo[face_zone], axis=0)
     under = np.broadcast_to(fallback, albedo.shape)
     if BASE:
@@ -1144,7 +1165,7 @@ def test_face_project():
         mesh_map = np.zeros((SIZE, SIZE, 3), np.float32)
         mesh_map[mask] = normals
         keep = np.clip((eye_gap - 0.0015) / 0.004, 0.0, 1.0)
-        keep *= 1.0 - np.exp(-(((points[:, 2] - 1.5484) / 0.0025) ** 2)) * (np.abs(points[:, 0]) < 0.03)
+        keep *= 1.0 - np.exp(-(((points[:, 2] - 1.5484 - shift[2]) / 0.0025) ** 2)) * (np.abs(points[:, 0]) < 0.03)
         keep_map = np.zeros((SIZE, SIZE), np.float32)
         keep_map[mask] = keep
         half = mask[::2, ::2]
@@ -1263,7 +1284,7 @@ def test_face_project():
     key = bpy.data.objects.new("key", bpy.data.lights.new("key", "AREA"))
     key.visible_camera = False
     scene.collection.objects.link(key)
-    head_c = np.array([0.0, -0.06, 1.615])
+    head_c = np.array([0.0, -0.06, 1.615]) + shift  # the light rig's centre, on this head
     shade_p = _blur(_linear(photo[::4, ::4]), 6.0) @ np.array(sd.LUMA)
     face_rows, face_cols = slice(30, 230), slice(60, 196)  # the face in the 256² quick renders
     best_light = None
