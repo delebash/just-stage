@@ -33,7 +33,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 gate = importlib.import_module("blender_gate")
 viewport = importlib.import_module("bl_ext.system.juststage.core.viewport")
 LIGHTS = ("key", "rim", "sky")
-ENGINES = ("eevee", "cycles", "unreal", "unreal_mh")  # unreal_mh: the MetaHuman benchmark (its own maps), if rendered
+#: unreal_mh: the MetaHuman benchmark by the render queue (left empty: its actor is editor-only); ue_ours / ue_mh: both
+#: characters captured from the editor's viewport (tools/gate/unreal_capture.py) - ue_ours against unreal checks that
+#: capture route
+ENGINES = ("eevee", "cycles", "unreal", "ue_ours", "ue_mh")
 LUMA = np.array([0.2126, 0.7152, 0.0722])
 #: crops on the face camera, as fractions of the frame (x, y from the top-left, size): picked on Cycles' face render
 CROPS = {"cheek": (0.40, 0.58, 0.12), "nose": (0.50, 0.50, 0.08), "forehead": (0.48, 0.31, 0.10),
@@ -136,7 +139,8 @@ def main() -> None:
                 report["linearity"][f"{engine}_{cam_name}"] = (_sphere_mean(got["stage"], centre, radius) /
                                                                _sphere_mean(summed, centre, radius))
             # Blender's engines keep their own units (scale ~1 to Cycles, reported); Unreal is brought to Cycles'
-            stage[engine] = summed if engine.startswith("unreal") else (got["stage"] if got["stage"] is not None else summed)
+            stage[engine] = summed if engine.startswith(("unreal", "ue_")) else (
+                got["stage"] if got["stage"] is not None else summed)
         shown = {e: _tonemap(img, SHEETS / f"{e}_{cam_name}.png") for e, img in stage.items()}
         engines = [e for e in ENGINES if e in shown]
         if engines:
