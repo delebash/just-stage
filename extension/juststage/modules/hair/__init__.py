@@ -12,10 +12,11 @@ def register(api_range: str):
     import bpy
 
     from ... import api
-    from . import hair_add, operators
+    from . import hair_add, hair_set_colour, operators
 
     api.register_plugin(PLUGIN, api=api_range, needs=NEEDS, provides=("commands",), builtin=True)
     api.register_command(hair_add, PLUGIN)
+    api.register_command(hair_set_colour, PLUGIN)
     for cls in operators.CLASSES:
         bpy.utils.register_class(cls)
 

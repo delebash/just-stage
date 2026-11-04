@@ -27,4 +27,17 @@ class JUSTSTAGE_OT_hair_add(CommandOperator, bpy.types.Operator):
     redness: bpy.props.FloatProperty(name="Redness", default=1.0, min=0.0, max=1.0)
 
 
-CLASSES = (JUSTSTAGE_OT_hair_add,)
+class JUSTSTAGE_OT_hair_set_colour(CommandOperator, bpy.types.Operator):
+    """A groom's colour by melanin and its redness"""
+
+    bl_idname = "juststage.hair_set_colour"
+    bl_label = "Hair colour"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.hair.set_colour"
+
+    groom: bpy.props.StringProperty(name="Groom")
+    melanin: bpy.props.FloatProperty(name="Melanin", default=0.8, min=0.0, max=1.0)
+    redness: bpy.props.FloatProperty(name="Redness", default=1.0, min=0.0, max=1.0)
+
+
+CLASSES = (JUSTSTAGE_OT_hair_add, JUSTSTAGE_OT_hair_set_colour)

@@ -58,6 +58,15 @@ class VIEW3D_PT_juststage_character(bpy.types.Panel):
         for item in obj.juststage.sliders:
             if item.group == wm.juststage_slider_group:
                 detail.prop(item, "value", text=item.label, slider=True)
+        own = obj.juststage.character_id
+        grooms = [o for o in bpy.data.objects if o.type == "CURVES" and o.juststage.part_of == own]
+        if grooms:
+            hair = layout.column(align=True)
+            hair.label(text="Hair")
+            for groom in grooms:
+                row = hair.row(align=True)
+                row.label(text=groom.name)
+                row.operator("juststage.hair_set_colour", text="Colour").groom = groom.name
         for group, cmds in menu_groups("Character"):
             if group in ("New human", "Body"):
                 continue

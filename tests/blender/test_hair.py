@@ -100,3 +100,17 @@ def test_an_unknown_style_is_refused(human):
     result, _ = human
     with pytest.raises(api.CommandError):
         api.run("juststage.hair.add", character=result.character, style="mohawk")
+
+
+def test_a_grooms_colour_changes_in_place(human):
+    result, _body = human
+    out = api.run("juststage.hair.add", character=result.character)
+    hair = bpy.data.objects[out.groom]
+    changed = api.run("juststage.hair.set_colour", groom=out.groom, melanin=0.3, redness=0.6)
+    assert changed.strands == len(hair.data.curves)
+    for name, want in (("melanin", 0.3), ("redness", 0.6)):
+        values = np.empty(len(hair.data.curves), dtype=np.float32)
+        hair.data.attributes[name].data.foreach_get("value", values)
+        assert np.allclose(values, want)
+    with pytest.raises(api.CommandError, match="groom"):
+        api.run("juststage.hair.set_colour", groom="no such groom", melanin=0.3, redness=0.6)
