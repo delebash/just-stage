@@ -110,6 +110,10 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     skin_material: bpy.props.PointerProperty(type=bpy.types.Material, description="this character's skin material")
     gnm_identity: bpy.props.CollectionProperty(type=JustStageFloat, description="GNM head identity coefficients")
     sliders: bpy.props.CollectionProperty(type=JustStageSlider, description="target.json's detail sliders' values")
+    # the asset library's fields (project-files.md §2)
+    asset_version: bpy.props.IntProperty(default=1, description="the asset's own version (Blender has none)")
+    provenance: bpy.props.StringProperty(description="where the asset came from")
+    licence_label: bpy.props.StringProperty(description="its licence, shown and never filtered")
     # on a part's object (an eye, the teeth): which part it is (MetaHuman's name) and whose
     part: bpy.props.StringProperty()
     part_of: bpy.props.StringProperty(description="the character's assetInfo identifier")

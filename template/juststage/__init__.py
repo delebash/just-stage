@@ -52,6 +52,9 @@ def _on_factory_preferences(_=None):
     _ensure_addon()
     _viewport().use_gpu()
     _ui("theme").apply(bpy.context.preferences)
+    import importlib
+
+    importlib.import_module(ADDON + ".core.library").register_library(bpy.context.preferences)  # the Content panel's
     bpy.context.preferences.view.show_splash = False  # Blender's splash; File > Open Recent keeps the recent files
 
 

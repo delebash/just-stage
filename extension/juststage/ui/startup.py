@@ -37,6 +37,13 @@ def content_panel(screens) -> None:
             if area.type == "PROPERTIES":
                 area.type = "FILE_BROWSER"
                 area.ui_type = "ASSETS"
+            if area.type == "FILE_BROWSER" and area.ui_type == "ASSETS":
+                params = getattr(area.spaces.active, "params", None)  # none until the browser has drawn once
+                if params is not None and hasattr(params, "asset_library_reference"):
+                    try:
+                        params.asset_library_reference = "JustStage"  # core/library.py's NAME
+                    except TypeError:  # the library isn't registered in these preferences
+                        pass
 
 
 def open_sidebar(retries: int = 15) -> None:

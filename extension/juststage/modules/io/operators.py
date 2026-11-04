@@ -21,4 +21,21 @@ class JUSTSTAGE_OT_export_run(CommandOperator, bpy.types.Operator):
     preset: bpy.props.StringProperty(name="Preset", default="package")
 
 
-CLASSES = (JUSTSTAGE_OT_export_run,)
+class JUSTSTAGE_OT_library_save(CommandOperator, bpy.types.Operator):
+    """Save the character to the asset library, in a catalogue, with its licence and where it came from"""
+
+    bl_idname = "juststage.library_save"
+    bl_label = "Save to library"
+    bl_options = {"REGISTER"}
+    command_id = "juststage.library.save"
+
+    character: bpy.props.StringProperty(name="Character")
+    catalog: bpy.props.StringProperty(name="Catalogue", default="Characters")
+    name: bpy.props.StringProperty(name="Name", default="")
+    description: bpy.props.StringProperty(name="Description", default="")
+    licence: bpy.props.StringProperty(name="Licence", default="")
+    provenance: bpy.props.StringProperty(name="Provenance", default="")
+    library: bpy.props.StringProperty(name="Library", default="", subtype="DIR_PATH")
+
+
+CLASSES = (JUSTSTAGE_OT_export_run, JUSTSTAGE_OT_library_save)

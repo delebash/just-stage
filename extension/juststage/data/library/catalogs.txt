@@ -1,0 +1,24 @@
+# Blender's asset catalogue definition file (VERSION 1: {UUID}:{path}:{simple name}) - JustStage's catalogue
+# tree, docs/standards/project-files.md §2. The UUIDs are uuid5 of the path under JustStage's namespace: fixed, so
+# every install and every library shares them. Copied into each library folder as blender_assets.cats.txt.
+
+VERSION 1
+
+0162c5e7-bc34-571b-a807-518a5605ca8f:Characters:Characters
+74331d08-8d2a-530b-a81e-b6a3a0d18e86:Bodies:Bodies
+f675fce9-8081-51e4-a2b7-65597ebc8e85:Bodies/Presets:Bodies-Presets
+d10c332a-c189-5665-a4cb-632d294f1dbc:Heads:Heads
+ffb1aab7-b6e1-588f-9083-2a95b2510cff:Heads/Presets:Heads-Presets
+1919f9e4-6968-56d6-b705-57d90b6710e3:Skins:Skins
+9c254877-3ca9-5910-89f9-c4182e4a4edc:Eyes:Eyes
+97faee74-8c3f-5fe3-8bb3-438010f42c63:Hair:Hair
+fa2af1d5-76f6-5989-9185-06b8faf241d1:Hair/Scalp:Hair-Scalp
+1d582a90-04d3-5461-a465-f94d3ad46a7d:Hair/Brows:Hair-Brows
+5a9e8e47-3f0d-5276-ba24-793286cee3bb:Hair/Lashes:Hair-Lashes
+bb6badc2-6125-57d1-984d-913a854ba8bd:Hair/Beards:Hair-Beards
+c4b46b74-bced-5cf6-a458-72cb353b069c:Clothes:Clothes
+9ec1332c-5cfc-5358-840e-bbdb21be44b0:Props:Props
+89462021-088f-5d66-ab28-de8a1ead0d7a:Poses:Poses
+aa07350c-9958-564c-95b8-3a984bf5ef74:Expressions:Expressions
+c7f1d134-7d85-53cf-88de-5734ab6f5f49:Motions:Motions
+84fab91d-244b-5489-83e9-9683a5096ea8:Materials:Materials
