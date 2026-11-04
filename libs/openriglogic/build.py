@@ -12,7 +12,9 @@ no headers, so they come from python.org's NuGet package of the same version.
     python libs/openriglogic/build.py [--jobs N]
 
 Inputs (fetched by hand once, see the working doc): the source at SOURCE, pinned to COMMIT; Python 3.13.13's headers
-and import library from the NuGet package `python` 3.13.13 at PY_DEV; SWIG from PyPI's `swig` wheel in the tools venv.
+and import library from the NuGet package `python` 3.13.13 at PY_DEV; SWIG from PyPI's `swig` wheel in the tools venv,
+pinned to SWIG_VERSION: RigLogic.i calls SWIG's runtime macro `SWIG_EXPAND_AND_QUOTE_STRING`, which SWIG 4.5 dropped
+(its swigrun.swg uses `SWIG_STRINGIFY`) - the wrapper failed with C2065/C3861 under 4.5.1 (2026-11-04); 4.3.1 has it.
 Output: dist/openriglogic-<version>-cp313-cp313-win_amd64.whl.
 """
 
@@ -38,6 +40,7 @@ CMAKE = Path(
 )
 DIST = Path(__file__).resolve().parent / "dist"
 PYTHON_VERSION = "3.13.13"
+SWIG_VERSION = "4.3.1"  # `.dev/venv-tools/Scripts/python -m pip install swig==4.3.1`
 
 
 def run(args: list[str | Path]) -> None:
@@ -55,6 +58,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--jobs", type=int, default=2, help="parallel compiles (the machine is shared)")
     args = parser.parse_args()
+    swig = subprocess.run([str(SWIG), "-version"], capture_output=True, text=True, check=True).stdout
+    if f"SWIG Version {SWIG_VERSION}" not in swig:
+        sys.exit(f"{SWIG} is not SWIG {SWIG_VERSION}: pip install swig=={SWIG_VERSION} in the tools venv")
     head = subprocess.run(["git", "-C", str(SOURCE), "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
     if head.stdout.strip() != COMMIT:
         sys.exit(f"{SOURCE} is at {head.stdout.strip()}, not {COMMIT}")

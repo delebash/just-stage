@@ -152,6 +152,35 @@ Subjects: [1 · The machine](#1--the-machine) ·
 
   The library's eight tones solve L* 74 down to 25 in steps of 7: melanin 0.00457, 0.01239, 0.02164, 0.03288,
   0.04705, 0.06597, 0.09366, 0.14102. *Computed, 2026-11-04.*
+- **CC5's default character, seen** (the user's three screenshots of HD Aaron in CC5's live view, 2026-11-04; kept out
+  of the repo): SubD 1; scanned skin maps - pores, redness on the nose and cheeks, stubble, eye bags, neck creases; wet
+  eyes with a pink caruncle and lower lid rim and a shadow under the upper lid; a dark blue-grey stage, a strong key
+  with soft image light. Against it ours was one flat skin colour, no brows, faceted outlines, a bright flat eye white.
+  The gaps and the recs: `docs/plans/2026-11-04-realism.md`.
+- **The face test's colour maps** (`.dev/facetest/chars/<name>/face_albedo.png`, measured 2026-11-04): all four
+  people's maps share one brightness (median ~0.54 / 0.31 / 0.22 linear) - `test_face_project.py` scales every map to
+  the skin model's luminance at melanin 0.012, then a per-channel gain normalised to luminance 1, and makes a dark
+  person dark through the scene's exposure (Amara -2.59 EV). A skin taken from them needs its own brightness.
+- **The body's UDIM layout** (`tools/make_udim.py` on the default human, hm08's own islands packed per region by
+  Blender's packer, measured 2026-11-04): 1001 head and neck 4,934 polygons (everything above 1.28 m), 1002 torso
+  1,146, 1003 arms and hands 5,743, 1004 legs and feet 1,310, 1005 nails 245 (MPFB2's CC0 nail masks). hm08 is all
+  quads (73,944 loops, 18,486 polygons with the helpers).
+- **MPFB2's region masks** (CC0, `src/mpfb/data/textures/mpfb_*.jpg` at 6ff1eb35, 2048², hm08's UVs): aureolae,
+  crotch, ears, eyelids, face, fingernails, genitals, inside-mouth, lips, toenails - crisp white shapes. Its v2
+  procedural skin (`entities/nodemodel/v2`, GPL-3 code) builds on its own services and would need MPFB2 installed and
+  run; a trial run in an isolated Blender was refused by Claude Code's permission check as code from outside.
+- **The stage's light, trials** (Cycles, the library's Average woman, 2026-11-04): three area lights (key 300 W, fill
+  100 W, rim 120 W) under AgX base contrast read flat and pale; Poly Haven's Studio Small 09 as the fill at 0.5 flattened
+  it again; at 0.25, no fill light, AgX "Medium High Contrast" and -0.3 EV the face had shape. AgX's looks in 5.3
+  include "AgX - Medium High Contrast" (set and rendered).
+- **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
+  runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
+  (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065
+  `py3dna_13_5_2`, C3861); PyPI's `swig` 4.3.1 still defines it (`SWIG_QUOTE_STRING`). The C++ libraries and benchmarks
+  compiled under 4.5.1.
+- **EEVEE and the occlusion film** (2026-11-04): ICT's sheet sits a median 0.57 mm off our eyeball (16 of 152 vertices
+  up to 0.2 mm under it, by the cornea); EEVEE draws it (seen as flat red) as a blended surface, but at the face test's
+  strengths (tuned in Cycles, where the lids cast real shadows) its darkening barely shows.
 
 ## 2 · CC5 and its plugins
 

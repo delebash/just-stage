@@ -1025,11 +1025,21 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            plugins' features (Headshot, SkinGen, Smart Hair, AccuRIG, the pipeline), no iClone work; the OpenRigLogic
            build is tried again (a refusal is reported, never worked around); CC0 light maps from Poly Haven for the
            lighting presets.
-           BLOCKED - FOR THE USER (2026-11-03): building OpenRigLogic (`python libs/openriglogic/build.py`, the face
-           rig's step 7) was refused by Claude Code's permission check: it compiles source fetched from GitHub
-           (EpicGames/OpenRigLogic at ea253d5, MIT). The configure step ran clean (Python 3.13.13 headers, SWIG 4.5.1,
-           VS 2019). To go on: allow it (a permission rule for that command), or run it yourself:
-           `.dev\venv-tools\Scripts\python.exe libs\openriglogic\build.py --jobs 2`.
+           QUALITY FIRST - 2026-11-04, the user, verbatim: "the naked default quality still does not seem to be as
+           good as cc5 naked defualt, what do you think?"; "priority is quality then build the rest of the feature
+           this was already supposed to be what you are doing, remember this"; "the realism is not close to cc5 not
+           sure what you have been working on but yours looks plastic, the eyes dont look real, how do you propose to
+           fix it and why do you think you are having problems with realism" (CC5 screenshots of HD Aaron); "work
+           around whatever you need to dont just quit you have permissions to do anything you need to". My recs (in
+           the reply, attacked, then built under THE WORKING GO): SubD 1 by default; the eye occlusion and tearline in
+           the app; the stage's portrait light (studio HDRI fill, dark stage); mapped skins from the face test's people
+           on every character (the body's UDIM layout); the library's characters wearing them; New human dressed;
+           the body's regions coloured. Working doc: `../plans/2026-11-04-realism.md`.
+           OPENRIGLOGIC BUILD (the face rig's step 7; `python libs/openriglogic/build.py`, EpicGames/OpenRigLogic at
+           ea253d5, MIT): refused by Claude Code's permission check 2026-11-03; on the user's "2 your rec go"
+           (2026-11-04) it ran - the libraries and benchmarks compiled, the RigLogic Python wrapper failed:
+           `RigLogicPYTHON_wrap.cxx(3247): error C2065: 'py3dna_13_5_2': undeclared identifier` and C3861
+           `SWIG_EXPAND_AND_QUOTE_STRING` not found (SWIG 4.5.1 from PyPI; the cause not yet traced). Open.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
