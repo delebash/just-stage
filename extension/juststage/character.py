@@ -11,6 +11,26 @@ import bpy
 
 SCHEMA_VERSION = 1
 
+#: True while `body.build.apply_macros` writes the sliders' values: their update callbacks then stay quiet
+APPLYING = {"macros": False}
+
+
+def _slider(name: str, label: str, default: float):
+    """A body slider the Body panel draws: dragging it runs `juststage.body.set_slider` (one way per job: the same
+    command the API and MCP doors run)."""
+
+    def update(self, context):
+        if APPLYING["macros"] or self.kind == "NONE" or not self.character_id:
+            return
+        from . import api
+
+        try:
+            api.run("juststage.body.set_slider", character=self.character_id, slider=name, value=getattr(self, name))
+        except api.CommandError as e:
+            print(f"JustStage: {label}: {e}")
+
+    return bpy.props.FloatProperty(name=label, default=default, min=0.0, max=1.0, update=update)
+
 
 class JustStageFloat(bpy.types.PropertyGroup):
     """One number in a list — for lists longer than Blender's 32-wide vector properties (a head's 170 GNM
@@ -27,17 +47,17 @@ class JustStageCharacter(bpy.types.PropertyGroup):
         default="NONE",
     )
     base_version: bpy.props.IntProperty(default=0)
-    gender: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    age: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    muscle: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    weight: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    proportions: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    height: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    cupsize: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    firmness: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
-    asian: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
-    caucasian: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
-    african: bpy.props.FloatProperty(default=0.33, min=0.0, max=1.0)
+    gender: _slider("gender", "Gender", 0.5)
+    age: _slider("age", "Age", 0.5)
+    muscle: _slider("muscle", "Muscle", 0.5)
+    weight: _slider("weight", "Weight", 0.5)
+    proportions: _slider("proportions", "Proportions", 0.5)
+    height: _slider("height", "Height", 0.5)
+    cupsize: _slider("cupsize", "Cup size", 0.5)
+    firmness: _slider("firmness", "Firmness", 0.5)
+    asian: _slider("asian", "Asian", 0.33)
+    caucasian: _slider("caucasian", "Caucasian", 0.33)
+    african: _slider("african", "African", 0.33)
     melanin: bpy.props.FloatProperty(default=0.0104, min=0.0, max=0.5)
     eumelanin: bpy.props.FloatProperty(default=0.6, min=0.0, max=1.0)
     blood: bpy.props.FloatProperty(default=0.016, min=0.001, max=0.2)

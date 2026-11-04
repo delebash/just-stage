@@ -13,6 +13,7 @@ import pytest
 api = importlib.import_module("bl_ext.system.juststage.api")
 menus = importlib.import_module("bl_ext.system.juststage.ui.menus")
 command_operator = importlib.import_module("bl_ext.system.juststage.ui.command_operator")
+character_panel = importlib.import_module("bl_ext.system.juststage.ui.character_panel")
 
 
 def test_every_character_command_is_in_the_menu():
@@ -46,3 +47,13 @@ def test_a_command_works_on_the_selected_character_or_its_part(human):
     part = next(o for o in bpy.data.objects if o.juststage.part_of == result.character)
     assert command_operator.character_of(part) == result.character
     assert command_operator.character_of(None) == ""
+
+
+def test_the_character_panel_finds_the_character_from_its_part(human):
+    result, obj = human
+    assert hasattr(bpy.types, "VIEW3D_PT_juststage_character")
+    api.run("juststage.head.add_parts", character=result.character)
+    part = next(o for o in bpy.data.objects if o.juststage.part_of == result.character)
+    ctx = type("Context", (), {"active_object": part})()
+    assert character_panel.active_character(ctx) == obj
+    assert character_panel.active_character(type("Context", (), {"active_object": None})()) is None

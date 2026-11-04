@@ -90,8 +90,14 @@ def apply_macros(obj: bpy.types.Object, values: dict) -> int:
     stack = makehuman.macro_target_stack(config, macro_values)
     for target, weight in stack:
         _add_target(obj, target, weight, basis)
-    for key, value in values.items():
-        setattr(obj.juststage, key, value)
+    from ... import character
+
+    character.APPLYING["macros"] = True  # the sliders' own update callbacks stay quiet while their values are written
+    try:
+        for key, value in values.items():
+            setattr(obj.juststage, key, value)
+    finally:
+        character.APPLYING["macros"] = False
     return len(stack)
 
 

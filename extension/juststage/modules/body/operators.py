@@ -47,4 +47,17 @@ class JUSTSTAGE_OT_body_subdivide(CommandOperator, bpy.types.Operator):
     viewport_level: bpy.props.IntProperty(name="Viewport level", default=2, min=0, max=2)
 
 
-CLASSES = (JUSTSTAGE_OT_body_create, JUSTSTAGE_OT_body_subdivide)
+class JUSTSTAGE_OT_body_set_slider(CommandOperator, bpy.types.Operator):
+    """One body slider: a MakeHuman macro or a race mix"""
+
+    bl_idname = "juststage.body_set_slider"
+    bl_label = "Set body slider"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.body.set_slider"
+
+    character: bpy.props.StringProperty(name="Character")
+    slider: bpy.props.StringProperty(name="Slider")
+    value: bpy.props.FloatProperty(name="Value", default=0.0)
+
+
+CLASSES = (JUSTSTAGE_OT_body_create, JUSTSTAGE_OT_body_subdivide, JUSTSTAGE_OT_body_set_slider)
