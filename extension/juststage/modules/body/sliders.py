@@ -33,6 +33,8 @@ class Slider(NamedTuple):
 
 #: target names' two ends, said plainly
 ENDS = {"decr": "−", "incr": "+", "less": "−", "more": "+"}
+#: MakeHuman's short words in plain English
+WORDS = {"trans": "move", "vert": "height", "horiz": "width", "rot": "turn", "dist": "distance"}
 
 
 def pretty(group: str, name: str) -> str:
@@ -41,6 +43,7 @@ def pretty(group: str, name: str) -> str:
     words = name.split("-")
     if words and words[0] in (group, group.rstrip("s"), "l", "r"):
         words = words[1:]
+    words = [WORDS.get(w, w) for w in words if w != "scale"]  # "scale vert" → "height"; "trans" → "move"
     if len(words) >= 3:
         core, ends = words[:-2], [ENDS.get(w, w) for w in words[-2:]]
         return f"{' '.join(core).capitalize()} ({ends[0]} / {ends[1]})"

@@ -60,4 +60,6 @@ def test_slider_names_read_as_words():
     assert sliders.pretty("nose", "nose-nostrils-angle-down-up") == "Nostrils angle (down / up)"
     assert sliders.pretty("nose", "nose-point-width-decr-incr") == "Point width (− / +)"
     assert sliders.pretty("chin", "chin-triangle") == "Triangle"
-    assert sliders.catalog()["arms/l-lowerarm-scale-depth-decr-incr"].label == "Lowerarm scale depth (− / +), left"
+    assert sliders.catalog()["arms/l-lowerarm-scale-depth-decr-incr"].label == "Lowerarm depth (− / +), left"
+    assert sliders.pretty("nose", "nose-trans-backward-forward") == "Move (backward / forward)"
+    assert sliders.pretty("nose", "nose-scale-vert-decr-incr") == "Height (− / +)"
