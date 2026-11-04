@@ -41,8 +41,10 @@ for cam_name in meta["cameras"]:
         if ONLY and f"{cam_name}_{variant}" != ONLY:
             continue
         job = queue.allocate_new_job(unreal.MoviePipelineExecutorJob)
-        job.set_editor_property("job_name", f"unreal_{cam_name}_{variant}" + os.environ.get("GATE_TAG", ""))
-        job.set_editor_property("map", unreal.SoftObjectPath(f"{DEST}/Maps/gate_{variant}"))
+        engine = "unreal_mh" if os.environ.get("GATE_MAPS") == "mh" else "unreal"
+        job.set_editor_property("job_name", f"{engine}_{cam_name}_{variant}" + os.environ.get("GATE_TAG", ""))
+        prefix = "gate_mh_" if os.environ.get("GATE_MAPS") == "mh" else "gate_"  # the MetaHuman benchmark's levels
+        job.set_editor_property("map", unreal.SoftObjectPath(f"{DEST}/Maps/{prefix}{variant}"))
         job.set_editor_property("sequence", unreal.SoftObjectPath(f"{DEST}/Seq/seq_{cam_name}"))
         config = job.get_configuration()
         for cls in (unreal.MoviePipelineImageSequenceOutput_JPG, unreal.MoviePipelineImageSequenceOutput_PNG,
