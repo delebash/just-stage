@@ -1074,7 +1074,9 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            the global CLAUDE.md research rule 7 (a-m) and memory `search-mistakes` (each with its proof). Found: four of
            the six 2026-11-04 agent briefs (scans, per-part variety, HF + Zenodo, other sites) limited shipping to CC0 /
            CC-BY / CC-BY-SA / MIT-like and called paid "unusable"; the two method briefs (skin techniques, EEVEE) did
-           not. The redo of the filtered part waits for the user's word on its scope.
+           not. The redo ran on the user's "so redo the search and do it correctly your rec go": licences read at their
+           sources (`../plans/2026-11-04-research-licences-redo.md`) and the agent's finds
+           (`../plans/2026-11-04-research-redo-sources.md`), folded into the review brief (recs 17, 18 new; 7 moved up).
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md

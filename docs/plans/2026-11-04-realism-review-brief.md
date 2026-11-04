@@ -35,10 +35,15 @@ view, not only the film: CC5 and Unreal (MetaHuman) are real-time too.
 - **Software:** Blender 5.3 beta (`E:\blender-5.3.0-beta`); Python in Blender 3.13; numpy, OpenImageIO bundled.
 - **Clean-room:** CC5, iClone, Unreal/MetaHuman studied for behaviour and public docs only; never their code or
   content. Published papers and course notes are fine (written in our own code).
-- **Licences:** a licence is a label, never a filter (the user's rule). What can't ship: non-commercial, research-only
-  or "personal use" material, and anything barring redistribution inside an app. Custom licences that allow commercial
-  use and modification (Pexels, Unsplash) ship, labelled. (Corrected 2026-11-04: an earlier draft filtered to
-  CC / MIT-like only, against the user's "dont limit the license yet".)
+- **Licences:** a licence is a label, never a filter (the user's rule). Every source gets routes, from its clause
+  read at the source (`2026-11-04-research-licences-redo.md`): SHIP (in our download, modified), FETCH (each user gets
+  it from the source), IMPORT (the user's own purchase, read by our importer), TRAIN (machine learning allowed - only
+  if we pick a small LoRA; our texture work is not training), REFERENCE. An open-source download lets anyone open the
+  files, so most store and royalty-free licences give IMPORT, not SHIP (Fab bars GPL and exporting tools; 3D Scan
+  Store bars character makers and open source; Texturing.XYZ bars open source and any AI use). Pexels, Unsplash and
+  Pixabay ship as textures made from the photos (creative work, picked by hand - their terms ban bots and ML
+  collection); BlenderKit's royalty-free ships as a base for our own maps, never its raw files (the user's call).
+  (Corrected 2026-11-04: an earlier draft filtered to CC / MIT-like only.)
 - **Training:** no full-model training (no GPU for it); small LoRAs on an open base that fit 8 GB are allowed; tiny
   special-purpose models are allowed.
 - **Standards first:** Blender's own feature or a widely used standard before our own; our own pieces are marked NOT
@@ -67,7 +72,17 @@ default (Multires). Eyes, teeth, gums, tongue are GNM's part meshes fitted by Ma
   baked into skins (`tools/build_skins.py`); the library's ten characters wear them.
 - Known gap: **variety** — a new slider-made character gets Mei's (women) or Daniel's (men) painted face recoloured
   to its tone, so a 70-year-old or a Black character wears a young East Asian face's detail. Body skin below the neck
-  is plain colour + mottle + regions (no scanned body).
+  is plain colour + mottle + regions - though 13 HSRD-100 full bodies (16K), three Sketchfab CC-BY full bodies (8K)
+  and Ten24's sample body (16K) are on hand, unused below the neck (rec 7).
+- **Already tried and measured - AI repainting** (TASKS, 2026-10-29 to 11-02, ~100 rounds): FLUX repainted our clay
+  views as photos with pore prompts ("visible pores, fine lines, slight redness", even light) and projected them. It
+  gives the faces real colour (freckles, redness, creases, lip colour) and stays the face layer. Its measured limits:
+  each painting invents its own fine detail (aligning views by DIS / RAFT optical flow made two of three held-out views
+  worse, rounds 52-54); ten views read as ten different men; painted shadows read as dents; FLUX 3 at 2K paints real
+  pores (fine detail 6.96 vs 2.92) but the head tile's 6.0 texels/mm caps it; the paintings' pores and the scanned
+  pore tile looked alike at portrait distance (rounds 27-29), and "the photo's pores catch highlights ours don't". So
+  pores come from one scan, and 2D skin enhancers (Wink, Claid, Enhancor - closed cloud repaints) would hit the same
+  limits: not a route.
 
 **Eyes (`modules/head/eyes.py`, `eye_layers.py`):** MPFB2's procedural eye ("EnhancedEye", CC0 node data: iris
 fibres, collarette, limbal ring) on GNM's eyeball with UVs re-laid by 3D radius; colour presets (brown measured,
@@ -134,12 +149,27 @@ Nexus Mods, ShareTextures, BlenderKit; samples in `.dev/downloads/other_samples/
 | Smithsonian life masks (Lincoln, Washington) | CC0 | face-shape references only |
 
 Not shippable, checked at the source: Foot3D's 118 scanned feet (its request form: "strictly for non-commercial
-research purposes", CC BY-NC 4.0; only its code is MIT). From the user's sites, usable: Pexels and Unsplash (their own
-licences allow free commercial use and modification; their limits - no reselling unaltered copies, no redistribution on
-stock platforms, no competing photo service - don't touch textures made from them; each photo checked for AI origin
-and real resolution; labelled with its licence). Not usable: Nexus Mods 13537 (built from Cyberpunk's assets, no reuse); ShareTextures
-(now "Custom CC0 ... No asset redistribution ... in plugins" - a correction to our 2026-11-02 file); BlenderKit's
-royalty-free assets (no redistribution in asset packs; a few CC0 skins and sculpt brushes exist).
+research purposes", CC BY-NC 4.0; only its code is MIT); Nexus Mods 13537 (built from Cyberpunk's assets);
+ShareTextures ("No asset redistribution ... in plugins").
+
+From the redo of the filtered search (`2026-11-04-research-licences-redo.md`, `2026-11-04-research-redo-sources.md`;
+stock photo sites, royalty-free marketplaces, scan and texture stores, Flickr 7 / 8, Hugging Face's "other" licence,
+Japanese, Chinese and Korean sites):
+
+| What | Licence / price | Routes | Use |
+|---|---|---|---|
+| Ten24 sample scan: full body + head, 16K colour (head 9.7, face 7.6-11, body 7.9 texels/mm, measured), six normal levels; a light-skinned adult man; downloaded to `.dev/downloads/ten24_sample/` | "use this scan as you wish for both commercial and personal projects", credit | SHIP with credit | body detail layers (recs 7, 17), the relief test (rec 18) |
+| Renderpeople's own Sketchfab uploads (Mei Posed 001 East Asian woman 8K, Carla, Eric, Nathan, Dennis, Sophia, Claudia) | CC BY 4.0 (by the `renderpeople` account, API) - their shop terms cover shop files only | SHIP with credit | head and body bases |
+| Pexels / Unsplash / Pixabay close-ups (skin by tone and age, freckles, moles, palms, hair, eyes); one sharp at 1:1 (Pexels 7479965, dark skin, follicles), most soft | own licences; no bots, no ML collection | SHIP as derived patches | small detail patches, references |
+| BlenderKit royalty-free skins and CC0 sculpt brushes (micro-veins, fine wrinkles, milia) | RF: no re-sale "in the same form" | SHIP as a base | detail layers (rec 6) |
+| deep3dstudio raw head scans: 16K cross- + parallel-polarised, Asian and European 60s-70s, African 20s-30s | $12.99 each; "For non-AI use only"; RenderHub bars making the asset accessible | IMPORT | user-supplied bases (better than HSRD for older faces) |
+| KhitrovArt coily / afro grooms (Fab), PixelHair afro / 4C (Blender), khaloui coily styles (Superhive) | $13-170; Fab Standard / RF | IMPORT | users' own hair imports |
+| Daniel Bauer "Eye Textures @ 8K": photographed sclera, vessels, maps | $50; licence text unread | IMPORT likely | sclera reference |
+| 3D.sk (4,000 people, ages 0-71+, cross-polarised photo sets), Ten24 SP-6M (7,400+ people, 16K), HumanScanRepository | subscriptions / contract; ML by separate plan | TRAIN, IMPORT, REFERENCE | only if a small LoRA is ever picked |
+| Texturing.XYZ, 3D Scan Store, Triplegangers, Fab, CGTrader, TurboSquid, Sketchfab Store | bar open source, character makers or end-user access | IMPORT at most (3D Scan Store: REFERENCE only) | - |
+
+Flickr licences 7 and 8 and Hugging Face's "other" licence held nothing usable. Gaps that stay: children (3D.sk's
+clothed photo references only), nails (scans reconstruct them poorly), sharp sclera veins, older Black faces (70+).
 
 Confirmed gaps (searched on Sketchfab, Hugging Face, Zenodo and the sites above, nothing shippable at the bar):
 realistic hair strands beyond the Blender demo (coily scans, beards), UV skin textures, nails and lips (references
@@ -149,7 +179,7 @@ Candidates found, not yet fetched: Sketchfab CC-BY scans (Renderpeople "Mei Pose
 Selfie Scans "Malcolm", "Bryan", "Shelley", "Matt Chua", "Pete", "Ben"; "Hector Navarro Bust" older Latino man; more —
 `2026-11-02-research-texture-source.md` §5); MakeHuman CC0 packs `eyebrows01`, `bodyparts04` (nails), `bodyparts05`
 (beards), `eyelashes01`; Curly-Cue's code (MIT part, coily hair), Curvature Space Editing code (MIT); Edwards et al.
-2016 iris-feature data (Dryad). A Hugging Face + Zenodo deep search is running now.
+2016 iris-feature data (Dryad).
 
 ## 5 · Research already done (read before proposing; please don't repeat)
 
@@ -159,10 +189,12 @@ texturing, photo-to-head, ComfyUI/FLAME, hair-eyes-teeth, skin detail shading, i
 `2026-11-02-research-texture-source.md` (scan sources and licences), `2026-11-02-scan-skin-base.md` (the scan route),
 `2026-11-04-realism.md` (this job's working doc), `2026-11-04-research-hf-assets.md` (the Hugging Face + Zenodo deep
 search, its full query log), `2026-11-04-research-other-sites.md` (Commons, Flickr, Kaggle, GitHub, museums, the
-user's sites), `2026-11-04-research-eevee-live-view.md` (every way to raise EEVEE's live view). Texturing.XYZ (CC5's MicroSkin source) was considered: its licence
-couldn't be read; comparable vendors forbid raw redistribution and AI training, so buying is not the rec.
+user's sites), `2026-11-04-research-eevee-live-view.md` (every way to raise EEVEE's live view),
+`2026-11-04-research-licences-redo.md` and `2026-11-04-research-redo-sources.md` (the redo of the filtered search).
+Texturing.XYZ (CC5's MicroSkin source): its licence, read, bars releasing its textures or derivatives "under an Open
+Source License" and any AI use - IMPORT only, so buying it for the app is not the rec.
 
-## 6 · The plan: 16 recs (ears from the Hugging Face search, the EEVEE pass from the EEVEE search; recs 1, 3, 4, 7, 9, 11, 12, 13 updated by the searches)
+## 6 · The plan: 18 recs (ears from the Hugging Face search, the EEVEE pass from the EEVEE search, 17 and 18 from the redo; recs 1, 3, 4, 7, 9, 11, 12, 13 updated by the searches)
 
 Each rec: what, method, why this method, alternatives weighed, the attack and what it changed, the gate (how we'll
 know it worked). Standard / NOT STANDARD marked.
@@ -226,7 +258,8 @@ know it worked). Standard / NOT STANDARD marked.
   layout, fits 8 GB) and TexDreamer (CC BY 4.0, SMPL UV). Our route is measured and works; these may beat it on
   reflectance separation or speed - a side-by-side test before choosing.
 - **Attack:** ~7 min of card a person; view drift (solved in the face test by three views over a base); the painter's
-  licence is a label.
+  licence is a label; the painting gives colour only - fine relief and pores come from rec 17's shared layers (each
+  painting invents its own fine detail, measured - §3).
 - **Gate:** ten described people, all distinct, none uncanny, in both engines.
 
 ### 5 · Age as a slider on any skin (part 1)
@@ -260,6 +293,42 @@ know it worked). Standard / NOT STANDARD marked.
   renders (Sapiens2, cached), procrustes + NICP, bake; regional offsets (elbows and knees darker, forearm redness with
   age — PMC11084701, rankings only).
 - **Attack:** pose differences (arms, hands); if the wrap fails, regional detail tiles cut from the 16K atlases.
+- **Changed by the redo:** more bodies to draw on - Ten24's sample (16K, body 7.9 texels/mm measured, SHIP with
+  credit), Renderpeople's CC BY Sketchfab bodies; the regional tiles feed rec 17 either way, so body detail does not
+  wait on the wrap.
+
+### 17 · One quality for every character (parts 1, 9) — new from the redo
+- **What:** every character - library or slider-made, any tone or age - reaches the same skin quality; no character
+  sharper or blotchier than another because of its source.
+- **Method:** (a) all skins are already baked into one layout at one density (head tile 4096, face 6.0 texels/mm;
+  body tiles 1024), so a 16K source cannot make one character sharper; (b) the fine relief (pores, micro-wrinkles,
+  follicles) is a shared set of layers per region (forehead, cheek, nose, chin, lips, neck, torso, arms, hands, legs,
+  feet) and age band, several variants each, cut from the best scans (HSRD-100's 16K heads and bodies, Ten24's 16K
+  body, the Lee Perry-Smith tile) and offset per character; each character's colour and broad features from recs 3-6;
+  (c) a build check: each character's fine-band energy per region (the face test's difference-of-Gaussian bands,
+  `tools/face_test/flow_views.py`) and its left-in light measured against the best character; below a floor, the
+  build fails and that source gives colour only.
+- **Why:** CC5's SkinGen puts the same MicroSkin detail (Texturing.XYZ scans) on every character; MetaHuman selects
+  scanned detail maps from a library; our measured limit is the tile, not the source.
+- **Attack:** one pore set for all reads cloned -> per region, age and sex, several variants, randomised placement;
+  a floor tuned to the best character could fail every phone scan -> they keep giving colour only, which is the
+  point; the body tiles at 1024 cap body detail -> the shared tiling layers carry it at render time, not the baked tile.
+- **Gate:** four characters of different tones and ages side by side at 1:1 on cheek, nose, hand and forearm: the same
+  detail sharpness, measured within ~10% band energy.
+
+### 18 · Relief and shine at pore scale — the test never run (part 1) — new from the redo
+- **What:** the open part of "plastic": how the skin's surface catches light, not its colour (rounds 27-29: "the
+  photo's pores catch highlights ours don't").
+- **Method:** one close-up scene (cheek and nose, a light moving across, EEVEE and Cycles), four relief sources side by
+  side: HSRD-100 16K crops, Ten24 16K crops, the Lee Perry-Smith tile, and relief estimated from a sharp photo
+  (Pexels 7479965) by StableNormal / Marigold normals (Apache-2.0; RESEARCH: "none tested at pore scale"); with and
+  without per-pore shine (roughness and specular darkened in the pores from the cavity map).
+- **Why:** it decides rec 17's source; the AI colour route is already measured (§3), this part never was.
+- **Alternatives:** Disney's graph-based micro-wrinkles (SGP 2023, training-free) as a fifth contender.
+- **Attack:** photo relief from oily, specular light may be wrong at pore scale -> that's what the test measures;
+  each source's scale set from its measured texel density.
+- **Gate:** the user picks from the side-by-side; the numbers (band energy, highlight breakup under the moving light)
+  beside it.
 
 ### 8 · Brows and lashes (part 4)
 - **Method:** a strand brow generator — one hair per follicle on a shape mask, direction nearly vertical at the head
@@ -362,9 +431,11 @@ to Unreal (CC5 has one) through the planned Unreal plugin. A search for every wa
 (settings, light probes, our own shaders from published real-time skin / eye / hair methods, add-ons, live links) is
 running and lands in this brief.
 
-Then: 16's settings (cheap, measured) and 1 (live hair, half built) → 2 + 3 (bases, tone) → 4 (generator) → 6, 5
-(layers, age) → 12 (eyes, incl. parallax) → 8-10 (brows, facial and body hair) → 13-15 (mouth, nails, ears) → 16's
-probe volume → 7 (bodies) → 11 (styles, with cards for dense hair).
+Then: 16's settings (cheap, measured) and 1 (live hair, half built) → 18 (the relief and shine test - it picks the
+detail source) → 2 + 3 (bases, tone) → 17 + 7 (shared detail layers incl. the body tiles; the body wrap) → 4
+(generator) → 6, 5 (layers, age) → 12 (eyes, incl. parallax) → 8-10 (brows, facial and body hair) → 13-15 (mouth,
+nails, ears) → 16's probe volume → 11 (styles, with cards for dense hair). (Changed by the redo: 7 moved up beside 17
+- every character shows plain body skin today, and the bodies are on hand.)
 
 ## 8 · How each is checked
 
@@ -387,3 +458,7 @@ test per change; full suites at the end of each batch.
 7. **Recs 13 and 15:** the best way to turn real scans (intraoral arches, ear meshes) into shape targets on our base's
    parts, and whether that beats a statistical model.
 6. **Order:** would a different order reach the bar sooner?
+8. **Rec 17:** do real pores differ enough by ethnicity and sex (not only by region and age) that shared layers need
+   those axes too? (Not researched.) And is a per-region band-energy floor the right quality check?
+9. **IMPORT route:** the best paid sources (deep3dstudio's polarised older heads, coily grooms, photographed sclera)
+   allow a user's own purchase, not shipping - is an importer for user-bought scans worth building early?
