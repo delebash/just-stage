@@ -1007,8 +1007,12 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            three-point studio lights. Then JustStage's own lashes moved into the app (working doc
            `../plans/2026-11-04-app-lashes.md`): `modules/hair/lashes.py`, attached like every groom, the library's
            Hair/Lashes asset, the face test using it. On the way, every base mesh now gets one lift (a "JustStage
-           floor" shape key carries each shape's own), so grooms fit every character. Open from it:
-           - EEVEE's cornea blotches on the iris in close-ups (the live view's eye);
+           floor" shape key carries each shape's own), so grooms fit every character. Then the eyes (working doc
+           `../plans/2026-11-04-app-eyes.md`): EEVEE's cornea a clear blended layer (its screen-space refraction
+           blotched the iris), and MPFB2's procedural iris and white moved from the face test into the app, for GNM's
+           faceted regions. The library rebuilt on all of it (28 assets). Open from it:
+           - EEVEE's eye white bright and flat (no eye-occlusion layer in the app yet; the face test has one);
+           - an eye-colour setting;
            - calibrate the EEVEE hair stand-in (~10-15% darker than Cycles);
            - a wider Content panel in the startup layout.
            BLOCKED - FOR THE USER (2026-11-03): building OpenRigLogic (`python libs/openriglogic/build.py`, the face
