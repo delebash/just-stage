@@ -215,6 +215,15 @@ know it worked). Standard / NOT STANDARD marked.
 - **Method:** a layer stack in the skin material (blend modes, masks, strength each, Blender nodes); freckles as a
   point process on UV with a size distribution (Schneider, Egger & Vetter 2018), real spots taken from scans.
 - **Attack:** procedural blemishes look fake when uniform → distributions from scans, never uniform dots.
+- **Substance's role in CC5, and ours:** SkinGen's "dynamic material is powered by Adobe Substance Technology"
+  (parametric layers) and CC5 round-trips to Substance Painter for painting. Ours: Blender's shader nodes are the live
+  layer engine (EEVEE and Cycles), Blender's bake writes the export maps; painting decals / tattoos / makeup / scars
+  at exact places in Blender's Texture Paint, and a UDIM round trip (export tiles, paint, import) for any outside
+  painter - ArmorPaint, TextureCraft (storytold, MIT OR Apache-2.0, pure Rust, a Substance-Painter-style layer painter
+  with mesh-map baking and an MCP server; created 2026-10-14, in active development) or Substance itself. Tiling
+  detail textures (pore tiles per region, freckle and scar patterns) authored in Blender nodes first; Material Maker
+  (MIT) or MaterialCraft (storytold, MIT OR Apache-2.0, a Substance-Designer-style node designer; created 2026-11-01)
+  only for a generator Blender lacks. Nothing bought.
 
 ### 7 · Body skin (part 1)
 - **Method:** HSRD-100 bodies (standing, mostly bare skin) onto our body: correspondences from body keypoints on
