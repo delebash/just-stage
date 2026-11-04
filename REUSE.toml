@@ -25,6 +25,11 @@ SPDX-FileCopyrightText = "Tomáš Klecer (MakeHuman's hair-editor asset pack)"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
+path = ["extension/juststage/data/fetched/makehuman/targets/faceunits/**", "extension/juststage/data/fetched/makehuman/packs/faceunits01.json"]
+SPDX-FileCopyrightText = "Mika Suominen (MakeHuman's Faceunits 01 asset pack)"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
 path = ["extension/juststage/data/fetched/optics/**"]
 SPDX-FileCopyrightText = "Scott Prahl (OMLC); CIE — published tables, no licence stated; cited in tools/fetch_data.py"
 SPDX-License-Identifier = "LicenseRef-cited-data"
