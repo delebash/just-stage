@@ -110,6 +110,9 @@ def create_human(name: str, values: dict) -> bpy.types.Object:
     props.kind = "HUMAN"
     props.base_version = BASE_VERSION
     apply_macros(obj, values)
+    from . import sliders
+
+    sliders.add_items(obj)
     stand_on_floor(obj)
     return obj
 

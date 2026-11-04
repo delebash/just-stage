@@ -27,19 +27,21 @@ def register():
     api.register_plugin(CORE, api=_api_range(), builtin=True)
     for module in _CORE_COMMANDS:
         api.register_command(module, CORE)
-    for cls in (*operators.CLASSES, *ai_panel.CLASSES, *character_panel.CLASSES, *usd_hooks.CLASSES):
+    for cls in (*operators.CLASSES, *ai_panel.CLASSES, *usd_hooks.CLASSES):
         bpy.utils.register_class(cls)
     for module in MODULES:
         module.register(_api_range())
     menus.register()
+    character_panel.register()
 
 
 def unregister():
+    character_panel.unregister()
     menus.unregister()
     for module in reversed(MODULES):
         module.unregister()
     ai_jobs.stop()
-    for cls in reversed((*operators.CLASSES, *ai_panel.CLASSES, *character_panel.CLASSES, *usd_hooks.CLASSES)):
+    for cls in reversed((*operators.CLASSES, *ai_panel.CLASSES, *usd_hooks.CLASSES)):
         bpy.utils.unregister_class(cls)
     for plugin in reversed(api.plugins()):
         api.unregister_plugin(plugin.id)

@@ -65,6 +65,35 @@ def test_dragging_the_characters_own_slider_reshapes_it(human):
     assert props.asian + props.caucasian + props.african == pytest.approx(1.0, abs=1e-4)
 
 
+sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
+
+
+def test_the_catalogue_is_target_jsons():
+    found = sliders.catalog()
+    assert len(found) == 300  # 234 categories, 66 of them twice (left and right)
+    assert found["arms/l-lowerarm-scale-depth-decr-incr"].negative == "l-lowerarm-scale-depth-decr"
+    assert found["chin/chin-triangle"].low == 0.0  # one target: 0..1
+
+
+def test_a_detail_slider_weights_its_two_targets(human):
+    result, obj = human
+    assert len(obj.juststage.sliders) == 300  # every slider at 0, ready for the panel...
+    detail_keys = [
+        k for k in obj.data.shape_keys.key_blocks if k.name.startswith("makehuman.") and not build.is_macro_key(k.name)
+    ]
+    assert not detail_keys  # ...with no keys yet
+    sid = "nose/nose-nostrils-angle-down-up"
+    api.run("juststage.body.set_slider", character=result.character, slider=sid, value=0.8)
+    keys = obj.data.shape_keys.key_blocks
+    assert keys["makehuman.nose-nostrils-angle-up"].value == pytest.approx(0.8)
+    assert "makehuman.nose-nostrils-angle-down" not in keys  # never used: no key
+    next(s for s in obj.juststage.sliders if s.id == sid).value = -0.5  # the panel's slider
+    assert keys["makehuman.nose-nostrils-angle-up"].value == 0.0
+    assert keys["makehuman.nose-nostrils-angle-down"].value == pytest.approx(0.5)
+    with pytest.raises(api.CommandError, match="0.0"):
+        api.run("juststage.body.set_slider", character=result.character, slider="chin/chin-triangle", value=-0.5)
+
+
 def test_an_unknown_slider_and_a_bad_value_are_refused(human):
     result, _ = human
     with pytest.raises(api.CommandError, match="slider"):

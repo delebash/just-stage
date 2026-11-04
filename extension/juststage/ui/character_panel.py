@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import bpy
 
+from ..modules.body import sliders
 from .command_operator import character_of
 from .menus import menu_groups
 
@@ -46,6 +47,13 @@ class VIEW3D_PT_juststage_character(bpy.types.Panel):
         mix.label(text="Ethnic mix")
         for name in RACES:
             mix.prop(obj.juststage, name, slider=True)
+        detail = layout.column(align=True)
+        detail.label(text="Details")
+        wm = context.window_manager
+        detail.prop(wm, "juststage_slider_group", text="")
+        for item in obj.juststage.sliders:
+            if item.group == wm.juststage_slider_group:
+                detail.prop(item, "value", text=item.label, slider=True)
         for group, cmds in menu_groups("Character"):
             if group in ("New human", "Body"):
                 continue
@@ -55,4 +63,25 @@ class VIEW3D_PT_juststage_character(bpy.types.Panel):
                 box.operator(cmd.operator_idname, text=cmd.label)
 
 
+_GROUP_ITEMS: list[tuple[str, str, str]] = []  # kept here: Blender needs Python to hold an enum callback's strings
+
+
+def _groups(self, context):
+    if not _GROUP_ITEMS:
+        _GROUP_ITEMS.extend((g, g.title(), f"target.json's {g} sliders") for g in sliders.groups())
+    return _GROUP_ITEMS
+
+
 CLASSES = (VIEW3D_PT_juststage_character,)
+
+
+def register():
+    bpy.types.WindowManager.juststage_slider_group = bpy.props.EnumProperty(name="Slider group", items=_groups)
+    for cls in CLASSES:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in reversed(CLASSES):
+        bpy.utils.unregister_class(cls)
+    del bpy.types.WindowManager.juststage_slider_group

@@ -39,6 +39,30 @@ class JustStageFloat(bpy.types.PropertyGroup):
     value: bpy.props.FloatProperty()
 
 
+def _detail_update(self, context):
+    if APPLYING["macros"]:
+        return
+    owner = self.id_data.juststage
+    if not owner.character_id:
+        return
+    from . import api
+
+    try:
+        api.run("juststage.body.set_slider", character=owner.character_id, slider=self.id, value=self.value)
+    except api.CommandError as e:
+        print(f"JustStage: {self.id}: {e}")
+
+
+class JustStageSlider(bpy.types.PropertyGroup):
+    """One of target.json's detail sliders on a character (modules/body/sliders.py): its id and value; dragging it
+    runs `juststage.body.set_slider`."""
+
+    id: bpy.props.StringProperty()
+    label: bpy.props.StringProperty()
+    group: bpy.props.StringProperty()
+    value: bpy.props.FloatProperty(name="Value", default=0.0, min=-1.0, max=1.0, update=_detail_update)
+
+
 class JustStageCharacter(bpy.types.PropertyGroup):
     schema_version: bpy.props.IntProperty(default=SCHEMA_VERSION)
     character_id: bpy.props.StringProperty(description="assetInfo.identifier — a UUID v4 that never changes")
@@ -64,6 +88,7 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     oiliness: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
     skin_material: bpy.props.PointerProperty(type=bpy.types.Material, description="this character's skin material")
     gnm_identity: bpy.props.CollectionProperty(type=JustStageFloat, description="GNM head identity coefficients")
+    sliders: bpy.props.CollectionProperty(type=JustStageSlider, description="target.json's detail sliders' values")
     # on a part's object (an eye, the teeth): which part it is (MetaHuman's name) and whose
     part: bpy.props.StringProperty()
     part_of: bpy.props.StringProperty(description="the character's assetInfo identifier")
@@ -71,6 +96,7 @@ class JustStageCharacter(bpy.types.PropertyGroup):
 
 def register():
     bpy.utils.register_class(JustStageFloat)
+    bpy.utils.register_class(JustStageSlider)
     bpy.utils.register_class(JustStageCharacter)
     bpy.types.Object.juststage = bpy.props.PointerProperty(type=JustStageCharacter)
 
@@ -78,6 +104,7 @@ def register():
 def unregister():
     del bpy.types.Object.juststage
     bpy.utils.unregister_class(JustStageCharacter)
+    bpy.utils.unregister_class(JustStageSlider)
     bpy.utils.unregister_class(JustStageFloat)
 
 

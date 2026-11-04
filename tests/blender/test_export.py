@@ -24,7 +24,9 @@ def human():
 def test_the_package_carries_the_character_and_its_fields(human, tmp_path):
     result, obj = human
     api.run("juststage.skin.set_tone", character=result.character)
-    obj.juststage.gender = 0.9  # a slider away from its default
+    obj.juststage.gender = 0.9  # a slider away from its default (the panel's way: it runs set_slider)
+    nostrils = "nose/nose-nostrils-angle-down-up"
+    api.run("juststage.body.set_slider", character=result.character, slider=nostrils, value=0.4)
     out = api.run("juststage.export.run", character=result.character, folder=str(tmp_path / "pkg"))
     stage = Usd.Stage.Open(out.path)
     root = stage.GetPrimAtPath("/Character")
@@ -37,7 +39,7 @@ def test_the_package_carries_the_character_and_its_fields(human, tmp_path):
     assert root.GetAttribute("juststage:baseVersion").Get() == obj.juststage.base_version
     ids = list(root.GetAttribute("juststage:sliderIds").Get())
     values = list(root.GetAttribute("juststage:sliderValues").Get())
-    assert ids == ["macrodetails/Gender"] and values == pytest.approx([0.9])
+    assert ids == ["gender", "nose/nose-nostrils-angle-down-up"] and values == pytest.approx([0.9, 0.4])
     prims = list(stage.Traverse())
     assert any(p.IsA(UsdSkel.BlendShape) for p in prims)  # the shape keys
     assert any(p.IsA(UsdShade.Material) for p in prims)  # the skin material

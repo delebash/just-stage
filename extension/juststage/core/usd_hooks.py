@@ -14,32 +14,26 @@ from . import makehuman
 
 #: the attribute set's version (character-data-model.md §6)
 FORMAT_VERSION = 1
-#: MakeHuman's MHM modifier ids for our macro sliders (its modeling_modifiers.json - RESEARCH §1)
-SLIDER_IDS = {
-    "gender": "macrodetails/Gender",
-    "age": "macrodetails/Age",
-    "african": "macrodetails/African",
-    "asian": "macrodetails/Asian",
-    "caucasian": "macrodetails/Caucasian",
-    "muscle": "macrodetails-universal/Muscle",
-    "weight": "macrodetails-universal/Weight",
-    "height": "macrodetails-height/Height",
-    "proportions": "macrodetails-proportions/BodyProportions",
-    "cupsize": "breast/BreastSize",
-    "firmness": "breast/BreastFirmness",
-}
+#: the slider fields the package records - the ids `juststage.body.set_slider` takes (one id per slider in the command,
+#: the panel and the package; MakeHuman's MHM names are the MHM export's, character-data-model.md §1.3)
+MACRO_SLIDERS = (*makehuman.MACROS, *makehuman.RACES)
 
 
 def sliders(props) -> tuple[list[str], list[float]]:
-    """The slider ids whose values differ from default, and their values (character-data-model.md §0)."""
+    """The slider ids whose values differ from default, and their values (character-data-model.md §0): the macros,
+    the race mix and target.json's detail sliders."""
     defaults = makehuman.default_macros()
     ids, values = [], []
-    for field, slider in SLIDER_IDS.items():
+    for field in MACRO_SLIDERS:
         value = float(getattr(props, field))
         default = defaults["race"][field] if field in makehuman.RACES else defaults[field]
         if abs(value - default) > 1e-6:
-            ids.append(slider)
+            ids.append(field)
             values.append(value)
+    for item in props.sliders:
+        if abs(item.value) > 1e-6:
+            ids.append(item.id)
+            values.append(float(item.value))
     return ids, values
 
 
