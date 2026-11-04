@@ -970,6 +970,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            denoiser) to stop and look; (4) each round's sheet shows EEVEE beside Cycles. The user then, verbatim: "1
            the right and left edge of lipts look strange 2 the eyes dont look very realistic" - seen in the 4096-px
            close-ups; to be traced to causes and brought as recs (not on the approved list).
+           THE WORKING GO - 2026-11-03, the user, verbatim: "i am going to be away from the commputer for awhile so keep
+           working, keep fixing bugs, making things better, and building the actual app with all the features we
+           discussed, you your rec and think adverserily on your recs before you start coding or testing, can you keep
+           working on the app and not stop to ask me questions, just make your own decision but again each decision you
+           mush think adverserily on it then take your rec, ok?" - every decision under it is attacked first and
+           recorded here with its reason; the safety limits stay (no money, credentials or outward posts; the card by
+           message with the other sessions). The lips and eyes above are covered by it. Work log:
+           `../plans/2026-11-03-live-view.md` §5.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

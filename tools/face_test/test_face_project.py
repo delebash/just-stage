@@ -208,6 +208,27 @@ def _at_1024(img):
     return img if k <= 1 else img.reshape(1024, k, 1024, k, img.shape[2]).mean(axis=(1, 3))
 
 
+#: MediaPipe Face Mesh's mouth points: the corners (61, 291), the upper lip's top (0), the lower lip's bottom (17)
+MOUTH_MARKS = (61, 291, 0, 17)
+#: the hero-only ellipse round the mouth: its half-width as a share of the corners' half-distance, its half-height of
+#: the lips' half-height; the hero alone inside 0.75 of it, fading to its edge
+MOUTH_REACH = (1.35, 1.9)
+
+
+def _mouth_region(marks, col, row):
+    """0-1 per texel: how much of the mouth round it is, from where the hero camera sees it (col, row)."""
+    left, right, top, bottom = (marks[i] for i in MOUTH_MARKS)
+    centre = (left + right + top + bottom) / 4
+    axis = (right - left) / np.linalg.norm(right - left)
+    across = np.array([-axis[1], axis[0]])
+    half_w = np.linalg.norm(right - left) / 2 * MOUTH_REACH[0]
+    half_h = abs((bottom - top) @ across) / 2 * MOUTH_REACH[1]
+    d = np.stack([np.nan_to_num(col, nan=-1e6), np.nan_to_num(row, nan=-1e6)], axis=1) - centre
+    r = np.hypot((d @ axis) / half_w, (d @ across) / half_h)
+    t = np.clip((1.0 - r) / 0.25, 0.0, 1.0)
+    return t * t * (3 - 2 * t)
+
+
 def _render(scene, path, size=1024):
     scene.render.resolution_x = scene.render.resolution_y = size
     scene.render.filepath = path
@@ -498,8 +519,15 @@ def set_iris_size(eye_in, mapping, relation):
 #: Rounds 57-65 read it the other way (rise 0 to +15, curling up): a fringe of spikes standing above the lid, the iris
 #: uncovered - the painting's lid covers ~30% of the iris' height, ours ~14%. 60% of men's straight: a light curl.
 #: The lower ones finer (ticks along the lid where the painting shows none).
-LASH_UPPER = {"count": 120, "long": 8.0, "short": 4.5, "rise": -25, "curl": 10.0, "band": (0.2, 1.0), "radius": 0.00005}
-LASH_LOWER = {"count": 75, "long": 4.5, "short": 2.5, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000025}
+#: lengths in mm, 0.65 / 0.55 of the study's (RESEARCH ~1880: upper 7.3 mm on average) - round 79's 4096-px close-up
+#: beside its painting (2026-11-03 trials on the saved strands): at full length they drew long spikes across the iris
+#: and out past the outer corner where the painting shows a fine short lash line; at full length with half the
+#: sideways fan they hung over the iris. Lash length varies widely between people; it becomes a character's setting
+LASH_UPPER = {"count": 120, "long": 5.2, "short": 2.9, "rise": -25, "curl": 10.0, "band": (0.2, 1.0), "radius": 0.00005,
+              "melanin": 0.95}
+LASH_LOWER = {"count": 75, "long": 2.5, "short": 1.4, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000025,
+              "melanin": 0.6}  # lower lashes are finer and lighter (the painting shows almost none)
+LASH_CLUMP, LASH_CLUMP_PULL = 4, 0.5  # real lashes group: neighbours' tips pulled halfway together, more toward the tip
 #: the fan seen from the front: (share of the way from the inner corner to the outer, the lash's angle from the line
 #: through the corners toward the outer one, degrees) - measured on the lower lid of Korean adults (Korea University,
 #: "Changes in the horizontal angular direction of lower eyelashes with age": medial 137, central 72, lateral 25);
@@ -507,8 +535,19 @@ LASH_LOWER = {"count": 75, "long": 4.5, "short": 2.5, "rise": -5.0, "curl": 20.0
 LASH_FAN = ((1 / 6, 137.0), (0.5, 72.0), (5 / 6, 25.0))
 FACE_FORWARD = np.array([0.0, -1.0, 0.0])  # the body faces -Y (the front camera looks along +Y)
 LASH_POINTS = 12  # the research: 10+ points each for the curl (the pack's lashes have 5)
-LASH_TIP = 0.25  # the tip's radius as a share of the root's
-LASH_MELANIN, LASH_REDNESS = 0.95, 0.25  # near black-brown
+LASH_TIP = 0.12  # the tip's radius as a share of the root's (0.25 read as blunt spikes at 4096 px)
+LASH_REDNESS = 0.25  # with melanin 0.95, near black-brown
+
+
+def _clump(strands, start):
+    """Lashes from `start` on, in groups of LASH_CLUMP neighbours, each pulled toward its group's mean shape - by
+    nothing at the root, LASH_CLUMP_PULL at the tip (squared along the lash)."""
+    t = np.linspace(0.0, 1.0, LASH_POINTS)[:, None] ** 2
+    for g in range(start, len(strands), LASH_CLUMP):
+        group = strands[g:g + LASH_CLUMP]
+        centre = np.mean(group, axis=0)
+        for i, strand in enumerate(group):
+            strands[g + i] = strand + (centre - strand) * t * LASH_CLUMP_PULL
 
 
 def _strand_lashes(body, openings, seed=7):
@@ -527,7 +566,7 @@ def _strand_lashes(body, openings, seed=7):
     to_world = np.array(body.matrix_world)
     depsgraph = bpy.context.evaluated_depsgraph_get()
     tree = BVHTree.FromObject(body, depsgraph)  # its local space
-    strands, radii, missed = [], [], 0
+    strands, radii, melanin, missed = [], [], [], 0
     for eye_name, o in openings.items():
         # the eye still whole in a round (its cornea is split off later); a saved round's has it apart (the lash trials)
         eyes = [bpy.data.objects[n] for n in (eye_name, f"{eye_name} cornea") if n in bpy.data.objects]
@@ -543,6 +582,7 @@ def _strand_lashes(body, openings, seed=7):
         up *= np.sign(up[2])
         for spec, side in ((LASH_UPPER, 1.0), (LASH_LOWER, -1.0)):
             n = spec["count"]
+            block = len(strands)  # this lid's lashes, in order along it (f is sorted): the clumps are neighbours
             f = np.sort(rng.uniform(0.06, 0.97, n))  # the share of the way from the inner corner to the outer
             az = o.inner + f * (o.outer - o.inner)
             el = np.interp(az, o.centres, o.upper if side > 0 else o.lower) + side * rng.uniform(*spec["band"], n)
@@ -585,21 +625,20 @@ def _strand_lashes(body, openings, seed=7):
                             strand[i:] += world[:3, :3] @ moved  # the rest of the lash follows
                 strands.append(strand)
                 radii.append(spec["radius"] * np.interp(t, [0.0, 1.0], [1.0, LASH_TIP]))
+                melanin.append(spec["melanin"])
+            _clump(strands, block)
     curves = bpy.data.hair_curves.new(f"{body.name} lashes")
     curves.add_curves([LASH_POINTS] * len(strands))
     curves.position_data.foreach_set("vector", np.concatenate(strands).astype(np.float32).ravel())
     curves.attributes.new("radius", "FLOAT", "POINT").data.foreach_set("value", np.concatenate(radii).astype(np.float32))
+    # the app's hair material (modules/hair/groom.py: Principled Hair by each strand's melanin, and its EEVEE stand-in)
+    curves.attributes.new("melanin", "FLOAT", "CURVE").data.foreach_set("value", np.array(melanin, dtype=np.float32))
+    curves.attributes.new("redness", "FLOAT", "CURVE").data.foreach_set(
+        "value", np.full(len(strands), LASH_REDNESS, dtype=np.float32))
     obj = bpy.data.objects.new(f"{body.name} lashes", curves)
     bpy.context.scene.collection.objects.link(obj)
-    mat = bpy.data.materials.new(f"{body.name} lashes")
-    nt = mat.node_tree
-    nt.nodes.clear()
-    hair = nt.nodes.new("ShaderNodeBsdfHairPrincipled")
-    hair.parametrization = "MELANIN"
-    hair.inputs["Melanin"].default_value = LASH_MELANIN
-    hair.inputs["Melanin Redness"].default_value = LASH_REDNESS
-    nt.links.new(hair.outputs[0], nt.nodes.new("ShaderNodeOutputMaterial").inputs["Surface"])
-    curves.materials.append(mat)
+    hair_groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    curves.materials.append(hair_groom.hair_material(f"{body.name} lashes"))
     bpy.context.scene.cycles_curves.shape = "THICK"  # 3D curves for close-ups (the research)
     print(f"lashes: {len(strands)} strands ({missed} roots missed), {LASH_POINTS} points each")
     return obj
@@ -914,6 +953,15 @@ def test_face_project():
         print(f"  {v} gain field: {p10:.2f} / {p50:.2f} / {p90:.2f} (p10 / median / p90 over what it sees)")
 
     every = np.arange(len(points))
+    # the mouth from the hero alone - TEXTure's "keep" (a region stays with the view that painted it best; RESEARCH
+    # ~1890) and Headshot's structure (the face from the hero): seen from 30 degrees the AI painted the lips' contact
+    # wavy and the light removal leaves an orange rim along it, and those views face the corners more squarely, so
+    # they won the fine band there - round 79's flaps and the hard edge on the upper lip at both corners (the 4096-px
+    # close-up; the clay shape there is clean). Only where the hero sees the surface, so nothing is left unpainted.
+    hero_w, _hb, hero_col, hero_row, _he = view_samples(HERO_VIEW, every)
+    hero_marks = np.array(json.load(open(DIR + "landmarks.json"))[HERO_VIEW]["clay"])
+    hero_only = _mouth_region(hero_marks, hero_col, hero_row) * (hero_w > 1e-3)
+    print(f"  the mouth from the hero alone: {(hero_only > 0.5).sum()} texels")
     low_sum, low_w = np.zeros((len(points), 3)), np.zeros(len(points))
     high_best, high_w = np.ones((len(points), 3)), np.zeros(len(points))
     best_facing = np.zeros(len(points))  # how squarely the best view sees each texel
@@ -934,6 +982,8 @@ def test_face_project():
             # x4: the patch 0.88 -> 1.06 between its neighbours' 1.18 / 0.99, the lips' doubled contact line gone,
             # mid-scale unevenness over the face 0.051 -> 0.047 (median), 0.095 -> 0.087 (p90), in the face camera
             soft, sharp = soft * HERO_WEIGHT, sharp * HERO_WEIGHT**4
+        else:
+            soft, sharp = soft * (1.0 - hero_only), sharp * (1.0 - hero_only)
         low_sum += soft[:, None] * low * field_at(fields[view], every)  # levelled; the fine band below is a ratio
         nlow_sum += soft[:, None] * nlow
         low_w += soft

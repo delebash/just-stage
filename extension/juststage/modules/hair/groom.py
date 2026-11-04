@@ -11,6 +11,8 @@ Surface), makes the strands follow the body's shape keys, which needs the body's
 
 from __future__ import annotations
 
+import math
+
 import bpy
 import numpy as np
 from mathutils import Matrix
@@ -22,9 +24,60 @@ PACK = ("hair", "haireditor", "hair.blend")
 SURFACE_UV = "UVMap"  # hm08's own UV map, the one the styles' roots are placed by
 
 
+#: Cycles' melanin colours (`intern/cycles/kernel/closure/bsdf_util.h`, RESEARCH §1)
+EUMELANIN = (0.506, 0.841, 1.653)
+PHEOMELANIN = (0.343, 0.733, 1.924)
+
+
+def _roughness_scale(beta: float) -> float:
+    """Cycles' `bsdf_principled_hair_albedo_roughness_scale`."""
+    return (((((0.245 * beta) + 5.574) * beta - 10.73) * beta + 2.532) * beta - 0.215) * beta + 5.969
+
+
+def hair_colour(melanin: float, redness: float, roughness: float = 0.3) -> tuple[float, float, float]:
+    """The colour Cycles' Principled Hair gives a strand of this melanin: its absorption σ from the two pigments, and
+    Cycles' own colour-to-σ mapping, σ = (ln colour / s(roughness))², turned round (0.3 is its radial roughness)."""
+    m = -math.log(max(1.0 - melanin, 1e-4))
+    s = _roughness_scale(roughness)
+    sigma = [m * (1.0 - redness) * e + m * redness * p for e, p in zip(EUMELANIN, PHEOMELANIN, strict=True)]
+    return tuple(math.exp(-math.sqrt(x) * s) for x in sigma)
+
+
+def _eevee_stand_in(nodes, links, melanin, redness, roughness: float):
+    """EEVEE has no hair shader ("Principled Hair BSDF — Not supported", manual render/eevee/limitations): a Principled
+    BSDF in `hair_colour`'s colour, per strand, on an output only EEVEE reads - the Material Output's Target (Blender
+    prefers the exact target over All); Cycles and the USD export keep Principled Hair on the All output."""
+
+    def op(operation, a, b=None, c=None):
+        node = nodes.new("ShaderNodeMath")
+        node.operation = operation
+        for i, value in enumerate((a, b, c)):
+            if value is None:
+                continue
+            if isinstance(value, float):
+                node.inputs[i].default_value = value
+            else:
+                links.new(value, node.inputs[i])
+        return node.outputs[0]
+
+    m = op("MULTIPLY", op("LOGARITHM", op("MAXIMUM", op("SUBTRACT", 1.0, melanin), 1e-4), math.e), -1.0)
+    eu, pheo = op("MULTIPLY", m, op("SUBTRACT", 1.0, redness)), op("MULTIPLY", m, redness)
+    s = _roughness_scale(roughness)
+    colour = nodes.new("ShaderNodeCombineColor")
+    for channel, e, p in zip(("Red", "Green", "Blue"), EUMELANIN, PHEOMELANIN, strict=True):
+        sigma = op("MULTIPLY_ADD", pheo, p, op("MULTIPLY", eu, e))
+        links.new(op("EXPONENT", op("MULTIPLY", op("SQRT", sigma), -s)), colour.inputs[channel])
+    bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+    bsdf.inputs["Roughness"].default_value = 0.4
+    links.new(colour.outputs["Color"], bsdf.inputs["Base Color"])
+    output = nodes.new("ShaderNodeOutputMaterial")
+    output.target = "EEVEE"
+    links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+
+
 def hair_material(name: str) -> bpy.types.Material:
     """Principled Hair BSDF (Chiang) coloured by melanin, read per strand from the `melanin` and `redness` curve
-    attributes (Blender's melanin parametrisation — character-data-model.md §3, §4)."""
+    attributes (Blender's melanin parametrisation — character-data-model.md §3, §4), and its EEVEE stand-in."""
     mat = bpy.data.materials.new(name)
     if mat.node_tree is None:
         mat.use_nodes = True
@@ -34,13 +87,18 @@ def hair_material(name: str) -> bpy.types.Material:
             nodes.remove(node)
     hair = nodes.new("ShaderNodeBsdfHairPrincipled")
     hair.parametrization = "MELANIN"
+    read = {}
     for socket, attribute in (("Melanin", "melanin"), ("Melanin Redness", "redness")):
         node = nodes.new("ShaderNodeAttribute")
         node.attribute_type = "GEOMETRY"
         node.attribute_name = attribute
         links.new(node.outputs["Fac"], hair.inputs[socket])
+        read[attribute] = node.outputs["Fac"]
     output = next(n for n in nodes if n.type == "OUTPUT_MATERIAL")
+    output.target = "ALL"
     links.new(hair.outputs[0], output.inputs["Surface"])
+    _eevee_stand_in(nodes, links, read["melanin"], read["redness"], hair.inputs["Radial Roughness"].default_value)
+    output.is_active_output = True
     return mat
 
 

@@ -13,6 +13,7 @@ import pytest
 api = importlib.import_module("bl_ext.system.juststage.api")
 viewport = importlib.import_module("bl_ext.system.juststage.core.viewport")
 part_materials = importlib.import_module("bl_ext.system.juststage.modules.head.part_materials")
+groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
 
 
 def _cycles_prefs():
@@ -68,3 +69,25 @@ def test_skin_and_cornea_carry_their_eevee_settings(human):
         assert cornea.use_raytrace_refraction
     finally:
         bpy.data.materials.remove(cornea)
+
+
+def test_hair_keeps_principled_hair_for_cycles_and_gets_an_eevee_stand_in():
+    mat = groom.hair_material("live view hair")
+    try:
+        outputs = {n.target: n for n in mat.node_tree.nodes if n.type == "OUTPUT_MATERIAL"}
+        assert set(outputs) == {"ALL", "EEVEE"}
+        assert outputs["ALL"].inputs["Surface"].links[0].from_node.type == "BSDF_HAIR_PRINCIPLED"
+        assert outputs["EEVEE"].inputs["Surface"].links[0].from_node.type == "BSDF_PRINCIPLED"
+    finally:
+        bpy.data.materials.remove(mat)
+
+
+def test_the_stand_in_colour_follows_cycles_melanin():
+    white = groom.hair_colour(0.0, 0.0)
+    assert white == pytest.approx((1.0, 1.0, 1.0))
+    black = groom.hair_colour(0.98, 0.1)
+    assert max(black) < 0.05
+    ginger = groom.hair_colour(0.5, 1.0)
+    assert ginger[0] > ginger[1] > ginger[2]  # pheomelanin absorbs blue most
+    brown = groom.hair_colour(0.6, 0.2)
+    assert brown[0] > brown[1] > brown[2] and max(brown) < max(ginger)

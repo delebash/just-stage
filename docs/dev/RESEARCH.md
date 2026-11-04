@@ -53,6 +53,11 @@ Subjects: [1 · The machine](#1--the-machine) ·
 - **Blender 5.3 opens a saved Rendered view as Solid; Material Preview survives** — a copy saved with every 3D view on
   Rendered read back Solid (saved from the GUI and from a background run alike); Material Preview in an EEVEE scene read
   back Material Preview. The Material Output's Target is `ALL` / `EEVEE` / `CYCLES` — *measured, 2026-11-03*.
+- **Cycles' hair colour from melanin** (source read 2026-11-03: `intern/cycles/kernel/svm/closure.h`,
+  `kernel/closure/bsdf_util.h` on GitHub's mirror): concentration m = −ln(max(1 − melanin, 0.0001)); eumelanin
+  m·(1 − redness), pheomelanin m·redness; σ = eu·(0.506, 0.841, 1.653) + pheo·(0.343, 0.733, 1.924); a colour's σ is
+  (ln colour / s(β))² with s(β) = ((((0.245β + 5.574)β − 10.73)β + 2.532)β − 0.215)β + 5.969 (β the radial roughness) -
+  so the colour a melanin gives is exp(−√σ · s(β)), what EEVEE's Principled BSDF stand-in for Principled Hair needs.
 - **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over
   (pores, stubble, redness); every part's output is Target `ALL` with nothing on Thickness, the cornea has no raytraced
   refraction, `scene.eevee.use_raytracing` is off and the lashes draw as 1-px `STRAND` curves — the EEVEE tuning of
