@@ -108,6 +108,20 @@ Tests: 108 Blender tests + 39 unit/install green (`python tools/dev.py test -k "
 | SegFace, RealDenseFace, MediaPipe, Sapiens2 (cached) | various (labels) | masks, landmarks, keypoints |
 | OpenRigLogic (built today: DNA + RigLogic Python bindings for Blender's Python) | MIT | the face rig (later) |
 
+From the Hugging Face + Zenodo deep search (`2026-11-04-research-hf-assets.md`, samples in `.dev/downloads/hf_samples/`):
+
+| What | Licence | Use |
+|---|---|---|
+| HUTUBS: 58 real head meshes (TU Berlin; ~200k vertices each, metric, no texture, clean ears, bald-capped, faces smoothed) | CC BY 4.0 | ear shape variety (new rec 15) |
+| Poseidon3D: 400 real intraoral scans (200 people; maxilla and mandible, crowns and gums, ~83k v); ProsthoObjects3D ~650 full arches | CC BY 4.0 | teeth and gum shape variety (rec 13) |
+| MIO intraoral photos (healthy, gingivitis, periodontitis; 3932 x 1865) | CC BY 4.0 | teeth and gum shading reference (rec 13) |
+| Paint3D UVPos ControlNet (SD1.5, paints in UV layout, fits 8 GB); TexDreamer (SMPL-UV text/image-to-texture) | Apache-2.0; CC BY 4.0 | alternatives to the face painter (rec 4) |
+| yoso-delight-v0-4 (a delighting model) | Apache-2.0 | candidate for removing light left in scans (rec 3) |
+| HairDeck (image -> stylised hair cards with UVs) | Apache-2.0 | its card method only (rec 11); not realistic |
+
+Confirmed gaps (searched on Hugging Face and Zenodo, nothing shippable): eye / iris imagery, realistic hair strands,
+UV skin textures, nails, lips, facial and body hair, children's 3D data.
+
 Candidates found, not yet fetched: Sketchfab CC-BY scans (Renderpeople "Mei Posed 001" East Asian woman 8K; 3D
 Selfie Scans "Malcolm", "Bryan", "Shelley", "Matt Chua", "Pete", "Ben"; "Hector Navarro Bust" older Latino man; more —
 `2026-11-02-research-texture-source.md` §5); MakeHuman CC0 packs `eyebrows01`, `bodyparts04` (nails), `bodyparts05`
@@ -120,10 +134,11 @@ Selfie Scans "Malcolm", "Bryan", "Shelley", "Matt Chua", "Pete", "Ben"; "Hector 
 SkinGen's inventory, HSRD-100, iris colour searches), and the plan files `docs/plans/2026-10-30-research-*.md` (AI
 texturing, photo-to-head, ComfyUI/FLAME, hair-eyes-teeth, skin detail shading, image models),
 `2026-11-02-research-texture-source.md` (scan sources and licences), `2026-11-02-scan-skin-base.md` (the scan route),
-`2026-11-04-realism.md` (this job's working doc). Texturing.XYZ (CC5's MicroSkin source) was considered: its licence
+`2026-11-04-realism.md` (this job's working doc), `2026-11-04-research-hf-assets.md` (the Hugging Face + Zenodo deep
+search, its full query log). Texturing.XYZ (CC5's MicroSkin source) was considered: its licence
 couldn't be read; comparable vendors forbid raw redistribution and AI training, so buying is not the rec.
 
-## 6 · The plan: 14 recs
+## 6 · The plan: 15 recs (14, plus ears from the Hugging Face search; recs 3, 4, 11, 13 updated by it)
 
 Each rec: what, method, why this method, alternatives weighed, the attack and what it changed, the gate (how we'll
 know it worked). Standard / NOT STANDARD marked.
@@ -167,7 +182,8 @@ know it worked). Standard / NOT STANDARD marked.
 - **Why changed:** recolouring a light scan to make a dark-skinned person is weaker — real dark skin differs in sheen
   and pore look too; HSRD-100 gives real scans of those tones.
 - **Attack:** light left in a scan reads as pigment (the low band is already dropped); our model is extrapolated past
-  NIST's darkest measured skin.
+  NIST's darkest measured skin. Candidate from the HF search: a delighting model (yoso-delight-v0-4, Apache-2.0) run on
+  the scans before the inversion - untested.
 - **Gate:** a Black, an East Asian, a Hispanic and a white character of two ages each, side by side, read as their
   tone with real-looking detail.
 
@@ -179,7 +195,9 @@ know it worked). Standard / NOT STANDARD marked.
   baked to a mapped skin.
 - **Alternatives:** WildCap (CVPR 2026, GPL code; weights' training-data licence unstated, nvdiffrast non-commercial,
   Linux) — a light-stage diffusion prior in its own UV; AvatarTex-style UV LoRA (3DV 2026, no code); DoRA
-  (non-commercial). Our route is measured and works; these may beat it on reflectance separation.
+  (non-commercial). From the HF search: Paint3D's UV-position ControlNet (Apache-2.0, SD1.5, paints directly in a UV
+  layout, fits 8 GB) and TexDreamer (CC BY 4.0, SMPL UV). Our route is measured and works; these may beat it on
+  reflectance separation or speed - a side-by-side test before choosing.
 - **Attack:** ~7 min of card a person; view drift (solved in the face test by three views over a base); the painter's
   licence is a label.
 - **Gate:** ten described people, all distinct, none uncanny, in both engines.
@@ -224,28 +242,44 @@ know it worked). Standard / NOT STANDARD marked.
   masks (Norwood / Ludwig stages); grey as a per-strand whiteness share, dye and ombre (MetaHuman's colour controls);
   **hair cards for dense styles in the live view** (CC5's and MetaHuman's real-time path).
 - **Alternatives:** image-to-strands AI (DiffLocks and others) — non-commercial or unlicensed weights; asset
-  libraries (Code My Crown — no licence; OSAHL — no redistribution) — reference only.
+  libraries (Code My Crown — no licence; OSAHL — no redistribution) — reference only; HairDeck (Apache-2.0) makes
+  stylised cards from an image — its card layout method may help our card baker, not its look. No realistic open
+  strand dataset was found on Hugging Face or Zenodo.
 
 ### 12 · Eyes (part 6)
 - **Method:** on MPFB2's eye: crypts, furrows, pigment spots, Wölfflin nodules, collarette, heterochromia (each eye its
   own colour), arcus with age, drawn by population (Edwards et al. 2016's table; e.g. pigment spots 22% East Asian /
   58% European / 17% South Asian); sclera veins denser at the corners, redness, yellowing with age, melanosis.
 
-### 13 · Mouth (part 7)
-- **Method:** teeth shapes from GNM's 80 teeth identity directions (on disk, unused); per-tooth gaps, wear, gum
-  recession; tooth shade in VITA order darkening with age; gum pigmentation from the skin's melanin; tongue papillae
-  and coating. Attack: whether GNM labels teeth individually → checked first.
+### 13 · Mouth (part 7) — changed by the HF search
+- **Method:** teeth and gum shapes from real dental scans - Poseidon3D's 400 intraoral scans (CC BY 4.0, 200 people)
+  wrapped onto GNM's teeth and gums (as shape targets, so any character can take one), with GNM's 80 teeth identity
+  directions for smooth variation between them; per-tooth gaps, wear, gum recession; tooth shade in VITA order
+  darkening with age, enamel translucency and gum stippling calibrated on the MIO intraoral photos (CC BY 4.0); gum
+  pigmentation from the skin's melanin; tongue papillae and coating.
+- **Why changed:** real arches beat a statistical space alone for crowding, wear and gum shape; the photos give real
+  shading targets.
+- **Attack:** intraoral scans hold crowns and gums, not roots or the hidden tooth (only the visible part matters);
+  whether GNM labels teeth individually → checked first; scan orientation and scale vary per case.
 
 ### 14 · Nails (part 8)
 - **Method:** a layered nail shader on tile 1005 (blood-coloured bed, clear plate, lunula, white free edge, cuticle,
   ridges, yellowing with age); MakeHuman `bodyparts04` (CC0) meshes for long nails.
 
-**Children:** no open high-quality scan found; covered by the generator (rec 4) and MakeHuman's age shape until one is.
+### 15 · Ears (part 9) — new from the HF search
+- **What:** ear shape variety (helix, antihelix, concha, lobe) as real ears vary.
+- **Method:** HUTUBS's 58 real head meshes (CC BY 4.0, metric, clean ears): each ear wrapped onto our base's ear
+  region (landmarks + NICP, the head route) and stored as ear shape targets; a character's ear blends between them.
+- **Attack:** the meshes carry no texture (shape only, which is what's missing); bald caps and smoothed faces are
+  outside the ear region; the ear region's seam to the head must stay smooth.
+
+**Children:** no open high-quality scan found (also not on Hugging Face or Zenodo); covered by the generator (rec 4)
+and MakeHuman's age shape until one is.
 
 ## 7 · Order
 
-1 (live hair) → 2 + 3 (bases, tone) → 4 (generator) → 6, 5 (layers, age) → 8-10 (brows, facial and body hair) →
-12-14 (eyes, mouth, nails) → 7 (bodies) → 11 (styles).
+1 (live hair, half built) → 2 + 3 (bases, tone) → 4 (generator) → 6, 5 (layers, age) → 8-10 (brows, facial and body
+hair) → 12-15 (eyes, mouth, nails, ears) → 7 (bodies) → 11 (styles, with cards for dense hair).
 
 ## 8 · How each is checked
 
@@ -263,5 +297,8 @@ test per change; full suites at the end of each batch.
    blending a scan database), a UV-space diffusion model, or WildCap-style reflectance priors? Is 21 scans enough?
 3. **Rec 3:** is per-texel chromophore inversion sound on photogrammetry albedo with baked light?
 4. **Rec 7:** the best way to wrap posed full-body scans onto our A-pose body without a rig (we have no body rig yet).
-5. **Anything missing** from the nine parts, or a source we haven't found (scans of children above all).
+5. **Anything missing** from the nine parts, or a source we haven't found - scans of children above all; open eye /
+   iris imagery; realistic strand hair data; nails and lips (none found on Sketchfab, Hugging Face or Zenodo).
+7. **Recs 13 and 15:** the best way to turn real scans (intraoral arches, ear meshes) into shape targets on our base's
+   parts, and whether that beats a statistical model.
 6. **Order:** would a different order reach the bar sooner?
