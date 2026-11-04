@@ -12,6 +12,10 @@
   10.14279/depositonce-8487): "Released by its authors under … CC BY 4.0". `meshes.zip` 149 MB = 58 head PLYs, plus
   anthropometry and HRIRs. Sample pp2: 198,732 v / 397,460 f, metric 0.22 x 0.18 x 0.30 m; uniform grey vertex colour
   (no texture); clean ears (helix, antihelix, concha), a bald-capped head, a smoothed face. [page][meas][seen]
+  **Checked at the original 2026-11-04:** TU Berlin's depositonce record (DOI 10.14279/depositonce-8487) shows "Creative
+  Commons Attribution (CC BY)" linked to CC BY 4.0, no other restrictions; "3D head meshes.zip (142.09 MB)"; "3D head
+  meshes, anthropometric features, and headphone transfer functions of 96 subjects" (authors Brinkmann, Dinakaran,
+  Pelzer, Wohlgemuth, Seipel, Voss, Grosche, Weinzierl). [page]
 - Viking HRTF v2 (Zenodo 4160401, CC BY 4.0): 20 pinna STLs moulded from museum figures, coarse (~10k v).
   [API][meas][seen]
 

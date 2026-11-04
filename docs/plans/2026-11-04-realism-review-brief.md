@@ -35,8 +35,10 @@ view, not only the film: CC5 and Unreal (MetaHuman) are real-time too.
 - **Software:** Blender 5.3 beta (`E:\blender-5.3.0-beta`); Python in Blender 3.13; numpy, OpenImageIO bundled.
 - **Clean-room:** CC5, iClone, Unreal/MetaHuman studied for behaviour and public docs only; never their code or
   content. Published papers and course notes are fine (written in our own code).
-- **Licences:** shipped assets must be CC0 / CC-BY / CC-BY-SA / MIT / Apache-like; non-commercial or "personal use"
-  material can't ship. A licence is a label on research options, not a filter.
+- **Licences:** a licence is a label, never a filter (the user's rule). What can't ship: non-commercial, research-only
+  or "personal use" material, and anything barring redistribution inside an app. Custom licences that allow commercial
+  use and modification (Pexels, Unsplash) ship, labelled. (Corrected 2026-11-04: an earlier draft filtered to
+  CC / MIT-like only, against the user's "dont limit the license yet".)
 - **Training:** no full-model training (no GPU for it); small LoRAs on an open base that fit 8 GB are allowed; tiny
   special-purpose models are allowed.
 - **Standards first:** Blender's own feature or a widely used standard before our own; our own pieces are marked NOT
@@ -132,8 +134,10 @@ Nexus Mods, ShareTextures, BlenderKit; samples in `.dev/downloads/other_samples/
 | Smithsonian life masks (Lincoln, Washington) | CC0 | face-shape references only |
 
 Not shippable, checked at the source: Foot3D's 118 scanned feet (its request form: "strictly for non-commercial
-research purposes", CC BY-NC 4.0; only its code is MIT). From the user's sites: Pexels and Unsplash (custom licences: no compiling into a competing service, no
-redistribution as-is - references only); Nexus Mods 13537 (built from Cyberpunk's assets, no reuse); ShareTextures
+research purposes", CC BY-NC 4.0; only its code is MIT). From the user's sites, usable: Pexels and Unsplash (their own
+licences allow free commercial use and modification; their limits - no reselling unaltered copies, no redistribution on
+stock platforms, no competing photo service - don't touch textures made from them; each photo checked for AI origin
+and real resolution; labelled with its licence). Not usable: Nexus Mods 13537 (built from Cyberpunk's assets, no reuse); ShareTextures
 (now "Custom CC0 ... No asset redistribution ... in plugins" - a correction to our 2026-11-02 file); BlenderKit's
 royalty-free assets (no redistribution in asset packs; a few CC0 skins and sculpt brushes exist).
 
@@ -154,10 +158,11 @@ SkinGen's inventory, HSRD-100, iris colour searches), and the plan files `docs/p
 texturing, photo-to-head, ComfyUI/FLAME, hair-eyes-teeth, skin detail shading, image models),
 `2026-11-02-research-texture-source.md` (scan sources and licences), `2026-11-02-scan-skin-base.md` (the scan route),
 `2026-11-04-realism.md` (this job's working doc), `2026-11-04-research-hf-assets.md` (the Hugging Face + Zenodo deep
-search, its full query log). Texturing.XYZ (CC5's MicroSkin source) was considered: its licence
+search, its full query log), `2026-11-04-research-other-sites.md` (Commons, Flickr, Kaggle, GitHub, museums, the
+user's sites), `2026-11-04-research-eevee-live-view.md` (every way to raise EEVEE's live view). Texturing.XYZ (CC5's MicroSkin source) was considered: its licence
 couldn't be read; comparable vendors forbid raw redistribution and AI training, so buying is not the rec.
 
-## 6 · The plan: 15 recs (14, plus ears from the Hugging Face search; recs 3, 4, 11, 13 updated by it)
+## 6 · The plan: 16 recs (ears from the Hugging Face search, the EEVEE pass from the EEVEE search; recs 1, 3, 4, 7, 9, 11, 12, 13 updated by the searches)
 
 Each rec: what, method, why this method, alternatives weighed, the attack and what it changed, the gate (how we'll
 know it worked). Standard / NOT STANDARD marked.
@@ -179,6 +184,9 @@ know it worked). Standard / NOT STANDARD marked.
 - **Attack:** the world term double-counts if Principled's diffuse stays in → the model replaces Principled, the world
   term tuned against Cycles under the stage and an image light alone; per-light cost per pixel → measured on a full
   groom; NOT STANDARD (replaced by Blender's closure if it lands).
+- **Changed by the EEVEE search:** EEVEE treats world light as indirect (Cycles as direct), so the image-light gap
+  (1.4-2.3x) is the world's share - an explicit world multiple-scatter term in the model; also Blender 5.0's Cylinder
+  strand shape and 64 viewport samples for thin strands, measured.
 - **Gate:** visible-hair mean and median within ~10% of Cycles under both lights; highlights where Cycles puts them;
   frame time measured.
 
@@ -286,6 +294,12 @@ know it worked). Standard / NOT STANDARD marked.
   delit, its catch light removed, into MPFB2's iris layout - with the procedural features below for variety between
   them and for features a photo lacks. Attack: CC BY-SA photos make the derived iris textures share-alike (a licence
   label per iris); photo grain at 1:1; ethnicity rarely stated.
+- **Changed by the EEVEE search:** our iris has no lens depth. The real-time standard (Jimenez GDC 2013, Unreal's
+  Eye model, Unity HDRP's Eye, Animal Logic 2024) is parallax refraction: the view ray refracted at the cornea (IOR
+  1.376), intersected with the iris plane at its measured depth, the iris UV offset, the limbus darkened at grazing
+  angles; plus an iris caustic per light (Unity's "Eye Cinematic With Caustic") through Light Accumulation; a catch
+  light on the cornea and tearline by light linking (EEVEE since 4.3). On the EEVEE-only output (Cycles refracts for
+  real). Attack: parallax breaks past ~70°; the iris depth measured on GNM's eye first. NOT STANDARD in Blender.
 - **Method (procedural part):** on MPFB2's eye: crypts, furrows, pigment spots, Wölfflin nodules, collarette, heterochromia (each eye its
   own colour), arcus with age, drawn by population (Edwards et al. 2016's table; e.g. pigment spots 22% East Asian /
   58% European / 17% South Asian); sclera veins denser at the corners, redness, yellowing with age, melanosis.
@@ -298,6 +312,8 @@ know it worked). Standard / NOT STANDARD marked.
   pigmentation from the skin's melanin; tongue papillae and coating.
 - **Why changed:** real arches beat a statistical space alone for crowding, wear and gum shape; the photos give real
   shading targets.
+- **Changed by the EEVEE search:** a mouth-interior darkening (CC5's teeth shader has "Rear AO") - a front-to-back
+  gradient by distance behind the lips on teeth, gums and tongue, on the EEVEE-only output, following the jaw.
 - **Attack:** intraoral scans hold crowns and gums, not roots or the hidden tooth (only the visible part matters);
   whether GNM labels teeth individually → checked first; scan orientation and scale vary per case.
 
@@ -312,6 +328,27 @@ know it worked). Standard / NOT STANDARD marked.
 - **Attack:** the meshes carry no texture (shape only, which is what's missing); bald caps and smoothed faces are
   outside the ear region; the ear region's seam to the head must stay smooth.
 
+### 16 · The EEVEE live-view pass — new from the EEVEE search (`2026-11-04-research-eevee-live-view.md`)
+- **What:** EEVEE's own settings and Blender-standard features we never used, each measured alone against Cycles.
+- **Settings:** our skin's roughness (0.59) is above EEVEE's ray-tracing threshold (`trace_max_roughness`, factory
+  0.5), so the skin's specular is never ray-traced -> threshold 0.7-1.0; ray-tracing and Fast GI resolution 1/2 -> full;
+  viewport samples 16 -> 64 (capped: the card is shared); anisotropic filtering 2x -> 16x; overscan on.
+- **Occlusion of the world light:** a volume probe around the character baked for visibility only (the world stays
+  live) - shades under the chin, in the mouth, in the ears, between the lips (EEVEE treats world light as indirect).
+  After rec 1 (it would darken the hair further today).
+- **Skin calibration:** EEVEE's subsurface is screen-space Burley (Golubev 2018) - Unreal's screen-space mode's class,
+  no new algorithm needed - so its energy is fitted against Cycles, as the hair colour was; the specular as two lobes
+  (Unreal's 0.75x / 1.3x roughness, mixed 0.85) within EEVEE's three closure bins (SSS + two reflection lobes stays
+  noise-free; a fourth closure goes stochastic).
+- **Attack:** earlier trials found full-resolution Fast GI "changed little"; tracing rough skin can add noise; more
+  samples keep the shared card busy while idle -> each change measured alone, samples capped.
+
+**The gate's fallbacks, with facts from the same search:** Cycles in the viewport with DLSS Ray Reconstruction
+(Blender 5.3: 1 sample a frame, reused and upscaled; no specular motion vectors; needs NVIDIA driver 620+ by the
+release notes / 590+ by the PR - this machine has 610.88 - and the DLSS library, which the 5.3 beta doesn't ship; its
+licence unread). An Unreal live view through Epic's "Send to Unreal" (MIT; Unreal's own remote execution) or our
+planned plugin - weeks of work; the user works in Blender, so it stays the plugin's job.
+
 **Children:** no open high-quality scan found (also not on Hugging Face or Zenodo); covered by the generator (rec 4)
 and MakeHuman's age shape until one is.
 
@@ -325,8 +362,9 @@ to Unreal (CC5 has one) through the planned Unreal plugin. A search for every wa
 (settings, light probes, our own shaders from published real-time skin / eye / hair methods, add-ons, live links) is
 running and lands in this brief.
 
-Then: 1 (live hair, half built) → 2 + 3 (bases, tone) → 4 (generator) → 6, 5 (layers, age) → 8-10 (brows, facial and body
-hair) → 12-15 (eyes, mouth, nails, ears) → 7 (bodies) → 11 (styles, with cards for dense hair).
+Then: 16's settings (cheap, measured) and 1 (live hair, half built) → 2 + 3 (bases, tone) → 4 (generator) → 6, 5
+(layers, age) → 12 (eyes, incl. parallax) → 8-10 (brows, facial and body hair) → 13-15 (mouth, nails, ears) → 16's
+probe volume → 7 (bodies) → 11 (styles, with cards for dense hair).
 
 ## 8 · How each is checked
 

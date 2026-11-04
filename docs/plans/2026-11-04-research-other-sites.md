@@ -62,11 +62,15 @@ not inspected.
 - **Pexels** (licence page read in full): free to use, no attribution; not allowed - "Don't redistribute or sell the
   photos and videos on other stock photo or wallpaper platforms"; the terms add "use or compile any Content to
   replicate a similar or competing service"; nothing on AI-generated content. Real-looking skin series (Angela Roma,
-  Karola G: veins, freckles, palms, dark and light tones, 4000-6720 px) [seen thumbnails]. A custom licence, not on our
-  shippable list (references).
+  Karola G: veins, freckles, palms, dark and light tones, 4000-6720 px) [seen thumbnails]. **Usable (corrected
+  2026-11-04, the user):** the licence allows free personal and commercial use and modification with no credit
+  needed; its limits (no selling unaltered copies, no redistribution on stock or wallpaper platforms, no compiling a
+  competing service, no identifiable people in a bad light) don't touch textures made from the photos and shipped in
+  an app. Label: "Pexels licence". Each photo checked for AI origin and real close-up resolution before use.
 - **Unsplash** (licence page read): free commercial use and modification; "Images cannot be sold without significant
   modification"; no compiling "to replicate a similar or competing service"; nothing on AI; the full terms behind a
-  bot check. A custom licence (references).
+  bot check. **Usable (corrected 2026-11-04)** on the same reasoning as Pexels: textures made from the photos are
+  significantly modified and our app is no photo service. Label: "Unsplash licence"; each photo checked as above.
 - **Nexus Mods 13537** ("8k-4k skin texture and material"): "You are not allowed to upload this file to other sites
   under any circumstances", asset use "You must get permission from me"; built from Cyberpunk's own assets ("Cd Red
   PRoject … i modified them") - not usable.
@@ -132,7 +136,7 @@ CC BY 4.0 coily curly; KIRI Engine Luma AI community captures.
 
 ## 6 · Not verified
 
-Whether Lizapopova143 is the photographer; Pexels / Unsplash photos' dates and AI origin; Foot3D's data licence;
+Whether Lizapopova143 is the photographer; Pexels / Unsplash photos' dates and AI origin;
 Strands400's release and terms; the Lincoln and Washington meshes' detail; Helen Keller NPG.75.16; most Commons and
 Flickr items one by one; FreePBR's licence; what the TextureCan / 3DTextures skins are; Polycam's capture licence;
 Unsplash's full terms; BlenderKit files (login); Thingiverse and Printables directly; Luma and KIRI.
