@@ -1073,8 +1073,15 @@ def test_face_project():
         middle = (fade > 0.9) & (np.abs(points[:, 0]) < 0.015)
         chin = float(np.percentile(points[middle, 2], 1)) if middle.sum() > 100 else fade_to
         below = np.clip((chin + 0.01 - points[:, 2]) / 0.01, 0.0, 1.0)  # 0 above the chin, 1 a cm below it
-        fade = fade * (1.0 - below) + _ramp_inside(points, fade) * below
-        print(f"  neck ramp below the chin at {chin:.3f} m")
+        # and on the rest of the face's OUTER border - above the brows (the close views' frames end ~3.5 cm above the
+        # eyes: there the painting's share fell from full to none within 8 mm, mei's forehead, 2026-11-03 dump) and
+        # out past the cheeks - away from the features, whose hidden sides are cavities the painting keeps (round 76)
+        eye_z = FIRST_EYES[2] + shift[2]
+        above = np.clip((points[:, 2] - eye_z - 0.025) / 0.005, 0.0, 1.0)  # from 2.5 cm above the eyes (the brows' top)
+        sides = np.clip((np.abs(points[:, 0]) - 0.05) / 0.015, 0.0, 1.0)
+        outer = np.maximum.reduce([below, above, sides])
+        fade = fade * (1.0 - outer) + _ramp_inside(points, fade) * outer
+        print(f"  ramps on the face's outer border (the neck below the chin at {chin:.3f} m, above the brows, the sides)")
     face_zone = covered & (points[:, 2] > 1.5 + shift[2]) & (fade > 0.9)
     fallback = np.median(albedo[face_zone], axis=0)
     under = np.broadcast_to(fallback, albedo.shape)
@@ -1094,14 +1101,26 @@ def test_face_project():
         # (2026-11-03: amara 0.82 / 0.68, walter 0.74 / 0.62, mei 0.72 / 0.64, the step within ~8 mm). And the base
         # brings detail only, not broad brightness of its own: divided by its own ~3 cm average (Waechter et al.'s
         # seam levelling, the views' gain fields above, between the painting and the base)
-        near_edge = _surface_blur(points, fade[:, None], np.ones(len(points)), 0.015)
-        edge = (fade > 0.5) & (fade < 0.97) | ((fade >= 0.97) & (near_edge[0][:, 0] / np.maximum(near_edge[1], 1e-9) < 0.9))
-        tone = _carried_tone(points, albedo, fade * edge, fallback)
+        # the band: where the ramped painting hands over on the face's outer border (not round the features: their
+        # hidden sides - mouth, sockets - read as "outside" too, and the band took the whole face, 2026-11-03 dump)
+        edge = (fade > 0.1) & (fade < 0.98) & (outer > 0.5)
+        # carried 1.5 cm wide with a light prior: at 3 cm the temples' and cheeks' longer, darker band outweighed the
+        # forehead's (mei: 0.96 against the painting's 1.20 at its edge; 1.5 cm: 1.10, easing to the median by ~6 cm)
+        tone = _carried_tone(points, albedo, fade * edge, fallback, sigma=0.015, prior=0.005)
         r = ratio[mask].astype(np.float64)
         broad_num, broad_den = _surface_blur(points, r, np.ones(len(points)), 0.03)
         under = tone * r / np.maximum(broad_num / np.maximum(broad_den, 1e-9)[:, None], 1e-3)
+        # then levelled to the painting in that band (Waechter et al.'s seam levelling, as the views' gain fields): the
+        # gain painting / base there, carried out the same way and settling to 1 away from it
+        gain = _carried_tone(points, albedo / np.maximum(under, 1e-4), fade * edge, np.ones(3), sigma=0.015, prior=0.02)
+        under = under * np.clip(gain, 0.5, 2.0)
         print(f"  skin base {BASE}: under {(fade < 0.5).mean():.0%} of the head's texels; tone from "
               f"{edge.sum()} texels along the painting's edge")
+    if os.environ.get("FACETEST_DUMP"):  # the hand-over measured, not guessed: every 4th texel's parts, then stop (CPU)
+        np.savez_compressed(f"{DIR}dump.npz", points=points[::4], fade=fade[::4], painted=albedo[::4], under=under[::4],
+                            trust=trust[::4], t=t[::4], covered=covered[::4], eye_z=FIRST_EYES[2] + shift[2])
+        print(f"dumped {len(points[::4])} texels to {DIR}dump.npz")
+        return
     albedo = under + (albedo - under) * fade[:, None]
     nrm = normals + (nrm - normals) * fade[:, None]
     nrm /= np.linalg.norm(nrm, axis=1, keepdims=True) + 1e-12
