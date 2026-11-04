@@ -44,6 +44,10 @@ def test_the_scene_renders_on_the_card_with_the_viewport_denoiser():
     assert (scene.eevee.shadow_ray_count, scene.eevee.shadow_step_count) == (4, 16)  # no blotched eye whites
     assert scene.eevee.use_shadow_jitter_viewport  # the lids' contact shadow on the eye white in the live view
     assert scene.render.hair_type == "STRIP"  # strands with their width, not 1-px lines
+    # the film look: AgX's medium-high contrast, a third of a stop under (skin read flat and pale at base contrast)
+    view = scene.view_settings
+    assert (view.view_transform, view.look) == ("AgX", viewport.LOOK)
+    assert view.exposure == pytest.approx(viewport.EXPOSURE)
 
 
 def test_the_live_view_is_material_preview_in_the_scene_light():

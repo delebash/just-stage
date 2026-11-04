@@ -43,6 +43,9 @@ def use_gpu() -> str:
     return "NONE"
 
 
+LOOK, EXPOSURE = "AgX - Medium High Contrast", -0.3
+
+
 def setup_scene(scene: bpy.types.Scene) -> None:
     """F12 renders Cycles (the film run) on the card; Rendered is denoised as it refines; EEVEE (Material Preview)
     ray-traces and draws hair as strips. The scene always asks for the card: which card is the preferences' choice
@@ -61,6 +64,11 @@ def setup_scene(scene: bpy.types.Scene) -> None:
     # they settle over a few frames once the view stops
     scene.eevee.use_shadow_jitter_viewport = True
     scene.render.hair_type = "STRIP"
+    # the film look: AgX (Blender's default view) with its medium-high contrast and a third of a stop less exposure -
+    # skin read flat and pale at AgX's base contrast (trials 2026-11-04, the realism working doc rec 3)
+    scene.view_settings.view_transform = "AgX"
+    scene.view_settings.look = LOOK
+    scene.view_settings.exposure = EXPOSURE
 
 
 def show_live(screens, camera: bool = False) -> None:

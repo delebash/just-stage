@@ -202,6 +202,15 @@ TABLES = {
     },
 }
 
+#: the stage's image light (ui/startup.py): Poly Haven's "Studio Small 09" ("medium contrast"; the face test's light
+#: since 2026-10-30, research 2026-10-30-research-skin-detail-shading.md §4), its 2K HDR
+TABLES["studio_hdri"] = {
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/studio_small_09_2k.hdr",
+    "sha256": "36724313c0fc66dab126ff90f081b85a0b1ef47be65eda1417bd20b033f0573f",
+    "dest": FETCHED / "hdri" / "studio_small_09_2k.hdr",
+    "licence": "CC0-1.0 (Poly Haven: polyhaven.com/a/studio_small_09)",
+}
+
 #: Inputs of the offline tools (libs/, tools/), checked by SHA-256 and kept out of the add-on (.dev/cache/).
 TOOL_INPUTS = {
     "nist_skin": {

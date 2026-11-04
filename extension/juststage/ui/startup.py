@@ -3,8 +3,10 @@
 
 """How JustStage starts (docs/plans/2026-11-03-cc5-window.md §3 step 5), called by the application template: a new
 file is a stage - Blender's default cube gone, its camera framing a standing person, Blender's one point light (it
-stands behind where the character stands: the face came out dark) replaced by three-point studio lighting, the
-photographer's standard for a portrait (a key light, a softer fill on the other side, a rim light behind); the
+stands behind where the character stands: the face came out dark) replaced by a portrait light - the research's
+technique (`docs/plans/2026-10-30-research-skin-detail-shading.md` §4): one large soft key at 30-45 degrees, a rim
+behind (the scattering at the ears and nostrils), the fill from a studio image light - over a dark stage, as CC5's view
+(the realism working doc, `docs/plans/2026-11-04-realism.md` rec 3); the
 Properties editor becomes the Content panel (Blender's Asset Browser); the
 3D view's sidebar opens on JustStage's Modify panel. Blender's own settings only:
 https://docs.blender.org/api/5.3/bpy.types.Region.html#bpy.types.Region.active_panel_category ("categories are generated
@@ -21,12 +23,19 @@ CAMERA_AT, CAMERA_LOOKS_AT, LENS = Vector((0.0, -4.2, 1.0)), Vector((0.0, 0.0, 0
 #: where the lights aim: a standing person's chest-to-head
 LIGHTS_LOOK_AT = Vector((0.0, 0.0, 1.35))
 #: (name, location, power in watts, size in metres): the key 45 degrees to the camera's left and 35 up, 3 m off; the
-#: fill to the right, low and broad at about a third of the key; the rim behind and above (the character faces -Y)
+#: rim behind and above (the character faces -Y). No fill light: the image light fills (an area fill at a third of the
+#: key left the face flat and pale - trials 2026-11-04, `light_sheet*.png` in the realism working doc)
 LIGHTS = (
     ("Key light", Vector((-1.74, -1.74, 3.07)), 300.0, 1.5),
-    ("Fill light", Vector((2.26, -1.90, 1.87)), 100.0, 2.5),
     ("Rim light", Vector((-1.0, 2.2, 3.0)), 120.0, 1.0),  # 250 W turned the hair's edge white in the live view
 )
+#: the image light (Poly Haven's CC0 "Studio Small 09", fetched by tools/fetch_data.py) at a quarter: a soft fill
+#: (at a half it flattened the face again); the camera sees a dark blue-grey stage instead (Blender's Light Path
+#: "Is Camera Ray"), as CC5's view
+HDRI = ("hdri", "studio_small_09_2k.hdr")
+HDRI_STRENGTH = 0.25
+BACKDROP = (0.018, 0.022, 0.03)
+WORLD = "JustStage stage"
 
 
 #: the finest shadow texel (m): the lid stands about a millimetre off the eyeball, Blender's 1 mm can't resolve its
@@ -59,11 +68,35 @@ def new_stage(scene) -> None:
         scene.collection.objects.link(obj)
         obj.location = location
         obj.rotation_euler = (LIGHTS_LOOK_AT - location).to_track_quat("-Z", "Y").to_euler()
+    stage_world(scene)
     cam = scene.camera
     if cam is not None:
         cam.location = CAMERA_AT
         cam.rotation_euler = (CAMERA_LOOKS_AT - CAMERA_AT).to_track_quat("-Z", "Y").to_euler()
         cam.data.lens = LENS
+
+
+def stage_world(scene) -> bpy.types.World:
+    """The stage's world: the studio image lights the character, camera rays see the dark stage."""
+    from .. import paths
+
+    world = bpy.data.worlds.get(WORLD) or bpy.data.worlds.new(WORLD)
+    scene.world = world
+    nt = world.node_tree
+    nt.nodes.clear()
+    env = nt.nodes.new("ShaderNodeTexEnvironment")
+    env.image = bpy.data.images.load(str(paths.FETCHED.joinpath(*HDRI)), check_existing=True)
+    lit, stage = nt.nodes.new("ShaderNodeBackground"), nt.nodes.new("ShaderNodeBackground")
+    lit.name, stage.name = "image light", "stage"
+    lit.inputs["Strength"].default_value = HDRI_STRENGTH
+    stage.inputs["Color"].default_value = (*BACKDROP, 1.0)
+    path, mix, out = (nt.nodes.new(t) for t in ("ShaderNodeLightPath", "ShaderNodeMixShader", "ShaderNodeOutputWorld"))
+    nt.links.new(env.outputs["Color"], lit.inputs["Color"])
+    nt.links.new(path.outputs["Is Camera Ray"], mix.inputs["Fac"])
+    nt.links.new(lit.outputs["Background"], mix.inputs[1])
+    nt.links.new(stage.outputs["Background"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return world
 
 
 def stage_view(screens) -> None:

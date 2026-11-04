@@ -7,6 +7,7 @@ runs - Blender's workspace tabs and extra menus hidden, its full interface one s
 import importlib
 
 import bpy
+import pytest
 from mathutils import Vector
 
 topbar = importlib.import_module("bl_ext.system.juststage.ui.topbar")
@@ -42,12 +43,17 @@ def test_a_new_file_is_a_stage():
     assert "Cube" not in bpy.data.objects
     assert scene.camera is not None and scene.camera.data.lens == startup.LENS
     lights = {o.name: o for o in scene.objects if o.type == "LIGHT"}
-    # three-point studio lighting in front of the character (Blender's one light stood behind it: the face was dark)
-    assert {"Key light", "Fill light", "Rim light"} <= set(lights) and "Light" not in lights
-    assert lights["Key light"].location.y < 0 and lights["Fill light"].location.y < 0  # in front (it faces -Y)
-    assert lights["Rim light"].location.y > 0
-    assert lights["Key light"].data.energy > lights["Fill light"].data.energy
-    for name in ("Key light", "Fill light", "Rim light"):  # fine jittered shadows: the lid's on the eye white
+    # a portrait light: the key in front, the rim behind (Blender's one light stood behind: the face was dark), and the
+    # fill from the studio image light over a dark stage
+    assert {"Key light", "Rim light"} <= set(lights) and not {"Light", "Fill light"} & set(lights)
+    assert lights["Key light"].location.y < 0 and lights["Rim light"].location.y > 0  # it faces -Y
+    world = scene.world
+    assert world.name == startup.WORLD
+    env = next(n for n in world.node_tree.nodes if n.type == "TEX_ENVIRONMENT")
+    assert env.image.filepath.replace("\\", "/").endswith("hdri/studio_small_09_2k.hdr")
+    assert world.node_tree.nodes["image light"].inputs["Strength"].default_value == startup.HDRI_STRENGTH
+    assert tuple(world.node_tree.nodes["stage"].inputs["Color"].default_value)[:3] == pytest.approx(startup.BACKDROP)
+    for name in ("Key light", "Rim light"):  # fine jittered shadows: the lid's on the eye white
         assert lights[name].data.use_shadow_jitter and lights[name].data.shadow_maximum_resolution <= 0.0001
     for light in lights.values():  # each aimed at the head and chest
         aim = light.rotation_euler.to_quaternion() @ Vector((0.0, 0.0, -1.0))
