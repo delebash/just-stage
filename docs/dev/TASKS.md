@@ -1064,6 +1064,17 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            9. Nipples, lips and ears: their colour and detail.
            Research running 2026-11-04 (three agents: CC scans for the gaps; newer techniques for skin and real-time
            hair; variety for every other part), each told to read our research first.
+           SEARCH RULE (2026-11-04), the user, verbatim, after my CC-only licence filter wrongly ruled out Pexels: "ok
+           but your error changes the whole scope of the search taht may have missed stuff we can use, correct, you
+           wasted things again, do you need to redo the search?? ... before you do any search i wnat you to think
+           adverserily on all these searcch mistakes you keep making, to narrow to big, wrong query terms and make sure
+           you get it right before you ever launch a search agent, got it, this is rule add it to claude md and
+           memeory"; then: "make a list of search mistakes you have made and evertyhime you luancjh a search agent
+           check this list to make sure you dont make those same mistakes, show me what list you come up with". Done:
+           the global CLAUDE.md research rule 7 (a-m) and memory `search-mistakes` (each with its proof). Found: four of
+           the six 2026-11-04 agent briefs (scans, per-part variety, HF + Zenodo, other sites) limited shipping to CC0 /
+           CC-BY / CC-BY-SA / MIT-like and called paid "unusable"; the two method briefs (skin techniques, EEVEE) did
+           not. The redo of the filtered part waits for the user's word on its scope.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
