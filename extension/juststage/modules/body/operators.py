@@ -32,6 +32,13 @@ class JUSTSTAGE_OT_body_create(CommandOperator, bpy.types.Operator):
     asian: _macro("Asian", 0.33)
     caucasian: _macro("Caucasian", 0.33)
     african: _macro("African", 0.33)
+    dressed: bpy.props.BoolProperty(name="Dressed", description="Eyes, teeth, lashes and a skin too", default=False)
+
+    def invoke(self, context, event):
+        """From the panel or the Character menu: a dressed human, as CC5's New gives (the API's default stays bare)."""
+        if not self.properties.is_property_set("dressed"):
+            self.dressed = True
+        return super().invoke(context, event)
 
 
 class JUSTSTAGE_OT_body_subdivide(CommandOperator, bpy.types.Operator):

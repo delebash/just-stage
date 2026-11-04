@@ -91,7 +91,7 @@ class VIEW3D_PT_juststage_modify(bpy.types.Panel):
         layout = self.layout
         obj = active_character(context)
         if obj is None:  # JustStage's welcome: make a character, or start from one in the library
-            layout.operator("juststage.body_create", text="New human", icon="ADD")
+            layout.operator("juststage.body_create", text="New human", icon="ADD")  # dressed (its invoke)
             from ..core import library
 
             presets = library.characters()

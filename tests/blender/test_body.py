@@ -154,3 +154,19 @@ def test_every_character_shares_one_rest_shape_and_stands_on_the_floor():
     finally:
         for o in objs:
             bpy.data.objects.remove(o)
+
+
+def test_a_dressed_human_has_its_eyes_lashes_and_a_skin():
+    """The panel's New human (CC5's New): eyes and teeth with their films, lashes, a mapped skin when the library has
+    one (tools/build_skins.py), in the character's own tone."""
+    library = importlib.import_module("bl_ext.system.juststage.core.library")
+    result = api.run("juststage.body.create", name="Dressed", gender=0.0, dressed=True)
+    obj = bpy.data.objects[result.object]
+    parts = {o.juststage.part for o in bpy.data.objects if o.juststage.part_of == result.character}
+    assert {"eyeLeft", "eyeRight", "teeth", "eyeshell", "eyeEdge", "eyelashes"} <= parts
+    if (library.root() / "Skins" / "Mei skin.blend").is_file():
+        assert result.skin == "Mei skin" and obj.juststage.skin_material.juststage.has_maps
+        assert obj.juststage.melanin == pytest.approx(0.0104)  # its own tone, the skin's detail
+    for o in [o for o in bpy.data.objects if o.juststage.part_of == result.character]:
+        bpy.data.objects.remove(o)
+    bpy.data.objects.remove(obj)
