@@ -50,11 +50,17 @@ def install() -> None:
     _ORIGINAL["draw_left"] = bpy.types.TOPBAR_HT_upper_bar.draw_left
     bpy.types.TOPBAR_HT_upper_bar.draw_left = draw_left
     bpy.types.TOPBAR_MT_window.append(draw_window_switch)
+    from . import viewport_header
+
+    viewport_header.install()  # the 3D view's header follows the same switch
 
 
 def uninstall() -> None:
     if "draw_left" not in _ORIGINAL:
         return
+    from . import viewport_header
+
+    viewport_header.uninstall()
     bpy.types.TOPBAR_MT_window.remove(draw_window_switch)
     bpy.types.TOPBAR_HT_upper_bar.draw_left = _ORIGINAL.pop("draw_left")
     del bpy.types.WindowManager.juststage_full_interface
