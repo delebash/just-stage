@@ -47,6 +47,8 @@ def test_a_new_file_is_a_stage():
     assert lights["Key light"].location.y < 0 and lights["Fill light"].location.y < 0  # in front (it faces -Y)
     assert lights["Rim light"].location.y > 0
     assert lights["Key light"].data.energy > lights["Fill light"].data.energy
+    for name in ("Key light", "Fill light", "Rim light"):  # fine jittered shadows: the lid's on the eye white
+        assert lights[name].data.use_shadow_jitter and lights[name].data.shadow_maximum_resolution <= 0.0001
     for light in lights.values():  # each aimed at the head and chest
         aim = light.rotation_euler.to_quaternion() @ Vector((0.0, 0.0, -1.0))
         to_body = (Vector((0.0, 0.0, 1.35)) - light.location).normalized()

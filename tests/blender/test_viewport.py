@@ -40,8 +40,9 @@ def test_the_scene_renders_on_the_card_with_the_viewport_denoiser():
     assert scene.render.engine == "CYCLES"  # F12 is the film run
     assert scene.cycles.device == "GPU"  # the preferences pick the card; none picked renders on the processor
     assert scene.cycles.use_preview_denoising
-    assert scene.eevee.use_raytracing  # the cornea's refraction in Material Preview
+    assert scene.eevee.use_raytracing  # screen-space reflections and Fast GI in Material Preview
     assert (scene.eevee.shadow_ray_count, scene.eevee.shadow_step_count) == (4, 16)  # no blotched eye whites
+    assert scene.eevee.use_shadow_jitter_viewport  # the lids' contact shadow on the eye white in the live view
     assert scene.render.hair_type == "STRIP"  # strands with their width, not 1-px lines
 
 

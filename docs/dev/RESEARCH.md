@@ -137,6 +137,14 @@ Subjects: [1 · The machine](#1--the-machine) ·
     0.820291 at height 1, 0.819702 for a tall muscular man), grooms landed off by the difference: MakeHuman's pack
     roots, median on the skin, were hedgehog 0.84 mm and pack lashes 1.88 mm on a tall character (0.07 / 0.31 on the
     default). With one lift for every base mesh: 0.08 / 0.28.
+- **EEVEE's eye white and the lids' shadow** (Blender 5.3, a close eye, one 120 W area light 0.6 m wide, measured
+  2026-11-04):
+  - The lid stands about a millimetre off the eyeball. The light's `shadow_maximum_resolution` defaults to 1 mm.
+  - At 0.1 mm without `use_shadow_jitter` the white stays flat. Jittered, the upper lid's shadow shows.
+  - Render time was the same at every limit: 0.56 s for a close eye at 512 px and 64 samples, 0.44 s for a full body
+    at 1280 x 720.
+  - In 5.3 the setting is `shadow_maximum_resolution`; `shadow_resolution_scale` no longer exists.
+  - The viewport jitters only with `scene.eevee.use_shadow_jitter_viewport`.
 - **Skin lightness by melanin** (`core/skin_optics.py`, eumelanin 0.6, blood 0.016; CIE L* of the albedo):
   - melanin 0.003 gives L* 75.6, 0.01 gives 69.0, 0.03 gives 54.7;
   - melanin 0.06 gives 41.0, 0.1 gives 30.8, 0.13 gives 26.3;

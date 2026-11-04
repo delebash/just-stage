@@ -29,6 +29,17 @@ LIGHTS = (
 )
 
 
+#: the finest shadow texel (m): the lid stands about a millimetre off the eyeball, Blender's 1 mm can't resolve its
+#: shadow; EEVEE's virtual shadow maps refine only where the view needs it (0.56 s for a close eye either way, measured)
+SHADOW_TEXEL = 0.0001
+
+
+def set_fine_shadows(light) -> None:
+    """Jittered soft shadows down to SHADOW_TEXEL: the lids' contact shadow on the eye white (measured 2026-11-04)."""
+    light.use_shadow_jitter = True
+    light.shadow_maximum_resolution = SHADOW_TEXEL
+
+
 def new_stage(scene) -> None:
     """Blender's default cube and point light out; its camera aimed at where a JustStage character stands, studio
     lights on it."""
@@ -43,6 +54,7 @@ def new_stage(scene) -> None:
             continue
         data = bpy.data.lights.new(name, "AREA")
         data.energy, data.size = power, size
+        set_fine_shadows(data)
         obj = bpy.data.objects.new(name, data)
         scene.collection.objects.link(obj)
         obj.location = location

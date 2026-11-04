@@ -78,6 +78,7 @@ def render(catalog: str, path: str, out) -> None:
     light = bpy.data.objects.new("preview light", bpy.data.lights.new("preview light", "AREA"))
     # high and to the side, and small: a large light beside the camera filled the corneas (white eyes)
     light.data.energy, light.data.size = 120.0, 0.6
+    importlib.import_module("bl_ext.system.juststage.ui.startup").set_fine_shadows(light.data)  # the lids' shadow
     light.location = look + Vector((-0.9, -1.0, 1.1))
     light.rotation_euler = (look - light.location).to_track_quat("-Z", "Y").to_euler()
     scene.collection.objects.link(light)

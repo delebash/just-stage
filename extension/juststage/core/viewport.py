@@ -56,6 +56,10 @@ def setup_scene(scene: bpy.types.Scene) -> None:
     # soft shadows sampled finer than Blender's 1 ray / 6 steps: at those the eye white, half shadowed by the lids under
     # a large soft light, came out in grey blotches (round 79, EEVEE close-up; clean at 4 / 16 - measured 2026-11-03)
     scene.eevee.shadow_ray_count, scene.eevee.shadow_step_count = 4, 16
+    # jittered soft shadows in the live view too (Blender keeps them to F12 by default): the upper lid's contact shadow
+    # on the eye white, a millimetre under it, shows only jittered (measured 2026-11-04: without, the white was flat);
+    # they settle over a few frames once the view stops
+    scene.eevee.use_shadow_jitter_viewport = True
     scene.render.hair_type = "STRIP"
 
 
