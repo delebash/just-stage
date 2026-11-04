@@ -56,6 +56,16 @@ def open_sidebar(retries: int = 15) -> None:
         full = getattr(wm, "juststage_full_interface", True)
         for window in wm.windows:
             for area in window.screen.areas:
+                if area.type == "FILE_BROWSER" and area.ui_type == "ASSETS":  # the Content panel on JustStage's library
+                    params = getattr(area.spaces.active, "params", None)
+                    if params is None:
+                        done = False  # not drawn yet
+                    elif getattr(params, "asset_library_reference", "JustStage") != "JustStage":
+                        try:
+                            params.asset_library_reference = "JustStage"
+                        except TypeError:  # the library isn't registered in these preferences
+                            pass
+                    continue
                 if area.type != "VIEW_3D":
                     continue
                 space = area.spaces.active
