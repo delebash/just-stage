@@ -40,3 +40,17 @@ def test_a_region_shows_its_sliders_and_search_crosses_regions(human):
     found = panel.visible_sliders(obj, "NOSE", "width")
     assert found and all("width" in item.label.lower() for item in found)
     assert {item.group for item in found} - {"nose"}  # the search isn't held to the region
+
+
+theme = importlib.import_module("bl_ext.system.juststage.ui.theme")
+
+
+def test_the_theme_is_dark_with_one_accent():
+    theme.apply(bpy.context.preferences)
+    t = bpy.context.preferences.themes[0]
+    ui = t.user_interface
+    assert tuple(ui.wcol_numslider.item)[:3] == pytest.approx(theme.ACCENT, abs=0.005)  # the slider's fill
+    assert tuple(ui.wcol_radio.inner_sel)[:3] == pytest.approx(theme.ACCENT, abs=0.005)  # the selected tab
+    assert max(tuple(ui.panel_header)[:3]) < 0.2  # quiet panel titles, not colour bars
+    assert max(tuple(ui.panel_back)[:3]) < 0.2  # near-black panels
+    assert t.view_3d.space.gradients.background_type == "LINEAR"  # CC5's blue-grey viewport

@@ -36,9 +36,12 @@ def _on_load(_=None):
 
 @persistent
 def _on_factory_preferences(_=None):
-    """First start (or preferences reset): Cycles renders on the card, not Blender's factory "None"."""
+    """First start (or preferences reset): Cycles on the card (not Blender's factory "None"); JustStage's look."""
     _ensure_addon()
     _viewport().use_gpu()
+    import importlib
+
+    importlib.import_module(ADDON + ".ui.theme").apply(bpy.context.preferences)
 
 
 @persistent
