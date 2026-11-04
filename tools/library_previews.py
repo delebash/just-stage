@@ -27,8 +27,12 @@ for path in sorted((library.root() / "Characters").glob("*.blend")):
     for o in bpy.data.objects:
         if o.juststage.part_of == asset.juststage.character_id and scene.objects.get(o.name) is None:
             scene.collection.objects.link(o)
-    top = max((asset.matrix_world @ Vector(c)).z for c in asset.bound_box)
-    look = Vector((0.0, 0.0, top - 0.22))
+    # aimed at the character's own eyes: they follow its shape keys (the body's bounds don't - a tall preset's head
+    # fell out of frame, a short one sat low)
+    eyes = [o for o in bpy.data.objects if o.juststage.part_of == asset.juststage.character_id and "eye" in o.name]
+    centres = [o.matrix_world @ (sum((Vector(c) for c in o.bound_box), Vector()) / 8) for o in eyes]
+    eye = sum(centres, Vector()) / len(centres)
+    look = Vector((0.0, 0.0, eye.z - 0.1))
     cam = bpy.data.objects.new("preview camera", bpy.data.cameras.new("preview camera"))
     scene.collection.objects.link(cam)
     cam.location = look + Vector((0.0, -1.15, 0.05))
