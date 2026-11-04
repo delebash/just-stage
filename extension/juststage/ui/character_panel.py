@@ -151,6 +151,14 @@ class VIEW3D_PT_juststage_modify(bpy.types.Panel):
         col = layout.column(align=True)
         for name in TONE:
             col.prop(obj.juststage, name, slider=True)
+        eyes = layout.column(align=True)
+        eyes.label(text="Eyes")
+        eyes.prop(obj.juststage, "eye_preset", text="Colour")
+        swatches = eyes.row(align=True)
+        for name, label in (("iris_colour", "Iris"), ("iris_accent", "Accent"), ("eye_white", "White")):
+            cell = swatches.column(align=True)
+            cell.label(text=label)
+            cell.prop(obj.juststage, name, text="")
         layout.separator()
         _command(layout, "juststage.skin_set_tone", "Skin tone (dialog)", "COLOR")
         _command(layout, "juststage.skin_add_detail", "Skin detail (AI)", "TEXTURE")

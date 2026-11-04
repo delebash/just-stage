@@ -122,6 +122,38 @@ WHITE = (0.68, 0.60, 0.54)  # the face test's starting white (MPFB2's is pure wh
 #: bump glittered under the catch light, its outer layer mirrored the studio from the side
 SETTINGS = {"InnerLayerRoughness": 0.35, "IrisBumpStrength": 0.1, "OuterLayerIOR": 1.15, "Clearcoat": 0.0}
 UV_EYE_RADIUS = 0.46  # GNM's eyeball on its UV map, centred at (0.5, 0.5) (measured 2026-10-30)
+#: eye colours (CC5's eye colour, MetaHuman's iris presets): (iris, its darker accent), linear. Brown is the measured
+#: one above; the rest are set by eye, kept low in chroma - no measured iris colours were found (RESEARCH §1, the
+#: searches of 2026-11-04), and a saturated iris is what reads fake (MPFB2's own default blue is 0.18 / 0.49 / 0.91)
+PRESETS = {
+    "brown": (IRIS_MAJOR, IRIS_MINOR),
+    "dark_brown": ((0.035, 0.018, 0.012), (0.018, 0.009, 0.006)),
+    "amber": ((0.10, 0.055, 0.02), (0.05, 0.025, 0.010)),
+    "hazel": ((0.07, 0.055, 0.025), (0.035, 0.022, 0.012)),
+    "green": ((0.055, 0.075, 0.04), (0.025, 0.035, 0.02)),
+    "grey": ((0.09, 0.10, 0.10), (0.045, 0.05, 0.055)),
+    "blue": ((0.07, 0.11, 0.16), (0.03, 0.05, 0.08)),
+    "light_blue": ((0.12, 0.18, 0.24), (0.06, 0.09, 0.13)),
+}
+
+
+def set_colour(eye, iris, accent, white) -> int:
+    """An eye's iris, its accent (the fibres' darker half and, a little darker, the limbal ring) and its white, on
+    each of its EnhancedEye nodes (the iris, pupil and white materials); returns how many it set."""
+    done = 0
+    for slot in eye.material_slots:
+        mat = slot.material
+        if mat is None or mat.node_tree is None:
+            continue
+        for node in mat.node_tree.nodes:
+            if node.type != "GROUP" or "IrisMajorColor" not in node.inputs:
+                continue
+            node.inputs["IrisMajorColor"].default_value = (*iris, 1.0)
+            node.inputs["IrisMinorColor"].default_value = (*accent, 1.0)
+            node.inputs["IrisSection4Color"].default_value = (*(0.9 * c for c in accent), 1.0)  # a soft limbal ring
+            node.inputs["EyeWhiteColor"].default_value = (*white, 1.0)
+            done += 1
+    return done
 
 
 def _iris_loops(eye, ids=None):

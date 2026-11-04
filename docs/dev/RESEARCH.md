@@ -173,6 +173,21 @@ Subjects: [1 · The machine](#1--the-machine) ·
   100 W, rim 120 W) under AgX base contrast read flat and pale; Poly Haven's Studio Small 09 as the fill at 0.5 flattened
   it again; at 0.25, no fill light, AgX "Medium High Contrast" and -0.3 EV the face had shape. AgX's looks in 5.3
   include "AgX - Medium High Contrast" (set and rendered).
+- **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
+  1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
+     CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
+     groups by camera), a Korean study, a 1984 Psychonomic paper - methods; no numbers on the pages reached.
+  2. "realistic iris colors for 3D eye shader presets blue green hazel" - product pages (Daz Macro Eyes presets, an
+     Unreal eye pack, Blender's Eye Designer: 12 colour sets) without values; a paper on blue as stroma scattering and
+     hazel as melanin over it.
+  3. "Edwards 2012 'quantitative measures of iris color' CIELAB ..." - the same paper's design; PMC6456006 (a South
+     Asian GWAS, 2019) reports only GWAS statistics, its camera set-up (D55, f/19, ISO 200).
+  4. "'Digital quantification of human eye color' Liu 2010 ..." - PLoS Genetics 2010: hue and saturation from photos,
+     the categories overlapping; values not reached.
+  5. "'Iris pigmentation as a quantitative trait' Edwards 2016 ..." and "iris color physics melanin stroma Rayleigh
+     scattering model ..." - the 2016 paper and qualitative physics only.
+  A gap in the search, not "none exist": the papers hold the numbers; their full texts weren't reached (an ARRO copy
+  failed its certificate). MPFB2's own eye default is a saturated blue (0.18, 0.49, 0.91; `eye_settings.default.json`).
 - **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
   runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
   (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065

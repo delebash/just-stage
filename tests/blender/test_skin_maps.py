@@ -73,6 +73,9 @@ def test_a_mapped_skin_goes_onto_any_character_in_its_own_tone(human, tmp_path):
     nodes = mat.node_tree.nodes
     assert nodes[maps.NODE + "uv"].uv_map == maps.UV
     assert nodes[maps.NODE + "base_color"].image.source == "TILED"
+    # the body's mottling (below the head tile) on the way to the colour
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    assert bsdf.inputs["Base Color"].links[0].from_node == nodes[maps.NODE + "mottle"]
     assert body.juststage.melanin == pytest.approx(0.12)  # the skin's own tone came with it
     gain = np.array(nodes[maps.NODE + "gain"].inputs[1].default_value)
     assert np.allclose(gain, 1.0, atol=1e-4)  # at its own tone, the map as made

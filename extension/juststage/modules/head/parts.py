@@ -74,12 +74,18 @@ def add(character: bpy.types.Object) -> list[str]:
         groups = json.loads((_folder() / f"{part}.groups.json").read_text(encoding="utf-8"))
         part_materials.assign(obj, part, groups)
         added.append(part)
+    # the importer's own 90-degree turn stays in each new part's world matrix until the scene updates (the next import
+    # updated the one before it, so only a part imported last - an eye added again alone - kept it; 2026-11-04)
+    bpy.context.view_layer.update()
     refit(character)
     from . import eyes
 
+    props = character.juststage
     for part in added:
         if part in ("eyeLeft", "eyeRight"):  # the procedural iris and white (MPFB2's), on UVs by the 3D radius
-            eyes.shade(parts_of(character)[part])
+            eye = parts_of(character)[part]
+            eyes.shade(eye)
+            eyes.set_colour(eye, props.iris_colour, props.iris_accent, props.eye_white)  # the character's own
     if {"eyeLeft", "eyeRight"} & set(added):  # CC5's and MetaHuman's two films over the eyeball
         from . import eye_layers
 

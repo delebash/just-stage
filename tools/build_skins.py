@@ -42,7 +42,16 @@ NAMES = {"man_a": "Daniel", "amara": "Amara", "walter": "Walter", "mei": "Mei"}
 #: wrong for a skin
 MELANIN = {"man_a": 0.025, "amara": 0.18, "walter": 0.02, "mei": 0.03}
 LUMA = np.array([0.2126, 0.7152, 0.0722])  # Rec.709
-SIZE, BODY_SIZE = 4096, 256
+SIZE, BODY_SIZE, FLAT_SIZE = 4096, 1024, 256
+#: the body's coloured regions (MPFB2's CC0 masks on hm08's UVs, fetched): each one's tone over the skin's own, by the
+#: chromophore model - (melanin factor, melanin added, blood factor); nails also shinier (roughness)
+REGIONS = {
+    "areolae": (2.0, 0.01, 1.6),
+    "nails": (0.4, 0.0, 1.8),
+    "genitals": (1.6, 0.005, 1.5),
+}
+NAIL_ROUGHNESS = 0.3
+MASK_BLUR = 2  # texels at 1024: soft edges
 MARGIN = 16
 FLAT = {"roughness": material.ROUGHNESS, "cavity": 1.0, "height": 0.5}
 PROVENANCE = (
@@ -60,14 +69,14 @@ def _pixels(image) -> np.ndarray:
     return buf.reshape(h, w, 4)
 
 
-def _bake_uv(body) -> None:
-    """A UV layer for baking tile 1001 as a plain 0-1 image: the head's loops where the UDIM layer has them, the rest
+def _bake_uv(body, number: int = 1001) -> None:
+    """A UV layer for baking one tile as a plain 0-1 image: that tile's loops where the UDIM layer has them, the rest
     pushed off the image."""
     me = body.data
     uv, tile = maps.layout()
     loop_tile = np.repeat(tile, 4)  # hm08 is all quads
-    flat = uv.copy()
-    flat[loop_tile != 1001] += 5.0
+    flat = uv - np.array([number - 1001, 0.0], np.float32)
+    flat[loop_tile != number] += 5.0
     layer = me.uv_layers.get("bake") or me.uv_layers.new(name="bake")
     layer.data.foreach_set("uv", flat.ravel())
     me.uv_layers.active = layer
@@ -75,14 +84,14 @@ def _bake_uv(body) -> None:
         other.active_render = other.name == "bake"
 
 
-def _bake(body, kind: str, build) -> np.ndarray:
-    """One bake into a fresh 4096² float image through a temporary material made by `build(nodes, links, out)`."""
+def _bake(body, kind: str, build, size: int = 4096) -> np.ndarray:
+    """One bake into a fresh float image through a temporary material made by `build(nodes, links, out)`."""
     mat = bpy.data.materials.new("bake")
     nt = mat.node_tree
     nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     build(nt.nodes, nt.links, out)
-    target = bpy.data.images.new("bake target", SIZE, SIZE, alpha=False, float_buffer=True)
+    target = bpy.data.images.new("bake target", size, size, alpha=False, float_buffer=True)
     target.colorspace_settings.name = "Non-Color"
     node = nt.nodes.new("ShaderNodeTexImage")
     node.image = target
@@ -168,6 +177,79 @@ def _normals_of(normal, painted):
     return build
 
 
+def _masks_of():
+    """MPFB2's region masks as emission: red the areolae, green the finger and toe nails, blue the genitals with half
+    the crotch."""
+    images = {}
+    for name in ("aureolae", "fingernails", "toenails", "genitals", "crotch"):
+        image = bpy.data.images.load(str(paths.makehuman("textures", f"mpfb_{name}.jpg")), check_existing=True)
+        image.colorspace_settings.name = "Non-Color"
+        images[name] = image
+
+    def build(nodes, links, out):
+        uv = nodes.new("ShaderNodeUVMap")
+        uv.uv_map = "UVMap"
+        tex = {}
+        for name, image in images.items():
+            tex[name] = nodes.new("ShaderNodeTexImage")
+            tex[name].image = image
+            links.new(uv.outputs["UV"], tex[name].inputs["Vector"])
+        nails = nodes.new("ShaderNodeMath")
+        nails.operation = "MAXIMUM"
+        links.new(tex["fingernails"].outputs["Color"], nails.inputs[0])
+        links.new(tex["toenails"].outputs["Color"], nails.inputs[1])
+        half = nodes.new("ShaderNodeMath")
+        half.operation, half.inputs[1].default_value = "MULTIPLY", 0.5
+        links.new(tex["crotch"].outputs["Color"], half.inputs[0])
+        lower = nodes.new("ShaderNodeMath")
+        lower.operation = "MAXIMUM"
+        links.new(tex["genitals"].outputs["Color"], lower.inputs[0])
+        links.new(half.outputs["Value"], lower.inputs[1])
+        rgb = nodes.new("ShaderNodeCombineColor")
+        links.new(tex["aureolae"].outputs["Color"], rgb.inputs["Red"])
+        links.new(nails.outputs["Value"], rgb.inputs["Green"])
+        links.new(lower.outputs["Value"], rgb.inputs["Blue"])
+        emit = nodes.new("ShaderNodeEmission")
+        links.new(rgb.outputs["Color"], emit.inputs["Color"])
+        links.new(emit.outputs["Emission"], out.inputs["Surface"])
+
+    return build
+
+
+def _blur(mask: np.ndarray, px: int) -> np.ndarray:
+    for axis in (0, 1):
+        mask = sum(np.roll(mask, k, axis=axis) for k in range(-px, px + 1)) / (2 * px + 1)
+    return mask
+
+
+def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tables) -> None:
+    """Tiles 1002-1005: the plain body skin with its coloured regions (areolae, nails, genitals) by the tone model,
+    the nails shinier; the other channels flat."""
+    own = np.array(skin_optics.Skin(props.melanin, props.eumelanin, props.blood).linear_rgb(tables))
+    ratio = {}
+    for region, (factor, added, blood) in REGIONS.items():
+        skin = skin_optics.Skin(props.melanin * factor + added, props.eumelanin, props.blood * blood)
+        ratio[region] = np.array(skin.linear_rgb(tables)) / own
+    base = _decode(body_srgb)
+    for number in maps.TILES[1:]:
+        _bake_uv(body, number)
+        masks = _bake(body, "EMIT", _masks_of(), BODY_SIZE)
+        colour = np.broadcast_to(base, masks.shape).copy()
+        for k, region in enumerate(("areolae", "nails", "genitals")):
+            m = _blur(np.clip(masks[..., k], 0.0, 1.0), MASK_BLUR)[..., None]
+            colour *= 1.0 + m * (ratio[region] - 1.0)
+        maps.write_png(out / f"{stems['base_color']}.{number}.png", _encode(colour))
+        nails = _blur(np.clip(masks[..., 1], 0.0, 1.0), MASK_BLUR)
+        rough = FLAT["roughness"] + nails * (NAIL_ROUGHNESS - FLAT["roughness"])
+        maps.write_png(out / f"{stems['roughness']}.{number}.png", np.repeat(rough[..., None], 3, axis=2))
+        for channel in ("cavity", "height"):
+            flat = np.broadcast_to(np.full(3, FLAT[channel], np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
+            maps.write_png(out / f"{stems[channel]}.{number}.png", flat, "8")
+        normal = np.broadcast_to((0.5, 0.5, 1.0), (FLAT_SIZE, FLAT_SIZE, 3))
+        maps.write_png(out / f"{stems['normal']}.{number}.png", normal, "16")
+    _bake_uv(body, 1001)
+
+
 def build(key: str) -> Path:
     folder = CHARS / key
     bpy.ops.wm.open_mainfile(filepath=str(folder / "round.blend"))
@@ -205,18 +287,10 @@ def build(key: str) -> Path:
             corner = _encode(_decode(corner) * hue * scale)
             print(f"{name}: colour x{scale:.3f} to melanin {props.melanin}'s brightness")
         maps.write_png(out / f"{stems[channel]}.1001.png", baked, "8" if channel != "height" else "16")
-        fill = corner if channel == "base_color" else np.full(3, FLAT[channel], np.float32)
-        for number in maps.TILES[1:]:
-            maps.write_png(
-                out / f"{stems[channel]}.{number}.png", np.broadcast_to(fill, (BODY_SIZE, BODY_SIZE, 3)), "8"
-            )
         print(f"{name}: {channel} baked")
     baked = _bake(body, "NORMAL", _normals_of(_source("normal", folder), _source("painted", folder)))
     maps.write_png(out / f"{stems['normal']}.1001.png", baked, "16")
-    for number in maps.TILES[1:]:
-        maps.write_png(
-            out / f"{stems['normal']}.{number}.png", np.broadcast_to((0.5, 0.5, 1.0), (BODY_SIZE, BODY_SIZE, 3)), "16"
-        )
+    _body_tiles(body, out, stems, corner, props, tables)
     print(f"{name}: normal baked to tangent space")
     for layer in body.data.uv_layers:
         layer.active_render = layer.name == "UVMap"

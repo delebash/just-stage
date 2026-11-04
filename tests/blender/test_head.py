@@ -100,7 +100,8 @@ def test_eyes_and_teeth_fit_in_the_head_and_follow_it(human):
     moved = [np.linalg.norm(_centre(parts[k]) - before[k]) for k in before]
     assert max(moved) > 0.0005  # the parts followed the new head
     again = api.run("juststage.head.add_parts", character=result.character)
-    assert again.added == [] and len(obj.children) == 3  # running it again refits, never duplicates
+    # running it again refits, never duplicates: the three parts and the eyes' two films (eye_layers.py)
+    assert again.added == [] and len(obj.children) == 3 + 2
 
 
 def test_each_part_region_has_its_material(human):

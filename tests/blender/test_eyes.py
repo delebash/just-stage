@@ -53,3 +53,35 @@ def test_the_iris_uvs_run_with_the_3d_radius(eye):
     rho = np.array([np.hypot(*(np.array(uv[li].uv) - 0.5)) for li, _vi in loops])
     r = np.array([radial[vi] for _li, vi in loops])
     assert np.corrcoef(rho, r)[0, 1] > 0.999  # GNM's own squeezes the pupil into 0-0.05 (0.97 or less)
+
+
+def _iris_inputs(eye):
+    for mat in eye.data.materials:
+        for node in mat.node_tree.nodes:
+            if node.type == "GROUP" and "IrisMajorColor" in node.inputs:
+                yield node.inputs
+
+
+def test_the_eye_colour_presets_and_custom_colours(eye):
+    """CC5's eye colour: a preset sets both eyes; colours given set "custom"; the character keeps them, and eyes
+    added again wear them."""
+    character = eye.juststage.part_of
+    body = next(o for o in bpy.data.objects if o.juststage.character_id == character)
+    api.run("juststage.head.set_eye_colour", character=character, preset="blue")
+    blue = eyes.PRESETS["blue"][0]
+    for inputs in _iris_inputs(eye):
+        assert tuple(inputs["IrisMajorColor"].default_value)[:3] == pytest.approx(blue)
+    assert body.juststage.eye_preset == "blue" and tuple(body.juststage.iris_colour) == pytest.approx(blue)
+    out = api.run("juststage.head.set_eye_colour", character=character, iris=[0.2, 0.1, 0.05], white=[0.6, 0.55, 0.5])
+    assert out.eyes == 2 and body.juststage.eye_preset == "custom"
+    for inputs in _iris_inputs(eye):
+        assert tuple(inputs["EyeWhiteColor"].default_value)[:3] == pytest.approx((0.6, 0.55, 0.5))
+    with pytest.raises(api.CommandError):
+        api.run("juststage.head.set_eye_colour", character=character, iris=[1.5, 0.0, 0.0])
+    # the eyes added again (a new pair) take the character's colours
+    for part in [o for o in bpy.data.objects if o.juststage.part_of == character and o.juststage.part == "eyeLeft"]:
+        bpy.data.objects.remove(part)
+    api.run("juststage.head.add_parts", character=character)
+    again = next(o for o in bpy.data.objects if o.juststage.part_of == character and o.juststage.part == "eyeLeft")
+    for inputs in _iris_inputs(again):
+        assert tuple(inputs["IrisMajorColor"].default_value)[:3] == pytest.approx((0.2, 0.1, 0.05))

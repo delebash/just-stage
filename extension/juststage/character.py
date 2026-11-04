@@ -9,7 +9,13 @@ Hand-written `bpy.props` (no generator); the USD hook writes them out as the `ju
 
 import bpy
 
+from .modules.head.eyes import IRIS_MAJOR, IRIS_MINOR, PRESETS
+from .modules.head.eyes import WHITE as EYE_WHITE
+
 SCHEMA_VERSION = 1
+EYE_PRESETS = [("custom", "Custom", "the colours below")] + [
+    (key, key.replace("_", " ").capitalize(), f"a {key.replace('_', ' ')} iris") for key in PRESETS
+]
 
 #: True while `body.build.apply_macros` writes the sliders' values: their update callbacks then stay quiet
 APPLYING = {"macros": False}
@@ -60,6 +66,39 @@ def _tone(label: str, default: float, low: float, high: float):
     return bpy.props.FloatProperty(name=label, default=default, min=low, max=high, update=update)
 
 
+def _eye_update(name: str):
+    """The Skin tab's eye colour fields: a preset, or the colours themselves (then "custom") - each runs
+    `juststage.head.set_eye_colour` (one way per job)."""
+
+    def update(self, context):
+        if APPLYING["macros"] or self.kind == "NONE" or not self.character_id:
+            return
+        from . import api
+
+        values = (
+            {"preset": self.eye_preset}
+            if name == "eye_preset" and self.eye_preset != "custom"
+            else {
+                "preset": "custom",
+                "iris": list(self.iris_colour),
+                "accent": list(self.iris_accent),
+                "white": list(self.eye_white),
+            }
+        )
+        try:
+            api.run("juststage.head.set_eye_colour", character=self.character_id, **values)
+        except api.CommandError as e:
+            print(f"JustStage: eye colour: {e}")
+
+    return update
+
+
+def _colour(label: str, default, name: str):
+    return bpy.props.FloatVectorProperty(
+        name=label, subtype="COLOR", size=3, min=0.0, max=1.0, default=default, update=_eye_update(name)
+    )
+
+
 def _detail_update(self, context):
     if APPLYING["macros"]:
         return
@@ -108,6 +147,13 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     blood: _tone("Blood", 0.016, 0.001, 0.2)
     oiliness: _tone("Oiliness", 0.5, 0.0, 1.0)
     skin_material: bpy.props.PointerProperty(type=bpy.types.Material, description="this character's skin material")
+    # the eyes' colour (modules/head/head_set_eye_colour.py; eyes.PRESETS)
+    eye_preset: bpy.props.EnumProperty(
+        name="Eye colour", items=EYE_PRESETS, default="brown", update=_eye_update("eye_preset")
+    )
+    iris_colour: _colour("Iris", IRIS_MAJOR, "iris_colour")
+    iris_accent: _colour("Iris accent", IRIS_MINOR, "iris_accent")
+    eye_white: _colour("Eye white", EYE_WHITE, "eye_white")
     gnm_identity: bpy.props.CollectionProperty(type=JustStageFloat, description="GNM head identity coefficients")
     sliders: bpy.props.CollectionProperty(type=JustStageSlider, description="target.json's detail sliders' values")
     # the asset library's fields (project-files.md §2)

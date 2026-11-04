@@ -31,6 +31,9 @@ HEIGHT_STRENGTH, HEIGHT_DISTANCE = 0.15, 0.0004  # the painting's own fine relie
 PORE_TILES = 20.0  # tiles per hm08 UV unit: the face is 1.13 m a UV unit (measured), the tile ~5.6 cm
 PORE_STRENGTH, PORE_DISTANCE = 0.35, 0.0002
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
+#: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
+#: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
+MOTTLE, MOTTLE_SCALE, MOTTLE_DETAIL = 0.10, 18.0, 4.0
 NODE = "juststage.maps."  # this module's nodes are named with it
 
 
@@ -111,7 +114,29 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     gain.operation = "MULTIPLY"
     gain.inputs[1].default_value = (1.0, 1.0, 1.0)
     links.new(tex["base_color"].outputs["Color"], gain.inputs[0])
-    links.new(gain.outputs["Vector"], bsdf.inputs["Base Color"])
+    # the body's mottling: where the UDIM layer's u is past the head tile (u >= 1)
+    place = _node(nt, "ShaderNodeTexCoord", "place", (-1400, 600))
+    noise = _node(nt, "ShaderNodeTexNoise", "mottle_noise", (-1200, 600))
+    noise.inputs["Scale"].default_value, noise.inputs["Detail"].default_value = MOTTLE_SCALE, MOTTLE_DETAIL
+    links.new(place.outputs["Object"], noise.inputs["Vector"])
+    tile = _node(nt, "ShaderNodeSeparateXYZ", "tile", (-1200, 420))
+    links.new(uv.outputs["UV"], tile.inputs["Vector"])
+    body = _node(nt, "ShaderNodeMath", "body", (-1000, 420))
+    body.operation, body.inputs[1].default_value = "GREATER_THAN", 0.999
+    links.new(tile.outputs["X"], body.inputs[0])
+    swing = _node(nt, "ShaderNodeMapRange", "mottle_swing", (-1000, 600))
+    swing.inputs["To Min"].default_value, swing.inputs["To Max"].default_value = 1.0 - MOTTLE / 2, 1.0 + MOTTLE / 2
+    links.new(noise.outputs["Fac"], swing.inputs["Value"])
+    on_body = _node(nt, "ShaderNodeMix", "mottle_on_body", (-800, 600))
+    on_body.data_type = "FLOAT"
+    links.new(body.outputs["Value"], on_body.inputs["Factor"])
+    next(i for i in on_body.inputs if i.identifier == "A_Float").default_value = 1.0
+    links.new(swing.outputs["Result"], next(i for i in on_body.inputs if i.identifier == "B_Float"))
+    mottle = _node(nt, "ShaderNodeVectorMath", "mottle", (-600, 300))
+    mottle.operation = "SCALE"
+    links.new(gain.outputs["Vector"], mottle.inputs[0])
+    links.new(next(o for o in on_body.outputs if o.identifier == "Result_Float"), mottle.inputs["Scale"])
+    links.new(mottle.outputs["Vector"], bsdf.inputs["Base Color"])
     normal = _node(nt, "ShaderNodeNormalMap", "normal_map", (-750, 20))
     normal.space, normal.uv_map = "TANGENT", UV
     links.new(tex["normal"].outputs["Color"], normal.inputs["Color"])

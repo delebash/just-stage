@@ -7,6 +7,8 @@ import bpy
 
 from ...character import JustStageFloat
 from ...ui.command_operator import CommandOperator
+from .eyes import IRIS_MAJOR, IRIS_MINOR, WHITE
+from .head_set_eye_colour import PRESET_NAMES
 
 
 class JUSTSTAGE_OT_head_set_identity(CommandOperator, bpy.types.Operator):
@@ -45,4 +47,26 @@ class JUSTSTAGE_OT_head_add_face_units(CommandOperator, bpy.types.Operator):
     character: bpy.props.StringProperty(name="Character")
 
 
-CLASSES = (JUSTSTAGE_OT_head_set_identity, JUSTSTAGE_OT_head_add_parts, JUSTSTAGE_OT_head_add_face_units)
+class JUSTSTAGE_OT_head_set_eye_colour(CommandOperator, bpy.types.Operator):
+    """Both eyes' colour: a preset, or the iris, its accent and the white"""
+
+    bl_idname = "juststage.head_set_eye_colour"
+    bl_label = "Eye colour"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.head.set_eye_colour"
+
+    character: bpy.props.StringProperty(name="Character")
+    preset: bpy.props.EnumProperty(
+        name="Preset", items=[(n, n.replace("_", " ").capitalize(), "") for n in PRESET_NAMES], default="custom"
+    )
+    iris: bpy.props.FloatVectorProperty(name="Iris", subtype="COLOR", size=3, min=0.0, max=1.0, default=IRIS_MAJOR)
+    accent: bpy.props.FloatVectorProperty(name="Accent", subtype="COLOR", size=3, min=0.0, max=1.0, default=IRIS_MINOR)
+    white: bpy.props.FloatVectorProperty(name="White", subtype="COLOR", size=3, min=0.0, max=1.0, default=WHITE)
+
+
+CLASSES = (
+    JUSTSTAGE_OT_head_set_identity,
+    JUSTSTAGE_OT_head_add_parts,
+    JUSTSTAGE_OT_head_add_face_units,
+    JUSTSTAGE_OT_head_set_eye_colour,
+)
