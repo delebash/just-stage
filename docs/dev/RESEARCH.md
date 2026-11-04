@@ -53,6 +53,19 @@ Subjects: [1 · The machine](#1--the-machine) ·
 - **Blender 5.3 opens a saved Rendered view as Solid; Material Preview survives** — a copy saved with every 3D view on
   Rendered read back Solid (saved from the GUI and from a background run alike); Material Preview in an EEVEE scene read
   back Material Preview. The Material Output's Target is `ALL` / `EEVEE` / `CYCLES` — *measured, 2026-11-03*.
+- **CC5's and MetaHuman Creator's screens** (read 2026-11-03, searches "Character Creator 5 user interface overview
+  Content Manager Modify panel Scene Manager layout manual", "MetaHuman Creator Unreal Engine 5.7 user interface panels
+  …", "Character Creator 5 camera navigation mouse controls …"): CC5's manual (Main Menu > Window) - preset layouts:
+  Standard (Ctrl+2: the Content Manager and all toolbars), Fine Tuning (Ctrl+5: the Modify panel on the right), others
+  stacking Modify and Content Manager on the left or leaving only the camera view; the Content Manager applies
+  templates; Scene Manager (F5) lists every object; Modify (F6). CC5's Camera Toolbar page: pan, Orbit (C), a view
+  list Front / Right / Top / Left / Bottom / Back / Face / All. CC5's mouse bindings were not found for 5 (a CC4 forum
+  post: Alt + right mouse orbits) - a gap in these searches. Epic's "Navigating MetaHuman Creator in Unreal Engine"
+  (page read): a toolbox column on the left - Presets, Import, Head and Body, Materials, Hair and Clothing, Export,
+  Assembly - each opening a tool palette with the tool's properties below; the viewport's own toolbar: Preview Material
+  (Topology / Skin / Clay), Environment Lighting (Studio, Red Lantern, Moonlight, Tungsten, custom), Camera framing
+  (Face, Body, Far, Hands, Feet; 35 / 50 / 100 mm), LOD0-7, Rendering Quality (Medium / High / Epic), View Mode; an
+  Animation Bar once rigged; Preview Scene Details hiding grooms and clothing; panels rearrangeable.
 - **MakeHuman's MHM names for the macro sliders** (`makehuman/data/modifiers/modeling_modifiers.json`, MakeHuman's
   repo, read 2026-11-03): `macrodetails/Gender`, `/Age`, `/African`, `/Asian`, `/Caucasian`;
   `macrodetails-universal/Muscle`, `/Weight`; `macrodetails-height/Height`; `macrodetails-proportions/BodyProportions`;
