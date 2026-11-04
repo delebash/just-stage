@@ -34,4 +34,15 @@ class JUSTSTAGE_OT_head_add_parts(CommandOperator, bpy.types.Operator):
     character: bpy.props.StringProperty(name="Character")
 
 
-CLASSES = (JUSTSTAGE_OT_head_set_identity, JUSTSTAGE_OT_head_add_parts)
+class JUSTSTAGE_OT_head_add_face_units(CommandOperator, bpy.types.Operator):
+    """The face's 52 ARKit shape keys (MakeHuman's CC0 face units), at 0"""
+
+    bl_idname = "juststage.head_add_face_units"
+    bl_label = "Face units (ARKit 52)"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.head.add_face_units"
+
+    character: bpy.props.StringProperty(name="Character")
+
+
+CLASSES = (JUSTSTAGE_OT_head_set_identity, JUSTSTAGE_OT_head_add_parts, JUSTSTAGE_OT_head_add_face_units)
