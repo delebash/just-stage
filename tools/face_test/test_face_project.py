@@ -912,6 +912,12 @@ def test_face_project():
         smooth_here = ((depth < 0.999) & (hi - lo < 0.01)).astype(np.float32)
         inside = _blur(smooth_here[..., None], 4.0)
         clear_of_edge = up.sample(np.clip((inside - 0.5) / 0.45, 0.0, 1.0), col, row)[:, 0]
+        # and never from the painting's own eyes (parse_paintings.py: SegFace's eye classes, grown 3 px): our lids'
+        # margins sat where the aligned paintings show the eye white - round 79-80's pale band on the lower lid
+        eyes_png, aligned_png = Path(f"{DIR}eyes_{view}.png"), Path(f"{DIR}aligned_{view}.png")
+        if eyes_png.exists() and aligned_png.exists() and eyes_png.stat().st_mtime >= aligned_png.stat().st_mtime:
+            # (made from this painting: a mask left from another character's painting would cut the wrong eyes)
+            clear_of_edge = clear_of_edge * (1.0 - up.sample(_pixels(str(eyes_png))[..., :1], col, row)[:, 0])
         return facing * clear_of_edge, border * density, col, row, border
 
     lum = np.array(sd.LUMA)
