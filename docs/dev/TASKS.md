@@ -959,6 +959,19 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (`FACETEST_BASE` defaults to 3; `off` keeps the ten-view path). Two bases under one painted face (chars 3
            and 5) read as two people's skin. Open: the sharper face (2K hero + denser face tile), stubble as a
            per-character setting, varied paintings and shapes for true variety.
+           THE OPEN ITEMS - GO 2026-11-03, the user, verbatim: "keep going on the open items, go" (working doc:
+           `../plans/2026-11-03-open-items.md`). (b) stubble DONE: scans tagged by sex and stubble; compose takes a
+           character's sex (its pores from that sex's scans first), `stubble` and `scalp_stubble` (a stubbled scan's
+           small dark marks kept by the setting, floor 0.55 - measured). (c) variety DONE: `face_character.py` makes a
+           whole new character (MakeHuman's sex / age / ethnic mix, GNM's head-shape seed, melanin, three FLUX 3
+           paintings, a base of its sex) - amara (a dark-skinned woman), walter (an older man), mei (a young East Asian
+           woman) beside the first man: four distinct people. Fixed on the way: the clay cameras and the projection's
+           heights follow each character's eyes (mei, 22 cm shorter in the eyes, rendered chrome); MediaPipe retried
+           with a margin on tight close-ups; the painting's hand-over to the base ramped and levelled on the face's
+           outer border (a 10-20% brighter band at the hairline, measured with FACETEST_DUMP). Re-render pending.
+           (a) sharper face: every tool takes a 2K hero and FACETEST_SIZE; the whole head at 8192 needs > ~19 GB
+           (measured) - decided by a 2K close render of the 4K scene (render_close.py) whether 8K-on-the-face is
+           needed. (d) the base's own eye / lip shading: hidden under the painting, left.
            THE LIVE VIEW AND THE FILM RUN - APPROVED 2026-11-03, the user, verbatim: "rethink what you are doing
            adverserily again on your recs and what we are doing with this app so you dont keep messing up, your rec
            go" (and: "dont get stuck on something if you think of a better way"), on the recs in
