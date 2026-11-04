@@ -57,6 +57,7 @@ def main(params: Params) -> Result:
                 item.value = float(params.value)
             finally:
                 character.APPLYING["macros"] = False
+        build.keep_on_floor(obj)
         _refit(obj)
         return Result(status="ok", value=float(params.value))
     props = obj.juststage
@@ -68,6 +69,7 @@ def main(params: Params) -> Result:
         for r in others:
             values[r] = rest * (values[r] / total if total > 1e-9 else 1.0 / len(others))
     build.apply_macros(obj, values)
+    build.keep_on_floor(obj)
     _refit(obj)
     return Result(status="ok", value=float(params.value))
 

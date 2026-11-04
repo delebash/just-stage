@@ -121,3 +121,28 @@ def test_levels_can_go_down(human):
     out = api.run("juststage.body.subdivide", character=result.character, levels=1, viewport_level=1)
     assert obj.modifiers[build.LEVELS].total_levels == 1
     assert out.visible_faces == 13378 * 4
+
+
+def _basis(obj):
+    co = np.empty(len(obj.data.vertices) * 3, dtype=np.float32)
+    obj.data.shape_keys.reference_key.data.foreach_get("co", co)
+    return co.reshape(-1, 3)
+
+
+def test_every_character_shares_one_rest_shape_and_stands_on_the_floor():
+    """Blender's hair attachment measures from the base mesh (its rest position): one lift for every base mesh, so a
+    groom made on one character fits another; each shape's own few millimetres in the floor shape key, so the feet
+    stay on the floor - after a height change too."""
+    made = [api.run("juststage.body.create", name=f"Floor {i}", **m) for i, m in enumerate(({}, {"height": 1.0}))]
+    objs = [bpy.data.objects[m.object] for m in made]
+    try:
+        assert np.abs(_basis(objs[0]) - _basis(objs[1])).max() < 1e-6
+        assert all(build.FLOOR in o.data.shape_keys.key_blocks for o in objs)
+        for o in objs:
+            assert build.shaped_coords(o)[:13380, 2].min() == pytest.approx(0.0, abs=1e-5)
+        api.run("juststage.body.set_slider", character=made[0].character, slider="height", value=0.0)
+        assert build.shaped_coords(objs[0])[:13380, 2].min() == pytest.approx(0.0, abs=1e-5)
+        assert np.abs(_basis(objs[0]) - _basis(objs[1])).max() < 1e-6
+    finally:
+        for o in objs:
+            bpy.data.objects.remove(o)

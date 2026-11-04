@@ -128,6 +128,15 @@ Subjects: [1 · The machine](#1--the-machine) ·
   against 101,71,51 in Cycles; for 0.65 / 0.2, 70,53,45 against 82,59,48; for 0.75 / 0.2, 61,49,44 against 71,54,47.
   EEVEE is ~10-15% darker with the same hue. Cycles turns 0.5 / 0.25 auburn on a sparse style (light through it).
   *Measured, 2026-11-04.*
+- **Grooms between characters** (Blender 5.3's Deform Curves on Surface; measured 2026-11-04):
+  - The node moves each curve rigidly from its root's triangle in the surface's rest position (the base mesh before
+    shape keys) to the same UV point on the evaluated surface. A strand's points don't change the move, so it can be
+    measured on a probe shape and inverted exactly.
+  - Its turn isn't the plain triangle frame (first edge, normal): that frame missed by up to 1.9 mm at a lash tip.
+  - With each character's base mesh lifted by its own `feet_on_ground` amount (0.817743 m at the default macros,
+    0.820291 at height 1, 0.819702 for a tall muscular man), grooms landed off by the difference: MakeHuman's pack
+    roots, median on the skin, were hedgehog 0.84 mm and pack lashes 1.88 mm on a tall character (0.07 / 0.31 on the
+    default). With one lift for every base mesh: 0.08 / 0.28.
 - **Skin lightness by melanin** (`core/skin_optics.py`, eumelanin 0.6, blood 0.016; CIE L* of the albedo):
   - melanin 0.003 gives L* 75.6, 0.01 gives 69.0, 0.03 gives 54.7;
   - melanin 0.06 gives 41.0, 0.1 gives 30.8, 0.13 gives 26.3;

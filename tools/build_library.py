@@ -5,8 +5,9 @@
 starter library (... the base bodies, MakeHuman's CC0 styles ...)"), each saved through `juststage.library.save`:
 
 - characters: presets made by JustStage's own commands from MakeHuman's CC0 base and targets;
-- hair: MakeHuman's CC0 hair-editor styles (all but `empty_hair`, a blank to groom from), one asset each in its
-  `Hair/<type>` catalogue;
+- hair: MakeHuman's CC0 hair-editor styles (all but `empty_hair`, a blank to groom from, and its two sparse lash
+  styles, which would replace each other - one groom per type), one asset each in its `Hair/<type>` catalogue; and
+  JustStage's own lashes, both lids in one groom (modules/hair/lashes.py);
 - skins: eight tones evenly spaced in lightness (CIE L* 74 down to 25), each melanin found by solving JustStage's own
   skin model (core/skin_optics.py) at the NIST median's eumelanin share and blood.
 
@@ -29,6 +30,7 @@ skin_optics = importlib.import_module("bl_ext.system.juststage.core.skin_optics"
 styles = importlib.import_module("bl_ext.system.juststage.modules.hair.styles")
 groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
 HAIR = importlib.import_module("bl_ext.system.juststage.modules.io.library_save").HAIR
+lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
 
 WANTED = set(sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else ()) or {"characters", "hair", "skins"}
 MAKEHUMAN = "JustStage body.create on MakeHuman's CC0 base and targets (MPFB2 6ff1eb35)"
@@ -99,7 +101,7 @@ if "hair" in WANTED:
     woman = api.run("juststage.body.create", name="Hair model woman", gender=0.0)
     man = api.run("juststage.body.create", name="Hair model man", gender=1.0)
     for style, (kind, label) in styles.STYLES.items():
-        if style == "empty_hair":
+        if style == "empty_hair" or kind == "eyelashes":
             continue
         model = man if kind in ("beard", "mustache") else woman
         melanin, redness = HAIR_COLOUR.get(kind, BROWN)
@@ -111,6 +113,12 @@ if "hair" in WANTED:
                       part=kind)  # fmt: skip
         groom.remove_part(bpy.data.objects[model.object], kind)
         print("LIBRARY", out.path, flush=True)
+    api.run("juststage.head.add_parts", character=woman.character)  # the lashes root along the eyes' openings
+    lashes.make(bpy.data.objects[woman.object])
+    out = api.run("juststage.library.save", character=woman.character, catalog="Hair/Lashes", name="JustStage lashes",
+                  description="Upper and lower lashes at real counts (120 and 75 an eye), clumped", licence="CC0-1.0",
+                  provenance="JustStage modules/hair/lashes.py", part="eyelashes")  # fmt: skip
+    print("LIBRARY", out.path, flush=True)
     _remove(woman)
     _remove(man)
 

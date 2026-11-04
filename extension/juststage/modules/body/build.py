@@ -126,13 +126,43 @@ def create_human(name: str, values: dict) -> bpy.types.Object:
     return obj
 
 
+#: the lift every base mesh gets: MPFB2's `feet_on_ground` at the default macros (measured 2026-11-04: 0.817743 m;
+#: RESEARCH §5: 0.8177), the body MakeHuman's hair styles were groomed on. One for all: Blender's hair attachment
+#: measures from the base mesh (its rest position), so each character lifted by its own amount (0-2.5 mm apart,
+#: measured) put a groom made on one character that far off another's skin
+BASE_LIFT = 0.817743
+FLOOR = "JustStage floor"  # the shape key with this shape's own lift on top
+
+
 def stand_on_floor(obj: bpy.types.Object) -> float:
-    """MPFB2's `feet_on_ground` (its default): lift the mesh, shape keys too, so the shaped body's lowest vertex is at
-    z = 0 — the floor every character tool stands on, and where MakeHuman's hair styles were groomed. Returns the
+    """MPFB2's `feet_on_ground` (its default) in two parts: a new character's base mesh, shape keys too, lifted by
+    BASE_LIFT; this shape's own few millimetres in the FLOOR shape key, so the shaped body's lowest vertex is at
+    z = 0 - the floor every character tool stands on. Again after a shape change (body.set_slider). Returns the whole
     lift."""
-    lift = -float(shaped_coords(obj)[: makehuman.BODY_VERTICES, 2].min())
-    obj.data.transform(Matrix.Translation((0.0, 0.0, lift)), shape_keys=True)
-    return lift
+    keys = obj.data.shape_keys
+    key = keys.key_blocks.get(FLOOR) if keys else None
+    if key is None:  # a new character: its base mesh still centred on the origin, as hm08 comes
+        obj.data.transform(Matrix.Translation((0.0, 0.0, BASE_LIFT)), shape_keys=True)
+        if not obj.data.shape_keys:
+            obj.shape_key_add(name="Basis", from_mix=False)
+        key = obj.shape_key_add(name=FLOOR, from_mix=False)
+    key.value = 0.0
+    own = -float(shaped_coords(obj)[: makehuman.BODY_VERTICES, 2].min())
+    co = np.empty(len(obj.data.vertices) * 3, dtype=np.float32)
+    obj.data.shape_keys.reference_key.data.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    co[:, 2] += own
+    key.data.foreach_set("co", co.ravel())
+    key.value = 1.0
+    return BASE_LIFT + own
+
+
+def keep_on_floor(obj: bpy.types.Object) -> None:
+    """After a shape change: the feet back on the floor - for characters with the floor key (made since 2026-11-04;
+    older ones keep the lift in their base mesh, as they were made)."""
+    keys = obj.data.shape_keys
+    if keys is not None and keys.key_blocks.get(FLOOR) is not None:
+        stand_on_floor(obj)
 
 
 def visible_vertex_count(obj: bpy.types.Object) -> int:

@@ -525,141 +525,14 @@ def set_iris_size(eye_in, mapping, relation):
         mapping.inputs["Location"].default_value = (0.5 - 0.5 * scale, 0.5 - 0.5 * scale, 0.0)
 
 
-#: per eye and lid: count, length at the longest and at the corners (mm), the angle off straight ahead at the root seen
-#: from the side (+ away from the eye: up for the upper lid), the curl to the tip (degrees), how far past the opening's
-#: edge the roots sit (degrees), the root radius (m). Counts: StatPearls' 90-160 upper, 75-80 lower. Angles and lengths
-#: measured on 50 Japanese adults from the side (oatext.com, "A study of normal eyelashes in Japanese individuals"):
-#: upper 61 deg from vertical in men (women 72), 7.3 mm, 60% straight in men; lower 90 deg (straight ahead; women 100),
-#: 5.0 mm, all curly. The paper doesn't say which way its vertical points; its remark that the lower lashes "grow in
-#: the upward direction against gravity" (women's 100 above straight ahead) fits only a vertical pointing down - so the
-#: men's upper lashes leave the lid ~29 deg BELOW straight ahead (women's ~18), as this man's painting shows them: down
-#: and forward over the top of the eyeball, a dark band at the margin (the 30-degree painting shows them hanging).
-#: Rounds 57-65 read it the other way (rise 0 to +15, curling up): a fringe of spikes standing above the lid, the iris
-#: uncovered - the painting's lid covers ~30% of the iris' height, ours ~14%. 60% of men's straight: a light curl.
-#: The lower ones finer (ticks along the lid where the painting shows none).
-#: lengths in mm, 0.65 / 0.55 of the study's (RESEARCH ~1880: upper 7.3 mm on average) - round 79's 4096-px close-up
-#: beside its painting (2026-11-03 trials on the saved strands): at full length they drew long spikes across the iris
-#: and out past the outer corner where the painting shows a fine short lash line; at full length with half the
-#: sideways fan they hung over the iris. Lash length varies widely between people; it becomes a character's setting
-LASH_UPPER = {"count": 120, "long": 5.2, "short": 2.9, "rise": -25, "curl": 10.0, "band": (0.2, 1.0), "radius": 0.00005,
-              "melanin": 0.95}
-LASH_LOWER = {"count": 75, "long": 2.5, "short": 1.4, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000025,
-              "melanin": 0.6}  # lower lashes are finer and lighter (the painting shows almost none)
-LASH_CLUMP, LASH_CLUMP_PULL = 4, 0.5  # real lashes group: neighbours' tips pulled halfway together, more toward the tip
-#: the fan seen from the front: (share of the way from the inner corner to the outer, the lash's angle from the line
-#: through the corners toward the outer one, degrees) - measured on the lower lid of Korean adults (Korea University,
-#: "Changes in the horizontal angular direction of lower eyelashes with age": medial 137, central 72, lateral 25);
-#: the upper lid mirrored, no measurement found
-LASH_FAN = ((1 / 6, 137.0), (0.5, 72.0), (5 / 6, 25.0))
-FACE_FORWARD = np.array([0.0, -1.0, 0.0])  # the body faces -Y (the front camera looks along +Y)
-LASH_POINTS = 12  # the research: 10+ points each for the curl (the pack's lashes have 5)
-LASH_TIP = 0.12  # the tip's radius as a share of the root's (0.25 read as blunt spikes at 4096 px)
-LASH_REDNESS = 0.25  # with melanin 0.95, near black-brown
-
-
-def _clump(strands, start):
-    """Lashes from `start` on, in groups of LASH_CLUMP neighbours, each pulled toward its group's mean shape - by
-    nothing at the root, LASH_CLUMP_PULL at the tip (squared along the lash)."""
-    t = np.linspace(0.0, 1.0, LASH_POINTS)[:, None] ** 2
-    for g in range(start, len(strands), LASH_CLUMP):
-        group = strands[g:g + LASH_CLUMP]
-        centre = np.mean(group, axis=0)
-        for i, strand in enumerate(group):
-            strands[g + i] = strand + (centre - strand) * t * LASH_CLUMP_PULL
-
-
 def _strand_lashes(body, openings, seed=7):
-    """Rec 7's lashes at real counts (approved 2026-10-30: "brows and lashes at real counts (lashes 90-160 upper)";
-    `../plans/2026-10-30-research-hair-eyes-teeth.md`: 90-160 upper in 5-6 rows, 75-80 lower in 3-4, per eye, 10+ points
-    each for the curl). MetaHuman's way - strand grooms - as Blender hair curves: roots on the lid's front skin just past
-    the opening's edge (face_shape.eye_opening), found by rays from in front onto the subdivided surface the camera
-    sees, in a band just past the edge (the rows), none by the inner corner; each lash leaves the lid at the measured
-    angle off straight ahead and curls away from the eye, fanned as measured from the front (LASH_FAN), longest just
-    outside the middle; Principled Hair BSDF by melanin, rendered as 3D curves."""
-    from mathutils import Vector
-    from mathutils.bvhtree import BVHTree
-
-    rng = np.random.default_rng(seed)
-    to_local = np.array(body.matrix_world.inverted())
-    to_world = np.array(body.matrix_world)
-    depsgraph = bpy.context.evaluated_depsgraph_get()
-    tree = BVHTree.FromObject(body, depsgraph)  # its local space
-    strands, radii, melanin, missed = [], [], [], 0
-    for eye_name, o in openings.items():
-        # the eye still whole in a round (its cornea is split off later); a saved round's has it apart (the lash trials)
-        eyes = [bpy.data.objects[n] for n in (eye_name, f"{eye_name} cornea") if n in bpy.data.objects]
-        eye_trees = [(BVHTree.FromObject(e, depsgraph), np.array(e.matrix_world.inverted()),
-                      np.array(e.matrix_world), 0.0002) for e in eyes]
-        corner_az = np.array([o.inner, o.outer])
-        corner_el = np.interp(corner_az, o.centres, (o.upper + o.lower) / 2)
-        corners = o.centre + o.radius * face_shape.direction(corner_az, corner_el)
-        lateral = corners[1] - corners[0]  # along the line through the corners, toward the outer one
-        lateral -= (lateral @ FACE_FORWARD) * FACE_FORWARD
-        lateral /= np.linalg.norm(lateral)
-        up = np.cross(lateral, FACE_FORWARD)
-        up *= np.sign(up[2])
-        for spec, side in ((LASH_UPPER, 1.0), (LASH_LOWER, -1.0)):
-            n = spec["count"]
-            block = len(strands)  # this lid's lashes, in order along it (f is sorted): the clumps are neighbours
-            f = np.sort(rng.uniform(0.06, 0.97, n))  # the share of the way from the inner corner to the outer
-            az = o.inner + f * (o.outer - o.inner)
-            el = np.interp(az, o.centres, o.upper if side > 0 else o.lower) + side * rng.uniform(*spec["band"], n)
-            for k in range(n):
-                # from in front onto the lid; this close to its edge a ray can slip past the margin (round 53's second
-                # trial: 148 of 390 missed) - then a little further onto the lid, up to 3 deg
-                for extra in (0.0, 0.5, 1.0, 2.0, 3.0):
-                    el_k = el[k] + side * extra
-                    d_k = face_shape.direction(az[k:k + 1], np.array([el_k]))[0]
-                    start = o.centre + d_k * (o.radius + 0.02)
-                    s_local = to_local[:3, :3] @ start + to_local[:3, 3]
-                    hit = tree.ray_cast(Vector(s_local), Vector(to_local[:3, :3] @ -d_k), 0.025)
-                    if hit[0] is not None:
-                        break
-                if hit[0] is None:
-                    missed += 1
-                    continue
-                el[k] = el_k
-                normal = to_world[:3, :3] @ np.array(hit[1])
-                root = to_world[:3, :3] @ np.array(hit[0]) + to_world[:3, 3] - 0.0001 * normal / np.linalg.norm(normal)
-                fan = np.radians(np.interp(f[k], *zip(*LASH_FAN)) + rng.normal(0.0, 8.0))
-                length = 0.001 * rng.uniform(0.85, 1.1) * (spec["short"] + (spec["long"] - spec["short"]) * np.sin(np.pi * f[k] ** 1.3))
-                t = np.linspace(0.0, 1.0, LASH_POINTS)
-                theta = np.radians(spec["rise"] + rng.normal(0.0, 5.0)) + np.radians(spec["curl"] + rng.normal(0.0, 10.0)) * t ** 1.5
-                # seen from the side, theta off straight ahead, away from the opening when positive (up for the upper
-                # lid) and toward it when negative (a drooping lash); seen from the front, fanned (LASH_FAN) - the
-                # sideways part always toward its own corner, so an outer lash that droops still points outward
-                d = (np.cos(theta)[:, None] * FACE_FORWARD + (side * np.sin(theta) * np.sin(fan))[:, None] * up
-                     + (np.abs(np.sin(theta)) * np.cos(fan))[:, None] * lateral)
-                d /= np.linalg.norm(d, axis=1, keepdims=True)
-                steps = np.vstack([np.zeros(3), d[:-1] * length / (LASH_POINTS - 1)])
-                strand = root + np.cumsum(steps, axis=0)
-                for i in range(1, LASH_POINTS):  # out of the skin (a groom's collision pass): by the nose
-                    for bvh, local, world, gap in [(tree, to_local, to_world, 0.0001)] + eye_trees:
-                        # and off the eye: a drooping lash meets the cornea
-                        q = local[:3, :3] @ strand[i] + local[:3, 3]
-                        near, n_near = (np.array(x) for x in bvh.find_nearest(Vector(q))[:2])
-                        if (q - near) @ n_near < gap:
-                            moved = near + gap * n_near - q
-                            strand[i:] += world[:3, :3] @ moved  # the rest of the lash follows
-                strands.append(strand)
-                radii.append(spec["radius"] * np.interp(t, [0.0, 1.0], [1.0, LASH_TIP]))
-                melanin.append(spec["melanin"])
-            _clump(strands, block)
-    curves = bpy.data.hair_curves.new(f"{body.name} lashes")
-    curves.add_curves([LASH_POINTS] * len(strands))
-    curves.position_data.foreach_set("vector", np.concatenate(strands).astype(np.float32).ravel())
-    curves.attributes.new("radius", "FLOAT", "POINT").data.foreach_set("value", np.concatenate(radii).astype(np.float32))
-    # the app's hair material (modules/hair/groom.py: Principled Hair by each strand's melanin, and its EEVEE stand-in)
-    curves.attributes.new("melanin", "FLOAT", "CURVE").data.foreach_set("value", np.array(melanin, dtype=np.float32))
-    curves.attributes.new("redness", "FLOAT", "CURVE").data.foreach_set(
-        "value", np.full(len(strands), LASH_REDNESS, dtype=np.float32))
-    obj = bpy.data.objects.new(f"{body.name} lashes", curves)
-    bpy.context.scene.collection.objects.link(obj)
-    hair_groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
-    curves.materials.append(hair_groom.hair_material(f"{body.name} lashes"))
-    bpy.context.scene.cycles_curves.shape = "THICK"  # 3D curves for close-ups (the research)
-    print(f"lashes: {len(strands)} strands ({missed} roots missed), {LASH_POINTS} points each")
+    """Rec 7's lashes at real counts - the app's own (modules/hair/lashes.py, moved there from this test 2026-11-04:
+    the same strands, now attached to the body like every groom), rendered as 3D curves (the research)."""
+    lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
+    obj = lashes.make(body, openings, seed)
+    bpy.context.scene.cycles_curves.shape = "THICK"
     return obj
+
 
 def _pad(img, mask, px=None):
     """Each UV island grown outward by `px` texels with its own edge values (a bake's "margin"): filtering at UV seams

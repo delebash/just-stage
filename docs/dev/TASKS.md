@@ -1004,8 +1004,11 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            MakeHuman CC0 styles) and skins (8 tones evenly spaced in lightness). The Content panel applies by
            double-click or an Apply entry (Blender's Pose Library pattern): `juststage.library.add` puts a character
            in the scene, or hair (replacing the same type) or a skin onto the selected character. A new stage gets
-           three-point studio lights. Open from it:
-           - move the face test's clumped lashes into the app's hair module (the pack's are sparse);
+           three-point studio lights. Then JustStage's own lashes moved into the app (working doc
+           `../plans/2026-11-04-app-lashes.md`): `modules/hair/lashes.py`, attached like every groom, the library's
+           Hair/Lashes asset, the face test using it. On the way, every base mesh now gets one lift (a "JustStage
+           floor" shape key carries each shape's own), so grooms fit every character. Open from it:
+           - EEVEE's cornea blotches on the iris in close-ups (the live view's eye);
            - calibrate the EEVEE hair stand-in (~10-15% darker than Cycles);
            - a wider Content panel in the startup layout.
            BLOCKED - FOR THE USER (2026-11-03): building OpenRigLogic (`python libs/openriglogic/build.py`, the face
