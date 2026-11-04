@@ -173,6 +173,31 @@ Subjects: [1 · The machine](#1--the-machine) ·
   100 W, rim 120 W) under AgX base contrast read flat and pale; Poly Haven's Studio Small 09 as the fill at 0.5 flattened
   it again; at 0.25, no fill light, AgX "Medium High Contrast" and -0.3 EV the face had shape. AgX's looks in 5.3
   include "AgX - Medium High Contrast" (set and rendered).
+- **EEVEE 5.3 can shade per light in nodes** (a research agent's finding 2026-11-04 - manual rst, PR #161429 merged
+  2026-09-02, task #139341, PR #164595; verified on our 5.3 beta by listing the nodes, measured): `ShaderNodeLightAccumulation`
+  (inputs LightIndex, Diffuse Light / Color, Glossy Light / Color, Transmission Light / Color, Weight - its input tree
+  evaluated once per scene light and summed), `ShaderNodeLightEvaluation` (LightIndex, Position, Normal, Roughness ->
+  Factor, Mask, Direction, Distance), `ShaderNodeLightInfo` (Color, Power, Position), `ShaderNodeShadowRaycast`
+  (LightIndex, Position, Softness -> Color), `ShaderNodeRaycast`. The Geometry node's Tangent output is the strand's
+  tangent on curves (source `node_geometry`: `sd.curve_T`); Hair Info's "Tangent Normal" is the view-facing normal.
+  Light Accumulation covers light objects only (the world needs its own term). So a Marschner-family hair model (R,
+  TT, TRT lobes from L, V, T; Karis SIGGRAPH 2016 for Unreal, Tafuri 2019 for Frostbite; multiple scattering as
+  Karis' wrapped term or dual scattering's density fallback) can be written in EEVEE nodes. Also: Blender 5.0 added a
+  Cylinder curve shape (STRAND / STRIP / CYLINDER in 5.3); EEVEE's Principled Hair falls back to a diffuse closure of
+  its Color socket; WIP PR #164595 (an EEVEE hair closure, one Kajiya-Kay lobe) "not expected to land in its current
+  state". Chiang's colour mapping is "a precomputed fit of absorption coefficients to scattered hair color" (pbrt) -
+  the colour after multiple scattering, so near-black as a single-bounce colour; per fibre for brown hair (melanin 0.65,
+  redness 0.2): A (0.016, 0.004, 0.000), R 0.075 white, TT (0.34, 0.17, 0.03), TRT (0.009, 0.003, 0.000) (computed from
+  Cycles' absorption).
+- **Skin variety methods not yet in our files** (the same agent, 2026-11-04): chromophore-space mixing - each scan
+  layer inverted per texel to melanin and blood maps by our own skin model, characters made by shifting them, a
+  residual kept (Donner et al. 2008; Aliaga, Hery & Xia 2022 arXiv 2201.10695; Aliaga et al. EGSR 2023; no code
+  found); age and person variety from per-region multiscale detail statistics (Golovinskiy et al. SIGGRAPH 2006, page
+  read: "adjusting the apparent age of faces"); parametric freckles as a point process on UV (Schneider, Egger &
+  Vetter FG 2018, snippet); skin-optics ageing (Iglesias-Guitian et al. EG 2015, no wrinkles); WildCap (CVPR 2026, GPL-3,
+  weights' data licence not stated, nvdiffrast non-commercial, Linux) and DoRA (non-commercial); AvatarTex (3DV 2026, a
+  FLUX UV LoRA, snippet). Body sites (PMC11084701, 53 Korean women, rankings only): elbows then knees darkest and most
+  melanin and erythema; forearm redness rises with age.
 - **CC5's SkinGen, its inventory** (reallusion.com/character-creator/skingen.html, page read 2026-11-04, the user's
   link): a layer stack ("dynamic skin effects layer stack", per-layer sliders, 4 blend modes - normal, multiply, overlay,
   soft-light; free version capped at 15 layers; "up to 4K real-time editing for each body material"). Skin elements
