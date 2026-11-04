@@ -29,9 +29,16 @@ def _viewport():
     return importlib.import_module(ADDON + ".core.viewport")
 
 
+def _topbar():
+    import importlib
+
+    importlib.import_module(ADDON + ".ui.topbar").install()  # JustStage's short top bar (Window brings Blender's back)
+
+
 @persistent
 def _on_load(_=None):
     _ensure_addon()
+    _topbar()
 
 
 @persistent
@@ -55,6 +62,7 @@ def _on_factory_startup(_=None):
 
 def _on_timer():
     _ensure_addon()
+    _topbar()
     return None  # one shot
 
 
