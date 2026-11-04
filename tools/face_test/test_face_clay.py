@@ -25,6 +25,10 @@ _spec.loader.exec_module(face_shape)
 OUT = "E:/Dev/3D/just-stage/.dev/facetest/"
 HEAD = Vector((0.0, -0.06, 1.615))
 FACE = Vector((0.0, -0.10, 1.585))  # between the eyes and the nose tip
+#: where the first man's eyes sit (scans/head_export.npz, 2026-11-02): the aims above are kept as offsets from a
+#: character's own eyes - a shorter one's head fell out of the close view (mei, 2026-11-03: an empty clay picture,
+#: and FLUX invented a face in it), amara's cut at the mouth
+FIRST_EYES = Vector((0.0, -0.131, 1.623))
 #: (name, azimuth°, elevation°, distance m, aimed at) — four views round the head, three close on the face
 VIEWS = (
     ("front", 0, 0, 0.78, HEAD),
@@ -100,7 +104,16 @@ def test_face_clay():
     scene.camera = cam
     depth = _depth_material()
     cams = {}
+    centres = []
+    for n in ("Face.eyeLeft", "Face.eyeRight"):  # each eyeball's box centre, as test_face_export_head.py measured them
+        e = bpy.data.objects[n]
+        pts = [e.matrix_world @ v.co for v in e.data.vertices]
+        centres.append(Vector([(min(p[i] for p in pts) + max(p[i] for p in pts)) / 2 for i in range(3)]))
+    centre = (centres[0] + centres[1]) / 2
+    shift = Vector((0.0, centre.y - FIRST_EYES.y, centre.z - FIRST_EYES.z))  # stays on the middle line
+    print(f"eyes at {tuple(round(c, 3) for c in centre)}: the cameras' aims moved {tuple(round(c, 3) for c in shift)} m")
     for name, az, el, dist, target in VIEWS:
+        target = target + shift
         a, e = math.radians(az), math.radians(el)
         offset = Vector((math.sin(a) * math.cos(e), -math.cos(a) * math.cos(e), math.sin(e))) * dist
         cam.location = target + offset

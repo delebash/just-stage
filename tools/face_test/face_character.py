@@ -36,7 +36,7 @@ PER_CHARACTER = ("clay_*.png", "depth_*.exr", "cameras.json", "face.blend", "hea
 CHARACTERS = {
     "amara": {"env": {"FACETEST_GENDER": "0.0", "FACETEST_AGE": "0.54", "FACETEST_ETHNIC": "0.9,0.05,0.05",
                       "FACETEST_IDENTITY": "101", "FACETEST_MELANIN": "0.18",
-                      "FACETEST_PERSON": "woman in her thirties with dark brown skin"},
+                      "FACETEST_PERSON": "woman in her thirties with dark brown skin and soft feminine features"},
               "base": {"sex": "f", "pores_first": "d3d_african_woman"}, "round": 101},
     "walter": {"env": {"FACETEST_GENDER": "1.0", "FACETEST_AGE": "0.81", "FACETEST_ETHNIC": "0.05,0.05,0.9",
                        "FACETEST_IDENTITY": "202", "FACETEST_IDENTITY_STRENGTH": "0.7", "FACETEST_MELANIN": "0.02",
