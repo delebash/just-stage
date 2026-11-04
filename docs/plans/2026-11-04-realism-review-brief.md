@@ -223,7 +223,10 @@ know it worked). Standard / NOT STANDARD marked.
   with mesh-map baking and an MCP server; created 2026-10-14, in active development) or Substance itself. Tiling
   detail textures (pore tiles per region, freckle and scar patterns) authored in Blender nodes first; Material Maker
   (MIT) or MaterialCraft (storytold, MIT OR Apache-2.0, a Substance-Designer-style node designer; created 2026-11-01)
-  only for a generator Blender lacks. Nothing bought.
+  only for a generator Blender lacks. Nothing bought. storytold's other craft apps (all pure Rust, weeks old):
+  PhotoCraft / LightCraft as outside editors for touching up textures; EffectCraft for compositing renders (the film
+  side, later); their craft-anything engine's Study -> Build -> Check loop (every build compared with the original and
+  refined) - the method behind our gate. Licences read only for TextureCraft and MaterialCraft (MIT OR Apache-2.0).
 
 ### 7 · Body skin (part 1)
 - **Method:** HSRD-100 bodies (standing, mostly bare skin) onto our body: correspondences from body keypoints on
@@ -287,7 +290,15 @@ and MakeHuman's age shape until one is.
 
 ## 7 · Order
 
-1 (live hair, half built) → 2 + 3 (bases, tone) → 4 (generator) → 6, 5 (layers, age) → 8-10 (brows, facial and body
+**First, the gate (the user approved, 2026-11-04):** how far can EEVEE go? The same character in (1) our live view,
+(2) our film render, (3) Unreal 5.8 with MetaHuman's shaders (installed at `F:\Epic\UE_5.8`, used locally for the
+comparison only), beside the user's CC5 screenshots, measured, the user judging. If EEVEE can't reach the bar, the
+fallbacks: a "Film preview" live mode (Cycles in the viewport with the RTX denoiser) for close-up work, and a live link
+to Unreal (CC5 has one) through the planned Unreal plugin. A search for every way to raise EEVEE's live-view quality
+(settings, light probes, our own shaders from published real-time skin / eye / hair methods, add-ons, live links) is
+running and lands in this brief.
+
+Then: 1 (live hair, half built) → 2 + 3 (bases, tone) → 4 (generator) → 6, 5 (layers, age) → 8-10 (brows, facial and body
 hair) → 12-15 (eyes, mouth, nails, ears) → 7 (bodies) → 11 (styles, with cards for dense hair).
 
 ## 8 · How each is checked
