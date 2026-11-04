@@ -213,6 +213,12 @@ Subjects: [1 · The machine](#1--the-machine) ·
   vendors' terms (no raw redistribution, embedding in finished media only, AI training by separate permission:
   aiTextured, Cubebrush, a Gumroad seller, CGTrader's 2026-05-15 change); `texturing.xyz/pages/licenses` 404;
   `texturing.xyz/policies/terms-of-service` covers the shop, not the textures. A gap: only Texturing.XYZ can say.
+  **READ 2026-11-04 (the redo):** the licence is `texturing.xyz/pages/terms-of-service` ("Terms & conditions /
+  Licensing", updated 2026-08-29): §7 bars releasing Materials "or derivative products under an Open Source License"
+  and any use "with artificial intelligence, machine-learning ... systems or software" without written authorisation -
+  a user's own purchase, imported, is the only route (`../plans/2026-11-04-research-licences-redo.md`, with every
+  other licence the CC-only filter had cut: Pexels, Unsplash, Pixabay, BlenderKit, Superhive, Fab, CGTrader,
+  Sketchfab Store, HumanScanRepository, Renderpeople, Triplegangers, Ten24's commercial-use sample scan).
 - **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
   1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
      CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
