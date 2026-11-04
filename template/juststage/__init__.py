@@ -29,10 +29,15 @@ def _viewport():
     return importlib.import_module(ADDON + ".core.viewport")
 
 
-def _topbar():
+def _ui(name):
     import importlib
 
-    importlib.import_module(ADDON + ".ui.topbar").install()  # JustStage's short top bar (Window brings Blender's back)
+    return importlib.import_module(ADDON + ".ui." + name)
+
+
+def _topbar():
+    _ui("topbar").install()  # JustStage's short top bar (Window brings Blender's back)
+    _ui("startup").open_sidebar()  # the 3D view's sidebar on JustStage's Modify panel
 
 
 @persistent
@@ -46,9 +51,8 @@ def _on_factory_preferences(_=None):
     """First start (or preferences reset): Cycles on the card (not Blender's factory "None"); JustStage's look."""
     _ensure_addon()
     _viewport().use_gpu()
-    import importlib
-
-    importlib.import_module(ADDON + ".ui.theme").apply(bpy.context.preferences)
+    _ui("theme").apply(bpy.context.preferences)
+    bpy.context.preferences.view.show_splash = False  # Blender's splash; File > Open Recent keeps the recent files
 
 
 @persistent
@@ -58,6 +62,9 @@ def _on_factory_startup(_=None):
     viewport = _viewport()
     viewport.setup_scene(bpy.context.scene)
     viewport.show_live(bpy.data.screens)
+    startup = _ui("startup")
+    startup.new_stage(bpy.context.scene)  # Blender's cube out, the camera on a standing person
+    startup.content_panel(bpy.data.screens)  # the Properties editor becomes the Content panel (Asset Browser)
 
 
 def _on_timer():
