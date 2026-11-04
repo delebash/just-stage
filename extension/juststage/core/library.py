@@ -109,6 +109,26 @@ def skin_tone(path: str) -> dict:
         return {name: getattr(record, name) for name in ("melanin", "eumelanin", "blood", "oiliness")}
 
 
+def skin_material(path: str) -> bpy.types.Material | None:
+    """A skin preset's material appended, when it carries maps (modules/skin/maps.py); None for a tone-only preset."""
+    with bpy.types.BlendData.temp_data() as temp:
+        with temp.libraries.load(path, assets_only=True) as (src, dst):
+            dst.materials = list(src.materials)
+        if not any(m is not None and m.juststage.is_skin and m.juststage.has_maps for m in dst.materials):
+            return None
+    with bpy.data.libraries.load(path, link=False, assets_only=True) as (src, dst):
+        dst.materials = list(src.materials)
+    mat = next(m for m in dst.materials if m is not None and m.juststage.has_maps)
+    for node in mat.node_tree.nodes:
+        image = getattr(node, "image", None)
+        if image is not None:
+            image.use_fake_user = False  # in use now (save wrote them with one)
+    mat.use_fake_user = False
+    if mat.asset_data is not None:
+        mat.asset_clear()
+    return mat
+
+
 def characters(folder: Path | None = None) -> list[dict]:
     """The library's characters: their names and files, by name."""
     base = (folder or root()) / "Characters"

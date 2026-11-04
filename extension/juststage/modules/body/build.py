@@ -123,6 +123,9 @@ def create_human(name: str, values: dict) -> bpy.types.Object:
 
     sliders.add_items(obj)
     stand_on_floor(obj)
+    from ..skin import maps
+
+    maps.add_layout(obj)  # the body's UDIM layout: a skin's maps fit every character
     set_levels(obj, DEFAULT_LEVELS, DEFAULT_VIEW_LEVEL)
     return obj
 
@@ -160,6 +163,30 @@ def stand_on_floor(obj: bpy.types.Object) -> float:
     key.data.foreach_set("co", co.ravel())
     key.value = 1.0
     return BASE_LIFT + own
+
+
+def adopt_floor(obj: bpy.types.Object) -> float:
+    """A character made before the floor key (2026-11-04: its own lift in its base mesh) onto the shared one: the base
+    mesh, shape keys too, moved from its own lift to BASE_LIFT and its own few millimetres put in the floor key, so
+    grooms made on any character fit it. Returns the old lift (BASE_LIFT when it has the key already)."""
+    keys = obj.data.shape_keys
+    if keys is not None and keys.key_blocks.get(FLOOR) is not None:
+        return BASE_LIFT
+    fresh = _import_base("lift probe")
+    base = np.empty(len(fresh.data.vertices) * 3, np.float32)
+    fresh.data.vertices.foreach_get("co", base)
+    mesh = fresh.data
+    bpy.data.objects.remove(fresh)
+    bpy.data.meshes.remove(mesh)
+    ref = np.empty(len(obj.data.vertices) * 3, np.float32)
+    (keys.reference_key.data if keys else obj.data.vertices).foreach_get("co", ref)
+    old = float(np.median(ref.reshape(-1, 3)[:, 2] - base.reshape(-1, 3)[:, 2]))
+    obj.data.transform(Matrix.Translation((0.0, 0.0, BASE_LIFT - old)), shape_keys=True)
+    if not obj.data.shape_keys:
+        obj.shape_key_add(name="Basis", from_mix=False)
+    obj.shape_key_add(name=FLOOR, from_mix=False)
+    stand_on_floor(obj)
+    return old
 
 
 def keep_on_floor(obj: bpy.types.Object) -> None:

@@ -4,7 +4,8 @@
 """`juststage.library.add` — an asset from the library (docs/standards/project-files.md §2), by what its file holds:
 a character comes into the scene as a character of its own (the Modify panel's "Start from" buttons); a groom goes onto
 `character`, replacing its groom of the same type (CC5's way: applied hair replaces the hair); a skin preset sets
-`character`'s tone. The Content panel's double-click and its Apply entry run it (ui/content.py)."""
+`character`'s tone, and a mapped skin (modules/skin/maps.py) puts its maps on it too. The Content panel's double-click
+and its Apply entry run it (ui/content.py)."""
 
 from typing import NamedTuple
 
@@ -54,7 +55,11 @@ def main(params: Params) -> Result:
         from ..hair import groom
 
         return Result(character=params.character, object=groom.add_from_file(obj, params.path).name)
-    from ..skin import skin_set_tone
+    from ..skin import maps, skin_set_tone
 
+    mapped = library.skin_material(params.path)
+    if mapped is not None:  # a mapped skin: its maps on the character (a copy of its own), then its tone
+        maps.apply(obj, mapped)
+        bpy.data.materials.remove(mapped)
     skin_set_tone.main(skin_set_tone.Params(character=params.character, **library.skin_tone(params.path)))
     return Result(character=params.character, object=obj.name)

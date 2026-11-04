@@ -47,4 +47,8 @@ def apply(obj: bpy.types.Object, skin: skin_optics.Skin, oiliness: float) -> bpy
     record = mat.juststage  # the material says what it was built from: a skin preset in the library carries it
     record.melanin, record.eumelanin, record.blood = skin.melanin, skin.eumelanin, skin.blood
     record.oiliness, record.is_skin = oiliness, True
+    if record.has_maps:  # a mapped skin (maps.py): its colour map recoloured to this tone
+        from . import maps
+
+        maps.set_gain(mat, rgb)
     return mat
