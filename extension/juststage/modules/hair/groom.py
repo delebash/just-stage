@@ -27,6 +27,9 @@ SURFACE_UV = "UVMap"  # hm08's own UV map, the one the styles' roots are placed 
 #: Cycles' melanin colours (`intern/cycles/kernel/closure/bsdf_util.h`, RESEARCH §1)
 EUMELANIN = (0.506, 0.841, 1.653)
 PHEOMELANIN = (0.343, 0.733, 1.924)
+# the live view's stand-in against the film's Principled Hair (RESEARCH §1, 2026-11-04): darker mostly in the shadowed
+# strands inside the mass, where Cycles' multiple scattering carries light through the hair - a colour gain moved the
+# mean 1%, a translucent share made it darker; left as it is
 
 
 def _roughness_scale(beta: float) -> float:
@@ -259,9 +262,12 @@ def add_from_file(character: bpy.types.Object, path: str) -> bpy.types.Object:
         if obj.asset_data is not None:
             obj.asset_clear()
     groom = _attach(character, objects, part)
-    for mat in groom.data.materials:
+    slots = groom.data.materials
+    for i, mat in enumerate(slots):  # today's hair shading (it reads each strand's colour), not the file's
         if mat is not None and mat.name.startswith("JustStage Hair"):
-            mat.name = f"JustStage Hair ({groom.name})"
+            slots[i] = hair_material(f"JustStage Hair ({groom.name})")
+            if mat.users == 0:
+                bpy.data.materials.remove(mat)
     return groom
 
 

@@ -188,6 +188,11 @@ Subjects: [1 · The machine](#1--the-machine) ·
      scattering model ..." - the 2016 paper and qualitative physics only.
   A gap in the search, not "none exist": the papers hold the numbers; their full texts weren't reached (an ARRO copy
   failed its certificate). MPFB2's own eye default is a saturated blue (0.18, 0.49, 0.91; `eye_settings.default.json`).
+- **The live view's hair against the film's** (the library's "Hair to shoulder" on the Average woman, Standard view, hair
+  pixels = what the hair changes, measured 2026-11-04): Cycles' mean hair colour is 1.23 / 1.14 / 1.04 EEVEE's stand-in
+  (luminance 1.17), its median 1.74 - the gap is in the shadowed strands inside the mass (Cycles' multiple
+  scattering). The stand-in's colour x that gain moved EEVEE's mean 1%; a 35% translucent share made it darker (key
+  light in front). Left as it is: the film run is right, the live view darker inside the hair.
 - **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
   runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
   (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065
