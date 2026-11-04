@@ -153,4 +153,11 @@ def add(path: str, scene) -> bpy.types.Object:
         if obj.juststage.part_of == old:
             obj.juststage.part_of = new
     body.juststage.character_id = new
+    skin = body.juststage.skin_material
+    if skin is not None and skin.juststage.has_maps:  # today's shading on its maps (modules/skin/maps.py)
+        from ..modules.skin import maps, skin_set_tone
+
+        maps.refresh(skin)
+        props = body.juststage
+        skin_set_tone.main(skin_set_tone.Params(new, props.melanin, props.eumelanin, props.blood, props.oiliness))
     return body

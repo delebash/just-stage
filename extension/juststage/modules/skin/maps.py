@@ -33,7 +33,10 @@ PORE_STRENGTH, PORE_DISTANCE = 0.35, 0.0002
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
 #: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
-MOTTLE, MOTTLE_SCALE, MOTTLE_DETAIL = 0.10, 18.0, 4.0
+MOTTLE, MOTTLE_SCALE, MOTTLE_DETAIL = 0.14, 18.0, 4.0
+#: the clear coat (the skin's oily sheen) on the face only: over the whole body it read as oiled plastic (Amara's
+#: body, Cycles, 2026-11-04); the body keeps a trace
+BODY_COAT_WEIGHT = 0.03
 NODE = "juststage.maps."  # this module's nodes are named with it
 
 
@@ -163,12 +166,25 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(pore.outputs["Color"], bump.inputs["Height"])
     links.new(fine.outputs["Normal"], bump.inputs["Normal"])
     links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
-    bsdf.inputs["Coat Weight"].default_value = COAT_WEIGHT
+    coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
+    coat.data_type = "FLOAT"
+    links.new(body.outputs["Value"], coat.inputs["Factor"])
+    next(i for i in coat.inputs if i.identifier == "A_Float").default_value = COAT_WEIGHT
+    next(i for i in coat.inputs if i.identifier == "B_Float").default_value = BODY_COAT_WEIGHT
+    links.new(next(o for o in coat.outputs if o.identifier == "Result_Float"), bsdf.inputs["Coat Weight"])
     bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS
     bsdf.inputs["Coat IOR"].default_value = COAT_IOR
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT
     bsdf.inputs["Sheen Roughness"].default_value = SHEEN_ROUGHNESS
     mat.juststage.has_maps = True
+
+
+def refresh(mat: bpy.types.Material) -> None:
+    """A mapped skin's shading set again from this code (its maps kept): a skin or a character from the library wears
+    today's settings, not the ones it was saved with."""
+    nodes = mat.node_tree.nodes
+    images = {c: nodes[NODE + c].image for c in CHANNELS}
+    build_material(mat, images, nodes[NODE + "pores"].image)
 
 
 def set_gain(mat: bpy.types.Material, rgb: tuple[float, float, float]) -> None:
@@ -192,6 +208,7 @@ def apply(character: bpy.types.Object, skin: bpy.types.Material) -> bpy.types.Ma
     mine = skin.copy()
     mine.name = f"JustStage Skin ({character.name})"
     mine.use_fake_user = False
+    refresh(mine)
     slots = character.data.materials
     if old is not None and old.name in slots:
         slots[slots.find(old.name)] = mine
