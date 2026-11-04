@@ -77,3 +77,13 @@ def test_skin_detail_from_juststage_ai(human):
     image.pixels.foreach_get(px)
     assert not np.allclose(px.reshape(h, w, 4)[..., 0], height)  # another seed, another skin
     assert sum(1 for n in nodes if n.name.startswith("juststage.detail.")) == 4
+
+
+def test_the_panels_tone_slider_recolours_the_skin(human):
+    result, obj = human
+    api.run("juststage.skin.set_tone", character=result.character)
+    before = tuple(_bsdf(obj.juststage.skin_material).inputs["Base Color"].default_value)[:3]
+    obj.juststage.melanin = 0.25  # what the Character panel's Skin slider does
+    after = tuple(_bsdf(obj.juststage.skin_material).inputs["Base Color"].default_value)[:3]
+    assert sum(after) < 0.7 * sum(before)  # more melanin: a darker skin
+    assert obj.juststage.melanin == pytest.approx(0.25)

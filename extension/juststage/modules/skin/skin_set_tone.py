@@ -48,10 +48,14 @@ def main(params: Params) -> Result:
     skin = skin_optics.Skin(params.melanin, params.eumelanin, params.blood)
     mat = material.apply(obj, skin, params.oiliness)
     props = obj.juststage
-    props.melanin = params.melanin
-    props.eumelanin = params.eumelanin
-    props.blood = params.blood
-    props.oiliness = params.oiliness
+    character.APPLYING["macros"] = True  # the panel's tone sliders stay quiet while their values are written
+    try:
+        props.melanin = params.melanin
+        props.eumelanin = params.eumelanin
+        props.blood = params.blood
+        props.oiliness = params.oiliness
+    finally:
+        character.APPLYING["macros"] = False
     tables = skin_optics.load_tables(paths.FETCHED / "optics")
     return Result(
         material=mat.name,

@@ -47,6 +47,10 @@ class VIEW3D_PT_juststage_character(bpy.types.Panel):
         mix.label(text="Ethnic mix")
         for name in RACES:
             mix.prop(obj.juststage, name, slider=True)
+        skin = layout.column(align=True)
+        skin.label(text="Skin")
+        for name in ("melanin", "eumelanin", "blood", "oiliness"):
+            skin.prop(obj.juststage, name, slider=True)
         detail = layout.column(align=True)
         detail.label(text="Details")
         wm = context.window_manager

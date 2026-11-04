@@ -39,6 +39,27 @@ class JustStageFloat(bpy.types.PropertyGroup):
     value: bpy.props.FloatProperty()
 
 
+TONE = ("melanin", "eumelanin", "blood", "oiliness")
+
+
+def _tone(label: str, default: float, low: float, high: float):
+    """A skin-tone slider the Character panel draws: dragging it runs `juststage.skin.set_tone` with the character's
+    four tone values (one way per job)."""
+
+    def update(self, context):
+        if APPLYING["macros"] or self.kind == "NONE" or not self.character_id:
+            return
+        from . import api
+
+        values = {name: getattr(self, name) for name in TONE}
+        try:
+            api.run("juststage.skin.set_tone", character=self.character_id, **values)
+        except api.CommandError as e:
+            print(f"JustStage: {label}: {e}")
+
+    return bpy.props.FloatProperty(name=label, default=default, min=low, max=high, update=update)
+
+
 def _detail_update(self, context):
     if APPLYING["macros"]:
         return
@@ -82,10 +103,10 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     asian: _slider("asian", "Asian", 0.33)
     caucasian: _slider("caucasian", "Caucasian", 0.33)
     african: _slider("african", "African", 0.33)
-    melanin: bpy.props.FloatProperty(default=0.0104, min=0.0, max=0.5)
-    eumelanin: bpy.props.FloatProperty(default=0.6, min=0.0, max=1.0)
-    blood: bpy.props.FloatProperty(default=0.016, min=0.001, max=0.2)
-    oiliness: bpy.props.FloatProperty(default=0.5, min=0.0, max=1.0)
+    melanin: _tone("Melanin", 0.0104, 0.0, 0.5)
+    eumelanin: _tone("Eumelanin share", 0.6, 0.0, 1.0)
+    blood: _tone("Blood", 0.016, 0.001, 0.2)
+    oiliness: _tone("Oiliness", 0.5, 0.0, 1.0)
     skin_material: bpy.props.PointerProperty(type=bpy.types.Material, description="this character's skin material")
     gnm_identity: bpy.props.CollectionProperty(type=JustStageFloat, description="GNM head identity coefficients")
     sliders: bpy.props.CollectionProperty(type=JustStageSlider, description="target.json's detail sliders' values")
