@@ -235,3 +235,48 @@ Blender's manual pages (limitations, raytracing) - 403 to WebFetch and the brows
 "Principled Hair BSDF not supported" and `trace_max_roughness` semantics stand on the earlier readings; EEVEE's
 closure packing of Principled (F10 says measure); the BY-SA version of the Hair Styles demo; whether GNM's identity
 space holds children; pore statistics by ethnicity.
+
+## Opus's rethink of this review (2026-11-04, the user: "just do another rethink adverserily on these recs", "keep going")
+
+Passes, each from a new angle; facts checked in the repo and in Unreal 5.8's installed MetaHuman plugin.
+
+1. **The findings themselves.** Wrong or already covered: F1's premise - the approved gate (`2026-11-04-realism.md` §6)
+   already puts our character on MetaHuman's skin material beside EEVEE and Cycles (F1a); F1(b) - MetaHuman's maps in
+   Cycles - is rejected (clean-room; and the gate compares content inside Unreal anyway). F7 - the spec already names
+   the body rig: UE5 bone names placed from MPFB2's joint cubes, weights from `weights.game_engine.json`
+   (`character-data-model.md:170-171`), the files fetched (`data/fetched/makehuman/rigs/standard/`), not built - so
+   rec 7 builds that skeleton, poses it to each scan, and wraps in the matched pose (one texture transfer, no second
+   body model). F9(i) - EEVEE's Principled Hair already known to fall back to a diffuse closure (RESEARCH §1). F10's
+   "drop sheen" - MetaHuman's material carries region peach fuzz ("Adds a fake peachfuzz effect adjustable through
+   r[egions]"), so the closure count is measured first and the coat folded before fuzz is dropped. F12's pores - at
+   6 texels/mm a texel is 0.17 mm, pores 1-2 texels, not under one. F4 - the delighting check also measures shine
+   hotspots (forehead, nose), which unpolarised capture bakes even under even light.
+2. **My own claims.** The preset `MI_skin_unified_MH_preset_Baked` has `M_skin_unified` as its parent and samples
+   MetaHuman's region masks `T_region_face_A-D` / `T_region_body_A-D` in MetaHuman's UVs; on our UVs those land wrong.
+   `M_skin_unified_baked` takes plain inputs - `Basecolor Baked`, `Normal Baked`, `SRMF Baked` (specular / roughness /
+   metal / fuzz packed - the packing our spec already names, `character-data-model.md:206`), `Scatter Baked` - plus
+   `Micro Skin Details` (tiling, normal, cavity; MetaHuman's own `T_SkinMicro3_N` / `_CAV`) and `Micro MaskA-D`
+   strengths. **Change to the gate:** our maps on an instance of `M_skin_unified_baked`, its micro-detail slot fed our
+   own pore tile (not MetaHuman's - our content stays ours), the micro masks uniform; a flat grey-map render first to
+   prove nothing region-masked leaks. The preset beside it on its own material, as planned.
+3. **The checkers.** Rec 17's floor measured on colour would fail dark skin (lower colour contrast) -> measured on the
+   relief (height / normal) and roughness channels, colour judged per tone. F5's likeness test across the render-photo
+   gap is weak -> each library render against a render of each source scan at the same camera. F2's fps by Blender's
+   standard `wm.redraw_timer` in a UI session (`quality-gate.md:43` already asks for viewport fps; no target yet).
+4. **Untouched neighbours.** Rec 17's shared layers are the spec's `micro_normal` channel ("16-bit tileable + tiling
+   scalar", CC5 defaults body 42, face 20 - `character-data-model.md:210`) -> named so, and the USD export carries it.
+   Recs 17 and F6 rebuild every library skin and thumbnail (`tools/build_skins.py`, `build_library.py`) - the user's
+   library files are overwritten, so they are backed up first. The gate's Unreal run takes several GB of card and
+   RAM beside web-4c's clips -> told, not waited on. No user docs exist in the repo yet (said, per CLAUDE.md).
+5. **How the recs interact.** Today the colour's fine layer comes from one scan (`skin_base.py`) while the relief's
+   pores come from the Lee Perry-Smith tile (`build_skins.py:36`) - two people's pores that don't line up -> recs
+   17 / 18 take colour fine detail and relief from the same source, or drop the colour's fine band where the relief
+   layer supplies pores. Rec 16's higher `trace_max_roughness` and F10's closure count are measured together (both
+   change the skin's noise). Delighting (F4) runs before the colour transfer (F3).
+6. **Fable's order.** It puts rec 3 (pick the base by tone from the 21) before rec 2 (which adds HSRD's 10 to make the
+   21) - fixed. And the gate first, not in parallel: it decides whether the gap is EEVEE's shading (16, 1, the
+   fallbacks first) or our maps (18, 2, 3, 17 first).
+7. **The user's own words** ("the lashes and the corner of the mouth look wrong"): lashes are rec 8; lids and mouth
+   corners are shape, named under recs 12 and 13 as shape items.
+8. **A simpler or more standard option** for each big rec (the gate, 17, 7, 18): each already follows the spec or the
+   reference apps' public practice - nothing new found. Last angle; the passes stop here.

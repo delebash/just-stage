@@ -219,6 +219,14 @@ Subjects: [1 · The machine](#1--the-machine) ·
   a user's own purchase, imported, is the only route (`../plans/2026-11-04-research-licences-redo.md`, with every
   other licence the CC-only filter had cut: Pexels, Unsplash, Pixabay, BlenderKit, Superhive, Fab, CGTrader,
   Sketchfab Store, HumanScanRepository, Renderpeople, Triplegangers, Ten24's commercial-use sample scan).
+- **MetaHuman's skin materials, read from the installed plugin** (Unreal 5.8, `Engine/Plugins/MetaHuman/
+  MetaHumanCharacter/Content/Lookdev_UHM/Skin/Materials/`, 2026-11-04, names read from the `.uasset` files; nothing
+  copied): presets use `MI_skin_unified_MH_preset_Baked` on parent `M_skin_unified` with region masks
+  `T_region_face_A-D` / `T_region_body_A-D` (hundreds of per-region basecolor / normal / fuzz parameters, animated
+  wrinkle maps cm1-3 / wm1-3, "a fake peachfuzz effect adjustable through regions"); `M_skin_unified_baked` takes
+  plain baked inputs - `Basecolor Baked`, `Normal Baked`, `SRMF Baked` (specular / roughness / metal / fuzz packed),
+  `Scatter Baked` - plus `Micro Skin Details` (tiling micro normal and cavity, `T_SkinMicro3_N` / `_CAV`) with
+  `Micro MaskA-D` strengths; subsurface profile `SSP_skin_unified`. For the gate: our maps on the baked variant.
 - **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
   1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
      CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
