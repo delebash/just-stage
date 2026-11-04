@@ -9,7 +9,7 @@ from . import api, character
 from .commands import api_status
 from .core import usd_hooks
 from .modules import body, hair, head, io, skin
-from .ui import ai_jobs, ai_panel, operators
+from .ui import ai_jobs, ai_panel, menus, operators
 
 CORE = "core"
 _CORE_COMMANDS = (api_status,)
@@ -31,9 +31,11 @@ def register():
         bpy.utils.register_class(cls)
     for module in MODULES:
         module.register(_api_range())
+    menus.register()
 
 
 def unregister():
+    menus.unregister()
     for module in reversed(MODULES):
         module.unregister()
     ai_jobs.stop()

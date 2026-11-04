@@ -36,6 +36,17 @@ class CommandOperator:
 
     command_id: str = ""
 
+    def invoke(self, context, event):
+        """Opened from a menu: the command works on the selected character (or the character a selected part belongs
+        to); its other options show in Blender's operator dialog."""
+        cmd = api.command(self.command_id)
+        names = {f.name for f in cmd.fields}
+        if "character" in names and not self.character:
+            self.character = character_of(context.active_object)
+        if names - {"character"}:
+            return context.window_manager.invoke_props_dialog(self)
+        return self.execute(context)
+
     def execute(self, context):
         cmd = api.command(self.command_id)
         values = {f.name: _plain(getattr(self, f.name)) for f in cmd.fields}
@@ -56,6 +67,14 @@ class CommandOperator:
             self.report({"ERROR"}, f"{cmd.id}: {e}")
             return {"CANCELLED"}
         return {"FINISHED"}
+
+
+def character_of(obj) -> str:
+    """The character `obj` is, or the one it is a part of (eyes, teeth, a groom); "" for anything else."""
+    if obj is None:
+        return ""
+    props = obj.juststage
+    return props.character_id or props.part_of
 
 
 def _plain(value):
