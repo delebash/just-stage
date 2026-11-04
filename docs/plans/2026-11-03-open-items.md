@@ -86,7 +86,28 @@ THIRD RUN (`.dev/facetest/chars_check.png`): amara done (932 s), walter done (94
 Fixes: the clay cameras aim from each character's own eyes (`FIRST_EYES` = the first man's eye centre, the aims kept
 as offsets from it - his framing unchanged; the eyeballs' box centres, as test_face_export_head measured); amara's
 description + "soft feminine features". Card handed back to web-4c ("card free" sent); amara and mei re-run when it
-returns (~30 min of card).
+returns (~30 min of card). Queue (from the foreground session): web-4c ~50 min → this session's ~35 min (amara, mei;
+start on the forwarded "card free", which will name the foreground session's catch-light commit in
+test_face_project.py - committed before my run so these characters get it) → the foreground session's ~10 min check.
+Run: `face_character.py amara mei`.
+CARD FREE (web-4c via the foreground session; 6d541f2 the catch light on the cornea and tearline only - carried, not
+verified yet). RE-RUN STARTED: amara, mei (log: job tmp `characters2.log`). When done: "card free" to the foreground
+session (its ~10 min check).
+RE-RUN RESULT (`.dev/facetest/chars_all.png`): amara properly framed - a feminine face, dark skin; a faint tone change
+where her painted forehead meets the base scalp. mei rendered as CHROME: face_albedo all zeros. Cause: the projection's
+absolute heights were set on the first man - mei's face sat below the 1.5 m "face zone", the brightness calibration's
+median ran over nothing → NaN → every map 0. Fix (d1f4746): the neck fade, the head selection, the face zone, the lip
+line (relief option) and the light rig's centre shift with the character's eyes (`_eye_shift`; the first man 0);
+`_head_tile` picks its polygons on the rest mesh (hm08's neutral base), the same for every character, so the tile -
+and the bases baked into it - stays one. `face_character.py NAME --from STEP` resumes with the character's files put
+back. Catch light 6d541f2 verified by the foreground session on mei's eyes. NEXT: `face_character.py amara mei --from
+"projected and rendered"` (~14 min card) after web-4c's ~45 min - asked for the slot.
+PROJECTION RE-RUN (481 s / 455 s; lowest free RAM 3.8 GB beside the user's CC5): (c) WORKS -
+`.dev/facetest/characters_four.png`: four distinct people through one pipeline - the first man (round 82), amara
+(a dark-skinned woman in her thirties), walter (an older man, grey stubble), mei (a young East Asian woman); mei's
+albedo mean 158 (was 0). Found in them, to fix next: (1) a light band where the painted forehead hands over to the
+base scalp (all four, strongest on amara / walter / mei); (2) walter's scalp a little green and blotchy (his base's
+mid layer). Then (a)'s test.
 
 ## 4 · Run log (newest last)
 

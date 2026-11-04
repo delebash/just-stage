@@ -1088,9 +1088,20 @@ def test_face_project():
         if ratio.shape[0] != SIZE:  # the base is made at 4096 (the scans' own detail); an 8K tile takes it doubled
             k = SIZE // ratio.shape[0]
             ratio = np.repeat(np.repeat(ratio, k, axis=0), k, axis=1)
-        tone = _carried_tone(points, albedo, fade, fallback)
-        under = tone * ratio[mask]
-        print(f"  skin base {BASE}: under {(fade < 0.5).mean():.0%} of the head's texels")
+        # the tone carried out from the painting's EDGE only (where it hands over: fade 0.5-0.97, within ~1.5 cm of
+        # where it falls away) - carried from the whole face it averaged in the darker brows and sockets, and the
+        # painted forehead stood 10-17% brighter than the base above it, a band at the hairline in all four characters
+        # (2026-11-03: amara 0.82 / 0.68, walter 0.74 / 0.62, mei 0.72 / 0.64, the step within ~8 mm). And the base
+        # brings detail only, not broad brightness of its own: divided by its own ~3 cm average (Waechter et al.'s
+        # seam levelling, the views' gain fields above, between the painting and the base)
+        near_edge = _surface_blur(points, fade[:, None], np.ones(len(points)), 0.015)
+        edge = (fade > 0.5) & (fade < 0.97) | ((fade >= 0.97) & (near_edge[0][:, 0] / np.maximum(near_edge[1], 1e-9) < 0.9))
+        tone = _carried_tone(points, albedo, fade * edge, fallback)
+        r = ratio[mask].astype(np.float64)
+        broad_num, broad_den = _surface_blur(points, r, np.ones(len(points)), 0.03)
+        under = tone * r / np.maximum(broad_num / np.maximum(broad_den, 1e-9)[:, None], 1e-3)
+        print(f"  skin base {BASE}: under {(fade < 0.5).mean():.0%} of the head's texels; tone from "
+              f"{edge.sum()} texels along the painting's edge")
     albedo = under + (albedo - under) * fade[:, None]
     nrm = normals + (nrm - normals) * fade[:, None]
     nrm /= np.linalg.norm(nrm, axis=1, keepdims=True) + 1e-12

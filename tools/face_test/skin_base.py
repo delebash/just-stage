@@ -227,6 +227,10 @@ def compose(seed, params=None):
             cv2.circle(spots, (int(x), int(y)), max(1, int(round(r))), float(depth * rng.uniform(0.5, 1.0)), -1)
     spots = cv2.GaussianBlur(spots, (0, 0), 1.0)
     ratio_log -= spots[..., None] * np.array([0.8, 1.0, 1.2], np.float32)  # brown: blue darkest
+    # skin keeps skin's hue order: the ratio may not turn a texel greener than it is red, nor bluer than green, by more
+    # than 2% (the painting's own guard in test_face_project; walter's scalp came out green and blotchy, 2026-11-03)
+    ratio_log[..., 1] = np.minimum(ratio_log[..., 1], ratio_log[..., 0] + 0.02)
+    ratio_log[..., 2] = np.minimum(ratio_log[..., 2], ratio_log[..., 1] + 0.02)
     ratio = np.exp(ratio_log).astype(np.float32)
     # a ratio around 1: each channel's mean over what the scans covered set to 1 - the scans' own shading had left it
     # below (round 74's scalp darker and more orange than the face); the character's tone is the projection's
