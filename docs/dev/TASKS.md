@@ -1050,10 +1050,18 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            you are doing it"; "make sure you have the latest or best techniques to fix these quality issues, you often
            get stuck on a method when that method may not be the best, double check your methods"; "again you are
            limiting, why just skin variety , how about hair, eyesy, teeth, fingernails toe nails, when i said every
-           body part i mean it beards ect" - confirmed "correct" on: skin (face, body, hands, feet; ethnicity, age,
-           wrinkles, freckles, moles, age spots, stubble), scalp hair (styles, textures straight to coily, colours,
-           grey), facial hair, brows and lashes, body hair, eyes (iris, sclera, wetness, lids), teeth / gums / tongue,
-           finger and toe nails, lips, ears, nipples - realism and variety, in the live view (EEVEE) and the film.
+           body part i mean it beards ect". My understanding, as I wrote it back, which the user confirmed ("correct"):
+           realism and variety, in the live view (EEVEE) and the film, for each of these:
+           1. Skin: face, body, hands and feet, by ethnicity and age (wrinkles, freckles, moles, age spots, stubble
+              shadow).
+           2. Hair: scalp styles, lengths, textures (straight to coily) and colours, including grey.
+           3. Facial hair: beards, moustaches, stubble.
+           4. Brows and lashes: shapes, density and colour.
+           5. Body hair.
+           6. Eyes: iris colour and pattern, sclera (veins, redness, yellowing with age), eye wetness, lid shapes.
+           7. Mouth: teeth (shape, colour, wear, gaps, alignment), gums and tongue.
+           8. Nails: finger and toe nails (shape, colour, cuticles).
+           9. Nipples, lips and ears: their colour and detail.
            Research running 2026-11-04 (three agents: CC scans for the gaps; newer techniques for skin and real-time
            hair; variety for every other part), each told to read our research first.
            OPENRIGLOGIC BUILD (the face rig's step 7; `python libs/openriglogic/build.py`, EpicGames/OpenRigLogic at
