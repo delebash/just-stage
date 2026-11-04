@@ -299,6 +299,23 @@ def render() -> None:
                 print("GATE rendered", scene.render.filepath, flush=True)
 
 
+def eyes() -> None:
+    """The eyes' placeholder colours for Unreal, read from the eye shader's own settings (MPFB2's EnhancedEye: its
+    white, its iris colours): the eyes are not this gate's subject - flat colours keep the face readable. (A Cycles
+    colour bake of the procedural eye came out black: the colour sits inside the group's procedural tree.)"""
+    bpy.ops.wm.open_mainfile(filepath=str(OUT / "gate_scene.blend"))
+    meta = json.loads((OUT / "meta.json").read_text())
+    eye = next(o for o in bpy.data.objects if o.juststage.part == "eyeLeft")
+    node = next(n for slot in eye.material_slots if slot.material for n in slot.material.node_tree.nodes
+                if n.type == "GROUP" and "IrisMajorColor" in n.inputs)
+    major = list(node.inputs["IrisMajorColor"].default_value[:3])
+    minor = list(node.inputs["IrisMinorColor"].default_value[:3])
+    meta["eye_colours"] = {"Sclera": list(node.inputs["EyeWhiteColor"].default_value[:3]),
+                           "Iris": [(a + b) / 2 for a, b in zip(major, minor)], "Pupil": [0.01, 0.01, 0.01]}
+    (OUT / "meta.json").write_text(json.dumps(meta, indent=1))
+    print("GATE eye colours", meta["eye_colours"], flush=True)
+
+
 if __name__ == "__main__":
     step = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "prepare"
-    {"prepare": prepare, "render": render}[step]()
+    {"prepare": prepare, "render": render, "eyes": eyes}[step]()

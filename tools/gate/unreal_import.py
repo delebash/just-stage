@@ -97,21 +97,42 @@ for tile in TILES:
     unreal.EditorAssetLibrary.save_loaded_asset(mi)
     instances[tile] = mi
 
-# ---- the eyes' placeholder --------------------------------------------------------------------------------------
-eye_path = f"{DEST}/Materials/M_gate_eye_placeholder"
-if unreal.EditorAssetLibrary.does_asset_exist(eye_path):
-    eye_mat = unreal.load_asset(eye_path)
-else:
-    eye_mat = tools.create_asset("M_gate_eye_placeholder", f"{DEST}/Materials", unreal.Material,
-                                 unreal.MaterialFactoryNew())
-    colour = mel.create_material_expression(eye_mat, unreal.MaterialExpressionConstant3Vector, -300, 0)
-    colour.set_editor_property("constant", unreal.LinearColor(0.55, 0.5, 0.46, 1.0))
-    rough = mel.create_material_expression(eye_mat, unreal.MaterialExpressionConstant, -300, 200)
-    rough.set_editor_property("r", 0.08)
+# ---- the eyes' placeholder: flat colours from the eye shader's own settings (blender_gate.py eyes), cornea hidden --
+def _param_material(path, masked=False):
+    folder, name = path.rsplit("/", 1)
+    if unreal.EditorAssetLibrary.does_asset_exist(path):
+        unreal.EditorAssetLibrary.delete_asset(path)
+    mat = tools.create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())
+    colour = mel.create_material_expression(mat, unreal.MaterialExpressionVectorParameter, -400, 0)
+    colour.set_editor_property("parameter_name", "Colour")
+    rough = mel.create_material_expression(mat, unreal.MaterialExpressionConstant, -400, 200)
+    rough.set_editor_property("r", 0.06)
     mel.connect_material_property(colour, "", unreal.MaterialProperty.MP_BASE_COLOR)
     mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
-    mel.recompile_material(eye_mat)
-    unreal.EditorAssetLibrary.save_loaded_asset(eye_mat)
+    if masked:
+        mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        zero = mel.create_material_expression(mat, unreal.MaterialExpressionConstant, -400, 400)
+        zero.set_editor_property("r", 0.0)
+        mel.connect_material_property(zero, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+    mel.recompile_material(mat)
+    unreal.EditorAssetLibrary.save_loaded_asset(mat)
+    return mat
+
+
+eye_base = _param_material(f"{DEST}/Materials/M_gate_eye_placeholder")
+cornea = _param_material(f"{DEST}/Materials/M_gate_cornea_hidden", masked=True)
+eye_mats = {"Cornea": cornea}
+for part, rgb in meta.get("eye_colours", {}).items():
+    name = f"MI_gate_eye_{part}"
+    path = f"{DEST}/Materials/{name}"
+    if unreal.EditorAssetLibrary.does_asset_exist(path):
+        unreal.EditorAssetLibrary.delete_asset(path)
+    mi = tools.create_asset(name, f"{DEST}/Materials", unreal.MaterialInstanceConstant,
+                            unreal.MaterialInstanceConstantFactoryNew())
+    mel.set_material_instance_parent(mi, eye_base)
+    mel.set_material_instance_vector_parameter_value(mi, "Colour", unreal.LinearColor(*rgb, 1.0))
+    unreal.EditorAssetLibrary.save_loaded_asset(mi)
+    eye_mats[part] = mi
 
 # ---- the mesh ---------------------------------------------------------------------------------------------------
 ui = unreal.FbxImportUI()
@@ -129,6 +150,9 @@ smd.set_editor_property("normal_import_method", unreal.FBXNormalImportMethod.FBX
 smd.set_editor_property("transform_vertex_to_absolute", True)
 meshes = _import([GATE / "gate_body.fbx"], f"{DEST}/Meshes", ui)
 bounds = {}
+for eye_path in (f"{DEST}/Meshes/Average_man_eyeLeft", f"{DEST}/Meshes/Average_man_eyeRight"):
+    if eye_path not in meshes and unreal.EditorAssetLibrary.does_asset_exist(eye_path):
+        meshes.append(eye_path)  # imported by an earlier run of this script, still to get today's materials
 for path in meshes:
     asset = unreal.load_asset(path)
     if not isinstance(asset, unreal.StaticMesh):
@@ -144,8 +168,10 @@ for path in meshes:
             if tile is not None:
                 asset.set_material(k, instances[tile])
     else:
-        for k in range(len(asset.get_editor_property("static_materials"))):
-            asset.set_material(k, eye_mat)
+        for k, m in enumerate(asset.get_editor_property("static_materials")):
+            slot = str(m.get_editor_property("material_slot_name"))
+            part = next((p for p in eye_mats if p in slot), None)
+            asset.set_material(k, eye_mats.get(part, eye_base))
     unreal.EditorAssetLibrary.save_loaded_asset(asset)
 (GATE / "out" / "unreal_bounds.json").write_text(json.dumps(bounds, indent=1))
 unreal.log("GATE imported: " + ", ".join(bounds))
