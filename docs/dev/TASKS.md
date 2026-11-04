@@ -978,6 +978,12 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            recorded here with its reason; the safety limits stay (no money, credentials or outward posts; the card by
            message with the other sessions). The lips and eyes above are covered by it. Work log:
            `../plans/2026-11-03-live-view.md` §5.
+           THE CC5-STYLE WINDOW - the user, verbatim (2026-11-03): "could you work on the app design make it look and
+           work like cc5, hide needed tabs button ect change the who ui to look and feel like cc5 and any methuman
+           features or look and feel you want to add to it, can you do this while you wait on the card?"; then, on the
+           plan shown (RESEARCH §1: CC5's window from the user's 14 screenshots; MetaHuman Creator's from Epic's page):
+           "so on app design think on your recs again adverserialy and go when you are waiting on graphics card, make
+           sure thatis doesnt hurt other session". Working doc: `../plans/2026-11-03-cc5-window.md`.
            BLOCKED - FOR THE USER (2026-11-03): building OpenRigLogic (`python libs/openriglogic/build.py`, the face
            rig's step 7) was refused by Claude Code's permission check: it compiles source fetched from GitHub
            (EpicGames/OpenRigLogic at ea253d5, MIT). The configure step ran clean (Python 3.13.13 headers, SWIG 4.5.1,

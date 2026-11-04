@@ -51,7 +51,7 @@ def test_a_command_works_on_the_selected_character_or_its_part(human):
 
 def test_the_character_panel_finds_the_character_from_its_part(human):
     result, obj = human
-    assert hasattr(bpy.types, "VIEW3D_PT_juststage_character")
+    assert hasattr(bpy.types, "VIEW3D_PT_juststage_modify")
     api.run("juststage.head.add_parts", character=result.character)
     part = next(o for o in bpy.data.objects if o.juststage.part_of == result.character)
     ctx = type("Context", (), {"active_object": part})()
