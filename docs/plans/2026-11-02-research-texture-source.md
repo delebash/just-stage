@@ -275,3 +275,36 @@ Fetched: aistudio.google.com/docs/terms; sharetextures.com human-skin-5; the Ske
 The original LPS diffuse resolution; Google's own price page; FLUX 3 Image Klein at 2K on 8 GB; SeedVR2 on this card;
 any AI skin swatch generator's quality or licence; deep3dstudio's Extended Use terms; SkinGen's internals beyond the
 manual's snippets.
+
+## 5 · 2026-11-04: the gaps (East Asian, dark-skinned men, older people, children, bodies) - a research agent and checks
+
+**HSRD-100** (Digital Reality Lab, `huggingface.co/datasets/digitalrealitylab/HSRD-100`) *[API + README read, one scan
+downloaded and seen]*: CC BY 4.0 ("Commercial use allowed", "Distribution allowed", "All participants provided
+informed consent"), not gated. 10 people x 10 poses, a 112-camera rig, RealityCapture: HSR0042 Black man 24, HSR0161
+Black man 64 (bucket hat in all poses), HSR0102 Black woman 22 (hairband in all), HSR0023 Hispanic man 62, HSR0015
+Hispanic woman 23, HSR0081 Asian man 25, HSR0028 Asian woman 21, HSR0040 White man 50, HSR0112 White woman 60, HSR0027
+White woman 41. Per pose: the retopologised `-LOD0/1/2.zip` are 41-byte placeholders (`pose_meta.json`: "price_commercial":
+"100", "license": "Commercial" - the lab's paid product); the raw scans are real: `-Scan-LOD0.zip` ~190 MB (an OBJ
+~98 MB, one 16384² diffuse PNG), `-Scan.zip` ~480 MB, `-Photos.zip` ~1.2 GB, a RealityCapture project. Seen at 1:1
+(HSR0042 pose 045, `hsr_chest_crop.png`, `hsr_face_crop.png`): real pores and hair follicles on the chest, a detailed
+areola, fine lines on the lips, stubble; even, flat light (little baked shadow). The best open scan data we have.
+Downloaded 2026-11-04 to `.dev/downloads/hsrd100/<pose>/` (Scan-LOD0): 042-045 and 042-018, 161-002, 102-052,
+023-077, 015-035 and 015-087, 081-054 and 081-074, 028-093, 040-086, 112-074, 027-068.
+
+**Sketchfab, CC Attribution, downloadable** (texture sizes from `sketchfab.com/i/models/{uid}/textures`; thumbnails
+only, not downloaded): East Asian - Renderpeople "Mei Posed 001" (07f308b8, 8K, studio), 3D Selfie Scans "Shelley"
+(0e6d9547, 8K) and "Matt Chua" (2f25dea0, 8K, bandana), OverseerThuror's two (caps), 3D Lab Kyoto "AYA2" (4K + normal,
+roughness); Black men and women - 3D Selfie Scans "Malcolm" (9de3d339, 8K + maps; pores and stubble in the thumbnail),
+"Bryan" (af5f7cbc, beanie), "Lamar", "Camille"; older and Latino - "Hector Navarro Bust" (910f9df8, 8K, older Latino
+man), "Grandpa - RealityScan" (35316e96, 8K, phone, baked light), "Mohamed" (f2387a16, phone); bodies - Renderpeople
+Eric, Nathan, Dennis, Sophia, Claudia (8K, mostly clothed), 3D Selfie Scans "Pete", "Ben". Children: no open
+high-quality textured scan found (a swaddled baby phone scan; vertex-colour scans). No South Asian man above 1K.
+Other sources' terms (snippet unless noted): Human Alloy - its own commercial licence; Triplegangers samples - CC
+BY-NC-ND; Ten24 2016 full body - "licensed for use in commercial projects, providing you credit Ten24" (CG Channel, not
+Ten24's page); Renderpeople's own site - bars making data available to third parties (their Sketchfab copies are CC
+BY); AXYZ - a Distribution licence for software; Multiface - CC BY-NC; 3DBodyTex, Headspace - research-only; Polycam
+Explore - "Savable" captures CC BY 4.0 (help page 403); Poly Haven, ambientCG - no human scans (API).
+The agent's query log: ~60 Sketchfab API queries (people category, licences by / cc0 / by-sa, each ethnicity, age,
+body term), Hugging Face dataset searches ("head scan", "human scan", "3d scan", "face scan", "photogrammetry human",
+"body scan", "3d human"), and 20 web searches (`F:\ClaudeCode\tmp\claude\...\scratchpad\sf_details.jsonl` holds the
+per-model records).
