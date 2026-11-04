@@ -42,15 +42,44 @@ def _material(region: str, owner: str) -> bpy.types.Material:
     bsdf.inputs["IOR"].default_value = ior
     bsdf.inputs["Transmission Weight"].default_value = transmission
     if transmission:
-        # EEVEE (the live view) shows what lies behind glass only by ray-traced refraction - the iris through the
-        # cornea (manual render/eevee/material_settings; one refraction event; Cycles ignores the setting)
-        mat.use_raytrace_refraction = True
+        _eevee_clear(mat, ior, roughness)
     if sss:
         bsdf.subsurface_method = "RANDOM_WALK"
         bsdf.inputs["Subsurface Weight"].default_value = sss
         bsdf.inputs["Subsurface Radius"].default_value = radius
         bsdf.inputs["Subsurface Scale"].default_value = 0.001  # millimetres
     return mat
+
+
+#: the EEVEE cornea's gloss: a little softer than the glass's 0 so its highlight has a body at viewing distance
+CLEAR_ROUGHNESS = 0.02
+
+
+def _eevee_clear(mat: bpy.types.Material, ior: float, roughness: float) -> None:
+    """A clear part (the cornea) for EEVEE: what's behind seen through without refraction, a gloss on top by Fresnel
+    at its IOR, blended - on an output only EEVEE reads (as the hair's stand-in: the Material Output's Target).
+    EEVEE's refraction is traced in screen space ("See Raytracing limitations", manual render/eevee): in a close-up it
+    painted the lid and the light as blotches on the iris (2026-11-04). Real-time engines draw the cornea this way
+    and fake its lens in the iris (MetaHuman's eye shader); Cycles and the USD export keep the glass on the All
+    output."""
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    fresnel = nodes.new("ShaderNodeFresnel")
+    fresnel.inputs["IOR"].default_value = ior
+    see_through = nodes.new("ShaderNodeBsdfTransparent")
+    gloss = nodes.new("ShaderNodeBsdfGlossy")
+    gloss.inputs["Roughness"].default_value = max(roughness, CLEAR_ROUGHNESS)
+    mix = nodes.new("ShaderNodeMixShader")
+    links.new(fresnel.outputs["Fac"], mix.inputs["Fac"])
+    links.new(see_through.outputs["BSDF"], mix.inputs[1])
+    links.new(gloss.outputs["BSDF"], mix.inputs[2])
+    output = nodes.new("ShaderNodeOutputMaterial")
+    output.target = "EEVEE"
+    links.new(mix.outputs["Shader"], output.inputs["Surface"])
+    main = next(n for n in nodes if n.type == "OUTPUT_MATERIAL" and n is not output)
+    main.target = "ALL"
+    main.is_active_output = True
+    mat.surface_render_method = "BLENDED"  # EEVEE's own setting; Cycles ignores it
+    mat.use_raytrace_refraction = False
 
 
 def assign(obj: bpy.types.Object, part: str, groups: dict[str, list[int]]) -> dict[str, int]:

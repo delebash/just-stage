@@ -67,7 +67,16 @@ def test_skin_and_cornea_carry_their_eevee_settings(human):
     assert skin.use_thickness_from_shadow
     cornea = part_materials._material("cornea", "test")
     try:
-        assert cornea.use_raytrace_refraction
+        # EEVEE's refraction is screen-space: in a close-up it drew the lid and the light as blotches on the iris. Its
+        # own output is a clear, blended layer (no refraction, real-time engines' way); Cycles keeps the glass
+        outputs = {n.target: n for n in cornea.node_tree.nodes if n.type == "OUTPUT_MATERIAL"}
+        assert set(outputs) == {"ALL", "EEVEE"}
+        glass = outputs["ALL"].inputs["Surface"].links[0].from_node
+        assert glass.type == "BSDF_PRINCIPLED" and glass.inputs["Transmission Weight"].default_value == 1.0
+        clear = outputs["EEVEE"].inputs["Surface"].links[0].from_node
+        kinds = {n.type for n in cornea.node_tree.nodes if n is not glass}
+        assert clear.type == "MIX_SHADER" and {"BSDF_TRANSPARENT", "BSDF_GLOSSY", "FRESNEL"} <= kinds
+        assert cornea.surface_render_method == "BLENDED" and not cornea.use_raytrace_refraction
     finally:
         bpy.data.materials.remove(cornea)
 
