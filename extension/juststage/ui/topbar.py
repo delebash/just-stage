@@ -41,12 +41,32 @@ def draw_window_switch(self, context):
     layout.prop(context.window_manager, "juststage_full_interface", text="Blender's full interface")
 
 
+def _tool_regions(shown: bool) -> None:
+    """The 3D views' tool column and tool settings row: Blender's, hidden in JustStage's interface (a character made
+    by sliders needs no select / move / scale tools; posing comes with the rig)."""
+    wm = getattr(bpy.context, "window_manager", None)
+    for window in wm.windows if wm else ():
+        for area in window.screen.areas:
+            if area.type == "VIEW_3D":
+                space = area.spaces.active
+                space.show_region_toolbar = shown
+                space.show_region_tool_header = shown
+
+
+def _switched(self, context):
+    _tool_regions(self.juststage_full_interface)
+
+
 def install() -> None:
     if "draw_left" in _ORIGINAL:
         return
     bpy.types.WindowManager.juststage_full_interface = bpy.props.BoolProperty(
-        name="Blender's full interface", description="Show Blender's workspace tabs and all of its menus", default=False
+        name="Blender's full interface",
+        description="Show Blender's workspace tabs, all of its menus and its tools",
+        default=False,
+        update=_switched,
     )
+    _tool_regions(False)
     _ORIGINAL["draw_left"] = bpy.types.TOPBAR_HT_upper_bar.draw_left
     bpy.types.TOPBAR_HT_upper_bar.draw_left = draw_left
     bpy.types.TOPBAR_MT_window.append(draw_window_switch)
@@ -61,6 +81,7 @@ def uninstall() -> None:
     from . import viewport_header
 
     viewport_header.uninstall()
+    _tool_regions(True)
     bpy.types.TOPBAR_MT_window.remove(draw_window_switch)
     bpy.types.TOPBAR_HT_upper_bar.draw_left = _ORIGINAL.pop("draw_left")
     del bpy.types.WindowManager.juststage_full_interface
