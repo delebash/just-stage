@@ -44,8 +44,11 @@ demo's brows and lashes (CC BY-SA); BlenderKit's CC0 "Hairy Skin Brush". No open
 human lip" (CC BY-SA 4.0, 4320 x 3368), "Close up man lips" (CC BY-SA 4.0); Flickr "Closed Mouth Smile" (CC0);
 BlenderKit CC0 lip and eye VDM sculpt stamps by Muhammed Ismayil. Kaggle's nail sets (CC0) are small phone photos.
 
-**Scans:** **Foot3D** (github.com/OllieBoyne/Foot3D; repo MIT; the scans come by a Google form, their terms not read):
-118 scanned feet with 4K PNG textures, per-subject sex, ethnicity, age [page]. Smithsonian 3D (CC0 per the API's
+**Scans:** Foot3D (github.com/OllieBoyne/Foot3D: the repo's code and annotations MIT; 118 scanned feet with 4K PNG
+textures, per-subject sex, ethnicity, age [page]) - **NOT shippable, checked 2026-11-04**: the data comes through a
+Google form whose terms read "We release this dataset strictly for non-commercial research purposes" and downloading
+means accepting "Creative Commons Attribution-NonCommercial 4.0 International"; commercial users are to contact Oliver
+Boyne (ob312@cam.ac.uk) [page: the form]. Reference only. Smithsonian 3D (CC0 per the API's
 `metadata_usage`): Lincoln life masks (1865 Mills, full-res OBJ 513 MB; 1860 NPG.71.24), Washington NPG.78.1 - plaster
 casts of real faces, shape only, not sampled; "Life Cast of Left Forearm and Hand" (1,987,778 v, 8192² [meas]; broken
 fingers, a mould seam [seen] - weak). TextureCan "Human Face Skin Texture" and 3DTextures.me "Human Skin 001", "Skin

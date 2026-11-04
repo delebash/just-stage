@@ -129,10 +129,10 @@ Nexus Mods, ShareTextures, BlenderKit; samples in `.dev/downloads/other_samples/
 | Blender's demo "Hair Styles" (Daniel Bystedt): Geometry Nodes grooms - tight curls 22,418 strands, box braids 18,535, long 11,193, brows, lashes | CC BY-SA | library styles and the generator's techniques (rec 11) |
 | OpenGameArt "Hair Alphas For Days": 85 rendered hair-card alphas, 2048² | CC0 | hair cards (rec 11) |
 | Commons CC0 stubble series (two days, a week, greying; 4032 x 3024) | CC0 | the stubble layer's reference (rec 9) |
-| Foot3D: 118 scanned feet with 4K textures, sex / ethnicity / age | repo MIT; scan terms behind a request form | feet (rec 7), if its terms allow |
 | Smithsonian life masks (Lincoln, Washington) | CC0 | face-shape references only |
 
-Not shippable, from the user's sites: Pexels and Unsplash (custom licences: no compiling into a competing service, no
+Not shippable, checked at the source: Foot3D's 118 scanned feet (its request form: "strictly for non-commercial
+research purposes", CC BY-NC 4.0; only its code is MIT). From the user's sites: Pexels and Unsplash (custom licences: no compiling into a competing service, no
 redistribution as-is - references only); Nexus Mods 13537 (built from Cyberpunk's assets, no reuse); ShareTextures
 (now "Custom CC0 ... No asset redistribution ... in plugins" - a correction to our 2026-11-02 file); BlenderKit's
 royalty-free assets (no redistribution in asset packs; a few CC0 skins and sculpt brushes exist).
