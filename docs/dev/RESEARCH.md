@@ -66,6 +66,27 @@ Subjects: [1 · The machine](#1--the-machine) ·
   (Topology / Skin / Clay), Environment Lighting (Studio, Red Lantern, Moonlight, Tungsten, custom), Camera framing
   (Face, Body, Far, Hands, Feet; 35 / 50 / 100 mm), LOD0-7, Rendering Quality (Medium / High / Epic), View Mode; an
   Animation Bar once rigged; Preview Scene Details hiding grooms and clothing; panels rearrangeable.
+- **CC5's window, from the user's own screenshots** (2026-11-03, CC5 trial, 14 pictures in the user's
+  `Pictures/Screenshots 1/cc5`): menus File, Edit, Create, Character, Modify, Mesh, Render, View, Window, Plugins,
+  Script, Help; View: Pan X, Zoom Z, Orbit C, Home, Center, Camera View; Window: Workspace, Tool Bar, Bone Manager F3,
+  Content Manager F4, Scene Manager F5, Modify F6, Visual Settings F7, Facial Profile Editor F8, Animation Player F9,
+  Packager Ctrl+F4, Cloth Layer Settings; Render: Preview F10, Render Video, Render Image, AI Image / Video Render;
+  Create: Create Character, AccuRIG, Generate Head from Photo, Wrap into CC5 HD Actor, Transformer, bakes, Morph Slider
+  Editor, Head & Body Morph Sliders, Prop, Accessory, Cloth/Hair/Acc, Animation, Light, AI Mesh; Plugins: Auto Setup,
+  Headshot 3, Smart Search, Omniverse, ActorMIXER. Two toolbar rows (file, transform and camera tools, quality "High",
+  light toggle, Animation Player, Turntable; Conform, Modify, Morph, Transform, Create Character, ActorMixer, AI Studio,
+  AI Mesh, online content search) and a Headshot row. LEFT: the Content panel (green title) - category icons in two
+  rows, Template / Custom tabs, a breadcrumb (All > Actor > Character), Item / Pack, search, sort, a thumbnail grid,
+  a folder tree, Apply / Save / Overwrite; vertical side tabs Content, Scene, AI Mesh Generator, Visual. CENTRE: the
+  viewport (blue-grey gradient, "SubD 1" label), the Animation Player bar under it. RIGHT: the Modify panel (green
+  title), six icon tabs - Attribute (name, type, eye element, contact, corrective expressions, auto-blink, SubD
+  viewport / render, load CC3+ / CC5 HD neutral bases, ActorMixer, convert to game base), Motion (edit pose, import
+  animation, edit facial, HIK T-pose, facial profile editor), Morph (a checkbox tree Actor > Body: Full Body,
+  Shoulder, Arm, Hand, Chest, Back, Waist, Hip, Glute, Leg, Foot, Pose Corrective, Base Morph; Head: Full Head, Skull,
+  Forehead, Brow, Eye, Ear, Cheek, Nose, Mouth, Jaw, Chin; a search box, the sliders beside the tree, Bake / Reset),
+  SkinGen (Skin / Makeup / Outfits), Material (a mesh / material / shader-type table, texture settings), Expression
+  Wrinkles (a head map of regions); a side tab Cloth Layer Settings. Look: near-black greys, lime-green titles and
+  highlights.
 - **MakeHuman's MHM names for the macro sliders** (`makehuman/data/modifiers/modeling_modifiers.json`, MakeHuman's
   repo, read 2026-11-03): `macrodetails/Gender`, `/Age`, `/African`, `/Asian`, `/Caucasian`;
   `macrodetails-universal/Muscle`, `/Weight`; `macrodetails-height/Height`; `macrodetails-proportions/BodyProportions`;
