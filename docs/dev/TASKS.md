@@ -968,10 +968,13 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            woman) beside the first man: four distinct people. Fixed on the way: the clay cameras and the projection's
            heights follow each character's eyes (mei, 22 cm shorter in the eyes, rendered chrome); MediaPipe retried
            with a margin on tight close-ups; the painting's hand-over to the base ramped and levelled on the face's
-           outer border (a 10-20% brighter band at the hairline, measured with FACETEST_DUMP). Re-render pending.
-           (a) sharper face: every tool takes a 2K hero and FACETEST_SIZE; the whole head at 8192 needs > ~19 GB
-           (measured) - decided by a 2K close render of the 4K scene (render_close.py) whether 8K-on-the-face is
-           needed. (d) the base's own eye / lip shading: hidden under the painting, left.
+           outer border (a 10-20% brighter band at the hairline, measured with FACETEST_DUMP) - re-rendered
+           2026-11-04: the band gone, the forehead easing smoothly into the scalp in all three. (a) sharper face
+           CLOSED without 8K: every tool takes a 2K hero and FACETEST_SIZE; the whole head at 8192 needs > ~19 GB
+           (measured); a 2K close render of the 4K scene (render_close.py) holds against the painting - the 4K tile and
+           the shader's tiling pore detail carry it, the 1024-px painting sets the limit (8K for 4K film close-ups:
+           IDEAS). (d) the base's own eye / lip shading: hidden under the painting, left. OPEN (found 2026-11-04): at a
+           2K close-up the nostril rim shows a bright orange edge (the nostril's trouble spot).
            THE LIVE VIEW AND THE FILM RUN - APPROVED 2026-11-03, the user, verbatim: "rethink what you are doing
            adverserily again on your recs and what we are doing with this app so you dont keep messing up, your rec
            go" (and: "dont get stuck on something if you think of a better way"), on the recs in

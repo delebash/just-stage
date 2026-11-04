@@ -131,6 +131,14 @@ views see, the rest at 4K (a rework of the projection's core); (2) the industry'
 shader - the albedo at 4K plus a tiling pore detail (MetaHuman's tiling micro-normal, research skin-detail-shading
 :520). Decision rule: in the card slot, `render_close.py 2048` renders the finished 4K scene's close camera at 2048 px;
 if its skin holds against the painting, (a) closes without 8K; if soft, build (1).
+2026-11-04 RESULTS (card slot; lowest free RAM 9.5 GB): the hairline band GONE in the renders (amara, walter, mei:
+`.dev/facetest/characters_hairline.png`); the albedo up the forehead middle line eases smoothly (amara 0.82 / 0.80 /
+0.77 / 0.77 / 0.77 / 0.72 / 0.68 from 1.6 to 6.4 cm above the eyes, walter and mei alike - was a 10-17% step in 8 mm).
+The 2K close render of mei (`close_2048.png`, crop `close_crop.png`, the painting upscaled beside it): pores, freckles
+and fine texture as rich as the painting's - the 4K tile plus the shader's tiling pore detail carry a 2K close-up; the
+1024-px painting, not the texture, sets the limit → (a) CLOSED without 8K (decision rule above); a 2K hero + an 8K face
+pays only in 4K film close-ups - in IDEAS. Found, open: at 2K the nostril rim shows a bright orange edge (the nostril's
+trouble spot - earlier its green rims).
 
 ## 4 · Run log (newest last)
 

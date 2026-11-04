@@ -10,6 +10,14 @@ it moves to a plan and gets a link here (or is struck through).
 
 ---
 
+## 2026-11-04 — An 8K face for 4K film close-ups
+
+A 2K close render of the 4K head tile (with the shader's tiling pore detail) holds against its 1024-px painting
+(`docs/plans/2026-11-03-open-items.md`, (a)), so the face test stays at 4K. For 4K film close-ups a 2K hero painting
+and an 8K face would add real (not tiled) pores - every face-test tool already takes `FACETEST_HERO_SIZE` and
+`FACETEST_SIZE`; the whole head at 8192 needs more than ~19 GB (measured), so it would be the face alone at 8K, the
+rest of the head at 4K.
+
 ## 2026-10-29 — Describe a person, get the character
 
 The user, verbatim: "we are definitly adding lots of good ai features to this app like cc5 and we will come of with
