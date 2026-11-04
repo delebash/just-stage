@@ -51,3 +51,20 @@ def test_an_asset_without_its_licence_is_refused(human, tmp_path):
     with pytest.raises(api.CommandError, match="licence"):
         api.run("juststage.library.save", character=result.character, catalog="Characters", name="x",
                 licence="", provenance="JustStage", library=str(tmp_path))  # fmt: skip
+
+
+def test_a_library_character_comes_into_the_scene(human, tmp_path):
+    result, obj = human
+    saved = api.run("juststage.library.save", character=result.character, catalog="Characters", name="Preset",
+                    licence="CC0-1.0", provenance="JustStage", library=str(tmp_path))  # fmt: skip
+    before = {o.name for o in bpy.data.objects}
+    added = api.run("juststage.library.add", path=saved.path)
+    new = {o.name for o in bpy.data.objects} - before
+    try:
+        assert added.object in new
+        assert bpy.data.objects[added.object].juststage.character_id == added.character
+        assert added.character != obj.juststage.character_id  # its own character, not the saved one's
+        assert [p["name"] for p in library.characters(tmp_path)] == ["Preset"]
+    finally:
+        for name in new:
+            bpy.data.objects.remove(bpy.data.objects[name])

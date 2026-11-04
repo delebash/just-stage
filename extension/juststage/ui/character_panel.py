@@ -90,9 +90,17 @@ class VIEW3D_PT_juststage_modify(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         obj = active_character(context)
-        if obj is None:
-            layout.label(text="Select a character, or make one:")
+        if obj is None:  # JustStage's welcome: make a character, or start from one in the library
             layout.operator("juststage.body_create", text="New human", icon="ADD")
+            from ..core import library
+
+            presets = library.characters()
+            if presets:
+                col = layout.column(align=True)
+                col.label(text="Start from:")
+                for preset in presets:
+                    col.operator("juststage.library_add", text=preset["name"], icon="USER").path = preset["path"]
+            layout.label(text="Or select a character in the scene")
             return
         wm = context.window_manager
         # text tabs (the user: "i prefer text tabs instead of icons"), three to a row so none is cut off in the sidebar

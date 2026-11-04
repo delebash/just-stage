@@ -38,4 +38,15 @@ class JUSTSTAGE_OT_library_save(CommandOperator, bpy.types.Operator):
     library: bpy.props.StringProperty(name="Library", default="", subtype="DIR_PATH")
 
 
-CLASSES = (JUSTSTAGE_OT_export_run, JUSTSTAGE_OT_library_save)
+class JUSTSTAGE_OT_library_add(CommandOperator, bpy.types.Operator):
+    """Add this character from the library, as a character of its own"""
+
+    bl_idname = "juststage.library_add"
+    bl_label = "Add from library"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.library.add"
+
+    path: bpy.props.StringProperty(name="Asset file", subtype="FILE_PATH")
+
+
+CLASSES = (JUSTSTAGE_OT_export_run, JUSTSTAGE_OT_library_save, JUSTSTAGE_OT_library_add)

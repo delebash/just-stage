@@ -70,3 +70,29 @@ def save(objects: list, catalog: str, name: str, folder: Path, meta: dict) -> Pa
     bpy.data.libraries.write(str(target), set(objects), path_remap="RELATIVE_ALL", compress=True)
     asset.asset_clear()  # the scene's own copy stays a plain object
     return target
+
+
+def characters(folder: Path | None = None) -> list[dict]:
+    """The library's characters: their names and files, by name."""
+    base = (folder or root()) / "Characters"
+    return [{"name": p.stem, "path": str(p)} for p in sorted(base.glob("*.blend"))]
+
+
+def add(path: str, scene) -> bpy.types.Object:
+    """An asset file's objects appended into `scene`; the character gets an identifier of its own (its parts point to
+    it), so two characters from one preset are two characters."""
+    import uuid
+
+    with bpy.data.libraries.load(path, link=False) as (src, dst):
+        dst.objects = list(src.objects)
+    objects = [o for o in dst.objects if o is not None]
+    body = next(o for o in objects if o.juststage.character_id and not o.juststage.part_of)
+    old, new = body.juststage.character_id, str(uuid.uuid4())
+    for obj in objects:
+        scene.collection.objects.link(obj)
+        if obj.asset_data is not None:
+            obj.asset_clear()
+        if obj.juststage.part_of == old:
+            obj.juststage.part_of = new
+    body.juststage.character_id = new
+    return body
