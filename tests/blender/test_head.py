@@ -12,6 +12,10 @@ import pytest
 api = importlib.import_module("bl_ext.system.juststage.api")
 paths = importlib.import_module("bl_ext.system.juststage.paths")
 gnm_space = importlib.import_module("bl_ext.system.juststage.modules.head.gnm_space")
+parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+makehuman = importlib.import_module("bl_ext.system.juststage.core.makehuman")
 
 pytestmark = pytest.mark.skipif(not (paths.GENERATED / "gnm").exists(), reason="run libs/wrap/gnm_to_hm08.py")
 
@@ -118,3 +122,34 @@ def test_each_part_region_has_its_material(human):
     assert cornea.inputs["IOR"].default_value == pytest.approx(1.376)
     teeth = {parts["teeth"].data.materials[p.material_index].name.split(" (")[0] for p in parts["teeth"].data.polygons}
     assert teeth == {"JustStage Teeth", "JustStage Gums", "JustStage Tongue"}
+
+
+def test_the_lids_stay_in_front_of_the_eyes():
+    """A shape that pushes the upper lid's skin into the eyeball (the face test's Walter: the white showed through his
+    lid) is cleared on refit: the outer lid skin ends at least LID_GAP in front of the eye."""
+    made = api.run("juststage.body.create", name="Lid test")
+    api.run("juststage.head.add_parts", character=made.character)
+    body = bpy.data.objects[made.object]
+    eye = parts.parts_of(body)["eyeLeft"]
+    centre, radius = eye_layers._eye_sphere(eye)
+    skin = build.shaped_coords(body)[: makehuman.BODY_VERTICES]
+    rel = skin - centre
+    dist = np.linalg.norm(rel, axis=1)
+    # the upper lid's outer skin: in front, above the eye's middle, 1.5-2.5 mm off the eyeball (measured)
+    lid = (dist < radius + 0.0025) & (dist > radius) & (skin[:, 1] < centre[1]) & (skin[:, 2] > centre[2] + 0.003)
+    assert lid.sum() > 3
+    dent = body.shape_key_add(name="dent", from_mix=False)  # the upper lid pressed 1 mm into the eye
+    co = np.empty(len(body.data.vertices) * 3, np.float32)
+    body.data.shape_keys.reference_key.data.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    push = (radius - 0.001 - dist[lid])[:, None] * rel[lid] / dist[lid][:, None]
+    co[np.flatnonzero(lid)] += push.astype(np.float32)
+    dent.data.foreach_set("co", co.ravel())
+    dent.value = 1.0
+    parts.refit(body)
+    after = build.shaped_coords(body)[: makehuman.BODY_VERTICES][lid]
+    gap = np.linalg.norm(after - centre, axis=1) - radius
+    assert gap.min() >= parts.LID_GAP - 1e-5, gap.min()
+    for o in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
+        bpy.data.objects.remove(o)
+    bpy.data.objects.remove(body)

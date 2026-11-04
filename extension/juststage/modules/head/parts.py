@@ -42,6 +42,66 @@ def parts_of(character: bpy.types.Object) -> dict[str, bpy.types.Object]:
     return {o.juststage.part: o for o in bpy.data.objects if o.juststage.part_of == cid and o.juststage.part in fitted}
 
 
+#: the shape key that keeps the lids' skin in front of the eyeballs (eye_clearance)
+CLEARANCE = "JustStage eye clearance"
+LID_GAP = 0.0003  # the outer lid skin's least gap over the eyeball
+
+
+def eye_clearance(character: bpy.types.Object) -> int:
+    """The lids' outer skin kept LID_GAP in front of the eyeballs: a shape can push lid skin inside an eye (the face
+    test's Walter: 8 vertices an eye up to 0.95 mm in, the white showing through his upper lid - 2026-11-04). Outward-
+    facing skin in front of the eye's centre and inside its sphere moves out along the eye's radius, its neighbours
+    half as far; in a shape key of its own, made again on every refit. The socket's folded skin (it faces the eye) is
+    left alone. Returns how many vertices moved."""
+    from ...core.makehuman import BODY_VERTICES
+    from . import eye_layers
+
+    keys = character.data.shape_keys
+    key = keys.key_blocks.get(CLEARANCE) if keys else None
+    if key is not None:
+        key.value = 0.0
+    skin = build.shaped_coords(character)[:BODY_VERTICES]
+    normals = np.empty(len(character.data.vertices) * 3, np.float32)
+    character.data.vertex_normals.foreach_get("vector", normals)
+    normals = normals.reshape(-1, 3)[:BODY_VERTICES]
+    push = np.zeros_like(skin)
+    for part, eye in parts_of(character).items():
+        if part not in ("eyeLeft", "eyeRight"):
+            continue
+        centre, radius = eye_layers._eye_sphere(eye)
+        rel = skin - centre
+        dist = np.linalg.norm(rel, axis=1)
+        along = rel / np.maximum(dist, 1e-9)[:, None]
+        poke = (dist < radius + LID_GAP) & (dist > radius - 0.006) & (skin[:, 1] < centre[1])
+        poke &= np.einsum("ij,ij->i", normals, along) > 0.3
+        push[poke] += (radius + LID_GAP - dist[poke])[:, None] * along[poke]
+    moved = np.flatnonzero(np.abs(push).sum(axis=1) > 0)
+    if not len(moved):
+        return 0
+    ring = np.zeros_like(push)
+    count = np.zeros(len(push))
+    edges = np.empty(len(character.data.edges) * 2, np.int32)
+    character.data.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    edges = edges[(edges < BODY_VERTICES).all(axis=1)]
+    for a, b in ((edges[:, 0], edges[:, 1]), (edges[:, 1], edges[:, 0])):
+        np.add.at(ring, a, push[b])
+        np.add.at(count, a, 1.0)
+    ring = 0.5 * ring / np.maximum(count, 1.0)[:, None]
+    push = np.where(np.abs(push).sum(axis=1, keepdims=True) > 0, push, ring)
+    if key is None:
+        if not character.data.shape_keys:
+            character.shape_key_add(name="Basis", from_mix=False)
+        key = character.shape_key_add(name=CLEARANCE, from_mix=False)
+    co = np.empty(len(character.data.vertices) * 3, np.float32)
+    character.data.shape_keys.reference_key.data.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    co[:BODY_VERTICES] += push.astype(np.float32)
+    key.data.foreach_set("co", co.ravel())
+    key.value = 1.0
+    return int(len(moved))
+
+
 def refit(character: bpy.types.Object) -> None:
     """Move every part to the character's current shape."""
     base = build.shaped_coords(character)
@@ -51,6 +111,7 @@ def refit(character: bpy.types.Object) -> None:
         obj.data.update()
     from . import eye_layers
 
+    eye_clearance(character)
     eye_layers.refit(character)  # the occlusion and tearline ride the eyes
 
 

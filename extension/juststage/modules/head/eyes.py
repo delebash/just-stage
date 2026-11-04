@@ -117,7 +117,9 @@ EYE_TREE = ("node_trees", "procedural_eyes.json")
 IRIS_MAJOR, IRIS_MINOR = (0.06, 0.03, 0.02), (0.03, 0.014, 0.010)
 IRIS_SIZE = 0.371  # the iris' radius over the eyeball's on the eye's UVs (round 70's match: 0.371)
 PUPIL_SHARE = 0.22  # MPFB2's black pupil disc, of the iris' radius (the face test's)
-WHITE = (0.68, 0.60, 0.54)  # the face test's starting white (MPFB2's is pure white)
+#: the white: the face test's sclera brightness (~0.55 luminance, its eye calibration) - its starting (0.68, 0.60, 0.54)
+#: read paper-white under the stage's portrait light in both engines (live view and film, 2026-11-04)
+WHITE = (0.61, 0.535, 0.475)
 #: the face test's settings for MPFB2's eye (rounds 33-38): a glossy iris and its clear coat mirrored the studio, its
 #: bump glittered under the catch light, its outer layer mirrored the studio from the side
 SETTINGS = {"InnerLayerRoughness": 0.35, "IrisBumpStrength": 0.1, "OuterLayerIOR": 1.15, "Clearcoat": 0.0}

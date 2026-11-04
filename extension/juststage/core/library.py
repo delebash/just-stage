@@ -153,6 +153,11 @@ def add(path: str, scene) -> bpy.types.Object:
         if obj.juststage.part_of == old:
             obj.juststage.part_of = new
     body.juststage.character_id = new
+    if any(o.juststage.part in ("eyeLeft", "eyeRight") for o in objects):  # today's fit: the eyes' lid clearance
+        from ..modules.head import parts
+
+        bpy.context.view_layer.update()
+        parts.refit(body)
     skin = body.juststage.skin_material
     if skin is not None and skin.juststage.has_maps:  # today's shading on its maps (modules/skin/maps.py)
         from ..modules.skin import maps, skin_set_tone
