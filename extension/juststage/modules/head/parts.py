@@ -49,6 +49,9 @@ def refit(character: bpy.types.Object) -> None:
         co = mhclo.fit(_binding(part), base).astype(np.float32)
         obj.data.vertices.foreach_set("co", co.ravel())
         obj.data.update()
+    from . import eye_layers
+
+    eye_layers.refit(character)  # the occlusion and tearline ride the eyes
 
 
 def add(character: bpy.types.Object) -> list[str]:
@@ -77,4 +80,8 @@ def add(character: bpy.types.Object) -> list[str]:
     for part in added:
         if part in ("eyeLeft", "eyeRight"):  # the procedural iris and white (MPFB2's), on UVs by the 3D radius
             eyes.shade(parts_of(character)[part])
+    if {"eyeLeft", "eyeRight"} & set(added):  # CC5's and MetaHuman's two films over the eyeball
+        from . import eye_layers
+
+        eye_layers.add(character)
     return added

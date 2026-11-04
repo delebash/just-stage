@@ -123,7 +123,12 @@ def create_human(name: str, values: dict) -> bpy.types.Object:
 
     sliders.add_items(obj)
     stand_on_floor(obj)
+    set_levels(obj, DEFAULT_LEVELS, DEFAULT_VIEW_LEVEL)
     return obj
+
+
+#: a new human is smooth as CC5's default (its viewport reads "SubD 1"): the HD levels made, the live view at one
+DEFAULT_LEVELS, DEFAULT_VIEW_LEVEL = 2, 1
 
 
 #: the lift every base mesh gets: MPFB2's `feet_on_ground` at the default macros (measured 2026-11-04: 0.817743 m;

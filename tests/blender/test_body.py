@@ -49,9 +49,17 @@ def _group_mean(obj, group):
 def test_the_whole_hm08_is_kept_and_the_helpers_masked(human):
     result, obj = human
     assert result.vertices == 19158  # helpers and joint cubes kept (item 2)
-    assert result.visible_vertices == 13380  # what the user sees: the body
     assert obj.modifiers[build.HELPER_MASK].vertex_group == "body"
     assert len(obj.vertex_groups) == 144  # MPFB2's groups: body, helpers, joint cubes, sides
+
+
+def test_a_new_human_is_smooth_as_cc5s_default(human):
+    """CC5's default shows "SubD 1": the HD levels made (2), the live view at one, the film at both."""
+    result, obj = human
+    levels = obj.modifiers[build.LEVELS]
+    assert obj.modifiers[0] == levels  # first, before the helper mask
+    assert (levels.total_levels, levels.levels, levels.render_levels) == (2, 1, 2)
+    assert build.visible_face_count(obj) == 13378 * 4  # the body's quads once subdivided; the helpers stay masked
 
 
 def test_the_character_has_its_fields(human):

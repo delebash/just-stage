@@ -1015,6 +1015,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            - an eye-colour setting;
            - calibrate the EEVEE hair stand-in (~10-15% darker than Cycles);
            - a wider Content panel in the startup layout.
+           CC5 FIRST - 2026-11-04, the user, verbatim: "why are you stopping please do not stop continue coding until
+           app is complete, for your decisions think adverserially on each and do your rec, can you keep coding until
+           you have no more open items or bugs and highest quality in the app?"; then, on my four limits ((1) the app is
+           CC5 + iClone with their plugins, worked down TASKS item by item; (2) what needs the user: the OpenRigLogic
+           build, HDRI downloads for lighting presets, money or logins; (3) renders wait for the card; (4) after an
+           autocompact the working doc is reread): "1 just focus on cc5 part not iclone do cc5 and its plugins features
+           iclone can wait, 2 your rec go, 3 and 4 your rec go". So: CC5's rows of the parity scorecard and its
+           plugins' features (Headshot, SkinGen, Smart Hair, AccuRIG, the pipeline), no iClone work; the OpenRigLogic
+           build is tried again (a refusal is reported, never worked around); CC0 light maps from Poly Haven for the
+           lighting presets.
            BLOCKED - FOR THE USER (2026-11-03): building OpenRigLogic (`python libs/openriglogic/build.py`, the face
            rig's step 7) was refused by Claude Code's permission check: it compiles source fetched from GitHub
            (EpicGames/OpenRigLogic at ea253d5, MIT). The configure step ran clean (Python 3.13.13 headers, SWIG 4.5.1,

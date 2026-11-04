@@ -45,8 +45,18 @@ SOURCES = {
             "src/mpfb/data/expressions/*",
             "src/mpfb/data/uv_layers/*",
             "src/mpfb/data/node_trees/procedural_eyes.json",  # its procedural eye ("EnhancedEye", modules/head/eyes.py)
+            "src/mpfb/data/textures/mpfb_*.jpg",  # its region masks on hm08's UVs: lips, areolae, nails, ... (skin)
         ],
         "extra": {"LICENSE.md": "LICENSE.md"},
+    },
+    "ict": {
+        "repo": "USC-ICT/ICT-FaceKit",
+        "commit": "da5f95a607f5e6b37755b38d3385d7f2853732e5",  # master, 2020-12-01 (its last push)
+        "strip": "FaceXModel/",
+        "licence": "MIT (ICT-FaceKit's LICENSE)",
+        # its neutral face: the eye occlusion and lacrimal-fluid strips the app's eye layers are made from
+        "include": ["FaceXModel/generic_neutral_mesh.obj"],
+        "extra": {"LICENSE": "LICENSE"},
     },
 }
 
