@@ -1283,14 +1283,20 @@ def test_face_project():
     catch = bpy.data.objects.new("catch", bpy.data.lights.new("catch", "AREA"))
     catch.visible_camera = False
     scene.collection.objects.link(catch)
-    cam_pos = np.array(cams["face"]["matrix_world"])[:3, 3]
-    catch.location = cam_pos + np.array([0.0, 0.0, 0.25])
+    cam_world = np.array(cams["face"]["matrix_world"])
+    cam_pos, cam_right, cam_up = cam_world[:3, 3], cam_world[:3, 0], cam_world[:3, 1]
+    # 8 cm above the face camera and 8 cm toward the key light's side: its reflection sits in the visible iris at 10-11
+    # o'clock, a portrait catch-light (2026-11-03 trials on round 82: 25 cm above, the reflection fell under the hooded
+    # upper lid - no highlight even at 4x the power)
+    toward_key = np.sign(float((np.array(pos) - head_c) @ cam_right)) or 1.0
+    catch.location = cam_pos + 0.08 * cam_up + 0.08 * toward_key * cam_right
     catch.rotation_euler = (__import__("mathutils").Vector(head_c - catch.location)).to_track_quat("-Z", "Y").to_euler()
     catch.data.size, catch.data.energy = 0.12, 15.0
     catch.visible_diffuse = catch.visible_transmission = catch.visible_volume_scatter = False  # reflections only
-    receivers = bpy.data.collections.new("catch light receivers")  # light linking (Blender 4.0+): the eyes only -
-    for eye_name in ("Face.eyeLeft", "Face.eyeRight"):  # on the skin it read as oil (round 35)
-        receivers.objects.link(bpy.data.objects[eye_name])
+    # light linking (Blender 4.0+): the cornea and tearline only (added where they are made) - on the skin it read as
+    # oil (round 35); on the eyeball behind the cornea - its iris and white rough - it spread as a grey haze over the
+    # iris (round 82's trials: gone with the eyeballs out of the list)
+    receivers = bpy.data.collections.new("catch light receivers")
     catch.light_linking.receiver_collection = receivers
     lit_strength.default_value = fill
     key.location = pos
