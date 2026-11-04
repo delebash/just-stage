@@ -35,8 +35,11 @@ def _binding(part: str) -> mhclo.Mhclo:
 
 
 def parts_of(character: bpy.types.Object) -> dict[str, bpy.types.Object]:
+    """The character's fitted head parts (eyes, teeth, ...) - not its grooms, which carry a part too ("scalp") but
+    follow the body by their own surface deform."""
     cid = character.juststage.character_id
-    return {o.juststage.part: o for o in bpy.data.objects if o.juststage.part_of == cid and o.juststage.part}
+    fitted = catalog()
+    return {o.juststage.part: o for o in bpy.data.objects if o.juststage.part_of == cid and o.juststage.part in fitted}
 
 
 def refit(character: bpy.types.Object) -> None:

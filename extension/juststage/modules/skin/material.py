@@ -44,4 +44,7 @@ def apply(obj: bpy.types.Object, skin: skin_optics.Skin, oiliness: float) -> bpy
     # ears and nostrils glow (manual render/eevee/material_settings; Cycles ignores both settings)
     mat.thickness_mode = "SPHERE"
     mat.use_thickness_from_shadow = True
+    record = mat.juststage  # the material says what it was built from: a skin preset in the library carries it
+    record.melanin, record.eumelanin, record.blood = skin.melanin, skin.eumelanin, skin.blood
+    record.oiliness, record.is_skin = oiliness, True
     return mat

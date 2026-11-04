@@ -7,6 +7,7 @@ runs - Blender's workspace tabs and extra menus hidden, its full interface one s
 import importlib
 
 import bpy
+from mathutils import Vector
 
 topbar = importlib.import_module("bl_ext.system.juststage.ui.topbar")
 
@@ -40,7 +41,23 @@ def test_a_new_file_is_a_stage():
     startup.new_stage(scene)
     assert "Cube" not in bpy.data.objects
     assert scene.camera is not None and scene.camera.data.lens == startup.LENS
-    assert any(o.type == "LIGHT" for o in scene.objects)  # kept: F12 and the lit live view need it
+    lights = {o.name: o for o in scene.objects if o.type == "LIGHT"}
+    # three-point studio lighting in front of the character (Blender's one light stood behind it: the face was dark)
+    assert {"Key light", "Fill light", "Rim light"} <= set(lights) and "Light" not in lights
+    assert lights["Key light"].location.y < 0 and lights["Fill light"].location.y < 0  # in front (it faces -Y)
+    assert lights["Rim light"].location.y > 0
+    assert lights["Key light"].data.energy > lights["Fill light"].data.energy
+    for light in lights.values():  # each aimed at the head and chest
+        aim = light.rotation_euler.to_quaternion() @ Vector((0.0, 0.0, -1.0))
+        to_body = (Vector((0.0, 0.0, 1.35)) - light.location).normalized()
+        assert aim.dot(to_body) > 0.99, light.name
+
+
+def test_the_stage_view_hides_the_lights_outlines():
+    screen = bpy.data.screens["Layout"]
+    startup.stage_view([screen])
+    views = [a.spaces.active for a in screen.areas if a.type == "VIEW_3D"]
+    assert views and not any(v.overlay.show_extras for v in views)
 
 
 def test_the_properties_editor_becomes_the_content_panel():

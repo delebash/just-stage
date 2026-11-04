@@ -114,3 +114,13 @@ def test_a_grooms_colour_changes_in_place(human):
         assert np.allclose(values, want)
     with pytest.raises(api.CommandError, match="groom"):
         api.run("juststage.hair.set_colour", groom="no such groom", melanin=0.3, redness=0.6)
+
+
+def test_a_slider_moves_with_hair_on(human):
+    """A groom is a part of the character too (part "scalp"), but not one of the head's fitted parts: moving a body
+    slider refits the eyes and teeth and leaves the groom to its own surface deform."""
+    result, body = human
+    api.run("juststage.head.add_parts", character=result.character)
+    api.run("juststage.hair.add", character=result.character, style="short_hedgehog")
+    api.run("juststage.body.set_slider", character=result.character, slider="height", value=0.8)
+    assert "scalp" not in api.run("juststage.head.add_parts", character=result.character).parts

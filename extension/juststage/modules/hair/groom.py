@@ -120,10 +120,8 @@ def _drop_unused(materials: list[bpy.types.Material]) -> None:
                 bpy.data.node_groups.remove(group)
 
 
-def _point_surface_inputs(groom: bpy.types.Object, character: bpy.types.Object) -> None:
-    """A style's empty `Surface` object inputs (Attach Hair Curves to Surface, in `tail_base`) — they named the body it
-    was groomed on, which the pack doesn't carry — now name this character, as the Curves surface does. Without it
-    `tail_base`'s roots float 5 mm off the skin (median, measured 2026-10-29); with it 0.3 mm."""
+def _surface_inputs(groom: bpy.types.Object):
+    """A style's `Surface` object inputs on its node-group modifiers (Attach Hair Curves to Surface, in `tail_base`)."""
     for mod in groom.modifiers:
         if mod.type != "NODES" or mod.node_group is None:
             continue
@@ -134,38 +132,136 @@ def _point_surface_inputs(groom: bpy.types.Object, character: bpy.types.Object) 
                 "NodeSocketObject",
                 "Surface",
             ):
-                prop = getattr(mod.properties.inputs, item.identifier)  # Blender 5.x's modifier inputs
-                if prop.value is None:
-                    prop.value = character
+                yield getattr(mod.properties.inputs, item.identifier)  # Blender 5.x's modifier inputs
 
 
-def add_style(character: bpy.types.Object, style: str, melanin: float, redness: float) -> bpy.types.Object:
+def _point_surface_inputs(groom: bpy.types.Object, character: bpy.types.Object) -> None:
+    """A style's empty `Surface` object inputs — they named the body it was groomed on, which the pack doesn't carry —
+    now name this character, as the Curves surface does. Without it `tail_base`'s roots float 5 mm off the skin
+    (median, measured 2026-10-29); with it 0.3 mm."""
+    for prop in _surface_inputs(groom):
+        if prop.value is None:
+            prop.value = character
+
+
+def _check_surface(character: bpy.types.Object) -> None:
     from ...core.commands import CommandError
 
     if SURFACE_UV not in character.data.uv_layers:
         raise CommandError(f"{character.name} has no {SURFACE_UV!r} UV map (hm08's own), which the styles root by")
     character.add_rest_position_attribute = True
-    with bpy.data.libraries.load(str(paths.makehuman(*PACK)), link=False) as (src, dst):
-        missing = style not in src.objects
-        dst.objects = [] if missing else [n for n in (style, f"{style}_brace") if n in src.objects]
-    if missing:
-        raise CommandError(f"the hair pack has no style {style!r}; run: python tools/fetch_data.py")
-    groom = dst.objects[0]
-    for obj in dst.objects:  # the style, and the hair tie (`_brace`) one style has
+
+
+def _attach(character: bpy.types.Object, objects: list[bpy.types.Object], part: str) -> bpy.types.Object:
+    """`objects` — a groom and the hair tie one style has — onto the character, as MPFB2's hair editor attaches them;
+    each tagged with the groom's type, so the tie travels with it."""
+    groom = next(o for o in objects if o.type == "CURVES")
+    for obj in objects:
         for collection in character.users_collection:
             collection.objects.link(obj)
         obj.parent = character
         obj.matrix_parent_inverse = Matrix.Identity(4)
         obj.juststage.part_of = character.juststage.character_id
+        obj.juststage.part = part
         obj.name = f"{character.name}.{obj.name}"
     groom.data.surface = character
     _point_surface_inputs(groom, character)
-    groom.juststage.part = STYLES[style][0]
+    return groom
+
+
+def add_style(character: bpy.types.Object, style: str, melanin: float, redness: float) -> bpy.types.Object:
+    from ...core.commands import CommandError
+
+    _check_surface(character)
+    with bpy.data.libraries.load(str(paths.makehuman(*PACK)), link=False) as (src, dst):
+        missing = style not in src.objects
+        dst.objects = [] if missing else [n for n in (style, f"{style}_brace") if n in src.objects]
+    if missing:
+        raise CommandError(f"the hair pack has no style {style!r}; run: python tools/fetch_data.py")
+    groom = _attach(character, list(dst.objects), STYLES[style][0])
     old = list(groom.data.materials)
     groom.data.materials.clear()
     groom.data.materials.append(hair_material(f"JustStage Hair ({groom.name})"))
     _drop_unused(old)
     _set_colour(groom.data, melanin, redness)
+    return groom
+
+
+def of_part(character: bpy.types.Object, part: str) -> list[bpy.types.Object]:
+    """The character's groom of that type and its hair tie, the groom first."""
+    cid = character.juststage.character_id
+    found = [o for o in bpy.data.objects if o.juststage.part_of == cid and o.juststage.part == part]
+    return sorted(found, key=lambda o: o.type != "CURVES")
+
+
+def remove_part(character: bpy.types.Object, part: str) -> None:
+    """The character's groom of that type gone (a new one replaces it, CC5's way), with what only it used."""
+    old = of_part(character, part)
+    materials = [m for o in old for m in getattr(o.data, "materials", ())]
+    for obj in old:
+        data = obj.data
+        bpy.data.objects.remove(obj)
+        if data is not None and data.users == 0:
+            (bpy.data.hair_curves if isinstance(data, bpy.types.Curves) else bpy.data.meshes).remove(data)
+    _drop_unused(materials)
+
+
+def portable(character: bpy.types.Object, part: str, name: str) -> list[bpy.types.Object]:
+    """Copies of the character's groom of that type (and its tie) that carry nothing of the character — no parent,
+    no surface — so a library file written from them holds the hair alone. The groom's copy is named `name`; the
+    caller removes them with `remove_copies` once written."""
+    from ...core.commands import CommandError
+
+    found = of_part(character, part)
+    if not found or found[0].type != "CURVES":
+        raise CommandError(f"{character.name} has no {part} groom")
+    copies = []
+    for obj in found:
+        copy = obj.copy()
+        copy.data = obj.data.copy()
+        copy.parent = None
+        copy.juststage.part_of = ""
+        if copy.type == "CURVES":
+            copy.data.surface = None
+            for prop in _surface_inputs(copy):
+                prop.value = None
+        copies.append(copy)
+    prefix = f"{character.name}."
+    for obj, copy in zip(found, copies, strict=True):
+        copy.name = name if copy is copies[0] else f"{name}.{obj.name.removeprefix(prefix)}"
+    return copies
+
+
+def remove_copies(copies: list[bpy.types.Object]) -> None:
+    for copy in copies:
+        data = copy.data
+        bpy.data.objects.remove(copy)
+        (bpy.data.hair_curves if isinstance(data, bpy.types.Curves) else bpy.data.meshes).remove(data)
+
+
+def add_from_file(character: bpy.types.Object, path: str) -> bpy.types.Object:
+    """A library groom (a file `portable` wrote) onto the character, replacing its groom of the same type."""
+    from ...core.commands import CommandError
+
+    _check_surface(character)
+    with bpy.data.libraries.load(path, link=False) as (src, dst):
+        dst.objects = list(src.objects)
+    objects = [o for o in dst.objects if o is not None]
+    groom = next((o for o in objects if o.type == "CURVES"), None)
+    if groom is None or not groom.juststage.part:
+        for obj in objects:
+            bpy.data.objects.remove(obj)
+        raise CommandError(f"path: {path!r} holds no JustStage groom")
+    part = groom.juststage.part
+    remove_part(character, part)
+    for obj in objects:
+        obj.use_fake_user = False  # the library file's (core/library.py `save`); in the scene now
+        if obj.asset_data is not None:
+            obj.asset_clear()
+    groom = _attach(character, objects, part)
+    for mat in groom.data.materials:
+        if mat is not None and mat.name.startswith("JustStage Hair"):
+            mat.name = f"JustStage Hair ({groom.name})"
     return groom
 
 

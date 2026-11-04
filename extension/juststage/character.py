@@ -119,15 +119,33 @@ class JustStageCharacter(bpy.types.PropertyGroup):
     part_of: bpy.props.StringProperty(description="the character's assetInfo identifier")
 
 
+class JustStageMaterial(bpy.types.PropertyGroup):
+    """A skin material's own record of the tone it was built from (written by modules/skin/material.py), so a skin
+    preset in the library carries its values; and the asset library's fields (project-files.md §2)."""
+
+    melanin: bpy.props.FloatProperty(default=0.0104)
+    eumelanin: bpy.props.FloatProperty(default=0.6)
+    blood: bpy.props.FloatProperty(default=0.016)
+    oiliness: bpy.props.FloatProperty(default=0.5)
+    is_skin: bpy.props.BoolProperty(description="built by juststage.skin.set_tone")
+    asset_version: bpy.props.IntProperty(default=1, description="the asset's own version (Blender has none)")
+    provenance: bpy.props.StringProperty(description="where the asset came from")
+    licence_label: bpy.props.StringProperty(description="its licence, shown and never filtered")
+
+
 def register():
     bpy.utils.register_class(JustStageFloat)
     bpy.utils.register_class(JustStageSlider)
     bpy.utils.register_class(JustStageCharacter)
+    bpy.utils.register_class(JustStageMaterial)
     bpy.types.Object.juststage = bpy.props.PointerProperty(type=JustStageCharacter)
+    bpy.types.Material.juststage = bpy.props.PointerProperty(type=JustStageMaterial)
 
 
 def unregister():
+    del bpy.types.Material.juststage
     del bpy.types.Object.juststage
+    bpy.utils.unregister_class(JustStageMaterial)
     bpy.utils.unregister_class(JustStageCharacter)
     bpy.utils.unregister_class(JustStageSlider)
     bpy.utils.unregister_class(JustStageFloat)

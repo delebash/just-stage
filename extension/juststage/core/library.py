@@ -51,25 +51,62 @@ def register_library(preferences, folder: Path | None = None) -> None:
     preferences.is_dirty = True
 
 
-def save(objects: list, catalog: str, name: str, folder: Path, meta: dict) -> Path:
-    """`objects` (the asset first) written as one `.blend` in `<folder>/<catalog>/<name>.blend`, the first marked as an
-    asset in that catalogue with Blender's metadata fields."""
+def save(ids: list, catalog: str, name: str, folder: Path, meta: dict) -> Path:
+    """`ids` (the asset first: a character's body, a groom, a skin material) written as one `.blend` in
+    `<folder>/<catalog>/<name>.blend`, the first marked as an asset in that catalogue with Blender's metadata fields and
+    shown in the Content panel as `name` (Blender lists an asset by its data-block's name)."""
     uid = catalog_ids()[catalog]
     prepare(folder)
-    asset = objects[0]
-    asset.asset_mark()
-    data = asset.asset_data
-    data.catalog_id = uid
-    data.description = meta.get("description", "")
-    data.author = meta.get("author", "JustStage")
-    data.license = meta["licence"]
-    for tag in meta.get("tags", ()):
-        data.tags.new(tag, skip_if_exists=True)
-    target = folder / catalog / f"{name}.blend"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    bpy.data.libraries.write(str(target), set(objects), path_remap="RELATIVE_ALL", compress=True)
-    asset.asset_clear()  # the scene's own copy stays a plain object
+    asset = ids[0]
+    own_name = asset.name
+    asset.name = name
+    try:
+        asset.asset_mark()
+        data = asset.asset_data
+        data.catalog_id = uid
+        data.description = meta.get("description", "")
+        data.author = meta.get("author", "JustStage")
+        data.license = meta["licence"]
+        for tag in meta.get("tags", ()):
+            data.tags.new(tag, skip_if_exists=True)
+        target = folder / catalog / f"{name}.blend"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        # fake users: the written data-blocks are in no scene there, and Blender drops user-less data-blocks when that
+        # file is saved again (a thumbnail set) - `add` clears them in the scene
+        bpy.data.libraries.write(str(target), set(ids), path_remap="RELATIVE_ALL", fake_user=True, compress=True)
+    finally:
+        asset.asset_clear()  # the scene's own copy stays a plain data-block, under its own name
+        asset.name = own_name
     return target
+
+
+def kind(path: str) -> str:
+    """What a library file holds - "character", "groom" or "skin" - read in Blender's temporary data, so nothing
+    comes into the scene; "" when it is none of JustStage's."""
+    with bpy.types.BlendData.temp_data() as temp:
+        with temp.libraries.load(path, assets_only=True) as (src, dst):
+            dst.objects = list(src.objects)
+            dst.materials = list(src.materials)
+        for obj in dst.objects:
+            if obj is None:
+                continue
+            if obj.juststage.character_id and not obj.juststage.part_of:
+                return "character"
+            if obj.type == "CURVES" and obj.juststage.part:
+                return "groom"
+        if any(mat is not None and mat.juststage.is_skin for mat in dst.materials):
+            return "skin"
+    return ""
+
+
+def skin_tone(path: str) -> dict:
+    """A skin preset's tone values, read without keeping its material."""
+    with bpy.types.BlendData.temp_data() as temp:
+        with temp.libraries.load(path, assets_only=True) as (src, dst):
+            dst.materials = list(src.materials)
+        mat = next(m for m in dst.materials if m is not None and m.juststage.is_skin)
+        record = mat.juststage
+        return {name: getattr(record, name) for name in ("melanin", "eumelanin", "blood", "oiliness")}
 
 
 def characters(folder: Path | None = None) -> list[dict]:
@@ -90,6 +127,7 @@ def add(path: str, scene) -> bpy.types.Object:
     old, new = body.juststage.character_id, str(uuid.uuid4())
     for obj in objects:
         scene.collection.objects.link(obj)
+        obj.use_fake_user = False  # in the scene now (save wrote it with one)
         if obj.asset_data is not None:
             obj.asset_clear()
         if obj.juststage.part_of == old:

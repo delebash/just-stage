@@ -1000,6 +1000,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            plan shown (RESEARCH §1: CC5's window from the user's 14 screenshots; MetaHuman Creator's from Epic's page):
            "so on app design think on your recs again adverserialy and go when you are waiting on graphics card, make
            sure thatis doesnt hurt other session". Working doc: `../plans/2026-11-03-cc5-window.md`.
+           2026-11-04, decided under THE WORKING GO (attacked in the working doc §4). The library holds hair (15
+           MakeHuman CC0 styles) and skins (8 tones evenly spaced in lightness). The Content panel applies by
+           double-click or an Apply entry (Blender's Pose Library pattern): `juststage.library.add` puts a character
+           in the scene, or hair (replacing the same type) or a skin onto the selected character. A new stage gets
+           three-point studio lights. Open from it:
+           - move the face test's clumped lashes into the app's hair module (the pack's are sparse);
+           - calibrate the EEVEE hair stand-in (~10-15% darker than Cycles);
+           - a wider Content panel in the startup layout.
            BLOCKED - FOR THE USER (2026-11-03): building OpenRigLogic (`python libs/openriglogic/build.py`, the face
            rig's step 7) was refused by Claude Code's permission check: it compiles source fetched from GitHub
            (EpicGames/OpenRigLogic at ea253d5, MIT). The configure step ran clean (Python 3.13.13 headers, SWIG 4.5.1,

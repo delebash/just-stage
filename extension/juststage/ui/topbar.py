@@ -70,16 +70,18 @@ def install() -> None:
     _ORIGINAL["draw_left"] = bpy.types.TOPBAR_HT_upper_bar.draw_left
     bpy.types.TOPBAR_HT_upper_bar.draw_left = draw_left
     bpy.types.TOPBAR_MT_window.append(draw_window_switch)
-    from . import viewport_header
+    from . import content, viewport_header
 
     viewport_header.install()  # the 3D view's header follows the same switch
+    content.install()  # and the Content panel's
 
 
 def uninstall() -> None:
     if "draw_left" not in _ORIGINAL:
         return
-    from . import viewport_header
+    from . import content, viewport_header
 
+    content.uninstall()
     viewport_header.uninstall()
     _tool_regions(True)
     bpy.types.TOPBAR_MT_window.remove(draw_window_switch)

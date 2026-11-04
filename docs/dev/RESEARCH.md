@@ -105,6 +105,36 @@ Subjects: [1 · The machine](#1--the-machine) ·
   refraction, `scene.eevee.use_raytracing` is off and the lashes draw as 1-px `STRAND` curves — the EEVEE tuning of
   RESEARCH skin (`../plans/2026-10-30-research-skin-detail-shading.md:349-358, 495-500`) and hair
   (`../plans/2026-10-30-research-hair-eyes-teeth.md:111-122`) was never built — *measured, 2026-11-03*.
+- **Applying an asset from Blender's Asset Browser** (Blender 5.3's own Pose Library, read 2026-11-04 at
+  `5.3/scripts/addons_core/pose_library/`): a keymap item on "Asset Browser Main" (FILE_BROWSER), LEFTMOUSE
+  DOUBLE_CLICK, runs an operator that reads `context.asset` (an `AssetRepresentation`: `name`, `id_type`,
+  `full_library_path`, `metadata.catalog_id`, `local_id`, ...); its menu entry is prepended to
+  `ASSETBROWSER_MT_context_menu`. A failed poll lets the double-click through to Blender. Dragging an object asset
+  into the 3D view runs `object.add_named` (the bare object), and Blender has no call to change that drop (operators
+  listed). `temp_override(area=…, region=…, asset=rep)` with a representation from `context.selected_assets` drives
+  the operator like a double-click. A changed `params.catalog_id` filters the listing only after the next redraw.
+  *Measured, 2026-11-04.*
+- **Blender drops user-less data-blocks when a file is saved again.** `bpy.data.libraries.write` writes the given
+  data-blocks with no users when they're in no scene, so a re-save (`open_mainfile` + `save_mainfile`, as a thumbnail
+  step does) emptied JustStage's hair and skin files. `write(..., fake_user=True)` keeps them. An append
+  (`libraries.load`, linked or not) clears fake users, so the flag can't be seen that way, only by opening the file.
+  *Measured, 2026-11-04.*
+- **MakeHuman's pack lashes** (`basic_lashes_upper`, attached to our Average woman): 99 strands for both eyes, radius
+  0.05 mm (median; max 0.1 mm), standing 8-9 mm in front of the eyes. At 256 px over 7 cm (0.28 mm a pixel) EEVEE's
+  true-width strips are a third of a pixel and vanish; at 1024 px a few strands show at the outer corner.
+  *Measured, 2026-11-04.*
+- **Hair colour, EEVEE stand-in against Cycles** (`Hair to shoulder` on the Average woman, the three-quarter
+  thumbnail view, 64 samples): the mean hair colour in sRGB for melanin / redness 0.5 / 0.25 was 87,63,46 in EEVEE
+  against 101,71,51 in Cycles; for 0.65 / 0.2, 70,53,45 against 82,59,48; for 0.75 / 0.2, 61,49,44 against 71,54,47.
+  EEVEE is ~10-15% darker with the same hue. Cycles turns 0.5 / 0.25 auburn on a sparse style (light through it).
+  *Measured, 2026-11-04.*
+- **Skin lightness by melanin** (`core/skin_optics.py`, eumelanin 0.6, blood 0.016; CIE L* of the albedo):
+  - melanin 0.003 gives L* 75.6, 0.01 gives 69.0, 0.03 gives 54.7;
+  - melanin 0.06 gives 41.0, 0.1 gives 30.8, 0.13 gives 26.3;
+  - melanin 0.25 gives 17.6, 0.5 gives 10.9.
+
+  The library's eight tones solve L* 74 down to 25 in steps of 7: melanin 0.00457, 0.01239, 0.02164, 0.03288,
+  0.04705, 0.06597, 0.09366, 0.14102. *Computed, 2026-11-04.*
 
 ## 2 · CC5 and its plugins
 

@@ -66,7 +66,8 @@ def _on_factory_startup(_=None):
     viewport.setup_scene(bpy.context.scene)
     viewport.show_live(bpy.data.screens)
     startup = _ui("startup")
-    startup.new_stage(bpy.context.scene)  # Blender's cube out, the camera on a standing person
+    startup.new_stage(bpy.context.scene)  # Blender's cube out, the camera on a standing person, studio lights
+    startup.stage_view(bpy.data.screens)  # the lights' and camera's outlines off in the 3D view
     startup.content_panel(bpy.data.screens)  # the Properties editor becomes the Content panel (Asset Browser)
 
 
