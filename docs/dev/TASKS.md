@@ -1035,6 +1035,27 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            the app; the stage's portrait light (studio HDRI fill, dark stage); mapped skins from the face test's people
            on every character (the body's UDIM layout); the library's characters wearing them; New human dressed;
            the body's regions coloured. Working doc: `../plans/2026-11-04-realism.md`.
+           THE BAR, the user, verbatim (2026-11-04, after "the film run is right, the live view darker inside the
+           hair"): "if cc5 and metahuman can bee full realism in regular mode than you should be able to do it to";
+           "i told you not to stop until all quality in eevee mode is as good as metahuman and cc5, that is rule";
+           "think on your rec think again on your research make sure you have correct solution think adverserialy
+           before you code"; on variety (a slider-made 70-year-old or Black character wore Daniel's or Mei's young
+           face detail): "Not accetable, you need to fix quality and we need to do realistic variety"; "we need high
+           quality for every body part hair skin eyes ect, do we have that, can we create that or do you need more from
+           the internet?"; "search for what you need i am sure you can find all ethnicity and ages of creative commons
+           on the web that you need, find what you need to do it right / focus on quality and variety, this is
+           priority, find and download any assets you need, if there are better newer techniques that may help that
+           you havent thought of to make the quality better than search for it, i know you have some save research so
+           dont repeat it make sure you understand what you already have ... double check what ytou are doing and how
+           you are doing it"; "make sure you have the latest or best techniques to fix these quality issues, you often
+           get stuck on a method when that method may not be the best, double check your methods"; "again you are
+           limiting, why just skin variety , how about hair, eyesy, teeth, fingernails toe nails, when i said every
+           body part i mean it beards ect" - confirmed "correct" on: skin (face, body, hands, feet; ethnicity, age,
+           wrinkles, freckles, moles, age spots, stubble), scalp hair (styles, textures straight to coily, colours,
+           grey), facial hair, brows and lashes, body hair, eyes (iris, sclera, wetness, lids), teeth / gums / tongue,
+           finger and toe nails, lips, ears, nipples - realism and variety, in the live view (EEVEE) and the film.
+           Research running 2026-11-04 (three agents: CC scans for the gaps; newer techniques for skin and real-time
+           hair; variety for every other part), each told to read our research first.
            OPENRIGLOGIC BUILD (the face rig's step 7; `python libs/openriglogic/build.py`, EpicGames/OpenRigLogic at
            ea253d5, MIT): refused by Claude Code's permission check 2026-11-03; on the user's "2 your rec go"
            (2026-11-04) it ran. BUILT 2026-11-04: `libs/openriglogic/dist/openriglogic-13.5.2-cp313-cp313-win_amd64.whl`
