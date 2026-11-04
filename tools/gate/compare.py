@@ -36,7 +36,9 @@ LIGHTS = ("key", "rim", "sky")
 ENGINES = ("eevee", "cycles", "unreal")
 LUMA = np.array([0.2126, 0.7152, 0.0722])
 #: crops on the face camera, as fractions of the frame (x, y from the top-left, size): picked on Cycles' face render
-CROPS = {"cheek": (0.40, 0.58, 0.12), "nose": (0.50, 0.50, 0.08), "forehead": (0.47, 0.22, 0.12)}
+CROPS = {"cheek": (0.40, 0.58, 0.12), "nose": (0.50, 0.50, 0.08), "forehead": (0.48, 0.31, 0.10),
+         # the shadowed side: where EEVEE and Cycles part (the face sheet, 2026-11-04)
+         "under_eye": (0.43, 0.47, 0.07), "jaw_shadow": (0.58, 0.69, 0.08)}
 
 
 def _load(path: Path) -> np.ndarray | None:
@@ -64,10 +66,12 @@ def _sphere_disc(cam_name: str, size) -> tuple[np.ndarray, np.ndarray]:
 
 
 def _sphere_mean(img: np.ndarray, centre, radius) -> float:
+    """The sphere's lit side: the mean of its brightest fifth (a light from behind - the rim - lights only a crescent
+    the camera sees at the edge; the inner disc read noise there, measured 2026-11-04)."""
     h, w = img.shape[:2]
     yy, xx = np.mgrid[0:h, 0:w]
-    mask = np.hypot(xx - centre[0], yy - centre[1]) < 0.6 * radius
-    return float((img[mask] @ LUMA).mean())
+    lum = img[np.hypot(xx - centre[0], yy - centre[1]) < 0.95 * radius] @ LUMA
+    return float(lum[lum >= np.quantile(lum, 0.8)].mean())
 
 
 def _tonemap(img: np.ndarray, out: Path) -> np.ndarray:

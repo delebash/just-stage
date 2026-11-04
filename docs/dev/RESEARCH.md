@@ -219,6 +219,12 @@ Subjects: [1 · The machine](#1--the-machine) ·
   a user's own purchase, imported, is the only route (`../plans/2026-11-04-research-licences-redo.md`, with every
   other licence the CC-only filter had cut: Pexels, Unsplash, Pixabay, BlenderKit, Superhive, Fab, CGTrader,
   Sketchfab Store, HumanScanRepository, Renderpeople, Triplegangers, Ten24's commercial-use sample scan).
+- **The gate's first run (2026-11-04, measured; `../plans/2026-11-04-realism.md` §6a):** EEVEE 5.3's world light on a
+  plain 18% grey sphere's lit side is 17-19% weaker than Cycles' (key 1.006, rim 0.84-0.91); on the face, lit skin
+  agrees across EEVEE, Cycles and Unreal (MetaHuman's baked skin material on our maps), shadows part (EEVEE's jaw shadow
+  15% darker and 28% harsher than Cycles'). Unreal 5.8 facts: commandlets can't spawn actors; `-ExecutePythonScript`
+  quits the editor after the script; `name.1001.png` / `name_1001.png` import as a UDIM virtual texture; UV0 is the
+  first UV layer.
 - **MetaHuman's skin materials, read from the installed plugin** (Unreal 5.8, `Engine/Plugins/MetaHuman/
   MetaHumanCharacter/Content/Lookdev_UHM/Skin/Materials/`, 2026-11-04, names read from the `.uasset` files; nothing
   copied): presets use `MI_skin_unified_MH_preset_Baked` on parent `M_skin_unified` with region masks

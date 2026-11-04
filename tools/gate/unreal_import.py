@@ -8,8 +8,8 @@ commandlet without the card:
         -script=tools/gate/unreal_import.py -nullrhi -unattended
 
 Imports tools/gate/blender_gate.py's FBX and content maps, makes one instance of MetaHuman's baked skin material per
-UDIM tile (`M_skin_unified_baked`: "Use Baked Material" and "Use Micro Skin Details" on, our maps in its baked and
-micro slots, the micro masks uniform), a plain placeholder material for the eyes, and writes the imported bounds for
+UDIM tile (`M_skin_unified_baked`: "Use Baked Material" and "Use Micro Skin Details" on, its bent-normal occlusion off,
+our maps in its baked and micro slots, the micro mask's first channel at strength 1), a plain placeholder material for the eyes, and writes the imported bounds for
 the axis check (`.dev/gate/out/unreal_bounds.json`)."""
 
 import json
@@ -58,7 +58,7 @@ def _texture(path, srgb, compression, flip_green=False):
 textures = {}
 for tile in TILES:
     for kind in ("base", "normal", "srmf", "scatter"):
-        textures[(kind, tile)] = _import([CONTENT / f"{kind}.{tile}.png"], f"{DEST}/Textures")[0]
+        textures[(kind, tile)] = _import([CONTENT / f"{kind}_tile{tile - 1000}.png"], f"{DEST}/Textures")[0]
 for name in ("micro_normal", "micro_cavity", "white"):
     textures[name] = _import([CONTENT / f"{name}.png"], f"{DEST}/Textures")[0]
 TC = unreal.TextureCompressionSettings
@@ -80,8 +80,11 @@ for tile in TILES:
     mi = unreal.load_asset(path) if unreal.EditorAssetLibrary.does_asset_exist(path) else tools.create_asset(
         name, f"{DEST}/Materials", unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
     mel.set_material_instance_parent(mi, parent)
+    # "Use Bent Normal" / "Use Material AO" read MetaHuman's own head occlusion map (`T_MH_BentNormal_AO`, the slot's
+    # default) through our layout - black wherever MetaHuman's layout is empty (measured 2026-11-04): off, as our
+    # Blender skin has no baked occlusion either (both engines' renderers do the occlusion)
     for switch, on in (("Use Baked Material", True), ("Use Micro Skin Details", True), ("Use Virtual Texture", False),
-                       ("Use Animated Maps", False)):
+                       ("Use Animated Maps", False), ("Use Bent Normal", False), ("Use Material AO", False)):
         mel.set_material_instance_static_switch_parameter_value(mi, switch, on)
     for param, key in (("Basecolor Baked", ("base", tile)), ("Normal Baked", ("normal", tile)),
                        ("SRMF Baked", ("srmf", tile)), ("Scatter Baked", ("scatter", tile)),
@@ -91,7 +94,7 @@ for tile in TILES:
     info = meta["tiles"][str(tile)]
     for param, value in (("UDIM", float(tile)), ("Texture Size", float(info["size"])),
                          ("Micro Skin Tiling", float(info["micro_tiling"])), ("Micro MaskA Strength", 1.0),
-                         ("Micro MaskB Strength", 1.0), ("Micro MaskC Strength", 1.0), ("Micro MaskD Strength", 1.0)):
+                         ("Micro MaskB Strength", 0.0), ("Micro MaskC Strength", 0.0), ("Micro MaskD Strength", 0.0)):
         mel.set_material_instance_scalar_parameter_value(mi, param, value)
     mel.update_material_instance(mi)
     unreal.EditorAssetLibrary.save_loaded_asset(mi)

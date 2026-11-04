@@ -10,7 +10,7 @@ One level per light variant (key, rim, sky, stage - each light alone, then all: 
 light units are matched afterwards on the grey sphere, tools/gate/compare.py), the character, the grey sphere and a
 fixed-exposure post-process volume in each; one level sequence per camera (a spawnable cine camera, Blender's lens and
 sensor fit); a Movie Render Queue (Epic's offline renderer, rendered by tools/gate/run_unreal.sh) writing linear EXR
-- the tone curve off - so every engine goes through the same AgX afterwards. Blender's metres -> Unreal: (x, -y, z) x 100
+- the tone curve off - so every engine goes through the same AgX afterwards (tools/gate/unreal_render.py). Blender's metres -> Unreal: (x, -y, z) x 100
 (checked on the eyes' imported bounds)."""
 
 import json
@@ -163,34 +163,5 @@ levels = {v: build_level(v) for v in VARIANTS}
 unreal.EditorLoadingAndSavingUtils.new_blank_map(False)  # the cameras are spawned and removed in a scratch map
 sequences = {c: build_sequence(c) for c in meta["cameras"]}
 
-queue = asset(f"{DEST}/GateQueue", unreal.MoviePipelineQueue, unreal.MoviePipelineQueueFactory())
-for cam_name, seq_path in sequences.items():
-    w, h = meta["resolution"][cam_name]
-    for variant, level_path in levels.items():
-        job = queue.allocate_new_job(unreal.MoviePipelineExecutorJob)
-        job.set_editor_property("job_name", f"unreal_{cam_name}_{variant}")
-        job.set_editor_property("map", unreal.SoftObjectPath(level_path))
-        job.set_editor_property("sequence", unreal.SoftObjectPath(seq_path))
-        config = job.get_configuration()
-        out = config.find_or_add_setting_by_class(unreal.MoviePipelineOutputSetting)
-        out.set_editor_property("output_directory", unreal.DirectoryPath(str(GATE / "renders")))
-        out.set_editor_property("output_resolution", unreal.IntPoint(w, h))
-        out.set_editor_property("file_name_format", "{job_name}")
-        out.set_editor_property("override_existing_output", True)
-        config.find_or_add_setting_by_class(unreal.MoviePipelineDeferredPassBase)
-        config.find_or_add_setting_by_class(unreal.MoviePipelineImageSequenceOutput_EXR)
-        colour = config.find_or_add_setting_by_class(unreal.MoviePipelineColorSetting)
-        colour.set_editor_property("disable_tone_curve", True)
-        aa = config.find_or_add_setting_by_class(unreal.MoviePipelineAntiAliasingSetting)
-        aa.set_editor_property("spatial_sample_count", 1)
-        aa.set_editor_property("temporal_sample_count", 16)
-        aa.set_editor_property("engine_warm_up_count", 120)
-        aa.set_editor_property("render_warm_up_count", 32)
-        aa.set_editor_property("override_anti_aliasing", True)
-        aa.set_editor_property("anti_aliasing_method", unreal.AntiAliasingMethod.AAM_NONE)
-        game = config.find_or_add_setting_by_class(unreal.MoviePipelineGameOverrideSetting)
-        game.set_editor_property("cinematic_quality_settings", True)
-        game.set_editor_property("texture_streaming", unreal.MoviePipelineTextureStreamingMethod.DISABLED)
-unreal.EditorAssetLibrary.save_loaded_asset(queue)
-unreal.log(f"GATE queue {queue.get_path_name()} with {len(queue.get_jobs())} jobs")
+# the render queue is built and run by tools/gate/unreal_render.py (in the editor, its queue subsystem)
 unreal.SystemLibrary.quit_editor()  # run in the editor window (actors can't be spawned in a commandlet)

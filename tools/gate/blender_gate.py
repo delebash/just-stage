@@ -174,21 +174,21 @@ def prepare() -> None:
         base = _read(SKIN_MAPS / f"{SKIN_STEM}.base_color.{tile}.png")
         h, w = base.shape[:2]
         colour = _encode(_decode(base[..., :3]) * gain)
-        _write(CONTENT / f"base.{tile}.png", np.concatenate([colour, np.ones((h, w, 1))], -1))
+        _write(CONTENT / f"base_tile{tile - 1000}.png", np.concatenate([colour, np.ones((h, w, 1))], -1))
         normal = _read(SKIN_MAPS / f"{SKIN_STEM}.normal.{tile}.png")[..., :3] * 2 - 1
         height = _fit(_read(SKIN_MAPS / f"{SKIN_STEM}.height.{tile}.png")[..., 0], normal.shape[0])
         nh, nw = normal.shape[:2]
         texel_m = scale[tile] / nw / 1000.0
         fine = _bump_normal(height, texel_m, maps.HEIGHT_DISTANCE, maps.HEIGHT_STRENGTH)
         combined = _whiteout(normal / np.linalg.norm(normal, axis=-1, keepdims=True), fine)
-        _write(CONTENT / f"normal.{tile}.png", np.concatenate([combined * 0.5 + 0.5, np.ones((nh, nw, 1))], -1), "16")
+        _write(CONTENT / f"normal_tile{tile - 1000}.png", np.concatenate([combined * 0.5 + 0.5, np.ones((nh, nw, 1))], -1), "16")
         rough = _read(SKIN_MAPS / f"{SKIN_STEM}.roughness.{tile}.png")[..., 0]
         cavity = _read(SKIN_MAPS / f"{SKIN_STEM}.cavity.{tile}.png")[..., 0]
         size = max(rough.shape[0], cavity.shape[0])
         rough, cavity = _fit(rough, size), _fit(cavity, size)
         srmf = np.stack([cavity * UNREAL_SPECULAR_PER_CAVITY, rough, np.zeros_like(rough), np.zeros_like(rough)], -1)
-        _write(CONTENT / f"srmf.{tile}.png", srmf)
-        _write(CONTENT / f"scatter.{tile}.png", np.full((16, 16, 4), [SCATTER, SCATTER, SCATTER, 1.0]))
+        _write(CONTENT / f"srmf_tile{tile - 1000}.png", srmf)
+        _write(CONTENT / f"scatter_tile{tile - 1000}.png", np.full((16, 16, 4), [SCATTER, SCATTER, SCATTER, 1.0]))
         meta["tiles"][tile] = {"size": max(w, nw, size), "micro_tiling": scale[tile] / PORE_TILE_MM,
                                "sizes": {"base": w, "normal": nw, "srmf": size}}
     pores = _read(PORES)[..., 0]
@@ -234,9 +234,12 @@ def prepare() -> None:
         corners = [uv[i].uv for i in poly.loop_indices]
         u = sum(c.x for c in corners) / len(corners)
         poly.material_index = min(int(math.floor(u)), len(maps.TILES) - 1)
+    # Unreal reads the first UV layer as UV0: the body's first is MakeHuman's own `UVMap`, which sampled our UDIM maps
+    # at the wrong places (black where it met the tiles' empty space - measured 2026-11-04); the export keeps UDIM alone
+    for layer in [layer for layer in mesh.uv_layers if layer.name != maps.UV]:
+        mesh.uv_layers.remove(layer)
     mesh.uv_layers.active = mesh.uv_layers[maps.UV]
-    for layer in list(mesh.uv_layers):
-        layer.active_render = layer.name == maps.UV
+    mesh.uv_layers[maps.UV].active_render = True
     export.select_set(True)
     for eye in (o for o in objects if o.juststage.part in ("eyeLeft", "eyeRight")):
         eye.select_set(True)
