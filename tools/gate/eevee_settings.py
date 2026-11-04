@@ -57,15 +57,20 @@ def _set(scene, variant):
         bsdf.inputs["Subsurface Scale"].default_value *= 1.5
     elif variant == "samples_128":
         e.taa_render_samples = 128
+    elif variant.startswith("both_sss_"):  # the two that helped, together: indirect x1.2 and an SSS scale sweep
+        e.indirect_light_intensity = 1.2
+        bsdf.inputs["Subsurface Scale"].default_value *= float(variant.split("_")[-1])
 
 
 VARIANTS = ("base", "trace_rough_0.75", "trace_res_full", "fast_gi_fine", "indirect_1.2", "no_sheen", "no_coat",
-            "sss_x1.5", "samples_128")
+            "sss_x1.5", "samples_128", "both_sss_1.5", "both_sss_2.0", "both_sss_2.5")
+#: `-- render <names...>` renders only those (the first round's are on disk)
 
 
 def render() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for variant in VARIANTS:
+    args = sys.argv[sys.argv.index("--") + 2:] if "--" in sys.argv else []
+    for variant in args or VARIANTS:
         bpy.ops.wm.open_mainfile(filepath=str(GATE / "gate_scene.blend"))
         scene = bpy.context.scene
         gate._grey_sphere(scene)

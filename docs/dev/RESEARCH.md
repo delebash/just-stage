@@ -225,6 +225,10 @@ Subjects: [1 · The machine](#1--the-machine) ·
   15% darker and 28% harsher than Cycles'). Unreal 5.8 facts: commandlets can't spawn actors; `-ExecutePythonScript`
   quits the editor after the script; `name.1001.png` / `name_1001.png` import as a UDIM virtual texture; UV0 is the
   first UV layer.
+- **EEVEE 5.3 against Cycles on the gate's face, one setting at a time (2026-11-04, measured):** `indirect_light_intensity`
+  1.2 brings the world light on a grey sphere from 0.836 to 1.002 of Cycles' and the jaw shadow from 0.855 to 0.947;
+  the skin's subsurface radius x1.5 cuts the shadow-detail error from 0.103 to 0.075; `trace_max_roughness` 0.75,
+  full-resolution tracing, finer Fast GI and 128 samples change nothing; dropping sheen or coat makes the match worse.
 - **MetaHuman's character API in Unreal 5.8's Python** (listed headless 2026-11-04, `.dev/gate/out/mh_api.log`): 242
   `MetaHuman*` names, among them `MetaHumanCharacterFactoryNew` (a character asset), `MetaHumanCharacterEditorSubsystem`
   (`try_add_object_to_edit`, `commit_skin_settings` / `commit_face_state` / `commit_eyes_settings` /
