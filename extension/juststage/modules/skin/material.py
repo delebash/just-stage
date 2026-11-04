@@ -40,4 +40,8 @@ def apply(obj: bpy.types.Object, skin: skin_optics.Skin, oiliness: float) -> bpy
     bsdf.inputs["IOR"].default_value = IOR
     bsdf.inputs["Roughness"].default_value = ROUGHNESS
     bsdf.inputs["Specular IOR Level"].default_value = oiliness  # 0.5 is Blender's standard; the paper's ρs scales it
+    # EEVEE (the live view) has no Random Walk: its scattering reads the thickness, refined from the shadow maps so
+    # ears and nostrils glow (manual render/eevee/material_settings; Cycles ignores both settings)
+    mat.thickness_mode = "SPHERE"
+    mat.use_thickness_from_shadow = True
     return mat

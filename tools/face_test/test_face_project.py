@@ -44,6 +44,7 @@ relief_geometry = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(relief_geometry)
 MPFB_EYES = "E:/Dev/3D/just-stage/.dev/cache/mpfb2_nodes/procedural_eyes.json"  # mpfb2 6ff1eb35 data/node_trees
 sd = importlib.import_module("bl_ext.system.juststage.core.skin_detail")
+viewport = importlib.import_module("bl_ext.system.juststage.core.viewport")
 DIR = "E:/Dev/3D/just-stage/.dev/facetest/"
 HDRI = "E:/Dev/3D/just-stage/.dev/cache/hdri/studio_small_09_2k.hdr"
 VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "face", "faceleft30", "faceright30")
@@ -1550,14 +1551,22 @@ def test_face_project():
           f"{np.round(got_iris, 3).tolist()} before" + (f", its texture's gain "
           f"{np.round(next(iter(iris_gains.values())).default_value, 2).tolist()}" if iris_gains else ""))
 
+    # opened, the scene is the live view: Material Preview in its own light through the camera, Rendered on the card,
+    # F12 the film run (core/viewport.py)
+    viewport.setup_scene(scene)
+    viewport.show_live(bpy.data.screens, camera=True)
     bpy.ops.wm.save_as_mainfile(filepath=f"{DIR}round.blend", copy=True)  # the finished scene, for quick trials
     _gpu(scene, 256)
     for view in ("face", "front", "left40"):
         cam.matrix_world = Matrix(cams[view]["matrix_world"])
         t = time.time()
         render = _render(scene, f"{DIR}round{ROUND}_{view}.png", cams[view]["size"])  # the 2K hero: a 2K render
+        # the same view in EEVEE, the live view's renderer: judged beside Cycles (quality-gate.md §3)
+        scene.render.engine = "BLENDER_EEVEE"
+        live = _render(scene, f"{DIR}round{ROUND}_{view}_eevee.png", cams[view]["size"])
+        scene.render.engine = "CYCLES"
         # the AI's own photo, as it painted it - the clay where a view isn't painted (the base's characters)
         painted_v = Path(f"{DIR}painted_{view}.png")
         photo_v = _pixels(str(painted_v if painted_v.exists() else Path(f"{DIR}clay_{view}.png")))[..., :3]
-        _image(f"compare{ROUND} {view}", np.concatenate([photo_v, render], axis=1), "sRGB")
+        _image(f"compare{ROUND} {view}", np.concatenate([photo_v, render, live], axis=1), "sRGB")
         print(f"rendered {view} in {time.time() - t:.1f}s")

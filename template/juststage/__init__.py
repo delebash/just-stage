@@ -23,9 +23,31 @@ def _ensure_addon():
         addon_utils.enable(ADDON, default_set=True, persistent=True)
 
 
+def _viewport():
+    import importlib
+
+    return importlib.import_module(ADDON + ".core.viewport")
+
+
 @persistent
 def _on_load(_=None):
     _ensure_addon()
+
+
+@persistent
+def _on_factory_preferences(_=None):
+    """First start (or preferences reset): Cycles renders on the card, not Blender's factory "None"."""
+    _ensure_addon()
+    _viewport().use_gpu()
+
+
+@persistent
+def _on_factory_startup(_=None):
+    """A new file: F12 renders the film look on the card; the 3D view is the live view in the scene's light."""
+    _ensure_addon()
+    viewport = _viewport()
+    viewport.setup_scene(bpy.context.scene)
+    viewport.show_live(bpy.data.screens)
 
 
 def _on_timer():
@@ -34,20 +56,20 @@ def _on_timer():
 
 
 _HANDLERS = (
-    bpy.app.handlers.load_factory_preferences_post,
-    bpy.app.handlers.load_factory_startup_post,
-    bpy.app.handlers.load_post,
+    (bpy.app.handlers.load_factory_preferences_post, _on_factory_preferences),
+    (bpy.app.handlers.load_factory_startup_post, _on_factory_startup),
+    (bpy.app.handlers.load_post, _on_load),
 )
 
 
 def register():
-    for handlers in _HANDLERS:
-        if _on_load not in handlers:
-            handlers.append(_on_load)
+    for handlers, handler in _HANDLERS:
+        if handler not in handlers:
+            handlers.append(handler)
     bpy.app.timers.register(_on_timer, first_interval=0.0, persistent=True)
 
 
 def unregister():
-    for handlers in _HANDLERS:
-        if _on_load in handlers:
-            handlers.remove(_on_load)
+    for handlers, handler in _HANDLERS:
+        if handler in handlers:
+            handlers.remove(handler)

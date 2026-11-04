@@ -959,6 +959,17 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (`FACETEST_BASE` defaults to 3; `off` keeps the ten-view path). Two bases under one painted face (chars 3
            and 5) read as two people's skin. Open: the sharper face (2K hero + denser face tile), stubble as a
            per-character setting, varied paintings and shapes for true variety.
+           THE LIVE VIEW AND THE FILM RUN - APPROVED 2026-11-03, the user, verbatim: "rethink what you are doing
+           adverserily again on your recs and what we are doing with this app so you dont keep messing up, your rec
+           go" (and: "dont get stuck on something if you think of a better way"), on the recs in
+           `../plans/2026-11-03-live-view.md` §3 as changed by that rethink: (1) the template picks the card for Cycles
+           on first start, and this machine's JustStage settings are set once; (2) EEVEE settings on the materials
+           where they're built - skin, cornea, hair - Cycles-ignored settings on the one output, a separate EEVEE
+           output only for hair (Principled Hair is Cycles-only); (3) no new render command: the scene keeps Cycles, so
+           F12 is the film run; Material Preview (EEVEE) to navigate; Rendered (Cycles on the card with the viewport
+           denoiser) to stop and look; (4) each round's sheet shows EEVEE beside Cycles. The user then, verbatim: "1
+           the right and left edge of lipts look strange 2 the eyes dont look very realistic" - seen in the 4096-px
+           close-ups; to be traced to causes and brought as recs (not on the approved list).
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.

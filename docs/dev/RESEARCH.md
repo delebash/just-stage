@@ -46,6 +46,18 @@ Subjects: [1 · The machine](#1--the-machine) ·
   `C:\Program Files\Epic Games\UE_5.8`; neither folder exists — *measured, 2026-10-29*. Its MetaHuman plugin ships DNA
   files: `MetaHumanCoreTechLib\Content\ArchetypeDNA\` (`body_head_combined.dna`, `SKM_Body.dna`, `SKM_Face.dna`) and
   `MetaHumanCharacter\Content\Body\…` (`body_model.dna`, 18 fixed-compatibility bodies) — *measured (listed)*.
+- **JustStage's own Blender settings render Cycles on the processor** — `compute_device_type` is `NONE` in
+  `.dev/user/config` (Blender's factory value); the card is listed (CUDA and OptiX, RTX 2070 Super) but never chosen. The
+  face-test scripts pick OptiX per run (`test_face_project.py:170-174`, `test_face_clay.py:83-88`), so only a window
+  opened by hand renders on the processor — *measured, 2026-11-03*.
+- **Blender 5.3 opens a saved Rendered view as Solid; Material Preview survives** — a copy saved with every 3D view on
+  Rendered read back Solid (saved from the GUI and from a background run alike); Material Preview in an EEVEE scene read
+  back Material Preview. The Material Output's Target is `ALL` / `EEVEE` / `CYCLES` — *measured, 2026-11-03*.
+- **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over
+  (pores, stubble, redness); every part's output is Target `ALL` with nothing on Thickness, the cornea has no raytraced
+  refraction, `scene.eevee.use_raytracing` is off and the lashes draw as 1-px `STRAND` curves — the EEVEE tuning of
+  RESEARCH skin (`../plans/2026-10-30-research-skin-detail-shading.md:349-358, 495-500`) and hair
+  (`../plans/2026-10-30-research-hair-eyes-teeth.md:111-122`) was never built — *measured, 2026-11-03*.
 
 ## 2 · CC5 and its plugins
 

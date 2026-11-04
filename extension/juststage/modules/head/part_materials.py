@@ -41,6 +41,10 @@ def _material(region: str, owner: str) -> bpy.types.Material:
     bsdf.inputs["Roughness"].default_value = roughness
     bsdf.inputs["IOR"].default_value = ior
     bsdf.inputs["Transmission Weight"].default_value = transmission
+    if transmission:
+        # EEVEE (the live view) shows what lies behind glass only by ray-traced refraction - the iris through the
+        # cornea (manual render/eevee/material_settings; one refraction event; Cycles ignores the setting)
+        mat.use_raytrace_refraction = True
     if sss:
         bsdf.subsurface_method = "RANDOM_WALK"
         bsdf.inputs["Subsurface Weight"].default_value = sss
