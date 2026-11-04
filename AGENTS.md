@@ -21,6 +21,11 @@ yet. The research comes first, then the standards spec, then code (`docs/dev/TAS
   — then start the work. (The user, 2026-10-29, for every app's forks: "before we do any work on audio
   cpp nextime we should update the fork and test it in our app … this should be true for any forks for
   futre apps that we may use".)
+- **Every asset has a row in `ATTRIBUTION.md`** (what, source, author, licence) in the same change that fetches,
+  bundles or builds a shipped asset from it. No row, no merge.
+- **The film render is the live view's oracle.** A look the live view (EEVEE) must match is measured against Cycles on
+  the same scene in a test, not judged by eye alone; a gap is diagnosed by changing one factor at a time before it is
+  fixed.
 - **Decisions and facts are written down as they happen.** A decision goes into `docs/dev/TASKS.md` as
   the exact text the user approved; a researched fact goes into `docs/dev/RESEARCH.md` in the same change.
 

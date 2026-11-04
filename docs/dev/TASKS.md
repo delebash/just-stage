@@ -1064,6 +1064,12 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            9. Nipples, lips and ears: their colour and detail.
            Research running 2026-11-04 (three agents: CC scans for the gaps; newer techniques for skin and real-time
            hair; variety for every other part), each told to read our research first.
+           PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
+           and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
+           craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
+           (every asset's source, author, licence in the same change) and "the film render is the live view's oracle"
+           (AGENTS.md); open - the parity scorecard's status generated from the code (today every row reads "none"),
+           and a test that runs every command with hostile parameters (TextureCraft's `panic_hunt`).
            OPENRIGLOGIC BUILD (the face rig's step 7; `python libs/openriglogic/build.py`, EpicGames/OpenRigLogic at
            ea253d5, MIT): refused by Claude Code's permission check 2026-11-03; on the user's "2 your rec go"
            (2026-11-04) it ran. BUILT 2026-11-04: `libs/openriglogic/dist/openriglogic-13.5.2-cp313-cp313-win_amd64.whl`

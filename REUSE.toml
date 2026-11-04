@@ -5,7 +5,7 @@ version = 1
 # headers; this file covers what can't.
 
 [[annotations]]
-path = ["docs/**", "AGENTS.md", "CLAUDE.md", ".gitignore", "REUSE.toml"]
+path = ["docs/**", "AGENTS.md", "CLAUDE.md", "ATTRIBUTION.md", ".gitignore", "REUSE.toml"]
 SPDX-FileCopyrightText = "2026 JustStage contributors"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
