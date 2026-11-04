@@ -45,11 +45,15 @@ def open_sidebar(retries: int = 15) -> None:
 
     def attempt():
         done = True
-        for window in bpy.context.window_manager.windows:
+        wm = bpy.context.window_manager
+        full = getattr(wm, "juststage_full_interface", True)
+        for window in wm.windows:
             for area in window.screen.areas:
                 if area.type != "VIEW_3D":
                     continue
-                area.spaces.active.show_region_ui = True
+                space = area.spaces.active
+                space.show_region_ui = True
+                space.show_region_toolbar = space.show_region_tool_header = full  # Blender's tools (topbar.py)
                 region = next((r for r in area.regions if r.type == "UI"), None)
                 if region is None:
                     continue
