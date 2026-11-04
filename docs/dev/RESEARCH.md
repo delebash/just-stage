@@ -188,11 +188,19 @@ Subjects: [1 · The machine](#1--the-machine) ·
      scattering model ..." - the 2016 paper and qualitative physics only.
   A gap in the search, not "none exist": the papers hold the numbers; their full texts weren't reached (an ARRO copy
   failed its certificate). MPFB2's own eye default is a saturated blue (0.18, 0.49, 0.91; `eye_settings.default.json`).
-- **The live view's hair against the film's** (the library's "Hair to shoulder" on the Average woman, Standard view, hair
-  pixels = what the hair changes, measured 2026-11-04): Cycles' mean hair colour is 1.23 / 1.14 / 1.04 EEVEE's stand-in
-  (luminance 1.17), its median 1.74 - the gap is in the shadowed strands inside the mass (Cycles' multiple
-  scattering). The stand-in's colour x that gain moved EEVEE's mean 1%; a 35% translucent share made it darker (key
-  light in front). Left as it is: the film run is right, the live view darker inside the hair.
+- **The live view's hair against the film's** (the library's "Hair to shoulder" on the Average woman, Standard view,
+  measured 2026-11-04). First, a mask of what the hair changes (it took in the skin the hair shadows) showed Cycles
+  1.17x EEVEE - misleading. Then the VISIBLE hair only (the hair as white emission, the rest held out): Cycles'
+  Principled Hair (0.15, 0.087, 0.056) against EEVEE's stand-in (0.068, 0.05, 0.044), grey; Cycles rendering the
+  stand-in's own BSDF just as dark (0.058, 0.043, 0.038) - so the gap is the stand-in's model, not EEVEE; EEVEE's
+  ray tracing / Fast GI change little; the hair's self-shadow matters in both. The cause: the stand-in used Chiang's
+  colour formula exp(-f(beta) sqrt(sigma)) as a plain surface colour - near-black for brown hair (0.016, 0.005,
+  0.001), the strand's colour inside a multiple-scattering model, not a surface albedo. Fitted on a grid (melanin
+  0.2-0.97 x redness 0.1-1; EEVEE's response linear in the colour, slope 1.62 everywhere): the matching colour is
+  exp(-k sqrt(sigma)) with k ~3.75 (vs 5.89) within ~5%, near-black hair floored ~0.008. Built: the stand-in at k =
+  0.637 f(beta) with that floor - under the stage's light EEVEE (0.154, 0.091, 0.055) against Cycles (0.15, 0.087,
+  0.056). Under the image light alone EEVEE is still 2.3 / 1.8 / 1.4x darker: its ambient light on hair falls short of
+  Cycles' scattering - open (the shading model, not the colour).
 - **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
   runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
   (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065

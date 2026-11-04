@@ -46,6 +46,14 @@ def hair_colour(melanin: float, redness: float, roughness: float = 0.3) -> tuple
     return tuple(math.exp(-math.sqrt(x) * s) for x in sigma)
 
 
+#: the live view's colour, fitted to the film's (RESEARCH §1, 2026-11-04): Chiang's colour formula exp(-f(beta)
+#: sqrt(sigma)) is the strand's own colour in a multiple-scattering hair model; on a plain surface it read near-black
+#: (brown hair 0.016 / 0.005 / 0.001). Over a grid of melanin 0.2-0.97 x redness 0.1-1 the stand-in colour that
+#: matches Cycles' visible-hair mean is exp(-k sqrt(sigma)) with k ~3.75 (Chiang's f(0.3) = 5.89), within ~5%, and a
+#: floor for near-black hair (its look is the sheen)
+LIVE_EXPONENT, LIVE_FLOOR = 0.637, 0.008
+
+
 def _eevee_stand_in(nodes, links, melanin, redness, roughness: float):
     """EEVEE has no hair shader ("Principled Hair BSDF — Not supported", manual render/eevee/limitations): a Principled
     BSDF in `hair_colour`'s colour, per strand, on an output only EEVEE reads - the Material Output's Target (Blender
@@ -65,11 +73,12 @@ def _eevee_stand_in(nodes, links, melanin, redness, roughness: float):
 
     m = op("MULTIPLY", op("LOGARITHM", op("MAXIMUM", op("SUBTRACT", 1.0, melanin), 1e-4), math.e), -1.0)
     eu, pheo = op("MULTIPLY", m, op("SUBTRACT", 1.0, redness)), op("MULTIPLY", m, redness)
-    s = _roughness_scale(roughness)
+    s = _roughness_scale(roughness) * LIVE_EXPONENT
     colour = nodes.new("ShaderNodeCombineColor")
     for channel, e, p in zip(("Red", "Green", "Blue"), EUMELANIN, PHEOMELANIN, strict=True):
         sigma = op("MULTIPLY_ADD", pheo, p, op("MULTIPLY", eu, e))
-        links.new(op("EXPONENT", op("MULTIPLY", op("SQRT", sigma), -s)), colour.inputs[channel])
+        value = op("EXPONENT", op("MULTIPLY", op("SQRT", sigma), -s))
+        links.new(op("MAXIMUM", value, LIVE_FLOOR), colour.inputs[channel])
     bsdf = nodes.new("ShaderNodeBsdfPrincipled")
     bsdf.inputs["Roughness"].default_value = 0.4
     links.new(colour.outputs["Color"], bsdf.inputs["Base Color"])
