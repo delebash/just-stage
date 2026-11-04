@@ -173,6 +173,21 @@ Subjects: [1 · The machine](#1--the-machine) ·
   100 W, rim 120 W) under AgX base contrast read flat and pale; Poly Haven's Studio Small 09 as the fill at 0.5 flattened
   it again; at 0.25, no fill light, AgX "Medium High Contrast" and -0.3 EV the face had shape. AgX's looks in 5.3
   include "AgX - Medium High Contrast" (set and rendered).
+- **CC5's SkinGen, its inventory** (reallusion.com/character-creator/skingen.html, page read 2026-11-04, the user's
+  link): a layer stack ("dynamic skin effects layer stack", per-layer sliders, 4 blend modes - normal, multiply, overlay,
+  soft-light; free version capped at 15 layers; "up to 4K real-time editing for each body material"). Skin elements
+  90 free / 270 premium / 360: skin base 42; normal effects (muscle, sinew, fat crease, vascular, skin noise, skin
+  details) 86; skin details (decal, coloration, capillary, roughness) 61; blemish (acne, freckle, mole, suntan) 38;
+  acquired (liquid, scale, scar, tattoo) 39; body hair and scalp (scalp, beard, body hair) 55; nails 29 + nail presets
+  10. Makeup elements 79 / 281 / 360. "SkinGen is embedded with MicroSkin textures licensed from TexturingXYZ"; "powered
+  by Adobe Substance Technology". The digital-human page (page read): "Authentic Human Skin" (skin, hair and nail
+  materials from 3D scans, adjustable by age), "Intricate Wrinkles" (high-res scans, a real-time wrinkle shader), the
+  Digital Human Shader (SSS, micro normal) for skin, eyes, teeth, hair; HD Ultimate Morphs 172; "40+ scanned assets".
+- **Texturing.XYZ's licence** (2026-11-04): not reached - searches "Texturing.XYZ license terms redistribution AI
+  training open source" and "texturing.xyz EULA 'license' personal indie studio redistribute textures" returned other
+  vendors' terms (no raw redistribution, embedding in finished media only, AI training by separate permission:
+  aiTextured, Cubebrush, a Gumroad seller, CGTrader's 2026-05-15 change); `texturing.xyz/pages/licenses` 404;
+  `texturing.xyz/policies/terms-of-service` covers the shop, not the textures. A gap: only Texturing.XYZ can say.
 - **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
   1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
      CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
