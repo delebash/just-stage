@@ -1077,6 +1077,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            not. The redo ran on the user's "so redo the search and do it correctly your rec go": licences read at their
            sources (`../plans/2026-11-04-research-licences-redo.md`) and the agent's finds
            (`../plans/2026-11-04-research-redo-sources.md`), folded into the review brief (recs 17, 18 new; 7 moved up).
+           THE FABLE REVIEW (2026-11-04), the user, verbatim, after switching the session to Fable 5.1: "fable review
+           opus brief docs/plans/2026-11-04-realism-review-brief.md review adverserily and produce your review" ->
+           `../plans/2026-11-04-realism-review-fable.md`: 12 findings (the gate can't diagnose; no live-view budget;
+           rec 3's inversion on unpolarised diffuse; delighting required; no likeness rule; body tiles 1K vs the spec's
+           2K; rec 7 by a body-model fit; the import command; rec 1 bounded and after skin and eyes; closure count
+           before lobes; the order; smaller corrections), answers to the brief's §9. WAITING on the user's word, finding
+           by finding; the brief is unchanged until then. The gate run (Unreal) is NOT started: web-9e took the card
+           first (15 min), web-4c is clear.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
