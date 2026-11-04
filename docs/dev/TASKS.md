@@ -978,6 +978,11 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            recorded here with its reason; the safety limits stay (no money, credentials or outward posts; the card by
            message with the other sessions). The lips and eyes above are covered by it. Work log:
            `../plans/2026-11-03-live-view.md` §5.
+           BLOCKED - FOR THE USER (2026-11-03): building OpenRigLogic (`python libs/openriglogic/build.py`, the face
+           rig's step 7) was refused by Claude Code's permission check: it compiles source fetched from GitHub
+           (EpicGames/OpenRigLogic at ea253d5, MIT). The configure step ran clean (Python 3.13.13 headers, SWIG 4.5.1,
+           VS 2019). To go on: allow it (a permission rule for that command), or run it yourself:
+           `.dev\venv-tools\Scripts\python.exe libs\openriglogic\build.py --jobs 2`.
            ONE PERSON ACROSS THE VIEWS (found 2026-10-31 beside round 53's front and 40-degree renders): the ten
            paintings show different men - the front a narrow, light-skinned face, the close view an East Asian man with
            eye bags, the 40-degree view a third with a grey-blue painted scalp - each painted alone from its clay view.
