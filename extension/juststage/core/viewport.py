@@ -53,6 +53,9 @@ def setup_scene(scene: bpy.types.Scene) -> None:
     scene.cycles.use_preview_denoising = True
     scene.cycles.preview_denoiser = "AUTO"  # OptiX's denoiser on an RTX card, Open Image Denoise otherwise
     scene.eevee.use_raytracing = True
+    # soft shadows sampled finer than Blender's 1 ray / 6 steps: at those the eye white, half shadowed by the lids under
+    # a large soft light, came out in grey blotches (round 79, EEVEE close-up; clean at 4 / 16 - measured 2026-11-03)
+    scene.eevee.shadow_ray_count, scene.eevee.shadow_step_count = 4, 16
     scene.render.hair_type = "STRIP"
 
 
