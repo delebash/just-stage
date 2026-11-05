@@ -92,3 +92,44 @@ def test_the_tone_sliders_recolour_a_mapped_skin(human, tmp_path):
     )
     assert np.allclose(mat.node_tree.nodes[maps.NODE + "gain"].inputs[1].default_value, want, rtol=1e-4)
     assert (want > 1.0).all()  # lighter than the map's own tone
+
+
+def _shader_on(mat, target):
+    output = next(n for n in mat.node_tree.nodes if n.type == "OUTPUT_MATERIAL" and n.target == target)
+    return output, output.inputs["Surface"].links[0].from_node
+
+
+def _assert_live_twin(mat):
+    """The film's skin (Cycles, the export) on the All output; the live view's (EEVEE) on its own output - the same
+    inputs from the same sources, its scattering x material.EEVEE_SCATTER."""
+    film_out, film = _shader_on(mat, "ALL")
+    _live_out, live = _shader_on(mat, "EEVEE")
+    assert film.type == live.type == "BSDF_PRINCIPLED" and film != live
+    assert film_out.is_active_output and material.principled(mat) == film
+    assert sum(n.type == "BSDF_PRINCIPLED" for n in mat.node_tree.nodes) == 2  # synced again, never added again
+    assert live.subsurface_method == film.subsurface_method
+    scale = film.inputs["Subsurface Scale"].default_value * material.EEVEE_SCATTER
+    assert live.inputs["Subsurface Scale"].default_value == pytest.approx(scale)
+    for socket, twin in zip(film.inputs, live.inputs, strict=True):
+        if socket.name == "Subsurface Scale" or not socket.enabled:
+            continue
+        if socket.is_linked:
+            assert [lk.from_socket for lk in twin.links] == [socket.links[0].from_socket], socket.name
+        elif hasattr(socket, "default_value"):
+            assert not twin.is_linked, socket.name
+            assert np.allclose(np.array(twin.default_value), np.array(socket.default_value)), socket.name
+
+
+def test_the_live_view_scatters_twice_as_far_as_the_film(human, tmp_path):
+    """EEVEE's scattering on our skin is shorter than Cycles' Random Walk: x2 brings its lit pore detail to the
+    film's (the realism doc §6a, "Skin scattering alone"); the film keeps the measured radius."""
+    made, body = human
+    api.run("juststage.skin.set_tone", character=made.character)
+    _assert_live_twin(body.juststage.skin_material)
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    api.run("juststage.skin.set_tone", character=made.character, melanin=0.02)
+    mat = body.juststage.skin_material
+    _assert_live_twin(mat)  # the maps' links reach both
+    detail = importlib.import_module("bl_ext.system.juststage.modules.skin.detail")
+    detail.apply(mat, body.name, np.zeros((8, 8)), 20.0, 0.5, {})
+    _assert_live_twin(mat)  # and the detail's bump

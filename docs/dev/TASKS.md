@@ -1141,6 +1141,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            `../plans/2026-11-04-research-gaps-brief.md` (variety holes, sclera, nails, children, unread licences,
            better-than checks; nine pilot queries) to the session "just-stage asset search"; its results land in
            `../plans/2026-11-04-research-gaps.md`; read its query log and filters before using anything (rule 7 l).
+           THE JAW RESULTS AND THE GAPS' ITEMS (2026-11-05), the user, verbatim: "auto compacted re read docs ruloes
+           session notes rethink your recs then go your rec all, except no emails, you can open cc5, i will close it" -
+           on: (1) CC5 closed for web-4c's clip, reopened when it sends "card free", then the CC5 benchmark; (2) skin
+           scattering x2 in the live view only (EEVEE's own BSDF on an EEVEE-target output); (3) the 1.5 m key light and
+           the probe volume decided after the CC5 benchmark; (4) Renderpeople's "Fabienne & Percy": the child never
+           used, the mother only as an adult source if needed; (5) the patent US10217265's claims read, our eye veins
+           designed around them (not legal advice); (6) nappy.co's older subjects fetched by hand, bounded, before it
+           closes, into a new downloads folder; (7) no emails; (8) no purchases. The rethink added: x2 checked on a
+           darker library skin and the live view re-timed once the card is free; nappy's licence read at its own page
+           before the fetch.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md

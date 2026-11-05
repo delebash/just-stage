@@ -100,8 +100,10 @@ def _node(nt, kind: str, name: str, location=(0, 0)):
 def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], pores: bpy.types.Image) -> None:
     """The skin's maps on its Principled BSDF (material.py made the BSDF and its scattering): `images` by channel,
     UDIM tiled; `pores` a tiling height patch."""
+    from . import material
+
     nt = mat.node_tree
-    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    bsdf = material.principled(mat)  # the film's; material.apply syncs the live view's after (sync_live)
     links = nt.links
     uv = _node(nt, "ShaderNodeUVMap", "uv", (-1400, 0))
     uv.uv_map = UV

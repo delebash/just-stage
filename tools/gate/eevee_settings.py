@@ -29,11 +29,14 @@ sys.path.insert(0, str(Path(__file__).parent))
 gate = importlib.import_module("blender_gate")
 cmp = importlib.import_module("compare")
 startup = importlib.import_module("bl_ext.system.juststage.ui.startup")
+skin_material = importlib.import_module("bl_ext.system.juststage.modules.skin.material")
 
 
 def _skin(scene):
+    """The BSDF EEVEE reads: the live view's own (skin/material.py `sync_live`) where the scene has it."""
     body = next(o for o in scene.objects if o.juststage.character_id and not o.juststage.part_of)
-    return next(n for n in body.juststage.skin_material.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    nodes = body.juststage.skin_material.node_tree.nodes
+    return nodes.get(skin_material.LIVE_BSDF) or next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
 
 
 def _set(scene, variant):

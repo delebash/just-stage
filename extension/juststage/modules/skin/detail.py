@@ -68,7 +68,9 @@ def apply(
 ) -> bpy.types.Image:
     image = _height_image(f"{character_name} skin detail", height, provenance)
     nodes, links = material.node_tree.nodes, material.node_tree.links
-    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    from . import material as skin_material
+
+    bsdf = skin_material.principled(material)
     coords, mapping, tex, bump = (nodes.get(n) for n in NODES)
     if coords is None:
         coords = nodes.new("ShaderNodeTexCoord")
@@ -87,6 +89,7 @@ def apply(
     mapping.inputs["Scale"].default_value = (tiles, tiles, 1.0)
     bump.inputs["Strength"].default_value = strength
     bump.inputs["Distance"].default_value = BUMP_DISTANCE_M
+    skin_material.sync_live(material)
     return image
 
 
