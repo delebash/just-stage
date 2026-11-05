@@ -847,13 +847,21 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
     vessel 18.8 um, melanosis 92.5% in Black people, pinguecula 73% over 60) in its §2.
   - Renderpeople "Fabienne & Percy 001" (mother and child, `.dev/downloads/scans/rp_fabienne/`; Sketchfab uid
     8c9bfd4fb8a444b3a42a4fc31935a2fb, uploaded by the studio's own account `renderpeople` 2020-05-12, "CC
-    Attribution" by/4.0, tags incl. "kids", "child", "noai" [API, read 2026-11-05]): **the child for measurements
-    only** - skin colour and proportions as numbers, if the face has enough pixels in the 8K atlas (to be measured);
-    nothing of the child ships; no AI training (the "noai" tag - Sketchfab: "the tag may not be enforceable outside
-    of the Sketchfab platform" for CC models, we follow it anyway). The mother may be used like any CC BY adult scan,
-    credited in `ATTRIBUTION.md`. (The user, 2026-11-05: "ok your rec measrurements only" - replaces "the child is
-    never used"; TASKS "FABIENNE & PERCY: MEASUREMENTS ONLY". Its texture's skin windows found only shoes and hair on
-    2026-11-02, `../plans/2026-11-02-research-texture-source.md` - its face was never checked.)
+    Attribution" by/4.0, tags incl. "kids", "child", "noai" [API, read 2026-11-05]): **both people used like any CC
+    BY scan** - credited in `ATTRIBUTION.md`, inputs to our own maps, the likeness rule (never one scan's face
+    shipped) as for every scan, no AI training on Renderpeople uploads (the "noai" tag, also on Carla and Mei [API];
+    Sketchfab: "the tag may not be enforceable outside of the Sketchfab platform" for CC models - we follow it
+    anyway). CC BY 4.0 §2(b)(1) leaves personality rights unlicensed for anyone [page]. (The user, 2026-11-05: "go" -
+    replaces "the child is never used"; TASKS "FABIENNE & PERCY: THE CHILD USED LIKE ANY CC BY SCAN".)
+    **Measured 2026-11-05** (Blender, the 200k FBX's UVs on the 8K diffuse, per-island texel density = sqrt(UV px² /
+    surface mm²)): one merged mesh, one uniform density - the child's face 3.98 texels/mm, his neck and ear 4.0, his
+    hand 3.98, the mother's face 3.99 (0.25 mm a texel; his face island ~900 px across). Below our face tile (6.0) and
+    Ten24's face (7.6-11): pores (0.1-0.3 mm) sit at or under one texel, so it is **not a pore source**; it is a
+    source for a child's skin colour and its variation across the face (a medium-brown, school-age boy - the age my
+    estimate from the render, not stated), and for head and face proportions (his body is posed, legs wrapped round
+    her, so limb lengths only in part). The 2026-11-02 windows ("only shoes and hair") missed his face, ears, neck
+    and hand - they are in the atlas (upper right). The texture has lighting baked in, so delighting first, as for
+    every scan.
   - **The two patents' claims, read 2026-11-05 (not legal advice; the claims as Google Patents prints them [page],
     the user's go "your rec all"):** US10217265B2 "Methods and systems of generating a parametric eye model" (ETH
     Zurich, Disney; Active, expiry 2036-10-26): 21 claims, three independent (1 method, 9 system, 16 stored

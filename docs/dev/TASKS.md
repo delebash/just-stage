@@ -1167,15 +1167,20 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            assets that are free and distributable (AGENTS.md clean-room). In progress: HD Aaron exported (the trial
            allows 30 FBX / ABC / OBJ exports) and rendered in Blender under our stage - the lights-or-textures split;
            Blender character add-ons' quality against CC5 (research, rule 0 map first).
-           FABIENNE & PERCY: MEASUREMENTS ONLY (2026-11-05; replaces item (4) of "THE JAW RESULTS AND THE GAPS' ITEMS"),
-           the user in the session "just-stage asset search", verbatim: "1 why keep child unused if it is publicly
-           avaialable on a trusted site? is this a trusted site?", then "ok your rec measrurements only" (read in that
-           session's log). The rec approved, verbatim: "Measurements only (my rec). I first measure how many pixels the
-           child's face has in the texture. If there's enough, we take skin colour and proportions as numbers; nothing
-           of the child ships. The mother can be used like any CC BY adult scan, credited in `ATTRIBUTION.md`." Source
-           read [API]: uploader `renderpeople` (the studio's own account), 2020-05-12, "CC Attribution" (by/4.0); it is
-           also tagged "noai" (Sketchfab: "may not be enforceable" on CC models) - so no AI training on it. The asset
-           search session measures the face pixels and sends the numbers.
+           FABIENNE & PERCY: THE CHILD USED LIKE ANY CC BY SCAN (2026-11-05; replaces item (4) of "THE JAW RESULTS AND
+           THE GAPS' ITEMS" and the brief "measurements only" between). The user, verbatim, in the session "just-stage
+           asset search": "1 why keep child unused if it is publicly avaialable on a trusted site? is this a trusted
+           site?", "ok your rec measrurements only", then "forget the child measurments, the other session is going to
+           use the child it verified info to use it" (read in that session's log); here: "so you are going to use the
+           child since it is licensed correct?", "what is your rec on child if it is licensed to be used just like
+           adult?", then "go" on the rec: "use the child exactly like an adult CC BY scan, with no extra rules for him.
+           Our existing rules already cover him" - credit (Renderpeople in `ATTRIBUTION.md`); scans feed our own maps
+           (flattened, fitted to our mesh, re-baked), never shipped as they are; the likeness rule ("A shipped character
+           is never one scan's face", the gaps brief) for every scan; no AI training on Renderpeople uploads ("noai" -
+           Carla and Mei carry it too). Source read [API]: uploader `renderpeople` (the studio's own account),
+           2020-05-12, "CC Attribution" (by/4.0). The pixel check DONE 2026-11-05 (RESEARCH, the gaps entry): 4.0
+           texels/mm everywhere - a child skin-colour and proportions source, not a pore source. Real use when child
+           characters come up in the CC5 order, after the HD Aaron bar.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
