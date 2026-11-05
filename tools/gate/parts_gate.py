@@ -112,8 +112,10 @@ def build_ours(scene) -> dict:
     return {"body": body, "objects": objects, "keyed": [body]}
 
 
-def build_cc5(scene, engine: str) -> dict:
-    """HD Aaron from CC Blender Tools' import, appended with his armature, materials and drivers."""
+def build_cc5(scene, engine: str, inputs: dict[str, float] | None = None) -> dict:
+    """HD Aaron from CC Blender Tools' import, appended with his armature, materials and drivers. `inputs`: values set
+    on his skin shaders' group inputs (e.g. "Micro Normal Strength": 0) - one factor at a time, to see what his look
+    owes to each map."""
     with bpy.data.libraries.load(str(CC5_BLEND[engine]), link=False) as (src, dst):
         dst.objects = list(src.objects)
     kept = [o for o in dst.objects if o is not None and o.type in {"MESH", "ARMATURE"} and o.name != "Cube"]
@@ -123,6 +125,12 @@ def build_cc5(scene, engine: str) -> dict:
         if obj is not None and obj not in kept:
             bpy.data.objects.remove(obj)
     body = next(o for o in kept if o.name == "CC_Base_Body")
+    for slot in body.material_slots:
+        for node in slot.material.node_tree.nodes if slot.material and inputs else ():
+            if node.type == "GROUP" and node.node_tree.name.startswith(("rl_head_shader", "rl_skin_shader")):
+                for name, value in inputs.items():
+                    if name in node.inputs:
+                        node.inputs[name].default_value = value
     keyed = [o for o in kept if o.type == "MESH" and o.data.shape_keys]
     return {"body": body, "objects": kept, "keyed": keyed, "armature": next(o for o in kept if o.type == "ARMATURE")}
 
@@ -306,9 +314,10 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 
 # ---- render --------------------------------------------------------------------------------------------------------
 
-def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int) -> None:
+def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
+           cc5_inputs: dict[str, float] | None = None, tag: str = "") -> None:
     scene, cam = _stage()
-    built = build_ours(scene) if who == "ours" else build_cc5(scene, engine)
+    built = build_ours(scene) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
     set_expression(who, built, "neutral")
     a = anchors(who, built)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -330,7 +339,7 @@ def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, sa
             set_expression(who, built, expression)
             current = expression
         place(cam, *view(name, a))
-        scene.render.filepath = str(out_dir / f"{engine}_{name}_{who}.png")
+        scene.render.filepath = str(out_dir / f"{engine}_{name}_{who}{tag}.png")
         bpy.ops.render.render(write_still=True)
         print("RENDERED", scene.render.filepath, flush=True)
 
@@ -419,9 +428,12 @@ if __name__ == "__main__":
     p.add_argument("--views", default=",".join(VIEWS))
     p.add_argument("--size", type=int, default=SIZE)
     p.add_argument("--samples", type=int, default=CYCLES_SAMPLES)
+    p.add_argument("--cc5-inputs", default="", help='"Name=value;Name=value" on his skin shaders (a diagnostic)')
+    p.add_argument("--tag", default="", help="appended to the file names (a diagnostic's variant)")
     a = p.parse_args(args)
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\
     if a.command == "render":
-        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples)
+        inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}
+        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag)
     else:
         sheet(out)

@@ -30,6 +30,12 @@ def catalog() -> dict:
     return json.loads((_folder() / "parts.json").read_text(encoding="utf-8"))
 
 
+def groups(part: str) -> dict[str, list[int]]:
+    """A part's named vertex sets (`<part>.groups.json`, by tools/bind_parts.py), e.g. the teeth's
+    `lower_teeth_and_gums`."""
+    return json.loads((_folder() / f"{part}.groups.json").read_text(encoding="utf-8"))
+
+
 def _binding(part: str) -> mhclo.Mhclo:
     return mhclo.parse(paths.generated("gnm", "parts", f"{part}.mhclo", tool=TOOL).read_text(encoding="utf-8"))
 
@@ -106,13 +112,18 @@ def refit(character: bpy.types.Object) -> None:
     """Move every part to the character's current shape."""
     base = build.shaped_coords(character)
     for part, obj in parts_of(character).items():
+        if part == "teeth" and obj.data.shape_keys:  # its jaw units: rebuilt below on the new fit
+            obj.shape_key_clear()
         co = mhclo.fit(_binding(part), base).astype(np.float32)
         obj.data.vertices.foreach_set("co", co.ravel())
         obj.data.update()
-    from . import eye_layers
+    from . import eye_layers, face_units
 
     eye_clearance(character)
     eye_layers.refit(character)  # the occlusion and tearline ride the eyes
+    teeth = parts_of(character).get("teeth")
+    if teeth is not None:
+        face_units.add_to_teeth(character, teeth)
 
 
 def add(character: bpy.types.Object) -> list[str]:
@@ -132,8 +143,7 @@ def add(character: bpy.types.Object) -> list[str]:
         obj.parent = character
         obj.juststage.part = part
         obj.juststage.part_of = character.juststage.character_id
-        groups = json.loads((_folder() / f"{part}.groups.json").read_text(encoding="utf-8"))
-        part_materials.assign(obj, part, groups)
+        part_materials.assign(obj, part, groups(part))
         added.append(part)
     # the importer's own 90-degree turn stays in each new part's world matrix until the scene updates (the next import
     # updated the one before it, so only a part imported last - an eye added again alone - kept it; 2026-11-04)

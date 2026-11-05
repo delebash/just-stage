@@ -49,6 +49,30 @@ def test_a_character_gets_the_52_keys_at_rest(human):
     assert all(keys[name].value == 0.0 for name in face_units.ARKIT)
 
 
+def _teeth_rows(teeth, group_name):
+    rows = np.zeros(len(teeth.data.vertices), dtype=bool)
+    rows[importlib.import_module("bl_ext.system.juststage.modules.head.parts").groups("teeth")[group_name]] = True
+    return rows
+
+
+def test_the_lower_teeth_and_tongue_ride_jaw_open_and_survive_a_refit(human):
+    result, obj = human
+    api.run("juststage.head.add_parts", character=result.character)
+    api.run("juststage.head.add_face_units", character=result.character)
+    teeth = next(o for o in bpy.data.objects if o.juststage.part_of == result.character and o.juststage.part == "teeth")
+    lower = _teeth_rows(teeth, "lower_teeth_and_gums") | _teeth_rows(teeth, "tongue")
+    upper = _teeth_rows(teeth, "upper_teeth_and_gums")
+    moved = _offsets(teeth, "jawOpen")
+    assert moved[lower, 2].mean() < -0.008  # the lower teeth drop with the chin (the gate: they stayed, 2026-11-05)
+    assert np.abs(moved[upper]).max() < 1e-6  # the upper teeth stay with the skull
+    obj.data.shape_keys.key_blocks["jawOpen"].value = 1.0  # the teeth's key follows the body's (a driver)
+    bpy.context.view_layer.update()
+    assert teeth.data.shape_keys.key_blocks["jawOpen"].value == pytest.approx(1.0)
+    obj.data.shape_keys.key_blocks["jawOpen"].value = 0.0
+    api.run("juststage.head.add_parts", character=result.character)  # a refit rebuilds them on the new fit
+    assert _offsets(teeth, "jawOpen")[lower, 2].mean() < -0.008
+
+
 def test_jaw_open_drops_the_chin_and_runs_again_in_place(human):
     result, obj = human
     api.run("juststage.head.add_face_units", character=result.character)
