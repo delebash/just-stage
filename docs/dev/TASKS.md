@@ -1150,7 +1150,8 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            designed around them (not legal advice); (6) nappy.co's older subjects fetched by hand, bounded, before it
            closes, into a new downloads folder; (7) no emails; (8) no purchases. The rethink added: x2 checked on a
            darker library skin and the live view re-timed once the card is free; nappy's licence read at its own page
-           before the fetch.
+           before the fetch. (6) DONE 2026-11-05 by the asset search session: 27 photos in
+           `.dev/downloads/nappy_2026-11-05/` (RESEARCH, the gaps entry).
            HD AARON IS THE BAR; LOCAL TESTS MAY USE ANYTHING (2026-11-05), the user, verbatim: "hd arron is the highest
            res cc5 character and that should be the bar"; "you shouldnt have stoped pleae keep going until you get the
            quality bar, always rethink on your decisions adversiliry thatn go on your rec all"; on bringing CC5's

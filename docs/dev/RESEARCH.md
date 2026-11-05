@@ -841,7 +841,15 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
     releases stated, a custom SHIP licence invited); Triplegangers Bertha Horan Hispanic F 76 ($49.99; SHIP "with
     written consent"). No scan labelled Southeast Asian, Indigenous or Pacific Islander anywhere searched.
   - Photos for calibration and patches: Pexels 8265216 (elderly Indonesian man, 4000 x 6000, sharp pores), 14684597;
-    nappy.co (CC0) is closing "in the next few months".
+    nappy.co (CC0) is closing "in the next few months". **Fetched 2026-11-05** (the asset search session, by hand
+    from nappy's own search pages; `.dev/downloads/nappy_2026-11-05/`, 27 photos, 67 MB, `SOURCES.md` with each
+    page URL, uploader, pixels, what it shows and the search terms): nappy.co/license re-read that day - "All photos
+    posted on Nappy are licensed under the Creative Commons Zero (CC0) license"; DON'T "Resell our photos without
+    significant modification", "Repost our photos on other stock websites"; AI and model releases not mentioned.
+    Best for colour: Nigeria Art Market x3 (6720 x 4480, an older man's face and hands), MetaLab's hands (6720 x
+    4480, a grey-bearded man), the walker (7000 x 4836, older feet and hand), "Grandpa" x11 (2560 x 1707), an older
+    Latina woman (2048 px). Black-and-white close-ups (four) give relief and wrinkles, not colour. Two files
+    uploaded by the account `pixabay` are REFERENCE until nappy's CC0 over Pixabay-origin photos is read.
   - Sclera: no shippable sharp macro; keep procedural veins (rec 12) - Bérard et al.'s published recipe is in patent
     US10217265 (Disney / ETH, listed active to 2036); calibration numbers (CCLRU redness by region,
     vessel 18.8 um, melanosis 92.5% in Black people, pinguecula 73% over 60) in its §2.
