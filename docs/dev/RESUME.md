@@ -38,6 +38,11 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   today's lashes: barely visible change (the pupil may be GNM's pupil-disc geometry - check). NEXT: the eye region
   (step 4 moved up): lid margin (geometry thickness + a wet pink rim by MPFB2's `mpfb_eyelids` mask?), tearline,
   pupil, iris; then the library characters rebuilt with today's lashes, brows, eyes open, scan skins.
+- (4) eyes, measured (`.dev/gate/parts/proof_eyes/`, scratchpad `eye_exp3.py`): our white L* 80 vs Aaron's ~48-60 -
+  his sits in the lids' shadow (CC5's occlusion); ours uniform. Our occlusion film (eyeshell) darkens nothing in EEVEE
+  (hidden or not: same) - a fault to fix first. The pupil is GNM's 2.7 mm pupil-disc geometry (the shader's
+  PupilSize 0.082 -> 0.15 changed nothing). Cornea reflection x0.3: no change. Lashes: radius 0.08 mm, 180 upper,
+  melanin 1.0 give a visible lash line at face distance (adopt). Amber iris overshot to yellow.
 
 ## Always
 
