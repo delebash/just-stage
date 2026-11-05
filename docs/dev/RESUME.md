@@ -51,16 +51,19 @@ updated in the same commit that starts, changes or ends a job, and its "Where it
   content. **The standard is HD Aaron in Blender** (TASKS "THE GATE PART BY PART"): the user's hair export imported
   (`aaron_hair_{eevee,cycles}.blend`); `tools/gate/parts_gate.py` renders 21 views per character (`render --who
   ours|cc5 --engine eevee|cycles`, then `sheet`) into `.dev/gate/parts/2026-11-05/`; the report goes to
-  `docs/gate/2026-11-05/report.md`. DONE: the EEVEE baseline (every part below); the teeth ride the jaw; rec 18 (the
-  generated microrelief - the cheek's finest band now Aaron's); rec 14 v1 (the nail plate, `make_nail_coords.py`).
-  IN PROGRESS - rec 2 + 17's colour, the likeness rule's way (no painting): the scan route fixed for HSRD-100 (Z-up
-  OBJs; each scan keeps the head its fit was made on - the old export was 30 mm off the round's clay); `skin_base.py`
-  `split` writes a delit `low` colour layer (SH light fit on our normals, holes filled), `compose` with `"colour":
-  "scans"` blends it from 2+ scans; `tools/build_skins.py -- --composed SEED KEY LIB` builds a test skin; the gate's
-  `--skin` puts it on ours. Seen: HSR0040's own colour reads as real skin; composition 503 (HSR0040 0.7 + lps 0.3)
-  natural but paler and softer than Aaron - next: the other nine HSRD people (route running), scans picked by tone /
-  sex / age, a warmer tone, then a library skin. Cycles baseline: running in the background. The user's standing order:
-  don't stop until every part meets the bar or it is measured impossible with our assets.
+  `docs/gate/2026-11-05/report.md`. DONE (each committed, the report's "Done since the baseline"): the EEVEE and
+  Cycles baselines (every part below); teeth ride the jaw; rec 18 microrelief; rec 14 v1 nails; rec 8 brows
+  (`modules/hair/brows.py`, library "JustStage brows"); the eyes opened to an adult's 8.7 mm (`body_create.EYE_OPEN`,
+  dressed and library humans); lashes sweep up (`lashes.py`); rec 11 v1 scalp groom (`modules/hair/scalp.py`, library
+  "JustStage short combed", ~100k strands). IN PROGRESS - skin colour from scans, the likeness rule's way: HSRD-100
+  through the scan route (done: hsr0015 0027 0028 0040 0042; 0081 0102 0112 0161 running; 0023 failed at the marks -
+  its pose is a hand scan); `skin_base.py compose SEED '{"colour": "scans", "mid_from": {...}}'` then
+  `tools/build_skins.py -- --composed SEED KEY LIB` makes a test skin; the gate's `--skin`, `--character`, `--scalp`.
+  Composition 503 (hsr0040 + lps) natural but paler and softer than Aaron. NEXT: compose library skins by tone / sex /
+  age from the HSRD people (fix the pale neck patch at the composite's coverage edge), rebuild the library's characters
+  (skins backed up first), then a full gate re-run (EEVEE + Cycles) and the report; then body relief (rec 7 + 17: the
+  torso is the largest measured gap), eyes (rec 12: sclera, wet margin), mouth (13), smile shapes, hair shading (rec
+  1). The user's standing order: don't stop until every part meets the bar or it is measured impossible.
 
 ## Coordination
 
