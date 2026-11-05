@@ -96,13 +96,13 @@ def _stage():
     return scene, cam
 
 
-def build_ours(scene, skin: str = "", brows: str = "library") -> dict:
+def build_ours(scene, skin: str = "", brows: str = "library", character: str = "") -> dict:
     """The library's man the app's way, with the hair library's scalp style and brows and the face's ARKit 52;
     `skin` (a library skin's .blend) put on him as the Content panel does."""
     api = importlib.import_module("bl_ext.system.juststage.api")
     library = importlib.import_module("bl_ext.system.juststage.core.library")
     root = library.root()
-    shown = api.run("juststage.library.add", path=str(root / "Characters" / f"{OURS['character']}.blend"))
+    shown = api.run("juststage.library.add", path=str(root / "Characters" / f"{character or OURS['character']}.blend"))
     api.run("juststage.library.add", path=str(root / "Hair" / "Scalp" / f"{OURS['scalp']}.blend"),
             character=shown.character)
     if brows == "generated":  # JustStage's own (modules/hair/brows.py, rec 8)
@@ -322,9 +322,10 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 # ---- render --------------------------------------------------------------------------------------------------------
 
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
-           cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "library") -> None:
+           cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "library",
+           character: str = "") -> None:
     scene, cam = _stage()
-    built = build_ours(scene, skin, brows) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
+    built = build_ours(scene, skin, brows, character) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
     set_expression(who, built, "neutral")
     a = anchors(who, built)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -439,10 +440,11 @@ if __name__ == "__main__":
     p.add_argument("--tag", default="", help="appended to the file names (a diagnostic's variant)")
     p.add_argument("--skin", default="", help="a library skin (.blend) on ours, as the Content panel applies it")
     p.add_argument("--brows", choices=("library", "generated"), default="library")
+    p.add_argument("--character", default="", help="another library character for ours")
     a = p.parse_args(args)
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\
     if a.command == "render":
         inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}
-        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin, a.brows)
+        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin, a.brows, a.character)
     else:
         sheet(out)

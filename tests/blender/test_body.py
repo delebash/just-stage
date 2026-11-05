@@ -163,7 +163,12 @@ def test_a_dressed_human_has_its_eyes_lashes_and_a_skin():
     result = api.run("juststage.body.create", name="Dressed", gender=0.0, dressed=True)
     obj = bpy.data.objects[result.object]
     parts = {o.juststage.part for o in bpy.data.objects if o.juststage.part_of == result.character}
-    assert {"eyeLeft", "eyeRight", "teeth", "eyeshell", "eyeEdge", "eyelashes"} <= parts
+    assert {"eyeLeft", "eyeRight", "teeth", "eyeshell", "eyeEdge", "eyelashes", "eyebrows"} <= parts  # brows: rec 8
+    create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
+    keys = obj.data.shape_keys.key_blocks  # the eyes open to an adult's ~9 mm (the gate: MakeHuman's ~6 mm)
+    for slider, value in create.EYE_OPEN.items():
+        target = next(k for k in keys if k.name.endswith(slider.split("/")[1].replace("decr-incr", "incr")))
+        assert target.value == pytest.approx(value)
     if (library.root() / "Skins" / "Mei skin.blend").is_file():
         assert result.skin == "Mei skin" and obj.juststage.skin_material.juststage.has_maps
         assert obj.juststage.melanin == pytest.approx(0.0104)  # its own tone, the skin's detail

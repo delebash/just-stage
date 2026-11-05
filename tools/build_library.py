@@ -121,9 +121,12 @@ def _skin(name: str) -> str:
 
 
 def _dress(character: str, body) -> None:
-    """A library character's eyes (with their occlusion and tearline) and lashes."""
+    """A library character's eyes opened to an adult's opening, its eyes (with their occlusion and tearline), lashes
+    and brows - as the panel's New human (modules/body/body_create.py)."""
+    importlib.import_module("bl_ext.system.juststage.modules.body.body_create").open_eyes(character)
     api.run("juststage.head.add_parts", character=character)
     lashes.make(body)
+    brows.make(body)
 
 
 if "characters" in WANTED:
