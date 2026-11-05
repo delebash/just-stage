@@ -169,7 +169,9 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
     mouth = bsdf.inputs["Base Color"].links[0].from_node  # the mouth's lining over the nails' plate
     assert mouth == nodes[maps.NODE + "mouth_colour"]
-    assert next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node == nodes[maps.NODE + "nail_groove"]
+    lips = next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node  # the lips' vermilion
+    assert lips == nodes[maps.NODE + "lips_colour"]
+    assert lips.inputs[0].links[0].from_node == nodes[maps.NODE + "nail_groove"]
     rough = bsdf.inputs["Roughness"].links[0].from_node
     assert next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node == nodes[maps.NODE + "nail_rough"]
     assert bsdf.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]

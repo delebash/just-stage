@@ -67,6 +67,10 @@ NAIL_RAISE = 0.0006  # m: the plate over its fold
 MOUTH_TOOL = "python tools/dev.py blender -b --python tools/make_mouth_mask.py"
 MOUTH_COLOUR, MOUTH_SHARE = (0.42, 0.11, 0.11), 0.85  # linear
 MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
+#: the lips' vermilion over any skin - MPFB2's CC0 lips mask (`mpfb_lips.jpg`, hm08's own UVs) - as CC5's lip colour:
+#: scanned and painted skins carry their person's lips (HSR0040's pale, thinner than hm08's) or none; a vermilion keeps
+#: the skin's red and loses about a quarter of its green and a fifth of its blue
+LIP_TINT, LIP_STRENGTH = (1.0, 0.70, 0.75), 1.0  # at 0.74 / 0.79 still paler than HD Aaron's
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
 #: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
@@ -266,6 +270,23 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
     nt.links.new(raise_.outputs["Normal"], bsdf.inputs["Normal"])
 
 
+def _lip_layer(nt, bsdf) -> None:
+    """The lips' vermilion: the colour scaled toward LIP_TINT by MPFB2's lips mask, read through hm08's own UVs."""
+    uvmap = _node(nt, "ShaderNodeUVMap", "lips_uv", (-1800, -2400))
+    uvmap.uv_map = "UVMap"
+    mask = _node(nt, "ShaderNodeTexImage", "lips_mask", (-1600, -2400))
+    mask.image = bpy.data.images.load(str(paths.makehuman("textures", "mpfb_lips.jpg")), check_existing=True)
+    mask.image.colorspace_settings.name = "Non-Color"
+    nt.links.new(uvmap.outputs["UV"], mask.inputs["Vector"])
+    share = _math(nt, "lips_share", "MULTIPLY", mask.outputs["Color"], LIP_STRENGTH)
+    tint = _mix(nt, "lips_tint", "RGBA", share, (1.0, 1.0, 1.0), LIP_TINT)
+    tinted = _node(nt, "ShaderNodeVectorMath", "lips_colour", (-200, -2400))
+    tinted.operation = "MULTIPLY"
+    nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, tinted.inputs[0])
+    nt.links.new(tint, tinted.inputs[1])
+    nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
+
+
 def mouth_mask() -> bpy.types.Image:
     """The mouth's lining on the head tile (MOUTH_TOOL), loaded once and shared."""
     path = paths.generated("skin", "mouth.png", tool=MOUTH_TOOL)
@@ -401,6 +422,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(bump.outputs["Normal"], micro_bump.inputs["Normal"])
     links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
     _nail_layer(nt, bsdf, uv, which)
+    _lip_layer(nt, bsdf)
     _mouth_layer(nt, bsdf, uv, which)
     coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
     coat.data_type = "FLOAT"
