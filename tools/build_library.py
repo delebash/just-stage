@@ -7,7 +7,7 @@ starter library (... the base bodies, MakeHuman's CC0 styles ...)"), each saved 
 - characters: presets made by JustStage's own commands from MakeHuman's CC0 base and targets;
 - hair: MakeHuman's CC0 hair-editor styles (all but `empty_hair`, a blank to groom from, and its two sparse lash
   styles, which would replace each other - one groom per type), one asset each in its `Hair/<type>` catalogue; and
-  JustStage's own lashes, both lids in one groom (modules/hair/lashes.py);
+  JustStage's own lashes, both lids in one groom (modules/hair/lashes.py); JustStage's own brows (modules/hair/brows.py);
 - skins: eight tones evenly spaced in lightness (CIE L* 74 down to 25), each melanin found by solving JustStage's own
   skin model (core/skin_optics.py) at the NIST median's eumelanin share and blood; the mapped skins beside them come
   from tools/build_skins.py (run it first: the characters wear them);
@@ -34,6 +34,7 @@ styles = importlib.import_module("bl_ext.system.juststage.modules.hair.styles")
 groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
 HAIR = importlib.import_module("bl_ext.system.juststage.modules.io.library_save").HAIR
 lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
+brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
 library = importlib.import_module("bl_ext.system.juststage.core.library")
 build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
 #: the mapped skins' licence (tools/build_skins.py's LICENCE)
@@ -158,6 +159,12 @@ if "hair" in WANTED:
     out = api.run("juststage.library.save", character=woman.character, catalog="Hair/Lashes", name="JustStage lashes",
                   description="Upper and lower lashes at real counts (120 and 75 an eye), clumped", licence="CC0-1.0",
                   provenance="JustStage modules/hair/lashes.py", part="eyelashes")  # fmt: skip
+    print("LIBRARY", out.path, flush=True)
+    brows.make(bpy.data.objects[man.object])  # rec 8: one hair per follicle (modules/hair/brows.py)
+    out = api.run("juststage.library.save", character=man.character, catalog="Hair/Brows", name="JustStage brows",
+                  description="Both brows as single hairs (800 each), flowing up at the head and along to the tail",
+                  licence="CC0-1.0", provenance="JustStage modules/hair/brows.py (region from MakeHuman's CC0 "
+                  "wild_eyebrow)", part="eyebrows")  # fmt: skip
     print("LIBRARY", out.path, flush=True)
     _remove(woman)
     _remove(man)
