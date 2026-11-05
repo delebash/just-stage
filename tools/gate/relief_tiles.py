@@ -11,7 +11,7 @@ from each source as a tileable height tile with its real size, for the pore slot
 
 A normal map becomes height by Frankot & Chellappa's integration (1988; the FFT least-squares surface from a gradient
 field - the standard way), then a high-pass keeps the pore and fine-line scale (features under HIGH_PASS_MM), and a
-cross-fade with its half-shifted copy makes it tile. Out: `.dev/gate/relief/<name>.png` (16-bit grey) + `<name>.json`
+Moisan's periodic component makes it tile. Out: `.dev/gate/relief/<name>.png` (16-bit grey) + `<name>.json`
 (its size in mm and where it came from)."""
 
 from __future__ import annotations
@@ -24,6 +24,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from scipy import ndimage
+
+Image.MAX_IMAGE_PIXELS = None  # the scans' 16K atlases (our own downloads, 268M pixels) trip Pillow's bomb check
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".dev" / "gate" / "relief"
@@ -43,12 +45,19 @@ def _ffmpeg_crop(path: Path, x: int, y: int, size: int) -> np.ndarray:
     return np.frombuffer(raw, np.uint16).reshape(size, size, 3).astype(np.float64) / 65535.0
 
 
-def height_from_normals(normal_rgb: np.ndarray) -> np.ndarray:
+def height_from_normals(normal_rgb: np.ndarray, flatten_px: float | None = None) -> np.ndarray:
     """Frankot-Chellappa: the surface whose gradient best fits the normals' (p = -nx/nz, q = -ny/nz), in Fourier space;
     rows run down the image, so y flips (a tangent-space map's green points up)."""
     n = normal_rgb * 2.0 - 1.0
     nz = np.clip(n[..., 2], 0.2, None)
-    p, q = -n[..., 0] / nz, n[..., 1] / nz
+    p0, q0 = -n[..., 0] / nz, n[..., 1] / nz
+    if flatten_px:  # the slopes' local mean out first: a photo looked at on a slant (or curved) leans all its normals
+        p0 = p0 - ndimage.gaussian_filter(p0, flatten_px, mode="reflect")  # one way - integrated whole, that lean is a
+        q0 = q0 - ndimage.gaussian_filter(q0, flatten_px, mode="reflect")  # ramp far taller than the pores
+    # mirrored to 2h x 2w so the field repeats cleanly (the height mirrored is even, its x-slope odd in x, its y-slope
+    # odd in y) - without it the FFT's wrap-around put blobs on the edges (seen 2026-11-05 on a photo)
+    p = np.block([[p0, -p0[:, ::-1]], [p0[::-1, :], -p0[::-1, ::-1]]])
+    q = np.block([[q0, q0[:, ::-1]], [-q0[::-1, :], -q0[::-1, ::-1]]])
     h, w = p.shape
     wx = np.fft.fftfreq(w) * 2 * np.pi
     wy = np.fft.fftfreq(h) * 2 * np.pi
@@ -57,19 +66,35 @@ def height_from_normals(normal_rgb: np.ndarray) -> np.ndarray:
     denom[0, 0] = 1.0
     z = (-1j * u * np.fft.fft2(p) - 1j * v * np.fft.fft2(q)) / denom
     z[0, 0] = 0.0
-    return np.real(np.fft.ifft2(z))
+    return np.real(np.fft.ifft2(z))  # the mirrored 2h x 2w height: fine_tile filters it whole, then keeps a quarter
+
+
+def periodic(u: np.ndarray) -> np.ndarray:
+    """Moisan's periodic component ("Periodic plus smooth image decomposition", J. Math. Imaging Vis. 2011): `u` minus
+    the smooth image that carries its edges' mismatch, so it tiles without a seam and without blending two copies."""
+    h, w = u.shape
+    v = np.zeros_like(u)
+    v[0, :] += u[-1, :] - u[0, :]
+    v[-1, :] += u[0, :] - u[-1, :]
+    v[:, 0] += u[:, -1] - u[:, 0]
+    v[:, -1] += u[:, 0] - u[:, -1]
+    denom = 2 * np.cos(2 * np.pi * np.arange(w) / w)[None, :] + 2 * np.cos(2 * np.pi * np.arange(h) / h)[:, None] - 4
+    denom[0, 0] = 1.0
+    smooth = np.fft.fft2(v) / denom
+    smooth[0, 0] = 0.0
+    return u - np.real(np.fft.ifft2(smooth))
 
 
 def fine_tile(height: np.ndarray, px_per_mm: float) -> np.ndarray:
-    """The pore and fine-line band (under HIGH_PASS_MM), made to tile, 0-1 around 0.5."""
-    fine = height - ndimage.gaussian_filter(height, HIGH_PASS_MM * px_per_mm / 2.0, mode="reflect")
-    s = min(fine.shape)
-    fine = fine[:s, :s]
-    shifted = np.roll(fine, (s // 2, s // 2), axis=(0, 1))
-    ramp = np.abs(np.linspace(-1.0, 1.0, s))
-    weight = np.minimum.outer(1.0 - ramp, 1.0 - ramp)  # 1 at the centre, 0 at the edges
-    blend = weight / (weight + np.roll(weight, (s // 2, s // 2), axis=(0, 1)) + 1e-9)
-    tiled = blend * fine + (1.0 - blend) * shifted
+    """The pore and fine-line band (under HIGH_PASS_MM), a 5% margin trimmed (an estimator's edges are its weakest),
+    made to tile (Moisan), 0-1 around 0.5."""
+    # the high-pass on the mirrored height (it repeats, continuous at its edges: no edge residue from a photo's slope)
+    fine = height - ndimage.gaussian_filter(height, HIGH_PASS_MM * px_per_mm / 2.0, mode="wrap")
+    fine = fine[: fine.shape[0] // 2, : fine.shape[1] // 2]
+    m = int(0.05 * min(fine.shape))
+    fine = fine[m:-m, m:-m]
+    side = min(fine.shape)
+    tiled = periodic(fine[:side, :side])
     tiled = (tiled - tiled.mean()) / (4.0 * tiled.std() + 1e-12)  # +-2 sigma in 0-1
     return np.clip(tiled + 0.5, 0.0, 1.0)
 
@@ -86,8 +111,8 @@ def _write(name: str, tile: np.ndarray, size_mm: float, source: dict) -> Path:
 def ten24() -> Path:
     x, y, size = TEN24_CHEEK
     normals = _ffmpeg_crop(TEN24 / "Normal Maps" / "Level_01_Normal.PSD", x, y, size)
-    tile = fine_tile(height_from_normals(normals), TEN24_PX_PER_MM)
-    return _write("ten24", tile, size / TEN24_PX_PER_MM,
+    tile = fine_tile(height_from_normals(normals, HIGH_PASS_MM * TEN24_PX_PER_MM / 2.0), TEN24_PX_PER_MM)
+    return _write("ten24", tile, tile.shape[0] / TEN24_PX_PER_MM,
                   {"source": "Ten24 sample scan, Level_01_Normal.PSD (8K), upper cheek", "crop": [x, y, size],
                    "licence": "Ten24: 'use this scan as you wish ... credit' (page saved 2026-11-04)"})
 
@@ -129,11 +154,16 @@ def photo(name: str, path: str, x: int, y: int, size: int, px_per_mm: float, not
     features: say how in `note`)."""
     img = Image.open(path).convert("RGB").crop((x, y, x + size, y + size))
     rgb = np.asarray(img, dtype=np.float64) / 255.0
-    normals = marigold_normals(rgb)
     OUT.mkdir(parents=True, exist_ok=True)
+    cached = OUT / f"{name}_normals.npy"  # Marigold's answer kept (float), so a change below doesn't rerun it
+    if cached.exists():
+        normals = np.load(cached)
+    else:
+        normals = marigold_normals(rgb)
+        np.save(cached, normals)
     Image.fromarray((normals * 255).astype(np.uint8)).save(OUT / f"{name}_normals.png")
-    tile = fine_tile(height_from_normals(normals), px_per_mm)
-    return _write(name, tile, size / px_per_mm, {"source": str(Path(path).name), "crop": [x, y, size],
+    tile = fine_tile(height_from_normals(normals, HIGH_PASS_MM * px_per_mm / 2.0), px_per_mm)
+    return _write(name, tile, tile.shape[0] / px_per_mm, {"source": str(Path(path).name), "crop": [x, y, size],
                                                  "px_per_mm": px_per_mm, "scale_from": note,
                                                  "normals": f"{MARIGOLD} (OpenRAIL++, local test only)"})
 

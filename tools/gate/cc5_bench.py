@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".dev" / "gate" / "cc5"
 SPHERE_RADIUS_M = 0.10
 GREY = 0.18  # linear, the gate's sphere
+SPHERE_IN_SCENE_M = 0.035  # the gate sphere's radius
 
 
 def sphere() -> Path:
@@ -41,7 +42,7 @@ def sphere() -> Path:
 
 
 def render(out: Path, engine: str, lens: float, camera, target, world_rotation_deg: float, lights: bool, size: int,
-           sphere_at=None) -> Path:
+           sphere_at=None, mirror_lights: bool = False, exposure: float | None = None) -> Path:
     """The gate scene (`.dev/gate/gate_scene.blend`: Daniel, the stage) rendered for the comparison with CC5: today's
     live-view skin synced first (the scene predates it), the key and rim on or off, the image light turned about Z
     by `world_rotation_deg`, a square frame through a camera at `camera` looking at `target` (metres, Blender's Z up)."""
@@ -54,9 +55,15 @@ def render(out: Path, engine: str, lens: float, camera, target, world_rotation_d
     material = importlib.import_module("bl_ext.system.juststage.modules.skin.material")
     body = next(o for o in scene.objects if o.juststage.character_id and not o.juststage.part_of)
     material.sync_live(body.juststage.skin_material)
+    STAGE_TARGET = Vector((0.0, 0.0, 1.35))  # the key's and rim's aim (`.dev/gate/meta.json` lights)
     for obj in scene.objects:
         if obj.type == "LIGHT":
             obj.hide_render = not lights
+            if mirror_lights:  # the stage's lights to the other side (x -> -x), aimed again at the stage's target
+                obj.location.x = -obj.location.x
+                obj.rotation_euler = (STAGE_TARGET - obj.location).to_track_quat("-Z", "Y").to_euler()
+    if exposure is not None:
+        scene.view_settings.exposure = exposure
     nodes, links = scene.world.node_tree.nodes, scene.world.node_tree.links
     env = next(n for n in nodes if n.type == "TEX_ENVIRONMENT")
     mapping = next((n for n in nodes if n.type == "MAPPING"), None)
@@ -67,7 +74,9 @@ def render(out: Path, engine: str, lens: float, camera, target, world_rotation_d
     mapping.inputs["Rotation"].default_value = (0.0, 0.0, math.radians(world_rotation_deg))
     if sphere_at is not None:
         bpy.ops.import_scene.fbx(filepath=str(OUT / "grey_sphere.fbx"))
-        bpy.context.selected_objects[0].location = Vector(sphere_at)
+        ball = bpy.context.selected_objects[0]
+        ball.location = Vector(sphere_at)
+        ball.scale = (SPHERE_IN_SCENE_M / SPHERE_RADIUS_M,) * 3  # as in CC5 (scaled to 3.5 cm there too)
     cam = scene.objects["face camera"]
     cam.location = Vector(camera)
     cam.rotation_euler = (Vector(target) - Vector(camera)).to_track_quat("-Z", "Y").to_euler()
@@ -133,9 +142,11 @@ if __name__ == "__main__":
         p.add_argument("--lights", choices=("on", "off"), default="on")
         p.add_argument("--size", type=int, default=1440)
         p.add_argument("--sphere-at", type=_vec, default=None)
+        p.add_argument("--mirror-lights", action="store_true")
+        p.add_argument("--exposure", type=float, default=None)
         a = p.parse_args(args[1:])
         print("wrote", render(a.out, a.engine, a.lens, a.camera, a.target, a.world_rotation, a.lights == "on",
-                              a.size, a.sphere_at))  # fmt: skip
+                              a.size, a.sphere_at, a.mirror_lights, a.exposure))  # fmt: skip
     elif args[:1] == ["sphere-light"]:  # -- sphere-light PNG CX CY RADIUS (pixels, rows from the top)
         import json
 
