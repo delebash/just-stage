@@ -1203,6 +1203,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            Tool: `tools/gate/parts_gate.py` - 21 views (front, three-quarter, profile, face, back of the hair, eye, lips,
            lip corner, cheek, ear, torso, hand, nails, foot, toenails, full body; jawOpen, smile, browInnerUp), each
            camera placed from anatomy measured on each character; report `docs/gate/2026-11-05/report.md`.
+           THE ONE PRIORITY: PROVE CC5 QUALITY ON EVERY PART, FOR ANY CHARACTER (2026-11-05), the user, verbatim:
+           "what is status on quality remeber that is priority if we can meet cc5 quality then we need to do something
+           else"; "your priority above all else is to make sure we can meet cc5 quality on all parts this needs to be
+           proved nad that we can keep that quality for any custom looking character, if we cannot meet cc5 quality
+           then we need to do something different how many times do i have to tell you this is the 1 and only
+           priority". So: per part, ours beside HD Aaron at the gate's views, equal or above, measured; the same method
+           with no per-character tuning on four or more different characters (sex, age, tone, face shape); the riskiest
+           parts first - if one can't reach the bar, the approach changes. Order: face mid-scale relief (the scans'
+           geometry baked to normal maps) -> body relief -> scalp hair (groom or shading) -> eyes -> smile -> the rest
+           -> the multi-character run.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md

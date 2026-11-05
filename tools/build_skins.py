@@ -18,6 +18,7 @@ packed, the tone the maps were made at kept on the material (`map_*`, modules/sk
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -251,6 +252,26 @@ def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tabl
     _bake_uv(body, 1001)
 
 
+def _module_scan_list():
+    """tools/face_test/scan_list.py (its scans and their credits)."""
+    spec = importlib.util.spec_from_file_location("scan_list", str(ROOT / "tools" / "face_test" / "scan_list.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _melanin_for(linear_rgb: np.ndarray, props, tables) -> float:
+    """The melanin whose skin (at the character's eumelanin and blood) is as light as `linear_rgb` (luminance;
+    bisection - lightness falls as melanin rises; tools/build_library.py's melanin_for by luminance)."""
+    target = float(np.asarray(linear_rgb) @ LUMA)
+    low, high = 0.0, 0.5
+    for _ in range(40):
+        mid = (low + high) / 2
+        lum = float(np.array(skin_optics.Skin(mid, props.eumelanin, props.blood).linear_rgb(tables)) @ LUMA)
+        low, high = (mid, high) if lum > target else (low, mid)
+    return round((low + high) / 2, 5)
+
+
 def _fill(colour: np.ndarray, cover: np.ndarray) -> np.ndarray:
     """Texels the scan didn't reach filled from their surroundings (pull-push: averages of the covered ones down a
     pyramid, pushed back up), so the bake's edges have no black seam."""
@@ -308,6 +329,7 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
         ratio = np.load(scans_dir / f"base_char{composed}.npy").astype(np.float32)[::-1]  # Blender's rows bottom-up
         params = json.loads((scans_dir / f"base_char{composed}.json").read_text())
         tone = np.array(params["tone"], np.float32)
+        props.melanin = _melanin_for(tone, props, tables)  # the scattering and the tone record at the scans' own tone
         filled = _encode(np.clip(ratio * tone, 0.0, 1.0))
         corner = _encode(tone)
         albedo = bpy.data.images.new("composed colour", filled.shape[1], filled.shape[0])
@@ -370,17 +392,26 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
     if old is not None:
         props.skin_material = mat
     extra = {"library": library} if library else {}
+    provenance, licence = PROVENANCE, LICENCE
+    if composed is not None:  # colour from scans only: their credits, no painting
+        scans = _module_scan_list().SCANS
+        used = list(params["mid_from"]) + [params["fine_from"][0]]
+        credits = "; ".join(dict.fromkeys(scans[n]["credit"] for n in used))
+        provenance = (f"JustStage composed skin (tools/face_test/skin_base.py compose {composed}: colour from "
+                      f"{', '.join(params['mid_from'])}, pores from {params['fine_from'][0]}); scans: {credits}")
+        licence = "CC-BY-4.0 (scans) / CC-BY-3.0 (Lee Perry-Smith's scan, where used)"
     result = api.run("juststage.library.save", character=props.character_id, catalog="Skins", name=f"{name} skin",
-                     provenance=PROVENANCE, licence=LICENCE, **extra)  # fmt: skip
+                     provenance=provenance, licence=licence, **extra)  # fmt: skip
     print(f"{name}: {result}")
     return result
 
 
 def main() -> None:
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
-    if argv[:1] == ["--composed"]:  # -- --composed SEED KEY LIBRARY: a scan composition on KEY's character (local test)
+    if argv[:1] == ["--composed"]:  # -- --composed SEED KEY LIBRARY [NAME]: a scan composition ("-": the user's library)
         seed, key, lib = argv[1:4]
-        build(key, None, f"Composed {seed}", lib, composed=int(seed))
+        name = argv[4] if len(argv) > 4 else f"Composed {seed}"
+        build(key, None, name, None if lib == "-" else lib, composed=int(seed))
         return
     if argv[:1] == ["--scan"]:  # -- --scan SCAN KEY LIBRARY: a scan's colour on KEY's character (a local test)
         scan, key, lib = argv[1:4]

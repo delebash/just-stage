@@ -47,9 +47,18 @@ scans of real people (Sketchfab, "CC Attribution" - CC BY 4.0 - unless noted), u
 Painted faces: FLUX 3 Image Klein / FLUX.2 klein 4B (Black Forest Labs), run locally; the outputs are ours, the models'
 licences (FLUX Kommunity licence / Apache-2.0) are labels.
 
+The six scan skins ("Scan man A-C", "Scan woman A-C"; `tools/face_test/skin_base.py compose` with `"colour": "scans"`,
+then `tools/build_skins.py --composed`, 2026-11-05) take their colour from two scans each - never one person's (the
+likeness rule) - and their pores from the first: man A HSR0040 + Infinite (Lee Perry-Smith); man B HSR0040 + Head scan
+13; man C HSR0042 + HSR0081; woman A HSR0027 + HSR0015; woman B HSR0028 + HSR0015; woman C HSR0102 + Attractive
+African woman 236 (deep3dstudio). The HSRD-100 people:
+
+| Scan | Source | Author | Licence |
+|---|---|---|---|
+| HSRD-100: HSR0015-Body-035, HSR0027-Body-068, HSR0028-Body-093, HSR0040-Body-086, HSR0042-Body-018, HSR0081-Body-054, HSR0102-Body-052 (also downloaded, not yet used: HSR0112, HSR0161, HSR0023) | huggingface.co/datasets/digitalrealitylab/HSRD-100 | Digital Reality Lab | CC BY 4.0 |
+
 ## Downloaded for the next skin bases (not yet in a shipped asset)
 
 | What | Source | Author | Licence |
 |---|---|---|---|
-| HSRD-100 raw scans (13 poses of 10 people) | huggingface.co/datasets/digitalrealitylab/HSRD-100 | Digital Reality Lab | CC BY 4.0 |
 | Ten24 sample scan, OBJ package (full body and head, 16K colour, normal levels) | ten24.info/sample-scan (S3 `samplescan/OBJ+Package.zip`) | Ten24 Media | "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used." (page saved 2026-11-04) - credit "Ten24" wherever used |

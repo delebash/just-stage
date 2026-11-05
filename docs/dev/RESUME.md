@@ -47,6 +47,11 @@ updated in the same commit that starts, changes or ends a job, and its "Where it
 
 ### Where it stands (update after every step)
 
+- **THE ONE PRIORITY (the user, 2026-11-05, TASKS "THE ONE PRIORITY"):** prove CC5 quality on every part, and that it
+  holds for any custom character - or prove a part can't, and change the approach. Risk first: (1) face mid-scale
+  relief by baking the HSRD scans' geometry into normal maps through the scan route's fit; (2) body relief; (3) scalp
+  hair (groom vs shading); (4) eyes; (5) smile; (6) the rest; (7) four+ different characters through the same method.
+
 - 2026-11-05: HD Aaron in our stage with CC5's maps comes close to CC5 (realism §6c) - the gap is our characters'
   content. **The standard is HD Aaron in Blender** (TASKS "THE GATE PART BY PART"): the user's hair export imported
   (`aaron_hair_{eevee,cycles}.blend`); `tools/gate/parts_gate.py` renders 21 views per character (`render --who
