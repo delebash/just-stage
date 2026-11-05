@@ -234,6 +234,12 @@ Subjects: [1 · The machine](#1--the-machine) ·
   (the dark side ~50% too bright), so x1.2 is dropped. EEVEE's world sun extraction is on at Blender's defaults
   (`world.sun_threshold` 10, `sun_angle` 0.0092 rad, `use_sun_shadow` on, `probe_resolution` 1024) and Studio Small
   09 peaks at 541 (135 after our 0.25 strength), so its softbox cores become one sharp sun - the next one-factor sweep.
+  **Later the same night (measured, the realism doc §6a):** under the full stage the sphere matches Cycles exactly, so
+  the sweep was dropped; the jaw's 15% darkness is EEVEE's shading of the 1.5 m key light at grazing angles (~60%; a
+  0.5 m key gives 0.950; no EEVEE shadow setting closes it) plus off-screen bounce (~40%). A light-probe volume
+  (`LightProbeVolume`: `capture_indirect` on and `capture_world` off by default; `bpy.ops.object.lightprobe_cache_bake`
+  works headless, 3.5-6.7 s) - coarse with the world captured helps a little, fine (24 x 20 x 36) darkens the world.
+  Skin scattering x2 keeps lit detail within 3% of Cycles and cuts shadow harshness 1.28 -> 1.16.
 - **MetaHuman's character API in Unreal 5.8's Python** (listed headless 2026-11-04, `.dev/gate/out/mh_api.log`): 242
   `MetaHuman*` names, among them `MetaHumanCharacterFactoryNew` (a character asset), `MetaHumanCharacterEditorSubsystem`
   (`try_add_object_to_edit`, `commit_skin_settings` / `commit_face_state` / `commit_eyes_settings` /

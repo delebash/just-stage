@@ -57,7 +57,9 @@ def _context_menu(self, context):
 
 def draw_header(self, context):
     space = context.space_data
-    if getattr(context.window_manager, "juststage_full_interface", True) or space.browse_mode != "ASSETS":
+    # the browser's params are None until it has drawn once (ui/startup.py content_panel): Blender's own header then
+    if (getattr(context.window_manager, "juststage_full_interface", True) or space.browse_mode != "ASSETS"
+            or space.params is None):
         _ORIGINAL["draw"](self, context)
         return
     layout = self.layout

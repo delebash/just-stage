@@ -1123,6 +1123,18 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            not yet approved): the CC5 benchmark by script in CC5 - a CC5 character close to Daniel, our stage (Studio
            Small 09 image light, key and rim, matched by a grey sphere), our lens; our EEVEE render beside it; then the
            skin work in the approved order, judged against it.
+           FABLE ON THE PLAN, THEN THE SPHERE'S DIRECTION (2026-11-04, late): Fable's review of the plan (the HDRI's
+           extractable light is two panels 119 deg apart - one extracted sun points between them; add the light-probe
+           volume and a live-view budget; CC5's fps / VRAM as the target); then my measurement on the renders on disk:
+           under the sky image alone EEVEE's sphere is half as directional as Cycles' (0.091 vs 0.166) and turned 16
+           deg, but under the full stage the two match exactly (0.19 at -124 / -123 deg, contrast 8.63 both) - so the
+           world-light sweep is dropped for the portrait stage. APPROVED - the user, verbatim: "your rec on all go", on:
+           (1) the jaw shadow's causes tested one at a time on the face under the full stage - (a) a light-probe volume
+           baked around the character (bounce and occlusion), (b) skin scattering alone x1.5 to x3 - plus the live
+           view's fps / VRAM baseline, ~20 min on the card; (2) the sky-only flatness parked (researched before any
+           proposal); (3) the CC5 benchmark through the bridge: our sky image tested in CC5 first, CC5's VRAM with its HD
+           character measured, its fps only if CC5 shows it, its best viewport quality set (by its UI, or by the user
+           once), no baking or export of CC5 content, I pick the character closest to Daniel and the user confirms it.
            THE GAPS SEARCH (2026-11-04, late), the user, verbatim: "i opened another sessioj called just stage asset
            search please send it the search info and dont make the same search mistakes you have been making, think
            several times adverserially on what you want the session to search for ...". SENT: the brief

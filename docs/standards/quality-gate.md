@@ -35,6 +35,9 @@ three-quarter, profile, close-up of the eye and lip corner), the neutral and the
 | Cycles (256 samples, OIDN) | the same | the gate script |
 | Unreal 5.8 (Lumen, the MetaHuman shaders for the MetaHuman; our plugin's materials for ours; CC5's Auto Setup for CC5's) | the same | the plugin's test map |
 
+Update 2026-11-04 (late): CC5 is THE standard (TASKS "CC5 IS THE STANDARD") and its viewport IS scriptable - the
+cc5 MCP bridge (RESEARCH §2, "The CC5 MCP bridge in use") sets its camera, lights and image light and renders it; the
+CC5 benchmark renders there, ours beside it in EEVEE. The line below is the earlier plan.
 CC5's own viewport is not a renderer here (Windows DirectX 11, not scriptable from our side); its exported character
 is rendered in Blender and Unreal beside ours.
 
