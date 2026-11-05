@@ -33,8 +33,8 @@ STEPS = [[0.01, 10, 0.5, 10], [0.02, 5, 0.5, 10], [0.03, 2.5, 0.5, 10], [0.01, 1
 THRESHOLD = 0.01  # m: farther than this a point finds no match (keeps our scalp off a scan's hair)
 
 
-def our_head():
-    E = np.load(SCANS / "head_export.npz")
+def our_head(ref: Path):
+    E = np.load(ref)
     co, tris = E["co"].astype(np.float64), E["tris"]
     used = np.unique(tris)
     remap = -np.ones(len(co), dtype=np.int64)
@@ -56,7 +56,9 @@ def main(name):
     print(f"{name}: placed by {keep.sum()} of {len(a)} pairs - scale {scale:.4f}, residual median "
           f"{np.median(res[keep]) * 1000:.2f} mm, 90% {np.percentile(res[keep], 90) * 1000:.2f} mm")
 
-    ours, used = our_head()
+    ref = SCANS / "head_export.npz"  # the current round's head - the one the pairs (scan_pairs.py) were made on
+    (out / "head_export.npz").write_bytes(ref.read_bytes())  # kept with the fit for its later steps (scan_list.reference)
+    ours, used = our_head(ref)
     src = np.load(out / "src.npz")
     scan_v = trimesh.transform_points(src["co"].astype(np.float64), M)
     lo, hi = ours.bounds[0] - REACH, ours.bounds[1] + REACH

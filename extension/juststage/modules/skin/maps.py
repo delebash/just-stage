@@ -42,6 +42,26 @@ PORE_STRENGTH, PORE_DISTANCE = 0.35, 0.0002
 MICRO_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_microrelief.py"
 MICRO_TILE_MM = 10.0
 MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.000035
+#: the nails (rec 14, the realism brief §6.14: "a layered nail shader on tile 1005"): each nail's own coordinates
+#: (`tools/make_nail_coords.py`: along it 0 at the cuticle to 1 at the free edge, across it -1 to 1, its digit); the
+#: plate drawn inside them with a curved cuticle edge and rounded sides (the tile's polygons are coarse), over a bed
+#: tinted toward blood's red, a lunula as long as its digit's (the gaps research §3: visible on 96% of thumbs, 48% of
+#: little fingers; toes but the big one rarely), a white free edge, faint lengthwise ridges; smoother, shinier and
+#: coated; raised a little at its edge
+NAIL_TOOL = "python tools/dev.py blender -b --python tools/make_nail_coords.py"
+NAIL_TILE_INDEX = 4  # 1005
+NAIL_CUTICLE, NAIL_CUTICLE_CURVE = 0.08, 0.35  # where the plate starts: along > cuticle + curve * across^2
+NAIL_SIDE, NAIL_EDGE_SOFT = 0.8, 0.06  # |across| inside this; the edges' softness (in along / across)
+NAIL_FREE_EDGE = (0.92, 0.97)  # along: the free edge - a thin pale rim on a short nail - fades in over this
+NAIL_LUNULA_FINGERS = (0.25, 0.03)  # lunula length = first - second * digit (thumb 0.22 ... little 0.10)
+NAIL_LUNULA_TOES = (0.06, 0.0)  # the big toe's, the others' (rarely seen)
+NAIL_BED, NAIL_BED_SHARE = (0.50, 0.30, 0.27), 0.25  # linear: mixed into the skin's colour
+NAIL_LUNULA, NAIL_LUNULA_SHARE = (0.82, 0.72, 0.68), 0.35
+NAIL_TIP = (0.80, 0.75, 0.66)
+NAIL_GROOVE = 0.45  # how much the fold's groove round the plate darkens it
+NAIL_RIDGES = 0.05  # +- share of the colour
+NAIL_ROUGHNESS, NAIL_SPECULAR, NAIL_COAT = 0.18, 0.6, 0.5
+NAIL_RAISE = 0.0006  # m: the plate over its fold
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
 #: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
@@ -115,6 +135,130 @@ def micro_relief() -> bpy.types.Image:
     image = bpy.data.images.load(str(path), check_existing=True)
     image.colorspace_settings.name = "Non-Color"
     return image
+
+
+def nail_coords() -> bpy.types.Image:
+    """Each nail's own coordinates on tile 1005 (NAIL_TOOL), loaded once and shared."""
+    path = paths.generated("skin", "nails.png", tool=NAIL_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _math(nt, name: str, op: str, a, b=None, c=None):
+    """A Math node fed by sockets or numbers; returns its output."""
+    node = _node(nt, "ShaderNodeMath", name)
+    node.operation = op
+    for k, value in enumerate((a, b, c)):
+        if value is None:
+            continue
+        if isinstance(value, (int, float)):
+            node.inputs[k].default_value = value
+        else:
+            nt.links.new(value, node.inputs[k])
+    return node.outputs["Value"]
+
+
+def _clamp01(nt, name: str, value, scale: float):
+    """min(max(value * scale, 0), 1): a soft edge `1 / scale` wide."""
+    scaled = _math(nt, name, "MULTIPLY", value, scale)
+    return _math(nt, name + "_c", "MINIMUM", _math(nt, name + "_p", "MAXIMUM", scaled, 0.0), 1.0)
+
+
+def _mix(nt, name: str, kind: str, factor, a, b):
+    """A Mix node (FLOAT or RGBA) of sockets or constants by `factor`; returns its result."""
+    node = _node(nt, "ShaderNodeMix", name)
+    node.data_type = kind
+    suffix = "Float" if kind == "FLOAT" else "Color"
+    if isinstance(factor, (int, float)):
+        node.inputs["Factor"].default_value = factor
+    else:
+        nt.links.new(factor, node.inputs["Factor"])
+    for ident, value in (("A_" + suffix, a), ("B_" + suffix, b)):
+        socket = next(i for i in node.inputs if i.identifier == ident)
+        if isinstance(value, tuple):
+            socket.default_value = (*value, 1.0)
+        elif isinstance(value, (int, float)):
+            socket.default_value = value
+        else:
+            nt.links.new(value, socket)
+    return next(o for o in node.outputs if o.identifier == "Result_" + suffix)
+
+
+def _nail_layer(nt, bsdf, uv, which) -> None:
+    """The nail plate over the skin on tile 1005 (the NAIL_* constants): colour, roughness, specular and coat mixed by
+    the plate's mask, its edge raised by a bump at the end of the normal chain."""
+
+    def fed(name):
+        return bsdf.inputs[name].links[0].from_socket
+
+    shift = _node(nt, "ShaderNodeVectorMath", "nail_uv", (-1800, -1600))
+    shift.operation = "SUBTRACT"
+    nt.links.new(uv.outputs["UV"], shift.inputs[0])
+    shift.inputs[1].default_value = (float(NAIL_TILE_INDEX), 0.0, 0.0)
+    coords = _node(nt, "ShaderNodeTexImage", "nail_coords", (-1600, -1600))
+    coords.image, coords.interpolation, coords.extension = nail_coords(), "Linear", "CLIP"
+    nt.links.new(shift.outputs["Vector"], coords.inputs["Vector"])
+    parts = _node(nt, "ShaderNodeSeparateColor", "nail_parts", (-1350, -1600))
+    nt.links.new(coords.outputs["Color"], parts.inputs["Color"])
+    along = parts.outputs["Red"]
+    digit = _math(nt, "nail_digit", "MULTIPLY", parts.outputs["Blue"], 10.0)
+    across = _math(nt, "nail_across", "MULTIPLY_ADD", parts.outputs["Green"], 2.0, -1.0)
+    across2 = _math(nt, "nail_across2", "MULTIPLY", across, across)
+    on_tile = _math(nt, "nail_on_tile", "COMPARE", which.outputs["Value"], float(NAIL_TILE_INDEX), 0.5)
+    inside = _math(nt, "nail_inside", "MULTIPLY", coords.outputs["Alpha"], on_tile)
+    # the plate: past the curved cuticle edge, inside the rounded sides
+    cut = _math(nt, "nail_cut", "MULTIPLY_ADD", across2, NAIL_CUTICLE_CURVE, NAIL_CUTICLE)
+    start = _clamp01(nt, "nail_start", _math(nt, "nail_past_cut", "SUBTRACT", along, cut), 1 / NAIL_EDGE_SOFT)
+    sides = _clamp01(nt, "nail_sides", _math(nt, "nail_side_room", "SUBTRACT", NAIL_SIDE,
+                                             _math(nt, "nail_abs", "ABSOLUTE", across)), 1 / NAIL_EDGE_SOFT)
+    plate = _math(nt, "nail_plate", "MULTIPLY", _math(nt, "nail_plate_a", "MULTIPLY", start, sides), inside)
+    # the lunula: a half-moon from the cuticle, as long as its digit's
+    toes = _math(nt, "nail_toes", "GREATER_THAN", digit, 5.5)
+    finger_len = _math(nt, "nail_len_f", "MULTIPLY_ADD", digit, -NAIL_LUNULA_FINGERS[1], NAIL_LUNULA_FINGERS[0])
+    big_toe = _math(nt, "nail_big_toe", "COMPARE", digit, 6.0, 0.5)
+    toe_len = _mix(nt, "nail_len_t", "FLOAT", big_toe, NAIL_LUNULA_TOES[1], NAIL_LUNULA_TOES[0])
+    length = _mix(nt, "nail_len", "FLOAT", toes, finger_len, toe_len)
+    round_ = _math(nt, "nail_round", "SQRT", _math(nt, "nail_round_a", "MAXIMUM",
+                                                    _math(nt, "nail_round_b", "SUBTRACT", 1.0, across2), 0.0))
+    edge = _math(nt, "nail_lunula_edge", "MULTIPLY_ADD", length, round_, cut)
+    lunula = _clamp01(nt, "nail_lunula", _math(nt, "nail_lunula_d", "SUBTRACT", edge, along), 1 / 0.04)
+    tip = _clamp01(nt, "nail_tip", _math(nt, "nail_tip_d", "SUBTRACT", along, NAIL_FREE_EDGE[0]),
+                   1 / (NAIL_FREE_EDGE[1] - NAIL_FREE_EDGE[0]))
+    # faint lengthwise ridges: noise stretched along the nail
+    ridge_at = _node(nt, "ShaderNodeCombineXYZ", "nail_ridge_at", (-1100, -1900))
+    nt.links.new(_math(nt, "nail_ridge_x", "MULTIPLY", across, 30.0), ridge_at.inputs["X"])
+    nt.links.new(_math(nt, "nail_ridge_y", "MULTIPLY", along, 2.0), ridge_at.inputs["Y"])
+    ridge = _node(nt, "ShaderNodeTexNoise", "nail_ridges", (-900, -1900))
+    ridge.inputs["Scale"].default_value, ridge.inputs["Detail"].default_value = 1.0, 2.0
+    nt.links.new(ridge_at.outputs["Vector"], ridge.inputs["Vector"])
+    shade = _math(nt, "nail_ridge_shade", "MULTIPLY_ADD", ridge.outputs["Fac"], 2 * NAIL_RIDGES, 1.0 - NAIL_RIDGES)
+    skin = fed("Base Color")
+    bed = _mix(nt, "nail_bed", "RGBA", NAIL_BED_SHARE, skin, NAIL_BED)
+    with_lunula = _mix(nt, "nail_with_lunula", "RGBA",
+                       _math(nt, "nail_lunula_share", "MULTIPLY", lunula, NAIL_LUNULA_SHARE), bed, NAIL_LUNULA)
+    with_tip = _mix(nt, "nail_with_tip", "RGBA", tip, with_lunula, NAIL_TIP)
+    ridged = _node(nt, "ShaderNodeVectorMath", "nail_ridged", (-300, -1600))
+    ridged.operation = "SCALE"
+    nt.links.new(with_tip, ridged.inputs[0])
+    nt.links.new(shade, ridged.inputs["Scale"])
+    plated = _mix(nt, "nail_colour", "RGBA", plate, skin, ridged.outputs["Vector"])
+    # the fold's groove: a darker band where the plate meets the skin (plate x (1 - plate) peaks at its edge)
+    band = _math(nt, "nail_band", "MULTIPLY", plate, _math(nt, "nail_band_a", "SUBTRACT", 1.0, plate))
+    groove = _node(nt, "ShaderNodeVectorMath", "nail_groove", (-100, -1600))
+    groove.operation = "SCALE"
+    nt.links.new(plated, groove.inputs[0])
+    nt.links.new(_math(nt, "nail_groove_shade", "MULTIPLY_ADD", band, -4 * NAIL_GROOVE, 1.0), groove.inputs["Scale"])
+    nt.links.new(groove.outputs["Vector"], bsdf.inputs["Base Color"])
+    for name, value, key in (("Roughness", NAIL_ROUGHNESS, "rough"), ("Specular IOR Level", NAIL_SPECULAR, "spec"),
+                             ("Coat Weight", NAIL_COAT, "coat")):
+        own = fed(name) if bsdf.inputs[name].is_linked else bsdf.inputs[name].default_value
+        nt.links.new(_mix(nt, f"nail_{key}", "FLOAT", plate, own, value), bsdf.inputs[name])
+    raise_ = _node(nt, "ShaderNodeBump", "nail_raise", (50, -200))
+    raise_.inputs["Strength"].default_value, raise_.inputs["Distance"].default_value = 1.0, NAIL_RAISE
+    nt.links.new(plate, raise_.inputs["Height"])
+    nt.links.new(fed("Normal"), raise_.inputs["Normal"])
+    nt.links.new(raise_.outputs["Normal"], bsdf.inputs["Normal"])
 
 
 def _tiled_coords(nt, name: str, uv, which, tile_mm: float, location):
@@ -224,6 +368,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(micro.outputs["Color"], micro_bump.inputs["Height"])
     links.new(bump.outputs["Normal"], micro_bump.inputs["Normal"])
     links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
+    _nail_layer(nt, bsdf, uv, which)
     coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
     coat.data_type = "FLOAT"
     links.new(body.outputs["Value"], coat.inputs["Factor"])

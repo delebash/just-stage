@@ -73,9 +73,10 @@ def test_a_mapped_skin_goes_onto_any_character_in_its_own_tone(human, tmp_path):
     nodes = mat.node_tree.nodes
     assert nodes[maps.NODE + "uv"].uv_map == maps.UV
     assert nodes[maps.NODE + "base_color"].image.source == "TILED"
-    # the body's mottling (below the head tile) on the way to the colour
+    # the body's mottling (below the head tile) on the way to the colour (under the nails' plate)
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
-    assert bsdf.inputs["Base Color"].links[0].from_node == nodes[maps.NODE + "mottle"]
+    nail = nodes[maps.NODE + "nail_colour"]
+    assert next(i for i in nail.inputs if i.identifier == "A_Color").links[0].from_node == nodes[maps.NODE + "mottle"]
     assert body.juststage.melanin == pytest.approx(0.12)  # the skin's own tone came with it
     gain = np.array(nodes[maps.NODE + "gain"].inputs[1].default_value)
     assert np.allclose(gain, 1.0, atol=1e-4)  # at its own tone, the map as made
@@ -156,6 +157,21 @@ def test_the_relief_layers_keep_one_size_on_every_tile_and_the_microrelief_shade
             assert _factor(nodes, name, k) == pytest.approx(maps.MM_PER_UV[number] / size)
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
     micro = nodes[maps.NODE + "micro_bump"]
-    assert bsdf.inputs["Normal"].links[0].from_node == micro
+    assert nodes[maps.NODE + "nail_raise"].inputs["Normal"].links[0].from_node == micro  # then the nails' edge
     assert micro.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "pore_bump"]
     assert nodes[maps.NODE + "micro"].image.size[0] >= 2048
+
+
+def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    assert bsdf.inputs["Base Color"].links[0].from_node == nodes[maps.NODE + "nail_groove"]
+    assert bsdf.inputs["Roughness"].links[0].from_node == nodes[maps.NODE + "nail_rough"]
+    assert bsdf.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
+    coords = nodes[maps.NODE + "nail_coords"].image  # each nail's own coordinates, made once (make_nail_coords.py)
+    alpha = np.empty(coords.size[0] * coords.size[1] * 4, np.float32)
+    coords.pixels.foreach_get(alpha)
+    assert 0.3 < (alpha[3::4] > 0.5).mean() < 0.9  # the nails fill most of their tile
+    assert nodes[maps.NODE + "nail_on_tile"].inputs[1].default_value == maps.NAIL_TILE_INDEX

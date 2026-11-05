@@ -12,8 +12,9 @@ head (scan_fit.py) projected into each view, counted only where the view's posit
 (within 4 mm - not hidden), weighted by how squarely the view sees it. Skin = skin, neck, nose, ears; a bald scan's
 "hair" counts as skin (a parser may call a bald crown hair - scan_list's flag).
 
-Writes scans/NAME/skin.png (HeadTile, 2048², the share of skin votes; 0 where no view saw it) and parse_*.png (each
-view's labels, for checking). Run (the RealDenseFace environment; processor): .dev/venv-rdf/Scripts/python -I
+Writes scans/NAME/skin.png (HeadTile, 2048², the share of skin votes; 0 where no view saw it), colour.png (skin and
+lips), normals.npy (our fitted head's normal per texel) and parse_*.png (each view's labels, for checking).
+Run (the RealDenseFace environment; processor): .dev/venv-rdf/Scripts/python -I
 tools/face_test/scan_skin.py NAME
 """
 
@@ -34,6 +35,8 @@ WEIGHTS = ROOT / ".dev/cache/segface/convnext_celeba_512_model_299.pt"  # sha256
 CLASSES = ["background", "neck", "skin", "cloth", "l_ear", "r_ear", "l_brow", "r_brow", "l_eye", "r_eye", "nose",
            "mouth", "l_lip", "u_lip", "hair", "eye_g", "hat", "ear_r", "neck_l"]  # its CelebAMaskHQ list (inference.py)
 SKIN = ["neck", "skin", "nose", "l_ear", "r_ear"]
+#: the colour mask adds the lips (skin_base.split's broad layer: the face's regional colour, lips included)
+LIPS = ["l_lip", "u_lip"]
 RES = 2048
 HIDDEN = 0.004  # m (ours): a texel farther than this from the point the view shows there is hidden from it
 
@@ -96,7 +99,7 @@ def main(name):
     out = SCANS / name
     scan = scan_list.SCANS[name]
     model = load_segface()
-    E = np.load(SCANS / "head_export.npz")
+    E = np.load(scan_list.reference(name))
     Fz = np.load(out / "fit.npz")
     used, fitted, M = Fz["used"], Fz["fitted"], Fz["placement"]
     remap = -np.ones(len(E["co"]), dtype=np.int64)
@@ -115,7 +118,7 @@ def main(name):
     n_s /= np.maximum(np.linalg.norm(n_s, axis=1, keepdims=True), 1e-12)
 
     views = json.loads((out / "views.json").read_text())["cams"]
-    skin_acc, w_acc = np.zeros(len(p)), np.zeros(len(p))
+    skin_acc, lips_acc, w_acc = np.zeros(len(p)), np.zeros(len(p)), np.zeros(len(p))
     for label, cam in views.items():
         rgba = cv2.imread(str(out / f"view_{label}.png"), cv2.IMREAD_UNCHANGED)[..., [2, 1, 0, 3]].astype(np.float32)
         a = rgba[..., 3:] / 255.0
@@ -138,12 +141,21 @@ def main(name):
         seen = inside & (pos[ri, ci, 3] > 0.5) & (np.linalg.norm(shown - p_s, axis=1) * scale < HIDDEN)
         w = np.where(seen, np.clip(n_s @ back, 0.0, 1.0) ** 2, 0.0)
         skin_acc += w * up.sample(skin[..., None].astype(np.float32), col, row)[:, 0]
+        lips = prob[..., [CLASSES.index(c) for c in LIPS]].sum(-1)
+        lips_acc += w * up.sample(lips[..., None].astype(np.float32), col, row)[:, 0]
         w_acc += w
         print(f"{name} {label}: sees {seen.mean():.1%} of our texels")
     share = np.where(w_acc > 0, skin_acc / np.maximum(w_acc, 1e-12), 0.0)
     img = np.zeros((RES, RES), np.uint8)
     img[covered] = np.clip(share * 255, 0, 255).astype(np.uint8)
     cv2.imwrite(str(out / "skin.png"), img)
+    colour = np.zeros((RES, RES), np.uint8)
+    colour[covered] = np.clip((share + np.where(w_acc > 0, lips_acc / np.maximum(w_acc, 1e-12), 0.0)) * 255, 0, 255)
+    cv2.imwrite(str(out / "colour.png"), colour)
+    # our fitted head's normals per texel (its own frame, as the bake sees it): skin_base.split's shading fit
+    normals = np.zeros((RES, RES, 3), np.float16)
+    normals[covered] = n.astype(np.float16)
+    np.save(out / "normals.npy", normals)
     print(f"{name}: seen {np.mean(w_acc > 0):.1%} of our texels, skin there {np.mean(share[w_acc > 0] > 0.5):.1%}")
 
 

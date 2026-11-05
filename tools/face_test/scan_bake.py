@@ -78,7 +78,7 @@ def main(argv):
     scene.cycles.samples = 4
     scene.view_settings.view_transform = "Standard"
 
-    E = np.load(Path(scan_list.OUT) / "head_export.npz")
+    E = np.load(scan_list.reference(name))
     F = np.load(out / "fit.npz")
     used = F["used"]
     remap = -np.ones(len(E["co"]), dtype=np.int64)

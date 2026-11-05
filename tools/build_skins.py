@@ -18,6 +18,7 @@ packed, the tone the maps were made at kept on the material (`map_*`, modules/sk
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 from pathlib import Path
 
@@ -250,7 +251,33 @@ def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tabl
     _bake_uv(body, 1001)
 
 
-def build(key: str) -> Path:
+def _fill(colour: np.ndarray, cover: np.ndarray) -> np.ndarray:
+    """Texels the scan didn't reach filled from their surroundings (pull-push: averages of the covered ones down a
+    pyramid, pushed back up), so the bake's edges have no black seam."""
+    levels = [(colour * cover[..., None], cover)]
+    while levels[-1][1].shape[0] > 4:
+        c, w = levels[-1]
+        h2, w2 = c.shape[0] // 2, c.shape[1] // 2
+        c = c[: h2 * 2, : w2 * 2].reshape(h2, 2, w2, 2, 3).sum((1, 3))
+        w = w[: h2 * 2, : w2 * 2].reshape(h2, 2, w2, 2).sum((1, 3))
+        levels.append((c, w))
+    c, w = levels[-1]
+    filled = c / np.maximum(w, 1e-6)[..., None]
+    for c, w in reversed(levels[:-1]):
+        up = np.repeat(np.repeat(filled, 2, 0), 2, 1)[: c.shape[0], : c.shape[1]]
+        own = c / np.maximum(w, 1e-6)[..., None]
+        filled = np.where((w > 0)[..., None], own, up)
+    return filled
+
+
+def build(key: str, colour: Path | None = None, name: str | None = None, library: str | None = None,
+          composed: int | None = None) -> Path:
+    """`colour`: a HeadTile colour map in place of the character's painted face - a scan's own bake
+    (`.dev/facetest/scans/<scan>/bake_colour.png`, its `bake_cover.png` beside it), kept as the scan shows it, the head
+    tile's other channels flat - a local test of scan colour against the painting (the part-by-part gate); `name` and
+    `library` then name the skin and keep it out of the user's library. `composed`: a composition's seed instead
+    (`tools/face_test/skin_base.py compose SEED`: `scans/base_char<SEED>.npy`, its ratio around 1 in HeadTile, and its
+    `.json` with the scans' blended tone) - the colour is that tone times the ratio, all from scans, no painting."""
     folder = CHARS / key
     bpy.ops.wm.open_mainfile(filepath=str(folder / "round.blend"))
     scene = bpy.context.scene
@@ -265,8 +292,8 @@ def build(key: str) -> Path:
     body.select_set(True)
     maps.add_layout(body)
     _bake_uv(body)
-    name = NAMES[key]
-    out = OUT / key
+    name = name or NAMES[key]
+    out = OUT / (key if colour is None and composed is None else name.replace(" ", "_"))  # a test never over Daniel's
     out.mkdir(parents=True, exist_ok=True)
     stems = {c: f"{name} skin.{c}" for c in maps.CHANNELS}
     albedo = _source("albedo", folder)
@@ -276,10 +303,41 @@ def build(key: str) -> Path:
     tables = skin_optics.load_tables(paths.FETCHED / "optics")
     tone = skin_optics.Skin(props.melanin, props.eumelanin, props.blood).linear_rgb(tables)
     hue = _face_test_gain(body)
+    if composed is not None:
+        scans_dir = ROOT / ".dev" / "facetest" / "scans"
+        ratio = np.load(scans_dir / f"base_char{composed}.npy").astype(np.float32)[::-1]  # Blender's rows bottom-up
+        params = json.loads((scans_dir / f"base_char{composed}.json").read_text())
+        tone = np.array(params["tone"], np.float32)
+        filled = _encode(np.clip(ratio * tone, 0.0, 1.0))
+        corner = _encode(tone)
+        albedo = bpy.data.images.new("composed colour", filled.shape[1], filled.shape[0])
+        albedo.colorspace_settings.name = "Non-Color"
+        albedo.pixels.foreach_set(np.dstack([filled, np.ones(filled.shape[:2])]).astype(np.float32).ravel())
+        hue = np.ones(3)
+        colour = scans_dir / f"base_char{composed}.npy"  # the flat-channel path below
+    elif colour is not None:
+        scan_image = bpy.data.images.load(str(colour), check_existing=False)
+        cover_image = bpy.data.images.load(str(colour.with_name("bake_cover.png")), check_existing=False)
+        for image in (scan_image, cover_image):
+            image.colorspace_settings.name = "Non-Color"  # as stored
+        scan, cover = _pixels(scan_image)[..., :3], _pixels(cover_image)[..., 0]
+        covered = cover > 0.5
+        filled = _fill(scan, covered.astype(np.float32))
+        corner = np.median(scan[covered], axis=0)  # the scan's own skin for the body tiles
+        albedo = bpy.data.images.new("scan colour", filled.shape[1], filled.shape[0])
+        albedo.colorspace_settings.name = "Non-Color"
+        albedo.pixels.foreach_set(np.dstack([filled, np.ones(filled.shape[:2])]).astype(np.float32).ravel())
+        hue = np.ones(3)
     for channel in ("base_color", "roughness", "cavity", "height"):
+        if colour is not None and channel != "base_color":
+            flat = np.broadcast_to(np.full(3, FLAT[channel], np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
+            maps.write_png(out / f"{stems[channel]}.1001.png", flat, "8" if channel != "height" else "16")
+            continue
         source = albedo if channel == "base_color" else _source(channel, folder)
         baked = _bake(body, "EMIT", _emission_of(source))
-        if channel == "base_color":  # the face test's hue; our tone model's brightness at this melanin
+        if channel == "base_color" and colour is not None:
+            pass  # the scan's colour as it is
+        elif channel == "base_color":  # the face test's hue; our tone model's brightness at this melanin
             linear = _decode(baked) * hue
             skin = linear[linear.sum(axis=2) > 0.01]
             scale = float(np.array(tone) @ LUMA) / float(np.median(skin @ LUMA))
@@ -288,7 +346,10 @@ def build(key: str) -> Path:
             print(f"{name}: colour x{scale:.3f} to melanin {props.melanin}'s brightness")
         maps.write_png(out / f"{stems[channel]}.1001.png", baked, "8" if channel != "height" else "16")
         print(f"{name}: {channel} baked")
-    baked = _bake(body, "NORMAL", _normals_of(_source("normal", folder), _source("painted", folder)))
+    if colour is None:
+        baked = _bake(body, "NORMAL", _normals_of(_source("normal", folder), _source("painted", folder)))
+    else:
+        baked = np.broadcast_to(np.array((0.5, 0.5, 1.0), np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
     maps.write_png(out / f"{stems['normal']}.1001.png", baked, "16")
     _body_tiles(body, out, stems, corner, props, tables)
     print(f"{name}: normal baked to tangent space")
@@ -308,16 +369,26 @@ def build(key: str) -> Path:
     maps.set_gain(mat, tuple(skin.linear_rgb(tables)))
     if old is not None:
         props.skin_material = mat
+    extra = {"library": library} if library else {}
     result = api.run("juststage.library.save", character=props.character_id, catalog="Skins", name=f"{name} skin",
-                     provenance=PROVENANCE, licence=LICENCE)  # fmt: skip
+                     provenance=PROVENANCE, licence=LICENCE, **extra)  # fmt: skip
     print(f"{name}: {result}")
     return result
 
 
 def main() -> None:
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    if argv[:1] == ["--composed"]:  # -- --composed SEED KEY LIBRARY: a scan composition on KEY's character (local test)
+        seed, key, lib = argv[1:4]
+        build(key, None, f"Composed {seed}", lib, composed=int(seed))
+        return
+    if argv[:1] == ["--scan"]:  # -- --scan SCAN KEY LIBRARY: a scan's colour on KEY's character (a local test)
+        scan, key, lib = argv[1:4]
+        build(key, ROOT / ".dev" / "facetest" / "scans" / scan / "bake_colour.png", f"Scan {scan}", lib)
+        return
     for key in argv or list(NAMES):
         build(key)
 
 
-main()
+if __name__ == "__main__":
+    main()

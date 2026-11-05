@@ -23,10 +23,13 @@ scan_list = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(scan_list)
 
 
-def load(path: Path):
+def load(path: Path, up: str = "Y"):
+    """`up`: the file's own up axis where it isn't the format's convention (HSRD-100's OBJs are Z up)."""
     ext = path.suffix.lower()
     if ext == ".fbx":
         bpy.ops.import_scene.fbx(filepath=str(path))
+    elif ext == ".obj" and up == "Z":
+        bpy.ops.wm.obj_import(filepath=str(path), forward_axis="Y", up_axis="Z")
     elif ext == ".obj":
         bpy.ops.wm.obj_import(filepath=str(path))
     elif ext in (".glb", ".gltf"):
@@ -50,7 +53,7 @@ def main(argv):
     out = Path(scan_list.OUT) / argv[0] / "src.npz"
     out.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    load(src)
+    load(src, scan_list.SCANS[argv[0]].get("up", "Y"))
     dg = bpy.context.evaluated_depsgraph_get()
     cos, tris, uvs, mats, names = [], [], [], [], []
     mat_index = {}

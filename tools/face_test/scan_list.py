@@ -11,6 +11,7 @@ of its sex first and keeps a stubbled scan's stubble only as far as the characte
 Kept: `docs/plans/2026-11-02-scan-skin-base.md` §3."""
 
 S = "E:/Dev/3D/just-stage/.dev/downloads/scans/"
+H = "E:/Dev/3D/just-stage/.dev/downloads/hsrd100/"  # HSRD-100: 16K studio scans of whole bodies (rec 2)
 OUT = "E:/Dev/3D/just-stage/.dev/facetest/scans/"
 
 SCANS = {
@@ -123,7 +124,128 @@ SCANS = {
         "credit": '"Carla Rigged 001 - Rigged 3D Business Women" by Renderpeople - '
         "sketchfab.com/3d-models/acf520f450d14dd799f98a6fede3edf5 (CC BY)",
     },
+    "hsr0015": {
+        # Female, Hispanic, 23, Type 2 - White Skin; expression Neutral
+        "source": H + "HSR0015-Body-035/x/HSR0015-Body-035_LOD0.obj",
+        "textures": {"*": H + "HSR0015-Body-035/x/HSR0015-Body-035_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "f",
+        "stubble": False,
+        "credit": '"HSR0015-Body-035" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0023": {
+        # Male, Hispanic, 62, Type 2 - White Skin; expression Neutral
+        "source": H + "HSR0023-Body-077/x/HSR0023-Body-077_LOD0.obj",
+        "textures": {"*": H + "HSR0023-Body-077/x/HSR0023-Body-077_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "m",
+        "stubble": False,
+        "credit": '"HSR0023-Body-077" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0027": {
+        # Female, Caucasian, 41, Type 2 - White Skin; expression Neutral
+        "source": H + "HSR0027-Body-068/x/HSR0027-Body-068_LOD0.obj",
+        "textures": {"*": H + "HSR0027-Body-068/x/HSR0027-Body-068_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "f",
+        "stubble": False,
+        "credit": '"HSR0027-Body-068" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0028": {
+        # Female, Asian, 21, Type 2 - White Skin; expression Neutral
+        "source": H + "HSR0028-Body-093/x/HSR0028-Body-093_LOD0.obj",
+        "textures": {"*": H + "HSR0028-Body-093/x/HSR0028-Body-093_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "f",
+        "stubble": False,
+        "credit": '"HSR0028-Body-093" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0040": {
+        # Male, Caucasian, 50, Type 3 - Light Brown Skin; expression Neutral
+        "source": H + "HSR0040-Body-086/x/HSR0040-Body-086_LOD0.obj",
+        "textures": {"*": H + "HSR0040-Body-086/x/HSR0040-Body-086_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "m",
+        "stubble": False,
+        "credit": '"HSR0040-Body-086" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0042": {
+        # Male, African, 24, Type 5 - Dark Brown Skin; expression Neutral
+        "source": H + "HSR0042-Body-018/x/HSR0042-Body-018_LOD0.obj",
+        "textures": {"*": H + "HSR0042-Body-018/x/HSR0042-Body-018_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "m",
+        "stubble": False,
+        "credit": '"HSR0042-Body-018" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0081": {
+        # Male, Asian, 25, Type 3 - Light Brown Skin; expression Neutral
+        "source": H + "HSR0081-Body-054/x/HSR0081-Body-054_LOD0.obj",
+        "textures": {"*": H + "HSR0081-Body-054/x/HSR0081-Body-054_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "m",
+        "stubble": False,
+        "credit": '"HSR0081-Body-054" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0102": {
+        # Female, African, 22, Type 5 - Dark Brown Skin; expression Neutral
+        "source": H + "HSR0102-Body-052/x/HSR0102-Body-052_LOD0.obj",
+        "textures": {"*": H + "HSR0102-Body-052/x/HSR0102-Body-052_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "f",
+        "stubble": False,
+        "credit": '"HSR0102-Body-052" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0112": {
+        # Female, Caucasian, 60, Type 2 - White Skin; expression Neutral
+        "source": H + "HSR0112-Body-074/x/HSR0112-Body-074_LOD0.obj",
+        "textures": {"*": H + "HSR0112-Body-074/x/HSR0112-Body-074_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "f",
+        "stubble": False,
+        "credit": '"HSR0112-Body-074" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
+    "hsr0161": {
+        # Male, African, 64, Type 5 - Dark Brown Skin; expression Smile
+        "source": H + "HSR0161-Body-002/x/HSR0161-Body-002_LOD0.obj",
+        "textures": {"*": H + "HSR0161-Body-002/x/HSR0161-Body-002_LOD0_u0_v0_diffuse.png"},
+        "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
+        "bald": False,
+        "sex": "m",
+        "stubble": False,
+        "credit": '"HSR0161-Body-002" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
+        "(CC BY 4.0)",
+    },
 }
+
+
+def reference(name: str):
+    """The head a scan's fit was made on: the copy its fit kept (scan_fit.py), else the current round's export. The
+    round's head changes when the face test renders another character (2026-11-05: the clay pictures and the old export
+    30 mm apart, so HSR0040's pairs landed off it), so each scan's later steps (scan_bake.py, scan_skin.py) read the head
+    it was fitted to."""
+    from pathlib import Path
+
+    own = Path(OUT) / name / "head_export.npz"
+    return own if own.exists() else Path(OUT) / "head_export.npz"
 
 
 def texture_for(scan: dict, material: str):

@@ -96,8 +96,9 @@ def _stage():
     return scene, cam
 
 
-def build_ours(scene) -> dict:
-    """The library's man the app's way, with the hair library's scalp style and brows and the face's ARKit 52."""
+def build_ours(scene, skin: str = "") -> dict:
+    """The library's man the app's way, with the hair library's scalp style and brows and the face's ARKit 52;
+    `skin` (a library skin's .blend) put on him as the Content panel does."""
     api = importlib.import_module("bl_ext.system.juststage.api")
     library = importlib.import_module("bl_ext.system.juststage.core.library")
     root = library.root()
@@ -107,6 +108,8 @@ def build_ours(scene) -> dict:
     api.run("juststage.library.add", path=str(root / "Hair" / "Brows" / f"{OURS['brows']}.blend"),
             character=shown.character)
     api.run("juststage.head.add_face_units", character=shown.character)
+    if skin:
+        api.run("juststage.library.add", path=skin, character=shown.character)
     objects = [o for o in scene.objects if shown.character in (o.juststage.character_id, o.juststage.part_of)]
     body = next(o for o in objects if not o.juststage.part_of)
     return {"body": body, "objects": objects, "keyed": [body]}
@@ -315,9 +318,9 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 # ---- render --------------------------------------------------------------------------------------------------------
 
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
-           cc5_inputs: dict[str, float] | None = None, tag: str = "") -> None:
+           cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "") -> None:
     scene, cam = _stage()
-    built = build_ours(scene) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
+    built = build_ours(scene, skin) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
     set_expression(who, built, "neutral")
     a = anchors(who, built)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -430,10 +433,11 @@ if __name__ == "__main__":
     p.add_argument("--samples", type=int, default=CYCLES_SAMPLES)
     p.add_argument("--cc5-inputs", default="", help='"Name=value;Name=value" on his skin shaders (a diagnostic)')
     p.add_argument("--tag", default="", help="appended to the file names (a diagnostic's variant)")
+    p.add_argument("--skin", default="", help="a library skin (.blend) on ours, as the Content panel applies it")
     a = p.parse_args(args)
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\
     if a.command == "render":
         inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}
-        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag)
+        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin)
     else:
         sheet(out)

@@ -11,7 +11,8 @@ methuman"). MetaHuman's way (a scanned texture index with wrinkle density, stubb
    character has its own. The scanned person's own marks (moles, blemishes: small dark spots in the mid and fine
    layers) are taken out.
 2. `compose`: one character's base as a ratio map around 1 - its pores from ONE scan (the next ones only filling
-   where it didn't reach), its blotchiness mixed from 2-3, plus its own mottling noise, age (how strong the fine layer
+   where it didn't reach), its blotchiness mixed from 2-3, its regional colour (the broad layer, where `split` had
+   scan_skin.py's colour mask and normals) from 2-3, plus its own mottling noise, age (how strong the fine layer
    is), redness, freckles and moles from its seed. The projection (test_face_project.py) multiplies it by the
    character's tone and blends it under the face.
 
@@ -40,6 +41,13 @@ EDGE = 12  # texels (~2 mm on the face): a scan's skin is used this far inside i
 #: stubble 1 - beard 2.76, scalp 2.40, elsewhere 1.96; stubble 0 at floor 0.3 - beard 1.40, scalp 1.25 (smoother than
 #: the rest of the face); 0.55 puts a shaved beard near the face's own 1.95 (the trend between the two)
 STUBBLE_KERNEL, STUBBLE_FLOOR = 7, 0.55
+#: the broad layer (the face's regional colour above ~8 mm: redder cheeks, nose and ears, the lips, darker round the
+#: eyes - the part-by-part gate, 2026-11-05: without it the colour came from the painting, pale and even): the scan's
+#: light taken out by a second-order spherical-harmonic fit of its log luminance on our fitted head's normals (the
+#: standard low-order lighting model - Ramamoorthi & Hanrahan 2001; a studio's soft light is low-order), fitted at
+#: SH_TEXELS, then the layer centred on the scan's own median skin; soft-clipped to skin's range like the others
+SH_TEXELS = 512
+BROAD_LUM, BROAD_HUE = 0.45, 0.15
 
 
 def _module(name, path):
@@ -99,6 +107,39 @@ def masked_blur(img, valid, sigma):
     return num / np.maximum(den[..., None], 1e-6)
 
 
+def _sh9(n):
+    """Real spherical harmonics to order 2 at unit normals (unnormalised: the fit's coefficients absorb the scale)."""
+    x, y, z = n[..., 0], n[..., 1], n[..., 2]
+    return np.stack([np.ones_like(x), x, y, z, x * y, x * z, y * z, x * x - y * y, 3 * z * z - 1], -1)
+
+
+def _broad(lin, valid_colour, valid_skin, normals):
+    """The scan's colour above MID_SIGMA in log space, its fitted light divided out (luminance only - the colour's
+    regional hue stays), centred on its own median skin."""
+    luma = np.array([0.2126, 0.7152, 0.0722], np.float32)
+    log_b = np.log(np.maximum(masked_blur(lin, valid_colour, MID_SIGMA), 1e-4))
+    lum = log_b @ luma
+    size = lum.shape[0]
+    small = cv2.resize(lum, (SH_TEXELS, SH_TEXELS), interpolation=cv2.INTER_AREA)
+    n_small = cv2.resize(normals.astype(np.float32), (SH_TEXELS, SH_TEXELS), interpolation=cv2.INTER_AREA)
+    ok = cv2.resize(valid_skin.astype(np.uint8), (SH_TEXELS, SH_TEXELS), interpolation=cv2.INTER_NEAREST) > 0
+    length = np.linalg.norm(n_small, axis=-1)
+    ok &= length > 0.5
+    unit = n_small / np.maximum(length, 1e-6)[..., None]
+    basis = _sh9(unit)
+    coef, *_ = np.linalg.lstsq(basis[ok], small[ok], rcond=None)
+    shading_small = (basis @ coef).astype(np.float32)
+    shading = cv2.resize(shading_small, (size, size), interpolation=cv2.INTER_LINEAR)
+    broad = log_b - shading[..., None]
+    broad -= np.median(broad[valid_skin], axis=0)
+    broad[~valid_colour] = 0.0
+    lum_b = broad @ luma
+    hue = broad - lum_b[..., None]
+    broad = (BROAD_LUM * np.tanh(lum_b / BROAD_LUM))[..., None] + BROAD_HUE * np.tanh(hue / BROAD_HUE)
+    lit = basis[ok] @ coef
+    return broad.astype(np.float32), float(np.std(lit)), float(np.std(small[ok] - lit))
+
+
 def split(name):
     """The scan's skin as baked into our layout (scan_bake.py: colour + coverage), only where the skin mask
     (scan_skin.py) says skin - the route of `docs/plans/2026-11-02-scan-skin-base.md`."""
@@ -136,7 +177,19 @@ def split(name):
         lum = layer @ luma
         hue = layer - lum[..., None]
         layer[...] = (LUM_RANGE * np.tanh(lum / LUM_RANGE))[..., None] + HUE_RANGE * np.tanh(hue / HUE_RANGE)
-    np.savez_compressed(d / "layers.npz", fine=fine.astype(np.float16), mid=mid.astype(np.float16), valid=valid)
+    extra = {"tone": np.median(lin[valid], axis=0).astype(np.float32)}  # its skin's own colour, linear
+    if (d / "colour.png").exists() and (d / "normals.npy").exists():  # scan_skin.py's colour mask and normals
+        colour = cv2.resize(cv2.imread(str(d / "colour.png"), 0), (size, size), interpolation=cv2.INTER_LINEAR) > 127
+        valid_colour = cover & colour & (srgb.max(axis=2) > 0.05)
+        valid_colour = cv2.erode(valid_colour.astype(np.uint8),
+                                 cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
+        normals = cv2.resize(np.load(d / "normals.npy").astype(np.float32), (size, size),
+                             interpolation=cv2.INTER_LINEAR)
+        broad, lit, rest = _broad(lin, valid_colour, valid & valid_colour, normals)
+        extra.update(broad=broad.astype(np.float16), valid_colour=valid_colour)
+        print(f"{name}: broad layer - the fitted light's spread {lit:.3f} (log luminance), what stays {rest:.3f}")
+    np.savez_compressed(d / "layers.npz", fine=fine.astype(np.float16), mid=mid.astype(np.float16), valid=valid,
+                        **extra)
     print(f"{name}: skin on {valid.mean() / mask.mean():.0%} of the texels the scan reached ({valid.mean():.1%} of the "
           f"tile); {count - 1} dark spots, "
           f"{int(small.any() and np.unique(labels[small]).size)} small ones taken out ({marks.sum()} texels); "
@@ -216,7 +269,24 @@ def compose(seed, params=None):
     mid = num / np.sqrt(np.maximum(sq, 1e-8))[..., None]
     # its own mottling, so two characters from the same scans still differ (and texels no scan reached get some)
     own = 0.04 * noise(shape, rng, 10.0)[..., None] * np.array([1.0, 0.9, 0.85], np.float32)
-    ratio_log = p["age"] * fine + p["mottle"] * mid + own
+    # broad: the face's regional colour from 2+ scans (the likeness rule, the review brief §10: "broad and mid colour
+    # from two or more scans") - a weighted mean, faded out where they don't reach; a stubbled scan's beard area only
+    # as far as this character's own stubble
+    num_b, tot_b = np.zeros((*shape, 3), np.float32), np.zeros(shape, np.float32)
+    for n, w in p.get("broad_from", p["mid_from"]).items():
+        if "broad" not in layers[n].files:
+            continue
+        a = w * _feathered(layers[n]["valid_colour"])
+        if scans[n]["stubble"]:
+            a *= 1.0 - beard * (1.0 - p["stubble"])
+        num_b += a[..., None] * layers[n]["broad"].astype(np.float32)
+        tot_b += a
+    broad = num_b / np.maximum(tot_b, 1e-6)[..., None] * np.clip(tot_b / 0.5, 0.0, 1.0)[..., None]
+    tones = {n: w for n, w in p.get("broad_from", p["mid_from"]).items() if "tone" in layers[n].files}
+    if tones and "tone" not in p:  # the scans' own skin colour, blended as their broad layers are (a composed skin's)
+        total = sum(tones.values())
+        p["tone"] = [float(v) for v in sum(w / total * layers[n]["tone"].astype(np.float64) for n, w in tones.items())]
+    ratio_log = p["age"] * fine + p["mottle"] * mid + p.get("broad", 1.0) * broad + own
     ratio_log[..., 0] += p["redness"] * noise(shape, rng, 24.0)  # patchy redness
     # freckles (small, many) and moles (few, larger, darker brown), placed by its seed
     spots = np.zeros(shape, np.float32)
@@ -251,6 +321,7 @@ def main(argv):
                     cv2.resize((out[..., ::-1] * 255).astype(np.uint8), (1024, 1024), interpolation=cv2.INTER_AREA))
         np.save(DIR / f"base_char{seed}.npy", ratio.astype(np.float16))  # for the projection (no OpenCV in Blender)
         np.save(DIR / f"base_char{seed}_cover.npy", cover)
+        (DIR / f"base_char{seed}.json").write_text(json.dumps(p, indent=1))
         print(f"char {seed}: {json.dumps(p)}; covered {cover.mean():.0%}")
     return 0
 
