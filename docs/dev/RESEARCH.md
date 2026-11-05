@@ -229,6 +229,11 @@ Subjects: [1 · The machine](#1--the-machine) ·
   1.2 brings the world light on a grey sphere from 0.836 to 1.002 of Cycles' and the jaw shadow from 0.855 to 0.947;
   the skin's subsurface radius x1.5 cuts the shadow-detail error from 0.103 to 0.075; `trace_max_roughness` 0.75,
   full-resolution tracing, finer Fast GI and 128 samples change nothing; dropping sheen or coat makes the match worse.
+  **Corrected the same evening:** the sphere's five brightness bands (dark to lit), EEVEE over Cycles under the image
+  light alone: 1.262, 1.294, 1.224, 0.973, 0.836 - EEVEE's world light is flat, not weak; x1.2 gives 1.524 ... 1.002
+  (the dark side ~50% too bright), so x1.2 is dropped. EEVEE's world sun extraction is on at Blender's defaults
+  (`world.sun_threshold` 10, `sun_angle` 0.0092 rad, `use_sun_shadow` on, `probe_resolution` 1024) and Studio Small
+  09 peaks at 541 (135 after our 0.25 strength), so its softbox cores become one sharp sun - the next one-factor sweep.
 - **MetaHuman's character API in Unreal 5.8's Python** (listed headless 2026-11-04, `.dev/gate/out/mh_api.log`): 242
   `MetaHuman*` names, among them `MetaHumanCharacterFactoryNew` (a character asset), `MetaHumanCharacterEditorSubsystem`
   (`try_add_object_to_edit`, `commit_skin_settings` / `commit_face_state` / `commit_eyes_settings` /
@@ -236,6 +241,12 @@ Subjects: [1 · The machine](#1--the-machine) ·
   `spawn_meta_human_actor`, `import_from_template`, `conform_to_target_meshes`), `MetaHumanCharacterExportBlueprintLibrary`
   (`export_dcc`, `export_dna`, `export_materials`). So the gate's preset benchmark can be scripted; whether texture
   requests need Epic's cloud (and a login) is not yet known.
+  Answered 2026-11-04 (the API's own docstrings, `.dev/gate/out/mh_doc.log`): `commit_skin_settings` synthesizes
+  preview textures locally and "will also discard any high resolution textures"; `request_texture_sources` is
+  "Request high resolution textures" (Epic's cloud, `desired_texture_sources_resolutions`); `build_meta_human` stops
+  at "Character is not rigged" without the cloud auto-rig. A face DNA does ship:
+  `Engine/Plugins/MetaHuman/MetaHumanCoreTechLib/Content/ArchetypeDNA/SKM_Face.dna` (not tried with
+  `import_from_face_dna`). The MetaHuman benchmark was then dropped - CC5 is the standard (TASKS).
 - **MetaHuman's skin materials, read from the installed plugin** (Unreal 5.8, `Engine/Plugins/MetaHuman/
   MetaHumanCharacter/Content/Lookdev_UHM/Skin/Materials/`, 2026-11-04, names read from the `.uasset` files; nothing
   copied): presets use `MI_skin_unified_MH_preset_Baked` on parent `M_skin_unified` with region masks
@@ -1064,6 +1075,23 @@ and [`../plans/2026-10-29-research-06b-own-engine-and-layers-pass2.md`](../plans
   law; bans on generative-AI training input and on MetaHuman AI databases; cloud-data terms. Still unread at
   Epic: the live text, the seat-purchase terms, the Content License (the user can download them from their Epic
   account's legal history, or read them in a browser).
+- **Epic's licences read at source (2026-11-04, in the user's Chrome - Epic answers WebFetch with 403):**
+  - State of Unreal 2025 post: "We've updated the Unreal Engine EULA so MetaHuman characters and animation can be
+    used in any engine, such as Unity or Godot, as well as creative software like Maya, Houdini, and Blender".
+  - UE EULA §4(a)(i): asset files "such as character models and animations ... that you developed using Engine Code.
+    Such asset files remain Non-Engine Products even if included in Products that use or rely on other video game
+    engines. Please note that certain assets that we make available under separate agreements are available for use
+    only with Unreal Engine." Seats are waived for "indie developers (those making less than $1,000,000 a year)".
+  - UE EULA and the Epic Content License, "Non-Compatible Licenses": you "may not combine Licensed Content with code
+    or content that is licensed under ... GNU General Public License (GPL), Lesser GPL (LGPL) (unless you are merely
+    dynamically linking a shared library), or Creative Commons Attribution-ShareAlike License." -> JustStage (GPL)
+    can't ship or be built on MetaHuman content.
+  - UE EULA, Engine Tools: "If your Product includes Engine Tools, you may only Distribute it through either the Fab
+    Marketplace or through a fork of Epic's GitHub UnrealEngine Network" -> an add-on to MetaHuman Creator can't be
+    our open-source app.
+  - Content License, MetaHuman Content Addendum: "MetaHuman Content that you acquire may only be used and shared as
+    UE-Only Content"; Epic "exclusively owns ... MetaHuman Creator and Rig Logic, including as embodied in MetaHuman
+    Content". This conflicts with the State of Unreal post; Epic's FAQ that might settle it needs a login.
 - Unreal's runtime export is narrow: glTF export works at runtime without material baking; no built-in runtime
   FBX export (the FBX factory needs `UnrealEd`; only paid Fab plugins); USD stages load at runtime, no runtime
   export documented. Unreal's Python is editor-only. Unreal 5.8's MCP is an experimental editor plugin at

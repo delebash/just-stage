@@ -1096,6 +1096,39 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            build, rec 16's EEVEE measurements beside it, once web-4c hands over the card; (3) the order: the gate,
            then the half it points to, then 18 -> 2 + delighting -> 3 -> 17 + 7 (skeleton first) -> 12 -> 1 -> the
            rest.
+           THE RETHINK AFTER THE GATE (2026-11-04, late), the user, verbatim: "autocomacted so re read doc rules session
+           notes make sure you understand where you are and nothing was lost do to copmaction, then rethink on your rec
+           adverserialy and then your recs go". The rethink changed: rec 16's world light x1.2 DROPPED (measured on the
+           sphere's five brightness bands: EEVEE's world light is flat, not weak - x1.2 makes the dark side ~50% too
+           bright; the realism doc §6a); the SSS x2.5 result void (measured with x1.2); the next rec 16 step is Blender's
+           world sun extraction (already on: threshold 10, our HDRI peaks at 135 after its 0.25 strength) swept one
+           factor at a time against Cycles, then the SSS scale, then a darker skin - nothing applied to the app yet.
+           CC5 IS THE STANDARD (2026-11-04, late), the user, verbatim: "lets keep it simple will we be able to meet cc5
+           in quality and functionality and eventually variety as we create our own textures based on a variety of base
+           textures? why dont we stop worrying about metahuman as i think cc5 is just the same quality now, lets just
+           focus on cc5 clone and cc5 as the standard, unless you can say metahuman is better, why do you foucs on
+           metahuman and not cc5, why are we using methauman as benchamark and not cc5, i dont understand your logic,
+           answer question do not code". I could not say MetaHuman is better (nothing measured; I had picked it for
+           convenience - Unreal was scriptable). So the MetaHuman benchmark is DROPPED (`MH_benchmark` not rigged); the
+           Unreal gate's finding stands (our maps look the same in EEVEE, Cycles and Unreal on MetaHuman's material - the
+           maps are the limit, not the renderer). Building JustStage on MetaHuman: no - Epic's licences bar combining its
+           content with GPL code (RESEARCH §2, the Epic licence lines).
+           CC5 CONTROL (2026-11-04, late), the user, verbatim: "you should be able o script cc5 it has pyton apik, i bet
+           you just ddint check" (right: RLPy, already in RESEARCH since 10-29) and "as a side note dont stop your
+           research you can control cc5 via mcp server using this plugin
+           https://github.com/mackatwentytsuru/cc5-mcp-server, i have install all plgins add the config to your claude
+           code so we can test". DONE: the bridge plugin copied into CC5's real folder (its installer targets C:, CC5 is
+           on F:), `claude mcp add cc5 --scope local`; the bridge answers on 127.0.0.1:5101 (`/health` ok). The cc5 tools
+           load when a session starts (`claude --continue` in `E:\Dev\3D\just-stage`). WAITING on the user's word (shown,
+           not yet approved): the CC5 benchmark by script in CC5 - a CC5 character close to Daniel, our stage (Studio
+           Small 09 image light, key and rim, matched by a grey sphere), our lens; our EEVEE render beside it; then the
+           skin work in the approved order, judged against it.
+           THE GAPS SEARCH (2026-11-04, late), the user, verbatim: "i opened another sessioj called just stage asset
+           search please send it the search info and dont make the same search mistakes you have been making, think
+           several times adverserially on what you want the session to search for ...". SENT: the brief
+           `../plans/2026-11-04-research-gaps-brief.md` (variety holes, sclera, nails, children, unread licences,
+           better-than checks; nine pilot queries) to the session "just-stage asset search"; its results land in
+           `../plans/2026-11-04-research-gaps.md`; read its query log and filters before using anything (rule 7 l).
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
