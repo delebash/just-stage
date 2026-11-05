@@ -35,6 +35,7 @@ groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
 HAIR = importlib.import_module("bl_ext.system.juststage.modules.io.library_save").HAIR
 lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
 brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
+scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
 library = importlib.import_module("bl_ext.system.juststage.core.library")
 build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
 #: the mapped skins' licence (tools/build_skins.py's LICENCE)
@@ -162,6 +163,12 @@ if "hair" in WANTED:
     out = api.run("juststage.library.save", character=woman.character, catalog="Hair/Lashes", name="JustStage lashes",
                   description="Upper and lower lashes at real counts (120 and 75 an eye), clumped", licence="CC0-1.0",
                   provenance="JustStage modules/hair/lashes.py", part="eyelashes")  # fmt: skip
+    print("LIBRARY", out.path, flush=True)
+    scalp.make(bpy.data.objects[man.object])  # rec 11: guides combed back, filled by Blender's interpolation
+    out = api.run("juststage.library.save", character=man.character, catalog="Hair/Scalp", name="JustStage short combed",
+                  description="Short hair combed back, ~100,000 strands, a fifth of them grey", licence="CC0-1.0",
+                  provenance="JustStage modules/hair/scalp.py (region from MakeHuman's CC0 short_hedgehog)",
+                  part="scalp")  # fmt: skip
     print("LIBRARY", out.path, flush=True)
     brows.make(bpy.data.objects[man.object])  # rec 8: one hair per follicle (modules/hair/brows.py)
     out = api.run("juststage.library.save", character=man.character, catalog="Hair/Brows", name="JustStage brows",

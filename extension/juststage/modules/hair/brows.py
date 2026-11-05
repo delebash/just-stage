@@ -39,17 +39,17 @@ MELANIN, REDNESS, MELANIN_SPREAD = 0.92, 0.12, 0.05
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
 
 
-def _region_uvs() -> np.ndarray:
-    """`wild_eyebrow`'s root UVs on hm08's own map (the pack's surface UVs)."""
+def region_uvs(style: str = STYLE) -> np.ndarray:
+    """A pack style's root UVs on hm08's own map (the pack's surface UVs): `wild_eyebrow`'s by default."""
     from ... import paths
     from .groom import PACK
 
     with bpy.data.libraries.load(str(paths.makehuman(*PACK)), link=False) as (src, dst):
-        dst.objects = [STYLE] if STYLE in src.objects else []
+        dst.objects = [style] if style in src.objects else []
     if not dst.objects:
         from ...core.commands import CommandError
 
-        raise CommandError(f"the hair pack has no {STYLE!r}; run: python tools/fetch_data.py")
+        raise CommandError(f"the hair pack has no {style!r}; run: python tools/fetch_data.py")
     obj = dst.objects[0]
     data = obj.data.attributes["surface_uv_coordinate"].data
     uv = np.empty(len(data) * 2, np.float32)
@@ -60,42 +60,13 @@ def _region_uvs() -> np.ndarray:
     return uv.reshape(-1, 2).astype(np.float64)
 
 
-def _uv_to_world(body: bpy.types.Object, uvs: np.ndarray) -> np.ndarray:
-    """Surface UVs (hm08's map) to points on the body's current shape, in world space: each UV's triangle found among
-    its nearest triangle centres in UV, its barycentric weights taken to the shaped vertices."""
-    from ..body import build
-
-    tris, loops = lashes._triangles(body)
-    uv = np.empty(len(body.data.loops) * 2, np.float32)
-    body.data.uv_layers[lashes._surface_uv()].data.foreach_get("uv", uv)
-    uv = uv.reshape(-1, 2).astype(np.float64)
-    tri_uv = uv[loops]  # (n, 3, 2)
-    centres = tri_uv.mean(1)
-    now = build.shaped_coords(body)
-    mw = np.array(body.matrix_world)
-    out = np.full((len(uvs), 3), np.nan)
-    for i, q in enumerate(uvs):
-        near = np.argsort(np.sum((centres - q) ** 2, axis=1))[:24]
-        for k in near:
-            a, b, c = tri_uv[k]
-            m = np.array([[b[0] - a[0], c[0] - a[0]], [b[1] - a[1], c[1] - a[1]]])
-            if abs(np.linalg.det(m)) < 1e-14:
-                continue
-            s, t = np.linalg.solve(m, q - a)
-            if s >= -1e-6 and t >= -1e-6 and s + t <= 1 + 1e-6:
-                p = now[tris[k]].T @ np.array([1 - s - t, s, t])
-                out[i] = mw[:3, :3] @ p + mw[:3, 3]
-                break
-    return out[np.isfinite(out).all(1)]
-
-
 def strands(body: bpy.types.Object, seed: int = 11):
     """Both brows' hairs on the body's current shape, in world space: (strands, radii, melanin per strand)."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
     rng = np.random.default_rng(seed)
-    region = _uv_to_world(body, _region_uvs())
+    region = lashes.surface_points(body, region_uvs())
     to_local = np.array(body.matrix_world.inverted())
     to_world = np.array(body.matrix_world)
     tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())  # its local space

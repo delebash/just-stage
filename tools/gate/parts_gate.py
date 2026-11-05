@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".dev" / "gate" / "parts"
 CC5_DIR = ROOT / ".dev" / "gate" / "cc5_aaron_blender"
 CC5_BLEND = {"eevee": CC5_DIR / "aaron_hair_eevee.blend", "cycles": CC5_DIR / "aaron_hair_cycles.blend"}
-OURS = {"character": "Daniel", "scalp": "Short hedgehog", "brows": "JustStage brows"}  # brows: rec 8, 2026-11-05
+OURS = {"character": "Daniel", "scalp": "JustStage short combed", "brows": "JustStage brows"}  # recs 11, 8: 2026-11-05
 LENS = 85.0  # quality-gate.md §3
 SENSOR = 36.0
 SIZE = 2048
@@ -96,15 +96,19 @@ def _stage():
     return scene, cam
 
 
-def build_ours(scene, skin: str = "", brows: str = "library", character: str = "") -> dict:
+def build_ours(scene, skin: str = "", brows: str = "library", character: str = "", scalp: str = "library") -> dict:
     """The library's man the app's way, with the hair library's scalp style and brows and the face's ARKit 52;
     `skin` (a library skin's .blend) put on him as the Content panel does."""
     api = importlib.import_module("bl_ext.system.juststage.api")
     library = importlib.import_module("bl_ext.system.juststage.core.library")
     root = library.root()
     shown = api.run("juststage.library.add", path=str(root / "Characters" / f"{character or OURS['character']}.blend"))
-    api.run("juststage.library.add", path=str(root / "Hair" / "Scalp" / f"{OURS['scalp']}.blend"),
-            character=shown.character)
+    if scalp == "generated":  # JustStage's own (modules/hair/scalp.py, rec 11)
+        importlib.import_module("bl_ext.system.juststage.modules.hair.scalp").make(
+            next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of))
+    else:
+        api.run("juststage.library.add", path=str(root / "Hair" / "Scalp" / f"{OURS['scalp']}.blend"),
+                character=shown.character)
     if brows == "generated":  # JustStage's own (modules/hair/brows.py, rec 8)
         importlib.import_module("bl_ext.system.juststage.modules.hair.brows").make(
             next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of))
@@ -323,9 +327,9 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
            cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "library",
-           character: str = "") -> None:
+           character: str = "", scalp: str = "library") -> None:
     scene, cam = _stage()
-    built = build_ours(scene, skin, brows, character) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
+    built = build_ours(scene, skin, brows, character, scalp) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
     set_expression(who, built, "neutral")
     a = anchors(who, built)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -441,10 +445,11 @@ if __name__ == "__main__":
     p.add_argument("--skin", default="", help="a library skin (.blend) on ours, as the Content panel applies it")
     p.add_argument("--brows", choices=("library", "generated"), default="library")
     p.add_argument("--character", default="", help="another library character for ours")
+    p.add_argument("--scalp", choices=("library", "generated"), default="library")
     a = p.parse_args(args)
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\
     if a.command == "render":
         inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}
-        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin, a.brows, a.character)
+        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin, a.brows, a.character, a.scalp)
     else:
         sheet(out)

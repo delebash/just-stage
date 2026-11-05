@@ -207,6 +207,41 @@ def to_rest(body: bpy.types.Object, world_strands: list) -> tuple[np.ndarray, np
     return np.array(out), np.array(uvs)
 
 
+def surface_points(body: bpy.types.Object, uvs: np.ndarray) -> np.ndarray:
+    """Surface UVs (hm08's map, the grooms' surface UVs) to points on the body's current shape, in world space - each
+    UV's triangle found among its nearest triangle centres in UV (Blender's k-d tree), its barycentric weights taken to
+    the shaped vertices. UVs that fall in no triangle are left out."""
+    from mathutils import Vector
+    from mathutils.kdtree import KDTree
+
+    from ..body import build
+
+    tris, loops = _triangles(body)
+    uv = np.empty(len(body.data.loops) * 2, np.float32)
+    body.data.uv_layers[_surface_uv()].data.foreach_get("uv", uv)
+    tri_uv = uv.reshape(-1, 2).astype(np.float64)[loops]  # (n, 3, 2)
+    centres = tri_uv.mean(1)
+    tree = KDTree(len(centres))
+    for i, c in enumerate(centres):
+        tree.insert((c[0], c[1], 0.0), i)
+    tree.balance()
+    now = build.shaped_coords(body)
+    mw = np.array(body.matrix_world)
+    out = []
+    for q in uvs:
+        for _co, k, _d in tree.find_n(Vector((q[0], q[1], 0.0)), 16):
+            a, b, c = tri_uv[k]
+            m = np.array([[b[0] - a[0], c[0] - a[0]], [b[1] - a[1], c[1] - a[1]]])
+            if abs(np.linalg.det(m)) < 1e-14:
+                continue
+            s, t = np.linalg.solve(m, q - a)
+            if s >= -1e-6 and t >= -1e-6 and s + t <= 1 + 1e-6:
+                p = now[tris[k]].T @ np.array([1 - s - t, s, t])
+                out.append(mw[:3, :3] @ p + mw[:3, 3])
+                break
+    return np.array(out)
+
+
 def _barycentric(p, a, b, c) -> np.ndarray:
     v0, v1, v2 = b - a, c - a, p - a
     d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
