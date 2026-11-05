@@ -43,6 +43,10 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   (hidden or not: same) - a fault to fix first. The pupil is GNM's 2.7 mm pupil-disc geometry (the shader's
   PupilSize 0.082 -> 0.15 changed nothing). Cornea reflection x0.3: no change. Lashes: radius 0.08 mm, 180 upper,
   melanin 1.0 give a visible lash line at face distance (adopt). Amber iris overshot to yellow.
+  FOUND: the occlusion film (eyeshell, rendered solid red: `proof_eyes/eevee_eye_ours_shellred.png`) does not fit the
+  opened eye - a lens in the middle of the opening, strips under the upper lid and above the lower one uncovered, so
+  its lid-edge darkening lands inside the opening. Fix: make eye_layers' fit follow the opened lids (check what
+  `eye_layers.refit` reads after `body.set_slider` eye-height2), then re-test the white's L* against Aaron's ~50-60.
 
 ## Always
 
