@@ -1165,9 +1165,14 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            product can only use assets that are free and can be distributed". So: the CC5 benchmark's "no baking or
            export of CC5 content" (FABLE ON THE PLAN, item 3) was my reading, not the user's rule - DROPPED. Local tests
            may use any content (CC5's characters exported to Blender, its textures on our shader); what ships uses only
-           assets that are free and distributable (AGENTS.md clean-room). In progress: HD Aaron exported (the trial
-           allows 30 FBX / ABC / OBJ exports) and rendered in Blender under our stage - the lights-or-textures split;
-           Blender character add-ons' quality against CC5 (research, rule 0 map first).
+           assets that are free and distributable (AGENTS.md clean-room). DONE 2026-11-05 (on "your rec go", after
+           "think on your rec again"; `../plans/2026-11-04-realism.md` §6c): HD Aaron exported by CC5's Blender
+           Pipeline plugin (the user's export), imported with CC Blender Tools, rendered in our stage under CC5's
+           light, one factor at a time - with CC5's maps our stage and EEVEE come close to CC5 (fine detail 80-87% of
+           CC5's, Cycles above it); his maps on our skin shader within 5% of that; Daniel's forehead detail half of
+           CC5's - **the gap is our character's content, not the light**. Same person, our stage is ~9 deg yellower
+           and darker in the shadows than CC5's six-light rig (a separate item). Open: Blender character add-ons'
+           quality against CC5 (research, rule 0 map first).
            FABIENNE & PERCY: THE CHILD USED LIKE ANY CC BY SCAN (2026-11-05; replaces item (4) of "THE JAW RESULTS AND
            THE GAPS' ITEMS" and the brief "measurements only" between). The user, verbatim, in the session "just-stage
            asset search": "1 why keep child unused if it is publicly avaialable on a trusted site? is this a trusted
