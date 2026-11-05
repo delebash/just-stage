@@ -833,6 +833,28 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   method. Both are real-time fixes — a shadow and a wet line the rasteriser misses at that scale.
 - Lead for the face rig (step 7), contents not yet read: MakeHuman's functional packs also list "Faceunits 01: ARKit
   style face units" and "Visemes 01/02" (Microsoft and Meta/Oculus style), CC0.
+- **The gaps search (2026-11-04, the session "just-stage asset search", `../plans/2026-11-04-research-gaps.md`; its
+  query logs checked - no licence filter; three slips logged in its §0):**
+  - Older people of colour at 16K exist, all paid (IMPORT, none SHIP): 3D.sk raw heads - Black men 62-66 (six),
+    Black women 62, 63, 70; Arab people 61-72 (five, two women); Indian 61-62 (four) - ages read per scan page (3D.sk's
+    age filter undercounts); HumanScanRepository HSR0274 Hispanic F 67, HSR0172 African M 63 (EUR 35 a pose, model
+    releases stated, a custom SHIP licence invited); Triplegangers Bertha Horan Hispanic F 76 ($49.99; SHIP "with
+    written consent"). No scan labelled Southeast Asian, Indigenous or Pacific Islander anywhere searched.
+  - Photos for calibration and patches: Pexels 8265216 (elderly Indonesian man, 4000 x 6000, sharp pores), 14684597;
+    nappy.co (CC0) is closing "in the next few months".
+  - Sclera: no shippable sharp macro; keep procedural veins (rec 12) - Bérard et al.'s published recipe is in patent
+    US10217265 (Disney / ETH, listed active to 2036; claims unread); calibration numbers (CCLRU redness by region,
+    vessel 18.8 um, melanosis 92.5% in Black people, pinguecula 73% over 60) in its §2.
+  - Nails: no texture pack; keep the layered shader (rec 14); plate transmittance per wavelength, melanonychia by
+    ancestry and age, lunula visibility by finger, ridges 85% over 60 - its §3; a CC0 hand-and-nail set of 250 people
+    aged 18-95 (Yakimov 2024, figshare).
+  - Children: measured skin (cheek pores x14 from 3-7 y to 19-23 y; furrow depth; melanin rising to adolescence) and
+    eye numbers (the eyeball and iris must not scale with the head); CC5 has no child base or child skin; **Anny**
+    (NAVER, Apache-2.0 code, CC0 data) calibrates MPFB2's age targets to WHO growth standards - better than our
+    four-anchor blend; FaceBase's per-age head norms tables are open.
+  - Better than ours: TAU "Procedural Human Hair" brows (CC BY-SA; compare before rec 8); Thunk3D ear scans on
+    Sketchfab (CC BY, geometry). Corrects `2026-10-30-research-hair-eyes-teeth.md` §7: Cem Yuksel's grooms are
+    "for your personal or research projects".
 
 ## 6 · Routes: engine and editor layers, languages
 
