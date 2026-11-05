@@ -371,6 +371,12 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
         albedo.pixels.foreach_set(np.dstack([filled, np.ones(filled.shape[:2])]).astype(np.float32).ravel())
         hue = np.ones(3)
     for channel in ("base_color", "roughness", "cavity", "height"):
+        if composed is not None and channel == "roughness":  # the face's regions' shine (make_face_regions.py)
+            regions = bpy.data.images.load(str(paths.GENERATED / "skin" / "face_regions.png"), check_existing=False)
+            regions.colorspace_settings.name = "Non-Color"
+            rough = _pixels(regions)[..., 1]
+            maps.write_png(out / f"{stems[channel]}.1001.png", np.repeat(rough[..., None], 3, axis=2))
+            continue
         if colour is not None and channel != "base_color":
             flat = np.broadcast_to(np.full(3, FLAT[channel], np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
             maps.write_png(out / f"{stems[channel]}.1001.png", flat, "8" if channel != "height" else "16")

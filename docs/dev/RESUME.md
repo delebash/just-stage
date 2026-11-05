@@ -15,7 +15,15 @@ polish and side fixes only when a proof needs them. Proof = ours beside Aaron at
 parts_gate.py`), equal or above, measured; then the same method, no per-character tuning, on 4+ different characters.
 Order, riskiest first: (1) face mid-scale relief (scan geometry -> normal maps) -> (2) body relief -> (3) scalp hair
 (groom vs shading) -> (4) eyes -> (5) smile shapes -> (6) the rest -> (7) multi-character run + full gate. Report per
-part: proved / not proved / disproved. Proved so far: skin fine detail only.
+part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, bands = fine / pore / fold, L* std,
+`scratchpad bands.py` windows: forehead 0.02-0.25 x 0.3-0.75 of the eye view, cheek 0.25-0.6 of the cheek view):
+- (1) face skin, one character (Average man, composed 632 = HSR0040 + LPS colour and relief): cheek 0.42/0.97/0.72 vs
+  Aaron 0.45/0.96/0.79 = EQUAL; forehead 0.96/0.91/0.57 vs 1.73/1.74/0.92, by eye close (his glossier). Made by: pore
+  relief 1.0 / 0.3 mm + per-pore shine, region factors (`tools/make_face_regions.py`: forehead pores x2, micro x5),
+  the scans' geometry relief (`scan_bake.py NAME normal`, `skin_base._relief`). Scan colour alone = 0.40 pore band
+  (Aaron without normals: 0.40) - pores are relief. NEXT: the same on 4 characters (scan relief bakes for hsr0027
+  0028 0015 0042 0081 0102), then step (2) body relief. Seen: at face distance the gap is now shape (MakeHuman
+  proportions, HSR0040's heavy bags), tone, hair - not texture.
 
 ## Always
 

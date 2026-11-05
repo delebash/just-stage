@@ -115,6 +115,8 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
     else:
         api.run("juststage.library.add", path=str(root / "Hair" / "Brows" / f"{OURS['brows']}.blend"),
                 character=shown.character)
+    create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
+    create.open_eyes(shown.character)  # as a dressed human (the library's characters predate EYE_OPEN)
     api.run("juststage.head.add_face_units", character=shown.character)
     if skin:
         api.run("juststage.library.add", path=skin, character=shown.character)

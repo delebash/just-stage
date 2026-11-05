@@ -34,7 +34,15 @@ HEIGHT_STRENGTH, HEIGHT_DISTANCE = 0.15, 0.0004  # the painting's own fine relie
 #: and 7.0 on the thigh - the pores were twice and six times their size there
 MM_PER_UV = {1001: 724.0, 1002: 851.0, 1003: 753.0, 1004: 1224.0, 1005: 48.0}
 PORE_TILE_MM = 56.0  # the pore tile's size on the skin (the Lee Perry-Smith cheek tile, as tuned on the face)
-PORE_STRENGTH, PORE_DISTANCE = 0.35, 0.0002
+#: the pores' relief: full strength, 0.3 mm (the gate, 2026-11-05: 0.35 / 0.2 mm left a scanned skin's cheek at 0.39 of
+#: HD Aaron's pore band; 1.0 / 0.3 mm brought it to 0.99 against his 0.96 - his pores are relief, his colour alone 0.40)
+PORE_STRENGTH, PORE_DISTANCE = 1.0, 0.0003
+#: per-pore shine: the specular scaled by PORE_SHINE[0] + PORE_SHINE[1] x the pore tile's height (darker in the pits)
+PORE_SHINE = (0.4, 0.6)
+#: the face's regions (tools/make_face_regions.py): the relief's depth scaled by region on the head tile - a forehead
+#: three times a cheek's, as CC5's region masks (HD Aaron's forehead had three times our uniform depth's detail)
+REGIONS_TOOL = "python tools/dev.py blender -b --python tools/make_face_regions.py"
+REGION_RELIEF_SCALE = 8.0  # the map's R x this = the factor (make_face_regions.RELIEF_SCALE)
 #: the microrelief - the skin's polygon network of fine furrows, finer than the pores (rec 18; the spec's
 #: `micro_normal`, character-data-model.md §3.1): tools/make_microrelief.py's generated tile, its size on the skin and
 #: its depth as the part-by-part gate picked them (`docs/gate/2026-11-05/report.md`: HD Aaron's cheek's finest band
@@ -287,6 +295,30 @@ def _lip_layer(nt, bsdf) -> None:
     nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
 
 
+def face_regions() -> bpy.types.Image:
+    """The face's regions on the head tile (REGIONS_TOOL), loaded once and shared."""
+    path = paths.generated("skin", "face_regions.png", tool=REGIONS_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _region_relief(nt, uv, which):
+    """The relief's depth factors (pores, microrelief): the region map's on the head tile (R, B x
+    REGION_RELIEF_SCALE), 1 elsewhere."""
+    regions = _node(nt, "ShaderNodeTexImage", "face_regions", (-1600, -2700))
+    regions.image, regions.interpolation, regions.extension = face_regions(), "Linear", "EXTEND"
+    nt.links.new(uv.outputs["UV"], regions.inputs["Vector"])
+    parts = _node(nt, "ShaderNodeSeparateColor", "face_regions_split", (-1350, -2700))
+    nt.links.new(regions.outputs["Color"], parts.inputs["Color"])
+    on_head = _math(nt, "regions_on_head", "COMPARE", which.outputs["Value"], 0.0, 0.5)
+    factors = []
+    for channel, key in (("Red", "pore"), ("Blue", "micro")):
+        head = _math(nt, f"regions_{key}", "MULTIPLY", parts.outputs[channel], REGION_RELIEF_SCALE)
+        factors.append(_mix(nt, f"{key}_factor", "FLOAT", on_head, 1.0, head))
+    return factors
+
+
 def mouth_mask() -> bpy.types.Image:
     """The mouth's lining on the head tile (MOUTH_TOOL), loaded once and shared."""
     path = paths.generated("skin", "mouth.png", tool=MOUTH_TOOL)
@@ -391,7 +423,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     spec = _node(nt, "ShaderNodeMath", "specular", (-750, -300))
     spec.operation, spec.inputs[1].default_value = "MULTIPLY", SPECULAR_FROM_CAVITY
     links.new(tex["cavity"].outputs["Color"], spec.inputs[0])
-    links.new(spec.outputs["Value"], bsdf.inputs["Specular IOR Level"])
+    links.new(spec.outputs["Value"], bsdf.inputs["Specular IOR Level"])  # x the pores' shine, below
     fine = _node(nt, "ShaderNodeBump", "height_bump", (-450, -100))
     fine.inputs["Strength"].default_value, fine.inputs["Distance"].default_value = HEIGHT_STRENGTH, HEIGHT_DISTANCE
     links.new(tex["height"].outputs["Color"], fine.inputs["Height"])
@@ -408,7 +440,9 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     pore.image.colorspace_settings.name = "Non-Color"
     links.new(_tiled_coords(nt, "pore", uv, which, PORE_TILE_MM, (-1200, -900)), pore.inputs["Vector"])
     bump = _node(nt, "ShaderNodeBump", "pore_bump", (-250, -200))
-    bump.inputs["Strength"].default_value, bump.inputs["Distance"].default_value = PORE_STRENGTH, PORE_DISTANCE
+    bump.inputs["Strength"].default_value = PORE_STRENGTH
+    pore_factor, micro_factor = _region_relief(nt, uv, which)
+    links.new(_math(nt, "pore_depth", "MULTIPLY", pore_factor, PORE_DISTANCE), bump.inputs["Distance"])
     links.new(pore.outputs["Color"], bump.inputs["Height"])
     links.new(fine.outputs["Normal"], bump.inputs["Normal"])
     micro = _node(nt, "ShaderNodeTexImage", "micro", (-1000, -1200))
@@ -417,10 +451,12 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(_tiled_coords(nt, "micro", uv, which, MICRO_TILE_MM, (-1200, -1200)), micro.inputs["Vector"])
     micro_bump = _node(nt, "ShaderNodeBump", "micro_bump", (-100, -200))
     micro_bump.inputs["Strength"].default_value = MICRO_STRENGTH
-    micro_bump.inputs["Distance"].default_value = MICRO_DISTANCE
+    links.new(_math(nt, "micro_depth", "MULTIPLY", micro_factor, MICRO_DISTANCE), micro_bump.inputs["Distance"])
     links.new(micro.outputs["Color"], micro_bump.inputs["Height"])
     links.new(bump.outputs["Normal"], micro_bump.inputs["Normal"])
     links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
+    shine = _math(nt, "pore_shine", "MULTIPLY_ADD", pore.outputs["Color"], PORE_SHINE[1], PORE_SHINE[0])
+    links.new(_math(nt, "pore_specular", "MULTIPLY", spec.outputs["Value"], shine), bsdf.inputs["Specular IOR Level"])
     _nail_layer(nt, bsdf, uv, which)
     _lip_layer(nt, bsdf)
     _mouth_layer(nt, bsdf, uv, which)
