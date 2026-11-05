@@ -52,11 +52,15 @@ updated in the same commit that starts, changes or ends a job, and its "Where it
   (`aaron_hair_{eevee,cycles}.blend`); `tools/gate/parts_gate.py` renders 21 views per character (`render --who
   ours|cc5 --engine eevee|cycles`, then `sheet`) into `.dev/gate/parts/2026-11-05/`; the report goes to
   `docs/gate/2026-11-05/report.md`. DONE: the EEVEE baseline (every part below); the teeth ride the jaw; rec 18 (the
-  generated microrelief, `tools/make_microrelief.py`, in `maps.py` on the UDIM layer - the cheek's finest band now
-  Aaron's). NEXT: the Cycles baseline; rec 2 + delighting (scan head bases), 3 (tone), 17 + 7 (body relief - the
-  torso is the largest measured gap), then 12, 1, ... as the report's fix list. CC5's own captures (eyes, brows and lashes, open mouth, nails) check Blender's Aaron; CC5's
-  'face' view is a level camera, 80 mm, ~24.5 mm effective sensor (pupils at 245.8 / 348.0, row 290.6 of 600). The
-  user's standing order: don't stop until every part meets the bar or it is measured impossible with our assets.
+  generated microrelief - the cheek's finest band now Aaron's); rec 14 v1 (the nail plate, `make_nail_coords.py`).
+  IN PROGRESS - rec 2 + 17's colour, the likeness rule's way (no painting): the scan route fixed for HSRD-100 (Z-up
+  OBJs; each scan keeps the head its fit was made on - the old export was 30 mm off the round's clay); `skin_base.py`
+  `split` writes a delit `low` colour layer (SH light fit on our normals, holes filled), `compose` with `"colour":
+  "scans"` blends it from 2+ scans; `tools/build_skins.py -- --composed SEED KEY LIB` builds a test skin; the gate's
+  `--skin` puts it on ours. Seen: HSR0040's own colour reads as real skin; composition 503 (HSR0040 0.7 + lps 0.3)
+  natural but paler and softer than Aaron - next: the other nine HSRD people (route running), scans picked by tone /
+  sex / age, a warmer tone, then a library skin. Cycles baseline: running in the background. The user's standing order:
+  don't stop until every part meets the bar or it is measured impossible with our assets.
 
 ## Coordination
 

@@ -48,6 +48,11 @@ STUBBLE_KERNEL, STUBBLE_FLOOR = 7, 0.55
 #: SH_TEXELS, then the layer centred on the scan's own median skin; soft-clipped to skin's range like the others
 SH_TEXELS = 512
 BROAD_LUM, BROAD_HUE = 0.45, 0.15
+#: the low layer's range (log): only a scan's gross leftovers (a shadowed fold, a stray hair) clipped; its holes filled
+#: over LOW_FILL texels (~4 mm) of skin round them; its edge fades in over LOW_FEATHER (~2.7 mm) - at FEATHER (8 mm)
+#: every feature beside a hole (eyes, brows, lips) faded with it
+LOW_RANGE = 1.0
+LOW_FILL, LOW_FEATHER = 24.0, 16.0
 
 
 def _module(name, path):
@@ -137,7 +142,7 @@ def _broad(lin, valid_colour, valid_skin, normals):
     hue = broad - lum_b[..., None]
     broad = (BROAD_LUM * np.tanh(lum_b / BROAD_LUM))[..., None] + BROAD_HUE * np.tanh(hue / BROAD_HUE)
     lit = basis[ok] @ coef
-    return broad.astype(np.float32), float(np.std(lit)), float(np.std(small[ok] - lit))
+    return broad.astype(np.float32), float(np.std(lit)), float(np.std(small[ok] - lit)), shading
 
 
 def split(name):
@@ -185,8 +190,21 @@ def split(name):
                                  cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
         normals = cv2.resize(np.load(d / "normals.npy").astype(np.float32), (size, size),
                              interpolation=cv2.INTER_LINEAR)
-        broad, lit, rest = _broad(lin, valid_colour, valid & valid_colour, normals)
-        extra.update(broad=broad.astype(np.float16), valid_colour=valid_colour)
+        broad, lit, rest, shading = _broad(lin, valid_colour, valid & valid_colour, normals)
+        # the low layer: the colour itself above the pores (blurred FINE_SIGMA), its fitted light out, centred on its
+        # own skin - lips and regional colour kept whole (a composed skin's colour, `compose`'s "colour": "scans")
+        # the scan's non-skin holes (eyes, brows, nostrils, a collar) filled from the skin round them first, so the
+        # features' surroundings aren't faded out with the holes (round 502: the face's colour came out at ~30%)
+        reach = cv2.erode(cover.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
+        near = cv2.GaussianBlur(valid_colour.astype(np.float32), (0, 0), LOW_FILL) > 0.15
+        valid_low = reach & near
+        filled = np.where(valid_colour[..., None], lin, masked_blur(lin, valid_colour, LOW_FILL))
+        low = np.log(np.maximum(masked_blur(filled, valid_low, FINE_SIGMA), 1e-4)) - shading[..., None]
+        low -= np.median(low[valid & valid_colour], axis=0)
+        low[~valid_low] = 0.0
+        np.clip(low, -LOW_RANGE, LOW_RANGE, out=low)
+        extra.update(broad=broad.astype(np.float16), low=low.astype(np.float16), valid_colour=valid_colour,
+                     valid_low=valid_low)
         print(f"{name}: broad layer - the fitted light's spread {lit:.3f} (log luminance), what stays {rest:.3f}")
     np.savez_compressed(d / "layers.npz", fine=fine.astype(np.float16), mid=mid.astype(np.float16), valid=valid,
                         **extra)
@@ -286,7 +304,23 @@ def compose(seed, params=None):
     if tones and "tone" not in p:  # the scans' own skin colour, blended as their broad layers are (a composed skin's)
         total = sum(tones.values())
         p["tone"] = [float(v) for v in sum(w / total * layers[n]["tone"].astype(np.float64) for n, w in tones.items())]
-    ratio_log = p["age"] * fine + p["mottle"] * mid + p.get("broad", 1.0) * broad + own
+    if p.get("colour") == "scans":
+        # a composed skin with no painting over it: its colour above the pores is its 2-3 scans' own (the low
+        # layers, a weighted mean - their lips and regional colour line up on our layout), the pores from one
+        num_l, tot_l = np.zeros((*shape, 3), np.float32), np.zeros(shape, np.float32)
+        for n, w in p.get("broad_from", p["mid_from"]).items():
+            if "valid_low" not in layers[n].files:
+                continue
+            v = layers[n]["valid_low"].astype(np.float32)
+            a = w * np.clip(cv2.GaussianBlur(v, (0, 0), LOW_FEATHER) * 2.0 - 1.0, 0.0, 1.0) * v
+            if scans[n]["stubble"]:
+                a *= 1.0 - beard * (1.0 - p["stubble"])
+            num_l += a[..., None] * layers[n]["low"].astype(np.float32)
+            tot_l += a
+        low = num_l / np.maximum(tot_l, 1e-6)[..., None] * np.clip(tot_l / 0.5, 0.0, 1.0)[..., None]
+        ratio_log = p["age"] * fine + low + 0.5 * own
+    else:
+        ratio_log = p["age"] * fine + p["mottle"] * mid + p.get("broad", 1.0) * broad + own
     ratio_log[..., 0] += p["redness"] * noise(shape, rng, 24.0)  # patchy redness
     # freckles (small, many) and moles (few, larger, darker brown), placed by its seed
     spots = np.zeros(shape, np.float32)
