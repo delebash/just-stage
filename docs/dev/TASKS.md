@@ -1187,6 +1187,22 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            2020-05-12, "CC Attribution" (by/4.0). The pixel check DONE 2026-11-05 (RESEARCH, the gaps entry): 4.0
            texels/mm everywhere - a child skin-colour and proportions source, not a pore source. Real use when child
            characters come up in the CC5 order, after the HD Aaron bar.
+           THE GATE PART BY PART, HD AARON IN BLENDER THE STANDARD (2026-11-05). The user, verbatim: "it has to be all
+           parts of body meat quality bar not just skin"; "toe nails too, all body parts, its not that hard do it
+           right"; "i thought we are using arron imported into blender as standard instead of cc5, does the arron in
+           blender not have all features all body parts at same quality?"; then, on my rec (HD Aaron as CC Blender
+           Tools imports him is the standard for every part, rendered beside ours with the same cameras in EEVEE and
+           Cycles at 2048 per `quality-gate.md`; CC5's own captures only to check where Blender's Aaron may fall short -
+           eyes, brows and lashes, teeth with the jaw open, nails; one more export with hair; our side built the app's
+           way): "please dont stop coding keep going until you get the quality correct dont stop at turns dont stop
+           unless you decide it is not possible to meet the bar with our cc assets your rec go"; and "dont stop coding
+           unitl you have fixed all quality issue or determine it cant be dont, that means donts stop at turns donts
+           stop to ask questions unless absolutley necessary, think adversierly on all your decsions". The hair export
+           DONE by the user 14:28 ("i exported aron with hair", `aron_with_hair.fbx`: Classic Slick Back and Stubble as
+           card meshes; CC5's FBX count now 3 used), imported with CC Blender Tools (`aaron_hair_{eevee,cycles}.blend`).
+           Tool: `tools/gate/parts_gate.py` - 21 views (front, three-quarter, profile, face, back of the hair, eye, lips,
+           lip corner, cheek, ear, torso, hand, nails, foot, toenails, full body; jawOpen, smile, browInnerUp), each
+           camera placed from anatomy measured on each character; report `docs/gate/2026-11-05/report.md`.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md

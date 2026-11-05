@@ -34,7 +34,8 @@ updated in the same commit that starts, changes or ends a job, and its "Where it
   the texture set, the `micro_normal` channel), §4 (hair); `skeleton-and-face.md` §2.3 (the face controls the gate's
   expressions need); `parity-scorecard.md` "Head and face", "Skin and materials", "Eyes, teeth, tongue, hair".
 - **Facts:** `docs/dev/RESEARCH.md` - the gaps entry (scans, nappy, Fabienne & Percy), the CC5 bridge, EEVEE.
-- **Tools:** `tools/gate/cc5_bench.py` (`render --cc5-blend` puts a CC5 character in our stage; `--our-skin`),
+- **Tools:** `tools/gate/parts_gate.py` (the gate part by part: ours and HD Aaron through the same anatomy-placed
+  cameras), `tools/gate/cc5_bench.py` (`render --cc5-blend` puts a CC5 character in our stage; `--our-skin`),
   `tools/gate/blender_gate.py`, `eevee_settings.py`, `relief_tiles.py`; outputs in `.dev/gate/` (not in git).
 - **CC5's side:** memory `cc5-control` (first call `check_cc5_connection`; `exec_python` off; the trial's dialogs are
   the user's to click). Limits measured: captures are 600 x 600 whatever is asked; the trial logo covers 27-73% of
@@ -47,9 +48,13 @@ updated in the same commit that starts, changes or ends a job, and its "Where it
 ### Where it stands (update after every step)
 
 - 2026-11-05: HD Aaron in our stage with CC5's maps comes close to CC5 (realism §6c) - the gap is our characters'
-  content. The gate per `quality-gate.md` is next, every part: HD Aaron is loaded in CC5 at SubD 1, unmoved; CC5's
-  'face' view measured as a level camera, 80 mm, ~24.5 mm effective sensor (pupils at 245.8 / 348.0, row 290.6 of
-  600, camera at (0.2, -127.3, 167.7) cm) - so a CC5 view can be rebuilt in Blender. Not started: the captures.
+  content. **The standard is HD Aaron in Blender** (TASKS "THE GATE PART BY PART"): the user's hair export imported
+  (`aaron_hair_{eevee,cycles}.blend`); `tools/gate/parts_gate.py` renders 21 views per character (`render --who
+  ours|cc5 --engine eevee|cycles`, then `sheet`) into `.dev/gate/parts/2026-11-05/`; the report goes to
+  `docs/gate/2026-11-05/report.md`. Running: EEVEE 2048 both; then Cycles; then the gap list worst-first and the fixes
+  in the approved order. CC5's own captures (eyes, brows and lashes, open mouth, nails) check Blender's Aaron; CC5's
+  'face' view is a level camera, 80 mm, ~24.5 mm effective sensor (pupils at 245.8 / 348.0, row 290.6 of 600). The
+  user's standing order: don't stop until every part meets the bar or it is measured impossible with our assets.
 
 ## Coordination
 
