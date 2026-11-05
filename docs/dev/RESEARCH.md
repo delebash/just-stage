@@ -843,8 +843,32 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   - Photos for calibration and patches: Pexels 8265216 (elderly Indonesian man, 4000 x 6000, sharp pores), 14684597;
     nappy.co (CC0) is closing "in the next few months".
   - Sclera: no shippable sharp macro; keep procedural veins (rec 12) - Bérard et al.'s published recipe is in patent
-    US10217265 (Disney / ETH, listed active to 2036; claims unread); calibration numbers (CCLRU redness by region,
+    US10217265 (Disney / ETH, listed active to 2036); calibration numbers (CCLRU redness by region,
     vessel 18.8 um, melanosis 92.5% in Black people, pinguecula 73% over 60) in its §2.
+  - Renderpeople "Fabienne & Percy 001" (mother and child, CC BY 4.0, `.dev/downloads/scans/rp_fabienne/`): **the
+    child is never used** - a clean licence doesn't settle a minor's consent, and our child route (Anny, measured
+    numbers) needs no child scan; the mother only as an adult source if needed (the user's go, 2026-11-05; a note
+    beside the zip says so).
+  - **The two patents' claims, read 2026-11-05 (not legal advice; the claims as Google Patents prints them [page],
+    the user's go "your rec all"):** US10217265B2 "Methods and systems of generating a parametric eye model" (ETH
+    Zurich, Disney; Active, expiry 2036-10-26): 21 claims, three independent (1 method, 9 system, 16 stored
+    instructions), each requiring ALL of - eye data "from an eye model database"; an eyeball model built by
+    "iteratively establishing correspondences among the plurality of eyes" (rigid alignment, fitting by "identifying a
+    limbus ... in one or more input images", non-rigid deformation, update); an iris model by "sampling a plurality of
+    patches from the plurality of eyes and merging the plurality of patches into a high-resolution synthesized
+    texture ... constrained by the iris control map". The veins ("grown from seed points in directions and by amounts
+    controlled by one or more vein recipes") are claimed only as additions to that (claims 2, 10, 17).
+    US10217275B2 "Methods and systems of performing eye reconstruction using a parametric model" (same family, Active,
+    expires 2036-11-09): 11 claims, three independent (1, 6, 11), each requiring input "a three-dimensional face scan
+    ... from a multi-view scanner", an eyeball model fitted to it, an iris control map from "a proxy iris centered on a
+    pupil ... texture information ... from at least one of the one or more input images", and "rendering the vein
+    network onto a sclera backplate determined from the one or more images". **Our design rule:** our procedural
+    veins (rec 12) never form part of a method that fits an eyeball model over an eye database or to a scan AND
+    synthesises the iris from patches or a control map taken from images; scan import (HSRD, the 3D.sk heads) keeps
+    our own eyes, never one reconstructed from the scan's eye pixels. Veins grown from seeds by our own rules,
+    deeper = bluer and blurrier, are then outside every claim's full set of elements. Query: WebSearch
+    `patent "vein network" sclera "seed points" "vein recipes" Disney ETH continuation` (found the sibling); claims
+    extracted from the two pages' `itemprop="claims"` sections.
   - Nails: no texture pack; keep the layered shader (rec 14); plate transmittance per wavelength, melanonychia by
     ancestry and age, lunula visibility by finger, ridges 85% over 60 - its §3; a CC0 hand-and-nail set of 250 people
     aged 18-95 (Yakimov 2024, figshare).
