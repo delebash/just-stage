@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "python \"$CLAUDE_PROJECT_DIR/tools/resume_hook.py\"",
+            "timeout": 20,
+            "statusMessage": "Loading docs/dev/RESUME.md"
+          }
+        ]
+      }
+    ]
+  }
+}

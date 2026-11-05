@@ -2,6 +2,7 @@
 
 Read in this order:
 
+0. **`RESUME.md`** — for an AI resuming work: the documents that govern each active job, and where it stands.
 1. **`../../AGENTS.md`** — what this app is and the rules for this repo.
 2. **`TASKS.md`** — the live tracker of open work, with the user's decisions verbatim.
 3. **`RESEARCH.md`** — what is already known, by subject, with the proof; read its section before
