@@ -32,10 +32,16 @@ import numpy as np
 #: eyeball, a dark band at the margin. The face test's rounds 57-65 read it the other way (rise 0 to +15): a fringe of
 #: spikes standing above the lid. Lengths 0.65 / 0.55 of the study's: at full length round 79's 4096-px close-up drew
 #: long spikes across the iris and out past the outer corner, where its painting shows a fine short lash line.
-UPPER = {"count": 120, "long": 5.2, "short": 2.9, "rise": -25, "curl": 10.0, "band": (0.2, 1.0), "radius": 0.00005,
+UPPER = {"count": 150, "long": 7.0, "short": 3.8, "rise": 0.0, "curl": 50.0, "band": (0.2, 1.0), "radius": 0.00005,
          "melanin": 0.95}  # fmt: skip
-LOWER = {"count": 75, "long": 2.5, "short": 1.4, "rise": -5.0, "curl": 20.0, "band": (0.2, 0.8), "radius": 0.000025,
+LOWER = {"count": 80, "long": 3.8, "short": 1.8, "rise": 5.0, "curl": 25.0, "band": (0.2, 0.8), "radius": 0.000025,
          "melanin": 0.6}  # fmt: skip  # lower lashes are finer and lighter
+#: Changed 2026-11-05 (the part-by-part gate): with the eyes opened to an adult's 9 mm (body_create.EYE_OPEN) the
+#: lashes read as a dark line along the lid, seen end-on - HD Aaron's and photographed men's sweep up into a fringe. The
+#: study's 61 deg "from vertical" read the other way (vertical up: ~29 deg ABOVE straight ahead) fits that: here they
+#: leave the lid straight ahead and curl 50 deg up, ~25 deg up on average; the study's full lengths less ~5% (7.0 /
+#: 3.8 mm); upper 150, lower 80 (inside StatPearls' counts). The narrow lid that made long lashes cross the iris
+#: (round 79) is gone. Compared: `.dev/gate/parts/eyes/eevee_eye_ours_lash_{base,long,curl}.png` against Aaron's.
 CLUMP, CLUMP_PULL = 4, 0.5  # real lashes group: neighbours' tips pulled halfway together, more toward the tip
 #: the fan seen from the front: (share of the way from the inner corner to the outer, the lash's angle from the line
 #: through the corners toward the outer one, degrees) - measured on the lower lid of Korean adults (Korea University,
