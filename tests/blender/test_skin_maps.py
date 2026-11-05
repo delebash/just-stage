@@ -167,11 +167,25 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
-    assert bsdf.inputs["Base Color"].links[0].from_node == nodes[maps.NODE + "nail_groove"]
-    assert bsdf.inputs["Roughness"].links[0].from_node == nodes[maps.NODE + "nail_rough"]
+    mouth = bsdf.inputs["Base Color"].links[0].from_node  # the mouth's lining over the nails' plate
+    assert mouth == nodes[maps.NODE + "mouth_colour"]
+    assert next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node == nodes[maps.NODE + "nail_groove"]
+    rough = bsdf.inputs["Roughness"].links[0].from_node
+    assert next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node == nodes[maps.NODE + "nail_rough"]
     assert bsdf.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
     coords = nodes[maps.NODE + "nail_coords"].image  # each nail's own coordinates, made once (make_nail_coords.py)
     alpha = np.empty(coords.size[0] * coords.size[1] * 4, np.float32)
     coords.pixels.foreach_get(alpha)
     assert 0.3 < (alpha[3::4] > 0.5).mean() < 0.9  # the nails fill most of their tile
     assert nodes[maps.NODE + "nail_on_tile"].inputs[1].default_value == maps.NAIL_TILE_INDEX
+
+
+def test_the_mouths_lining_is_wet_mucosa_on_the_head_tile(human, tmp_path):
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    mask = nodes[maps.NODE + "mouth_mask"].image  # the inner lips and the mouth (make_mouth_mask.py)
+    px = np.empty(mask.size[0] * mask.size[1] * 4, np.float32)
+    mask.pixels.foreach_get(px)
+    assert 0.002 < (px[0::4] > 0.5).mean() < 0.05  # a small part of the head tile
+    assert nodes[maps.NODE + "mouth_on_head"].inputs[1].default_value == 0.0  # tile 1001 only

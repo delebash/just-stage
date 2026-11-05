@@ -62,6 +62,11 @@ NAIL_GROOVE = 0.45  # how much the fold's groove round the plate darkens it
 NAIL_RIDGES = 0.05  # +- share of the colour
 NAIL_ROUGHNESS, NAIL_SPECULAR, NAIL_COAT = 0.18, 0.6, 0.5
 NAIL_RAISE = 0.0006  # m: the plate over its fold
+#: the mouth's lining (the inner lips and the mouth's skin; `tools/make_mouth_mask.py`): wet mucosa where the mask is -
+#: no scan or painting covers it, so an open mouth showed a pale rim of skin inside the lips (the gate, 2026-11-05)
+MOUTH_TOOL = "python tools/dev.py blender -b --python tools/make_mouth_mask.py"
+MOUTH_COLOUR, MOUTH_SHARE = (0.42, 0.11, 0.11), 0.85  # linear
+MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
 #: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
@@ -261,6 +266,33 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
     nt.links.new(raise_.outputs["Normal"], bsdf.inputs["Normal"])
 
 
+def mouth_mask() -> bpy.types.Image:
+    """The mouth's lining on the head tile (MOUTH_TOOL), loaded once and shared."""
+    path = paths.generated("skin", "mouth.png", tool=MOUTH_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _mouth_layer(nt, bsdf, uv, which) -> None:
+    """Wet mucosa over the skin where the mouth's mask is, on the head tile: colour, roughness, specular and coat."""
+
+    def fed(name):
+        return bsdf.inputs[name].links[0].from_socket
+
+    mask = _node(nt, "ShaderNodeTexImage", "mouth_mask", (-1600, -2100))
+    mask.image, mask.interpolation, mask.extension = mouth_mask(), "Linear", "CLIP"
+    nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
+    on_head = _math(nt, "mouth_on_head", "COMPARE", which.outputs["Value"], 0.0, 0.5)
+    share = _math(nt, "mouth_share", "MULTIPLY", _math(nt, "mouth_in", "MULTIPLY", mask.outputs["Color"], on_head),
+                  MOUTH_SHARE)
+    nt.links.new(_mix(nt, "mouth_colour", "RGBA", share, fed("Base Color"), MOUTH_COLOUR), bsdf.inputs["Base Color"])
+    for name, value, key in (("Roughness", MOUTH_ROUGHNESS, "rough"), ("Specular IOR Level", MOUTH_SPECULAR, "spec"),
+                             ("Coat Weight", MOUTH_COAT, "coat")):
+        own = fed(name) if bsdf.inputs[name].is_linked else bsdf.inputs[name].default_value
+        nt.links.new(_mix(nt, f"mouth_{key}", "FLOAT", share, own, value), bsdf.inputs[name])
+
+
 def _tiled_coords(nt, name: str, uv, which, tile_mm: float, location):
     """The UDIM layer's coordinates scaled so a tile of `tile_mm` millimetres keeps its size on every UDIM tile:
     x MM_PER_UV[tile] / tile_mm, the factor picked by the tile's index (`which`: floor(u), 0 = 1001)."""
@@ -369,6 +401,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(bump.outputs["Normal"], micro_bump.inputs["Normal"])
     links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
     _nail_layer(nt, bsdf, uv, which)
+    _mouth_layer(nt, bsdf, uv, which)
     coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
     coat.data_type = "FLOAT"
     links.new(body.outputs["Value"], coat.inputs["Factor"])

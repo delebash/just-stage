@@ -51,8 +51,9 @@ BROAD_LUM, BROAD_HUE = 0.45, 0.15
 #: the low layer's range (log): only a scan's gross leftovers (a shadowed fold, a stray hair) clipped; its holes filled
 #: over LOW_FILL texels (~4 mm) of skin round them; its edge fades in over LOW_FEATHER (~2.7 mm) - at FEATHER (8 mm)
 #: every feature beside a hole (eyes, brows, lips) faded with it
-LOW_RANGE = 1.0
+LOW_RANGE = 0.6  # 1.0 let a collar's edge and a fill's leftovers through as patches (composition 503's neck)
 LOW_FILL, LOW_FEATHER = 24.0, 16.0
+LOW_NEAR = 0.4  # the share of skin round a texel it needs: holes filled only well inside the skin (0.15 reached edges)
 
 
 def _module(name, path):
@@ -195,8 +196,8 @@ def split(name):
         # own skin - lips and regional colour kept whole (a composed skin's colour, `compose`'s "colour": "scans")
         # the scan's non-skin holes (eyes, brows, nostrils, a collar) filled from the skin round them first, so the
         # features' surroundings aren't faded out with the holes (round 502: the face's colour came out at ~30%)
-        reach = cv2.erode(cover.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
-        near = cv2.GaussianBlur(valid_colour.astype(np.float32), (0, 0), LOW_FILL) > 0.15
+        reach = cv2.erode(cover.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 4 + 1,) * 2)) > 0
+        near = cv2.GaussianBlur(valid_colour.astype(np.float32), (0, 0), LOW_FILL) > LOW_NEAR
         valid_low = reach & near
         filled = np.where(valid_colour[..., None], lin, masked_blur(lin, valid_colour, LOW_FILL))
         low = np.log(np.maximum(masked_blur(filled, valid_low, FINE_SIGMA), 1e-4)) - shading[..., None]
