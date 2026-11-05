@@ -81,6 +81,16 @@ def _set(scene, variant):
     elif variant.startswith("probe_volume"):
         _probe_volume(scene, capture_world=variant.endswith("_world"),
                       resolution=(24, 20, 36) if "_fine" in variant else (12, 10, 18))
+    # Today's x2 (skin/material.py EEVEE_SCATTER) on a darker skin: Amara's tone on Daniel's maps, EEVEE at x1 and x2
+    # against Cycles at the same tone (2026-11-05: x2 was measured on Daniel's light skin only)
+    elif variant.startswith("dark_"):
+        set_tone = importlib.import_module("bl_ext.system.juststage.modules.skin.skin_set_tone")
+        props = next(o for o in scene.objects if o.juststage.character_id and not o.juststage.part_of).juststage
+        set_tone.main(set_tone.Params(props.character_id, DARK_MELANIN, props.eumelanin, props.blood, props.oiliness))
+        if variant == "dark_x1":
+            _skin(scene).inputs["Subsurface Scale"].default_value /= skin_material.EEVEE_SCATTER
+        elif variant == "dark_cycles":
+            scene.render.engine = "CYCLES"
 
 
 def _probe_volume(scene, capture_world: bool, resolution=(12, 10, 18)) -> None:
@@ -107,11 +117,13 @@ def _probe_volume(scene, capture_world: bool, resolution=(12, 10, 18)) -> None:
     print(f"GATE16 probe bake {time.perf_counter() - t:.1f}s capture_world={capture_world}", flush=True)
 
 
+DARK_MELANIN = 0.18  # Amara's (tools/build_skins.py MELANIN)
 VARIANTS = ("base", "trace_rough_0.75", "trace_res_full", "fast_gi_fine", "indirect_1.2", "no_sheen", "no_coat",
             "sss_x1.5", "samples_128", "both_sss_1.5", "both_sss_2.0", "both_sss_2.5",
             "sun_thr_0", "sun_thr_5", "sun_thr_2", "sun_thr_1", "sun_angle_10", "sun_angle_30", "sun_no_shadow",
             "sss_x2", "sss_x2.5", "sss_x3", "probe_volume", "probe_volume_world", "probe_volume_fine",
-            "probe_fine_sss_2.5", "probe_fine_sss_3", "probe_volume_fine_world", "probe_fine_world_sss_3")
+            "probe_fine_sss_2.5", "probe_fine_sss_3", "probe_volume_fine_world", "probe_fine_world_sss_3",
+            "dark_x1", "dark_x2")  # dark_cycles is the dark variants' reference, rendered by name
 #: `-- render <names...>` renders only those (the first round's are on disk)
 
 
@@ -121,7 +133,9 @@ def render() -> None:
     for variant in args or VARIANTS:
         bpy.ops.wm.open_mainfile(filepath=str(GATE / "gate_scene.blend"))
         scene = bpy.context.scene
-        gate._grey_sphere(scene)
+        body = next(o for o in scene.objects if o.juststage.character_id and not o.juststage.part_of)
+        skin_material.sync_live(body.juststage.skin_material)  # today's live view (the scene predates x2): every
+        gate._grey_sphere(scene)  # variant from 2026-11-05 on is on top of it
         scene.render.engine = "BLENDER_EEVEE"
         scene.camera = scene.objects["face camera"]
         scene.render.resolution_x, scene.render.resolution_y = gate.RESOLUTION["face"]
@@ -130,7 +144,7 @@ def render() -> None:
         _set(scene, variant)
         world = scene.world.node_tree.nodes
         lights = [o for o in scene.objects if o.type == "LIGHT"]
-        for light_set in ("stage", "sky"):
+        for light_set in ("stage",) if variant == "dark_cycles" else ("stage", "sky"):  # the crops need the stage
             for light in lights:
                 light.hide_render = light_set == "sky"
             world["image light"].inputs["Strength"].default_value = startup.HDRI_STRENGTH
@@ -157,6 +171,8 @@ def report() -> None:
     ref = {v: cmp._load(GATE / "renders" / f"cycles_face_{v}.exr") for v in ("stage", "sky")}
     ref_bands = _sphere_bands(ref["sky"], centre, radius)
     ref_crops = {c: cmp._numbers(cmp._crop(ref["stage"], f)) for c, f in cmp.CROPS.items()}
+    dark = cmp._load(OUT / "dark_cycles_stage.exr")
+    dark_crops = None if dark is None else {c: cmp._numbers(cmp._crop(dark, f)) for c, f in cmp.CROPS.items()}
     rows = {}
     for variant in VARIANTS:
         stage, sky = (cmp._load(OUT / f"{variant}_{l}.exr") for l in ("stage", "sky"))
@@ -164,16 +180,20 @@ def report() -> None:
             continue
         crops = {c: cmp._numbers(cmp._crop(stage, f)) for c, f in cmp.CROPS.items()}
         bands = [b / r for b, r in zip(_sphere_bands(sky, centre, radius), ref_bands)]
+        if variant.startswith("dark_x") and dark_crops is not None:  # the dark skin against Cycles at its own tone
+            crops_ref = dark_crops
+        else:
+            crops_ref = ref_crops
         rows[variant] = {
             "sky_sphere_vs_cycles": cmp._sphere_mean(sky, centre, radius) / cmp._sphere_mean(ref["sky"], centre, radius),
             "sky_bands_vs_cycles": bands,
             "sky_bands_err": float(np.mean([abs(np.log(b)) for b in bands])),
-            "crop_mean_err": float(np.mean([abs(np.log(crops[c]["mean"] / ref_crops[c]["mean"])) for c in crops])),
-            "crop_detail_err": float(np.mean([abs(np.log(crops[c]["fine_detail"] / ref_crops[c]["fine_detail"]))
+            "crop_mean_err": float(np.mean([abs(np.log(crops[c]["mean"] / crops_ref[c]["mean"])) for c in crops])),
+            "crop_detail_err": float(np.mean([abs(np.log(crops[c]["fine_detail"] / crops_ref[c]["fine_detail"]))
                                               for c in crops])),
-            "jaw_mean_ratio": crops["jaw_shadow"]["mean"] / ref_crops["jaw_shadow"]["mean"],
-            "jaw_detail_ratio": crops["jaw_shadow"]["fine_detail"] / ref_crops["jaw_shadow"]["fine_detail"],
-            "under_eye_detail_ratio": crops["under_eye"]["fine_detail"] / ref_crops["under_eye"]["fine_detail"],
+            "jaw_mean_ratio": crops["jaw_shadow"]["mean"] / crops_ref["jaw_shadow"]["mean"],
+            "jaw_detail_ratio": crops["jaw_shadow"]["fine_detail"] / crops_ref["jaw_shadow"]["fine_detail"],
+            "under_eye_detail_ratio": crops["under_eye"]["fine_detail"] / crops_ref["under_eye"]["fine_detail"],
         }
     (OUT / "report.json").write_text(json.dumps(rows, indent=1))
     for v, r in rows.items():
