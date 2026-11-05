@@ -57,9 +57,13 @@ def _context_menu(self, context):
 
 def draw_header(self, context):
     space = context.space_data
-    # the browser's params are None until it has drawn once (ui/startup.py content_panel): Blender's own header then
-    if (getattr(context.window_manager, "juststage_full_interface", True) or space.browse_mode != "ASSETS"
-            or space.params is None):
+    if space.browse_mode == "ASSETS" and space.params is None:
+        # the browser's params are None until it has drawn once (ui/startup.py content_panel switches the area by
+        # script); Blender's own header fails then too (space_filebrowser.py draw_asset_browser_buttons reads
+        # params.asset_library_reference), so only the editor switch until the next redraw
+        self.layout.template_header()
+        return
+    if getattr(context.window_manager, "juststage_full_interface", True) or space.browse_mode != "ASSETS":
         _ORIGINAL["draw"](self, context)
         return
     layout = self.layout

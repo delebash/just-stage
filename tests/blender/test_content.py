@@ -8,6 +8,7 @@ import importlib
 from types import SimpleNamespace
 
 import bpy
+import pytest
 
 content = importlib.import_module("bl_ext.system.juststage.ui.content")
 library = importlib.import_module("bl_ext.system.juststage.core.library")
@@ -41,14 +42,17 @@ def test_the_entry_is_in_blenders_context_menu():
     assert content._context_menu in bpy.types.ASSETBROWSER_MT_context_menu._dyn_ui_initialize()
 
 
-def test_the_header_before_the_browser_has_drawn_falls_back_to_blenders():
-    """The Asset Browser's `params` are None until it has drawn once (ui/startup.py `content_panel`); the header then
-    draws Blender's own instead of handing None to `prop` (the error seen 2026-11-04 opening a saved scene)."""
+@pytest.mark.parametrize("full_interface", [False, True])
+def test_the_header_before_the_browser_has_drawn_draws_only_the_editor_switch(full_interface):
+    """The Asset Browser's `params` are None until it has drawn once (ui/startup.py `content_panel` switches the area
+    by script); Blender's own header then fails too (`space_filebrowser.py` `draw_asset_browser_buttons` reads
+    `params.asset_library_reference` - seen 2026-11-05 opening the gate scene), so both interfaces draw only the editor
+    switch until the next redraw."""
     calls = []
     layout = SimpleNamespace(template_header=lambda: calls.append("template_header"),
                              row=lambda: SimpleNamespace(prop=lambda data, *a, **k: calls.append(("prop", data))))
     stub = SimpleNamespace(layout=layout)
-    context = SimpleNamespace(window_manager=SimpleNamespace(juststage_full_interface=False),
+    context = SimpleNamespace(window_manager=SimpleNamespace(juststage_full_interface=full_interface),
                               space_data=SimpleNamespace(browse_mode="ASSETS", params=None, active_operator=None))
     saved = dict(content._ORIGINAL)
     content._ORIGINAL["draw"] = lambda self, ctx: calls.append("blenders")
@@ -57,7 +61,7 @@ def test_the_header_before_the_browser_has_drawn_falls_back_to_blenders():
     finally:
         content._ORIGINAL.clear()
         content._ORIGINAL.update(saved)
-    assert calls == ["blenders"]
+    assert calls == ["template_header"]
 
 
 def test_the_header_is_installed_with_juststages_interface():
