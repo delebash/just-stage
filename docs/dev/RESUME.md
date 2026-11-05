@@ -24,6 +24,11 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   (Aaron without normals: 0.40) - pores are relief. NEXT: the same on 4 characters (scan relief bakes for hsr0027
   0028 0015 0042 0081 0102), then step (2) body relief. Seen: at face distance the gap is now shape (MakeHuman
   proportions, HSR0040's heavy bags), tone, hair - not texture.
+- (1b) face skin on 6 characters (library men and women, light to dark, the six "Scan" skins with relief,
+  `.dev/gate/parts/proof_chars/`): cheek pore band 0.97-2.18 (Aaron 0.96) - HOLDS for any character; forehead men
+  55-70% of Aaron's, dark woman equal, young women lower (smoother, as real). Defect: a scar-like mark on Scan woman
+  B's cheek (HSR0028's). NEW RISK found: face SHAPE - MakeHuman's faces read generic and puffy round the eyes beside
+  Aaron's; testing a real face shape (a scan's fit in our topology) on the same skin next.
 
 ## Always
 
