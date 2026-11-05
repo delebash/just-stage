@@ -10,7 +10,8 @@ within ±5 mm of ours; what they miss (our neck below a bust, the mouth's inside
 the scan all white gives that coverage.
 
 Writes scans/NAME/bake_colour.png and bake_cover.png (4096², HeadTile). Processor only (Cycles CPU, 8 threads).
-Run: blender -b --factory-startup --python tools/face_test/scan_bake.py -- NAME
+Run: blender -b --factory-startup --python tools/face_test/scan_bake.py -- NAME [normal]
+(`normal`: the scan's relief as a tangent-space normal map, bake_normal.png - bake_normal below.)
 """
 
 import importlib.util
@@ -67,6 +68,32 @@ def bake(scene, ours, scan, filepath):
     print(f"baked {Path(filepath).name} ({time.time() - t:.0f}s)")
 
 
+def bake_normal(scene, ours, scan, node, path):
+    """The scan's surface relief against our fitted head's, in our head's tangent space (HeadTile): Blender's Normal
+    bake, Selected to Active, the same reach as the colour's; our head shaded smooth so its own facets don't bake in.
+    16-bit PNG, (0.5, 0.5, 1) where flat. Its low frequencies (the fit's leftover) are taken out after
+    (skin_base.split) - what stays is the scan's folds, creases and lines."""
+    for poly in ours.data.polygons:
+        poly.use_smooth = True
+    for poly in scan.data.polygons:
+        poly.use_smooth = True
+    image = bpy.data.images.new(path.stem, SIZE, SIZE, alpha=False, float_buffer=True)
+    image.colorspace_settings.name = "Non-Color"
+    image.generated_color = (0.5, 0.5, 1.0, 1.0)
+    node.image = image
+    bpy.ops.object.select_all(action="DESELECT")
+    scan.select_set(True)
+    ours.select_set(True)
+    bpy.context.view_layer.objects.active = ours
+    t = time.time()
+    bpy.ops.object.bake(type="NORMAL", normal_space="TANGENT", use_selected_to_active=True, cage_extrusion=EXTRUSION,
+                        max_ray_distance=RAY, margin=0, use_clear=False)
+    image.filepath_raw, image.file_format = str(path), "PNG"
+    scene.render.image_settings.color_depth = "16"
+    image.save_render(str(path), scene=scene)
+    print(f"baked {path.name} ({time.time() - t:.0f}s)")
+
+
 def main(argv):
     name = argv[0]
     out = Path(scan_list.OUT) / name
@@ -91,6 +118,9 @@ def main(argv):
     src["co"] = src["co"].astype(np.float64) @ M[:3, :3].T + M[:3, 3]
     scan = scan_views.build_mesh(name, src, scan_list.SCANS[name])
 
+    if argv[1:2] == ["normal"]:  # the scan's own relief as a tangent-space normal map on our fitted head
+        bake_normal(scene, ours, scan, node, out / "bake_normal.png")
+        return
     t0 = time.time()
     bake(scene, ours, scan, out / "bake_colour.png")
     colour.filepath_raw, colour.file_format = str(out / "bake_colour.png"), "PNG"

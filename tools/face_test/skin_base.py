@@ -227,6 +227,33 @@ def _feathered(valid):
     return np.clip(cv2.GaussianBlur(v, (0, 0), FEATHER) * 2.0 - 1.0, 0.0, 1.0) * v
 
 
+#: the scans' own relief (scan_bake.py's bake_normal.png: their surface against our fitted head's, tangent space): its
+#: low frequencies above RELIEF_HP texels (~7 mm - the fit's leftover) taken out, kept inside each scan's skin mask
+#: (no hair, brows or eyes), faded in over RELIEF_FEATHER
+RELIEF_HP, RELIEF_FEATHER = 40.0, 16.0
+
+
+def _relief(p, layers, shape):
+    """A composed skin's mid-scale relief - folds, creases, lines - as tangent-space XY (H x W x 2) from its relief
+    scans (`relief_from`, default its colour scans), a weighted mean; None when no scan has one."""
+    num, tot = np.zeros((*shape, 2), np.float32), np.zeros(shape, np.float32)
+    for n, w in p.get("relief_from", p.get("broad_from", p["mid_from"])).items():
+        f = DIR / n / "bake_normal.png"
+        if not f.exists():
+            continue
+        nm = cv2.imread(str(f), cv2.IMREAD_UNCHANGED)[..., [2, 1, 0]].astype(np.float32) / 65535.0
+        xy = cv2.resize(nm[..., :2], shape[::-1], interpolation=cv2.INTER_AREA) * 2.0 - 1.0
+        valid = layers[n]["valid"]
+        hp = xy - masked_blur(np.dstack([xy, np.zeros(shape, np.float32)]), valid, RELIEF_HP)[..., :2]
+        v = valid.astype(np.float32)
+        a = w * np.clip(cv2.GaussianBlur(v, (0, 0), RELIEF_FEATHER) * 2.0 - 1.0, 0.0, 1.0) * v
+        num += a[..., None] * hp
+        tot += a
+    if not tot.any():
+        return None
+    return num / np.maximum(tot, 1e-6)[..., None] * np.clip(tot / 0.5, 0.0, 1.0)[..., None]
+
+
 def compose(seed, params=None):
     """One character's base: a ratio map (H x W x 3, ~1) and where the scans covered. The approved way (TASKS "THE
     SCAN ROUTE" (6), MetaHuman's index): the pores and fine lines from ONE scan - averaging several people's pores at a
@@ -320,6 +347,10 @@ def compose(seed, params=None):
             tot_l += a
         low = num_l / np.maximum(tot_l, 1e-6)[..., None] * np.clip(tot_l / 0.5, 0.0, 1.0)[..., None]
         ratio_log = p["age"] * fine + low + 0.5 * own
+        relief = _relief(p, layers, shape)
+        if relief is not None:
+            p["relief_file"] = f"base_char{seed}_relief.npy"
+            np.save(DIR / p["relief_file"], relief.astype(np.float16))
     else:
         ratio_log = p["age"] * fine + p["mottle"] * mid + p.get("broad", 1.0) * broad + own
     ratio_log[..., 0] += p["redness"] * noise(shape, rng, 24.0)  # patchy redness

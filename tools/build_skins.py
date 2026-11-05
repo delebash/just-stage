@@ -179,6 +179,26 @@ def _normals_of(normal, painted):
     return build
 
 
+def _tangent_normals_of(image):
+    """A tangent-space normal map in the HeadTile layout as the shading normal - baked (Normal, tangent) into the
+    bake's own layout: the relief moves from one UV layout's tangent frames to the other's."""
+
+    def build(nodes, links, out):
+        uv = nodes.new("ShaderNodeUVMap")
+        uv.uv_map = "HeadTile"
+        tex = nodes.new("ShaderNodeTexImage")
+        tex.image, tex.interpolation = image, "Cubic"
+        links.new(uv.outputs["UV"], tex.inputs["Vector"])
+        nmap = nodes.new("ShaderNodeNormalMap")
+        nmap.space, nmap.uv_map = "TANGENT", "HeadTile"
+        links.new(tex.outputs["Color"], nmap.inputs["Color"])
+        bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+        links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
+        links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+
+    return build
+
+
 def _masks_of():
     """MPFB2's region masks as emission: red the areolae, green the finger and toe nails, blue the genitals with half
     the crotch."""
@@ -370,6 +390,14 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
         print(f"{name}: {channel} baked")
     if colour is None:
         baked = _bake(body, "NORMAL", _normals_of(_source("normal", folder), _source("painted", folder)))
+    elif composed is not None and params.get("relief_file"):  # the scans' own folds and lines (skin_base._relief)
+        xy = np.load(ROOT / ".dev" / "facetest" / "scans" / params["relief_file"]).astype(np.float32)[::-1]
+        z = np.sqrt(np.clip(1.0 - (xy ** 2).sum(-1), 0.0, 1.0))
+        relief = bpy.data.images.new("scan relief", xy.shape[1], xy.shape[0], alpha=False, float_buffer=True)
+        relief.colorspace_settings.name = "Non-Color"
+        relief.pixels.foreach_set(np.dstack([xy * 0.5 + 0.5, z, np.ones_like(z)]).astype(np.float32).ravel())
+        baked = _bake(body, "NORMAL", _tangent_normals_of(relief))
+        print(f"{name}: the scans' relief baked to the head tile")
     else:
         baked = np.broadcast_to(np.array((0.5, 0.5, 1.0), np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
     maps.write_png(out / f"{stems['normal']}.1001.png", baked, "16")

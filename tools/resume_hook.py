@@ -20,7 +20,8 @@ def main() -> None:
         source = ""
     resume = (ROOT / "docs" / "dev" / "RESUME.md").read_text(encoding="utf-8")
     order = (
-        f"Session start ({source or 'unknown'}). Before any tool call, read docs/dev/RESUME.md's 'Always' list and "
+        f"Session start ({source or 'unknown'}). THE ONE PRIORITY (RESUME.md's first section): prove CC5 quality on every "
+        "part for any character, riskiest first - nothing else. Before any tool call, read docs/dev/RESUME.md's 'Always' list and "
         "every file it lists for the active job, in full where marked; a compaction summary is checked against those "
         "files, never trusted instead of them. The file, as it stands now:\n\n"
     )

@@ -7,6 +7,16 @@ too. **Rule: before any tool call, read the "Always" list and every file listed 
 marked. A compaction summary is never a substitute: what it says is checked against these files.** This file is
 updated in the same commit that starts, changes or ends a job, and its "Where it stands" after every step.
 
+## THE ONE PRIORITY - read first, every time (the user, 2026-11-05; memory `one-priority`, TASKS "THE ONE PRIORITY")
+
+**Prove CC5 (HD Aaron) quality on every body part, and that it holds for any custom character - or prove a part can't
+and change the approach. Nothing else.** Every step must prove or disprove a part; library builds, credits, tooling
+polish and side fixes only when a proof needs them. Proof = ours beside Aaron at the gate's views (`tools/gate/
+parts_gate.py`), equal or above, measured; then the same method, no per-character tuning, on 4+ different characters.
+Order, riskiest first: (1) face mid-scale relief (scan geometry -> normal maps) -> (2) body relief -> (3) scalp hair
+(groom vs shading) -> (4) eyes -> (5) smile shapes -> (6) the rest -> (7) multi-character run + full gate. Report per
+part: proved / not proved / disproved. Proved so far: skin fine detail only.
+
 ## Always
 
 - `AGENTS.md` and `CLAUDE.md` (loaded automatically), `docs/dev/README.md` (the doc map: TASKS, RESEARCH, IDEAS,
