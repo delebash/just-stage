@@ -83,6 +83,34 @@ def render(out: Path, engine: str, lens: float, camera, target, world_rotation_d
     return out
 
 
+def sphere_light(png: Path, centre: tuple[float, float], radius: float) -> dict:
+    """The grey sphere's light, read the same way off any app's display image (CC5's viewport gives no linear data):
+    direction - the first moment of the disc's luminance (length = how directional, angle in the image, 0 = right,
+    90 = up); contrast - its 95th over 5th percentile; the five brightness bands' means, dark to lit."""
+    import numpy as np
+
+    img = bpy.data.images.load(str(png), check_existing=False)
+    w, h = img.size
+    px = np.empty(w * h * 4, np.float32)
+    img.pixels.foreach_get(px)
+    bpy.data.images.remove(img)
+    rgb = px.reshape(h, w, 4)[::-1, :, :3]  # Blender's rows run bottom-up
+    lum = rgb @ np.array([0.2126, 0.7152, 0.0722])
+    yy, xx = np.mgrid[0:h, 0:w]
+    dx, dy = (xx - centre[0]) / radius, (centre[1] - yy) / radius
+    inside = np.hypot(dx, dy) < 0.95
+    weight = lum[inside] / lum[inside].sum()
+    mx, my = float((dx[inside] * weight).sum()), float((dy[inside] * weight).sum())
+    values = lum[inside]
+    qs = np.quantile(values, [0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    return {
+        "direction": round(float(np.hypot(mx, my)), 3),
+        "angle_deg": round(float(np.degrees(np.arctan2(my, mx))), 1),
+        "contrast_p95_p5": round(float(np.quantile(values, 0.95) / max(np.quantile(values, 0.05), 1e-4)), 2),
+        "bands": [round(float(values[(values >= qs[i]) & (values <= qs[i + 1])].mean()), 4) for i in range(5)],
+    }
+
+
 def _vec(text: str) -> tuple[float, float, float]:
     x, y, z = (float(v) for v in text.split(","))
     return x, y, z
@@ -108,3 +136,7 @@ if __name__ == "__main__":
         a = p.parse_args(args[1:])
         print("wrote", render(a.out, a.engine, a.lens, a.camera, a.target, a.world_rotation, a.lights == "on",
                               a.size, a.sphere_at))  # fmt: skip
+    elif args[:1] == ["sphere-light"]:  # -- sphere-light PNG CX CY RADIUS (pixels, rows from the top)
+        import json
+
+        print("SPHERE", json.dumps(sphere_light(Path(args[1]), (float(args[2]), float(args[3])), float(args[4]))))

@@ -63,10 +63,14 @@ def _run():
         print("BUDGET no 3D view", flush=True)
         bpy.ops.wm.quit_blender()
         return None
+    from bl_ext.system.juststage.modules.skin import material
+
+    scene = bpy.context.scene
+    body = next(o for o in scene.objects if o.juststage.character_id and not o.juststage.part_of)
+    material.sync_live(body.juststage.skin_material)  # today's live skin (the gate scene predates it)
     viewport.show_live([window.screen], camera=True)
     region = next(r for r in area.regions if r.type == "WINDOW")
-    result = {"view_px": [region.width, region.height]}
-    scene = bpy.context.scene
+    result = {"view_px": [region.width, region.height], "live_scatter": material.EEVEE_SCATTER}
     result["hair_hidden"] = _measure(window, area)
     for obj in scene.objects:  # the gate hid hair and lashes in both engines (blender_gate.py prepare)
         if obj.hide_viewport and obj.type in ("CURVES", "MESH") and obj.parent is not None:
