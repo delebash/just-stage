@@ -9,11 +9,13 @@ yet. The research comes first, then the standards spec, then code (`docs/dev/TAS
 - **Not the web family.** The web kit (`E:\Dev\Web\just-core`), its template, its family rules and
   `/new-just-app` don't apply here. The stack — languages, engine, editor — comes out of the research;
   nothing is assumed (C++, Rust, Python, .NET or other).
-- **Clean-room.** CC5, iClone and every reference app are studied for behaviour and public docs only.
-  Never copy their code, shaders, base meshes, morphs or content — we build it ourselves. The one
+- **Clean-room.** What ships never contains CC5's, iClone's or any reference app's code, shaders, base
+  meshes, morphs or content — we build it ourselves; shipped assets are free and distributable. The one
   exception, the user's word 2026-10-30: Reallusion's texture files may be used where they are free and
-  open source (their own terms read first). Our names never use "Character Creator", "iClone" or
-  "Reallusion".
+  open source (their own terms read first). Local tests may use anything (the user, 2026-11-05: "we can do
+  whatever we want it is just the final product can only use assets that are free and can be
+  distributed") — e.g. a CC5 character exported into Blender to compare; nothing from such a test enters
+  shipped code or data. Our names never use "Character Creator", "iClone" or "Reallusion".
 - **Standards before code.** The data model, the command API, the plugin contract and the file format
   are specified and approved before any code is written.
 - **A fork is brought up to date before we work on it.** Before any work on a fork this app keeps,

@@ -845,10 +845,15 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   - Sclera: no shippable sharp macro; keep procedural veins (rec 12) - Bérard et al.'s published recipe is in patent
     US10217265 (Disney / ETH, listed active to 2036); calibration numbers (CCLRU redness by region,
     vessel 18.8 um, melanosis 92.5% in Black people, pinguecula 73% over 60) in its §2.
-  - Renderpeople "Fabienne & Percy 001" (mother and child, CC BY 4.0, `.dev/downloads/scans/rp_fabienne/`): **the
-    child is never used** - a clean licence doesn't settle a minor's consent, and our child route (Anny, measured
-    numbers) needs no child scan; the mother only as an adult source if needed (the user's go, 2026-11-05; a note
-    beside the zip says so).
+  - Renderpeople "Fabienne & Percy 001" (mother and child, `.dev/downloads/scans/rp_fabienne/`; Sketchfab uid
+    8c9bfd4fb8a444b3a42a4fc31935a2fb, uploaded by the studio's own account `renderpeople` 2020-05-12, "CC
+    Attribution" by/4.0, tags incl. "kids", "child", "noai" [API, read 2026-11-05]): **the child for measurements
+    only** - skin colour and proportions as numbers, if the face has enough pixels in the 8K atlas (to be measured);
+    nothing of the child ships; no AI training (the "noai" tag - Sketchfab: "the tag may not be enforceable outside
+    of the Sketchfab platform" for CC models, we follow it anyway). The mother may be used like any CC BY adult scan,
+    credited in `ATTRIBUTION.md`. (The user, 2026-11-05: "ok your rec measrurements only" - replaces "the child is
+    never used"; TASKS "FABIENNE & PERCY: MEASUREMENTS ONLY". Its texture's skin windows found only shoes and hair on
+    2026-11-02, `../plans/2026-11-02-research-texture-source.md` - its face was never checked.)
   - **The two patents' claims, read 2026-11-05 (not legal advice; the claims as Google Patents prints them [page],
     the user's go "your rec all"):** US10217265B2 "Methods and systems of generating a parametric eye model" (ETH
     Zurich, Disney; Active, expiry 2036-10-26): 21 claims, three independent (1 method, 9 system, 16 stored
@@ -1948,7 +1953,11 @@ diffusion re-texturing). Checked against: commercial use, 8 GB, any graphics car
   (`prs-eth/Marigold`, code Apache-2.0, last push 2026-09-06; the IID weights "CreativeML Open RAIL++-M", SD2-based —
   appearance: albedo, roughness, metallicity; lighting: albedo, diffuse shading, residual) — model card read.
 - **Relief from a photo:** StableNormal (`Stable-X/StableNormal`, Apache-2.0 code, last push 2025-08-02), Marigold
-  Normals.
+  Normals. Weights read 2026-11-05 [page]: `prs-eth/marigold-normals-v1-1` - "License: openrail++" ("CreativeML Open
+  RAIL++-M"), "fine-tuned from the `stable-diffusion-2`", 0.9B, F32, `MarigoldNormalsPipeline` in diffusers, "any
+  larger input image should be resized to make the longer side 768 pixels" (so pore-scale use means 768-px crops);
+  `Stable-X/stable-normal-v0-1` - metadata "apache-2.0", README empty. For rec 18's test (local measurement) the
+  licence is a label; shipping anything made with the OpenRAIL weights waits on the user's open question above.
 - **Photo to textured 3D head:** no open, permissive, photoreal tool found (KeenTools is a commercial service; CRM is MIT
   but general objects; a CVPR 2026 feed-forward animatable textured-mesh head — code and licence not found).
 - All of the above run in PyTorch, mostly CUDA-only: the family's engine (stable-diffusion.cpp) runs none of them as

@@ -1151,6 +1151,31 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            closes, into a new downloads folder; (7) no emails; (8) no purchases. The rethink added: x2 checked on a
            darker library skin and the live view re-timed once the card is free; nappy's licence read at its own page
            before the fetch.
+           HD AARON IS THE BAR; LOCAL TESTS MAY USE ANYTHING (2026-11-05), the user, verbatim: "hd arron is the highest
+           res cc5 character and that should be the bar"; "you shouldnt have stoped pleae keep going until you get the
+           quality bar, always rethink on your decisions adversiliry thatn go on your rec all"; on bringing CC5's
+           character into Blender: "can you bring the cc5 character and textures into blend itself and then see if you
+           get the same quality results, would this help you figure out if the problem is with lights are more likely
+           our textures"; "you should have search for lighting you are not checking you exsing research again stop
+           getting lazy, always verify before you recommend or make a statment, but you can search if you think it would
+           help, also you can searcch other plugins and look at those like exisitn blender character plugins, see what
+           they do see if their quality is as good a cc5 and see if it is the texutres or other things"; and "i dont hvae
+           arule for no export, this is you stupid interpertation, we can do whatever we want it is just the final
+           product can only use assets that are free and can be distributed". So: the CC5 benchmark's "no baking or
+           export of CC5 content" (FABLE ON THE PLAN, item 3) was my reading, not the user's rule - DROPPED. Local tests
+           may use any content (CC5's characters exported to Blender, its textures on our shader); what ships uses only
+           assets that are free and distributable (AGENTS.md clean-room). In progress: HD Aaron exported (the trial
+           allows 30 FBX / ABC / OBJ exports) and rendered in Blender under our stage - the lights-or-textures split;
+           Blender character add-ons' quality against CC5 (research, rule 0 map first).
+           FABIENNE & PERCY: MEASUREMENTS ONLY (2026-11-05; replaces item (4) of "THE JAW RESULTS AND THE GAPS' ITEMS"),
+           the user in the session "just-stage asset search", verbatim: "1 why keep child unused if it is publicly
+           avaialable on a trusted site? is this a trusted site?", then "ok your rec measrurements only" (read in that
+           session's log). The rec approved, verbatim: "Measurements only (my rec). I first measure how many pixels the
+           child's face has in the texture. If there's enough, we take skin colour and proportions as numbers; nothing
+           of the child ships. The mother can be used like any CC BY adult scan, credited in `ATTRIBUTION.md`." Source
+           read [API]: uploader `renderpeople` (the studio's own account), 2020-05-12, "CC Attribution" (by/4.0); it is
+           also tagged "noai" (Sketchfab: "may not be enforceable" on CC models) - so no AI training on it. The asset
+           search session measures the face pixels and sends the numbers.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
