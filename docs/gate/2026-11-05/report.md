@@ -85,6 +85,27 @@ contender (Weiss et al. 2023, `2026-10-30-research-skin-detail-shading.md` §2.2
   normal map (muscle and skin relief; the factor test halves it without), recs 7 + 17; the face's colour (his pink
   and capillaries), recs 2 + 3 + 6.
 
+## Done since the baseline (2026-11-05, later)
+
+- **Nails (rec 14 v1):** each nail's own coordinates on tile 1005 (`tools/make_nail_coords.py`: 20 nails); a plate with
+  a curved cuticle edge and rounded sides, a lunula by digit (subtle; rare on toes), a thin free edge, faint ridges, the
+  fold's groove, gloss and a raised edge (`maps.py` `_nail_layer`). Reads as a nail now; still squarer and paler than
+  Aaron's (`.dev/gate/parts/2026-11-05/eevee_nails_ours_nails3.png`).
+- **Brows (rec 8):** `modules/hair/brows.py` - 800 single hairs a brow spread over the brow's band (MakeHuman's
+  `wild_eyebrow` gives the region), flowing up at the head and along to the tail with converging rows, lying flat; a
+  library asset "JustStage brows"; dressed humans and the library's characters wear them. Close to Aaron's in kind and
+  density (`eevee_eye_ours_brows3.png`); his are more arched.
+- **Eyes - the opening:** every one of our men had a ~6 mm opening against Aaron's 9.3 (an adult's 9-10): the upper lid
+  hid the iris's top third, the pupil and the catch light (no catch light even with the cornea's gloss x4 or the eye
+  shell off - `.dev/gate/parts/eyes/`). MakeHuman's own `eye-height2` slider at +1 gives ~8.7 mm; dressed humans and
+  the library's characters get it.
+- **Skin colour from scans (recs 2, 17; the likeness rule):** HSRD-100 through the scan route (fixed: Z-up OBJs; each
+  scan keeps the head its fit was made on); HSR0040's own colour on our man reads as real skin
+  (`eevee_face_ours_hsr0040.png`); the composer's delit `low` layer from 2+ scans (`skin_base.py`, `"colour": "scans"`)
+  gives a natural face with no painting (`eevee_face_ours_comp503.png`), paler and softer than Aaron - the scans'
+  choice and tone next.
+- **No user docs** exist in this repo yet (docs/ holds dev, gate, plans, standards) - none to update.
+
 ## The fix list, worst first, in the approved order (brief §10)
 
 1. **Skin** - rec 18 DONE (above); then 2 + delighting (scan bases), 3 (tone: his pink and capillaries), 17 + 7 (shared detail; the body's relief from
