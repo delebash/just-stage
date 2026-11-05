@@ -133,3 +133,29 @@ def test_the_live_view_scatters_twice_as_far_as_the_film(human, tmp_path):
     detail = importlib.import_module("bl_ext.system.juststage.modules.skin.detail")
     detail.apply(mat, body.name, np.zeros((8, 8)), 20.0, 0.5, {})
     _assert_live_twin(mat)  # and the detail's bump
+
+
+def _factor(nodes, name, tile_index):
+    """The scale the relief layer `name` gets on UDIM tile `tile_index` (0 = 1001), read off its nodes."""
+    value = nodes[maps.NODE + f"{name}_scale_1001"].outputs[0].default_value
+    for k, number in enumerate(maps.TILES[1:], start=1):
+        past = nodes[maps.NODE + f"{name}_past_{number}"].inputs[1].default_value
+        step = nodes[maps.NODE + f"{name}_scale_{number}"].inputs[1].default_value
+        value += step * (tile_index > past)
+    return value
+
+
+def test_the_relief_layers_keep_one_size_on_every_tile_and_the_microrelief_shades(human, tmp_path):
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    coords = nodes[maps.NODE + "pores"].inputs["Vector"].links[0].from_node
+    assert coords.inputs[0].links[0].from_node == nodes[maps.NODE + "uv"]  # the UDIM layer, not hm08's UVMap
+    for name, size in (("pore", maps.PORE_TILE_MM), ("micro", maps.MICRO_TILE_MM)):
+        for k, number in enumerate(maps.TILES):  # hm08's UVMap gave the thigh's pores six times the face's size
+            assert _factor(nodes, name, k) == pytest.approx(maps.MM_PER_UV[number] / size)
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    micro = nodes[maps.NODE + "micro_bump"]
+    assert bsdf.inputs["Normal"].links[0].from_node == micro
+    assert micro.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "pore_bump"]
+    assert nodes[maps.NODE + "micro"].image.size[0] >= 2048

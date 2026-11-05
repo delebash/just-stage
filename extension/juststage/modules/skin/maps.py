@@ -28,8 +28,20 @@ TILES = (1001, 1002, 1003, 1004, 1005)
 #: the face test's skin shading (tools/face_test/test_face_project.py, rounds 40-79)
 COAT_WEIGHT, COAT_ROUGHNESS, COAT_IOR, SHEEN_WEIGHT, SHEEN_ROUGHNESS = 0.12, 0.44, 1.45, 0.1, 0.4
 HEIGHT_STRENGTH, HEIGHT_DISTANCE = 0.15, 0.0004  # the painting's own fine relief (the normal map carries the larger)
-PORE_TILES = 20.0  # tiles per hm08 UV unit: the face is 1.13 m a UV unit (measured), the tile ~5.6 cm
+#: each UDIM tile's millimetres per UV unit on the default human (measured 2026-11-05: the median polygon's
+#: sqrt(3D area / UV area); the head tile by its face, where relief shows): the relief layers keep one real size on
+#: every tile. hm08's own `UVMap`, which carried the pores before, spans 1.1 m a unit on the face but 2.1 on the torso
+#: and 7.0 on the thigh - the pores were twice and six times their size there
+MM_PER_UV = {1001: 724.0, 1002: 851.0, 1003: 753.0, 1004: 1224.0, 1005: 48.0}
+PORE_TILE_MM = 56.0  # the pore tile's size on the skin (the Lee Perry-Smith cheek tile, as tuned on the face)
 PORE_STRENGTH, PORE_DISTANCE = 0.35, 0.0002
+#: the microrelief - the skin's polygon network of fine furrows, finer than the pores (rec 18; the spec's
+#: `micro_normal`, character-data-model.md §3.1): tools/make_microrelief.py's generated tile, its size on the skin and
+#: its depth as the part-by-part gate picked them (`docs/gate/2026-11-05/report.md`: HD Aaron's cheek's finest band
+#: 0.45, ours 0.23 without it, 0.42 with it at 0.03 mm)
+MICRO_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_microrelief.py"
+MICRO_TILE_MM = 10.0
+MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.000035
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
 #: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
@@ -97,6 +109,39 @@ def _node(nt, kind: str, name: str, location=(0, 0)):
     return node
 
 
+def micro_relief() -> bpy.types.Image:
+    """The generated microrelief tile (MICRO_TOOL), loaded once and shared by every skin."""
+    path = paths.generated("skin", "microrelief.png", tool=MICRO_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _tiled_coords(nt, name: str, uv, which, tile_mm: float, location):
+    """The UDIM layer's coordinates scaled so a tile of `tile_mm` millimetres keeps its size on every UDIM tile:
+    x MM_PER_UV[tile] / tile_mm, the factor picked by the tile's index (`which`: floor(u), 0 = 1001)."""
+    first = MM_PER_UV[TILES[0]] / tile_mm
+    factor = _node(nt, "ShaderNodeValue", f"{name}_scale_1001", (location[0] - 400, location[1]))
+    factor.outputs[0].default_value = first
+    socket = factor.outputs[0]
+    for k, number in enumerate(TILES[1:], start=1):
+        step = MM_PER_UV[number] / tile_mm - MM_PER_UV[TILES[k - 1]] / tile_mm
+        past = _node(nt, "ShaderNodeMath", f"{name}_past_{number}", (location[0] - 400, location[1] - 60 * k))
+        past.operation, past.inputs[1].default_value = "GREATER_THAN", k - 0.5
+        nt.links.new(which.outputs["Value"], past.inputs[0])
+        add = _node(nt, "ShaderNodeMath", f"{name}_scale_{number}", (location[0] - 200, location[1] - 60 * k))
+        add.operation = "MULTIPLY_ADD"
+        nt.links.new(past.outputs["Value"], add.inputs[0])
+        add.inputs[1].default_value = step
+        nt.links.new(socket, add.inputs[2])
+        socket = add.outputs["Value"]
+    scaled = _node(nt, "ShaderNodeVectorMath", f"{name}_coords", location)
+    scaled.operation = "SCALE"
+    nt.links.new(uv.outputs["UV"], scaled.inputs[0])
+    nt.links.new(socket, scaled.inputs["Scale"])
+    return scaled.outputs["Vector"]
+
+
 def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], pores: bpy.types.Image) -> None:
     """The skin's maps on its Principled BSDF (material.py made the BSDF and its scattering): `images` by channel,
     UDIM tiled; `pores` a tiling height patch."""
@@ -154,20 +199,31 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     fine.inputs["Strength"].default_value, fine.inputs["Distance"].default_value = HEIGHT_STRENGTH, HEIGHT_DISTANCE
     links.new(tex["height"].outputs["Color"], fine.inputs["Height"])
     links.new(normal.outputs["Normal"], fine.inputs["Normal"])
-    body_uv = _node(nt, "ShaderNodeUVMap", "body_uv", (-1400, -900))
-    body_uv.uv_map = "UVMap"
-    mapping = _node(nt, "ShaderNodeMapping", "pore_mapping", (-1200, -900))
-    mapping.inputs["Scale"].default_value = (PORE_TILES, PORE_TILES, 1.0)
-    links.new(body_uv.outputs["UV"], mapping.inputs["Vector"])
+    for old in ("body_uv", "pore_mapping"):  # the pores' former route on hm08's UVMap (a skin saved before)
+        if nt.nodes.get(NODE + old) is not None:
+            nt.nodes.remove(nt.nodes[NODE + old])
+    # the relief layers on the UDIM layer, each tile scaled by its own millimetres per unit (MM_PER_UV)
+    which = _node(nt, "ShaderNodeMath", "tile_index", (-1200, -700))
+    which.operation = "FLOOR"
+    links.new(tile.outputs["X"], which.inputs[0])
     pore = _node(nt, "ShaderNodeTexImage", "pores", (-1000, -900))
     pore.image = pores
     pore.image.colorspace_settings.name = "Non-Color"
-    links.new(mapping.outputs["Vector"], pore.inputs["Vector"])
+    links.new(_tiled_coords(nt, "pore", uv, which, PORE_TILE_MM, (-1200, -900)), pore.inputs["Vector"])
     bump = _node(nt, "ShaderNodeBump", "pore_bump", (-250, -200))
     bump.inputs["Strength"].default_value, bump.inputs["Distance"].default_value = PORE_STRENGTH, PORE_DISTANCE
     links.new(pore.outputs["Color"], bump.inputs["Height"])
     links.new(fine.outputs["Normal"], bump.inputs["Normal"])
-    links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+    micro = _node(nt, "ShaderNodeTexImage", "micro", (-1000, -1200))
+    micro.image = micro_relief()
+    micro.interpolation = "Cubic"
+    links.new(_tiled_coords(nt, "micro", uv, which, MICRO_TILE_MM, (-1200, -1200)), micro.inputs["Vector"])
+    micro_bump = _node(nt, "ShaderNodeBump", "micro_bump", (-100, -200))
+    micro_bump.inputs["Strength"].default_value = MICRO_STRENGTH
+    micro_bump.inputs["Distance"].default_value = MICRO_DISTANCE
+    links.new(micro.outputs["Color"], micro_bump.inputs["Height"])
+    links.new(bump.outputs["Normal"], micro_bump.inputs["Normal"])
+    links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
     coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
     coat.data_type = "FLOAT"
     links.new(body.outputs["Value"], coat.inputs["Factor"])

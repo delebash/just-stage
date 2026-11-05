@@ -64,10 +64,30 @@ the cheek our pore band already matches; the finest band is what his micro-norma
 polygonal cells ~0.2 mm across with fine furrows (the skin's microrelief; studied, not used). Rec 18's graph-based
 contender (Weiss et al. 2023, `2026-10-30-research-skin-detail-shading.md` §2.2) generates exactly that structure.
 
+## Rec 18 done: the microrelief (2026-11-05)
+
+- **Built:** `tools/make_microrelief.py` - the skin's microrelief generated after Weiss et al. (SGP 2023): Poisson-disk
+  nodes 0.3 mm apart, their Voronoi cells as domed plateaus stretched along the line direction, the walls as furrows
+  (deeper along it), pores at wall junctions; a 10 mm tileable 16-bit tile, 2048 px. In the skin
+  (`modules/skin/maps.py`): a second bump after the pores - the spec's `micro_normal` - 0.035 mm deep.
+- **The contenders on our cheek** (`.dev/gate/parts/rec18/`; finest / pore band against Aaron's 0.448 / 0.965): the
+  pore tile alone (today) 0.231 / 0.915; the generated tile in place of the pores 0.611 / 0.850 (0.05 mm); the pores
+  kept plus the generated tile 0.416 / 0.920 (0.03 mm); as the app now builds it 0.450 / 0.924. The scan tiles made
+  earlier (`.dev/gate/relief/`): Ten24's cheek a clean pore network but 4.6 px/mm; the Marigold tiles from HSR0040 and
+  the Pexels photo blobs or blur - not used. The pick is mine under the user's "dont stop to ask questions unless
+  absolutley necessary" (the rec's gate said the user picks from the side-by-side: the montage is
+  `.dev/gate/parts/rec18/`, reversible).
+- **Found on the way:** the pores ran on hm08's `UVMap`, which spans 1.1 m a UV unit on the face, 2.1 on the torso,
+  1.7 on the forearm and 7.0 on the thigh - the body's pores were 2-6x their size. Both relief layers now run on the
+  UDIM layer with each tile's own scale (`MM_PER_UV`), one real size everywhere (test
+  `test_the_relief_layers_keep_one_size_on_every_tile_and_the_microrelief_shades`).
+- **Still below:** the torso at its view's scale (~0.5 mm a pixel): ours 0.42 / 0.36 against 0.96 / 0.75 - his body's
+  normal map (muscle and skin relief; the factor test halves it without), recs 7 + 17; the face's colour (his pink
+  and capillaries), recs 2 + 3 + 6.
+
 ## The fix list, worst first, in the approved order (brief §10)
 
-1. **Skin** - rec 18 first (the microrelief tile: the graph method against the scan tiles, measured on this cheek),
-   then 2 + delighting (scan bases), 3 (tone: his pink and capillaries), 17 + 7 (shared detail; the body's relief from
+1. **Skin** - rec 18 DONE (above); then 2 + delighting (scan bases), 3 (tone: his pink and capillaries), 17 + 7 (shared detail; the body's relief from
    scanned bodies - the torso's missing half), 6 (layers: capillaries, ear and lip colour).
 2. **Eyes** - rec 12 (wet lid margin, sclera, parallax iris), the lid shape.
 3. **Scalp hair** - rec 1 (bounded) then cards for dense styles (rec 11).

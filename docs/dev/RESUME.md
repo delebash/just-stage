@@ -51,8 +51,10 @@ updated in the same commit that starts, changes or ends a job, and its "Where it
   content. **The standard is HD Aaron in Blender** (TASKS "THE GATE PART BY PART"): the user's hair export imported
   (`aaron_hair_{eevee,cycles}.blend`); `tools/gate/parts_gate.py` renders 21 views per character (`render --who
   ours|cc5 --engine eevee|cycles`, then `sheet`) into `.dev/gate/parts/2026-11-05/`; the report goes to
-  `docs/gate/2026-11-05/report.md`. Running: EEVEE 2048 both; then Cycles; then the gap list worst-first and the fixes
-  in the approved order. CC5's own captures (eyes, brows and lashes, open mouth, nails) check Blender's Aaron; CC5's
+  `docs/gate/2026-11-05/report.md`. DONE: the EEVEE baseline (every part below); the teeth ride the jaw; rec 18 (the
+  generated microrelief, `tools/make_microrelief.py`, in `maps.py` on the UDIM layer - the cheek's finest band now
+  Aaron's). NEXT: the Cycles baseline; rec 2 + delighting (scan head bases), 3 (tone), 17 + 7 (body relief - the
+  torso is the largest measured gap), then 12, 1, ... as the report's fix list. CC5's own captures (eyes, brows and lashes, open mouth, nails) check Blender's Aaron; CC5's
   'face' view is a level camera, 80 mm, ~24.5 mm effective sensor (pupils at 245.8 / 348.0, row 290.6 of 600). The
   user's standing order: don't stop until every part meets the bar or it is measured impossible with our assets.
 
