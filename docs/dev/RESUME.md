@@ -29,6 +29,15 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   55-70% of Aaron's, dark woman equal, young women lower (smoother, as real). Defect: a scar-like mark on Scan woman
   B's cheek (HSR0028's). NEW RISK found: face SHAPE - MakeHuman's faces read generic and puffy round the eyes beside
   Aaron's; testing a real face shape (a scan's fit in our topology) on the same skin next.
+- (1c) face shape: HSR0040's real face (his fit in our topology as a shape key, `.dev/gate/parts/proof_shape/`) on the
+  same skin reads no more like Aaron than MakeHuman's - shape is NOT the main gap. Tone is: melanin 0.07 overshoots
+  (face L* 40 vs Aaron 48.5; a*/b* match), ~0.045 should match - a per-character choice. Sheen (roughness x0.8): no
+  visible change. THE EYES are now the main face-distance gap (`.dev/gate/parts/proof_eyes/`): ours meet the eyeball
+  at a sharp lid edge with no margin, no pink wet rim, lashes thin, white flat, pupil small; Aaron's lids have a thick
+  wet pink margin wrapping the eyeball, lashes on it, a larger pupil, a lighter iris. Pupil 0.38 / white x0.85 /
+  today's lashes: barely visible change (the pupil may be GNM's pupil-disc geometry - check). NEXT: the eye region
+  (step 4 moved up): lid margin (geometry thickness + a wet pink rim by MPFB2's `mpfb_eyelids` mask?), tearline,
+  pupil, iris; then the library characters rebuilt with today's lashes, brows, eyes open, scan skins.
 
 ## Always
 
