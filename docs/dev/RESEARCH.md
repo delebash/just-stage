@@ -315,6 +315,16 @@ didn't reach it).
   HD 262 + 128 correctives; lip-sync uses 15 visemes.
 - CC and iClone share one in-process Python API (RLPy; PySide2 / Qt 5.15; the docs stop at iClone 8.0).
   There is no outside API — a third party built an HTTP + MCP bridge.
+- **The CC5 MCP bridge in use (2026-11-04, the user's pick):** `mackatwentytsuru/cc5-mcp-server` (MIT, © Yuki
+  Tsuruoka; README read; cloned and built at `E:\Dev\3D\cc5\cc5-mcp-server`): a Node MCP server (stdio) talking HTTP to
+  a Python plugin inside CC5 on `127.0.0.1:5101` (localhost only); 100 tools, among them `set_camera_focal_length`,
+  `frame_camera`, `get_lights` / `set_light_multiplier`, `set_ibl` (loads an HDRI), `render_viewport` (PNG),
+  `capture_viewport`, `skingen_layer`, `list_presets`, `load_asset`; `exec_python` is refused unless CC5 starts with
+  `CC5_ALLOW_EXEC=1` (left off). Its `install-plugin.ps1` hard-codes `C:\Program Files\Reallusion\Character Creator 5`;
+  this machine's CC5 is at `F:\Reallusion\Character Creator 5`, so the plugin went to C: unused - copied to
+  `F:\...\Bin64\OpenPlugin\CC5_MCP_Bridge` (identical files). Claude Code: `claude mcp add cc5 --scope local` (this
+  project). The RLPy file itself: `F:\Reallusion\Character Creator 5\Bin64\RLPy.py` (24,247 lines; `RICamera`,
+  `RILight`, `LoadIBLImage`, `RGlobal.RenderImage`).
 - Paid add-ons around a $299 core: ActorMIXER PRO $199, HD Ultimate Morphs $149, Headshot 3 $199;
   subscriptions from $29 a month.
 - The pipeline is one free plugin per target: Auto Setup for Unreal (with Control Rig and Live Link, UE
