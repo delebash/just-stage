@@ -76,3 +76,14 @@ his toes have nail beds and toe pads, ours rounded blobs; his torso a sculpted a
 partly); ears comparable (his deeper concha); lips comparable at this view (his stubble groom hides the line). So
 beyond the eye's lid margin and the lip crease, hm08's gaps are mostly SHAPE at level 0 / detail at levels 1-2 (hands,
 feet, nails) - sculpt and HD-detail work on the existing topology, plus nail-bed loops to check.
+
+## 6 · Slider resolution, first pass (2026-11-05, measured; PRELIMINARY)
+
+The scan route's 20 fits (`.dev/facetest/scans/*/fit.npz`: our head at subdivision level 1, wrapped by NICP onto each
+real scan; `dist` = each vertex's distance to the scan), per region, median over the 20 scans (p50 / p90 mm): eyes
+2.03 / 19.08, nose 1.04 / 7.84, mouth 1.13 / 4.54, cheeks 0.80 / 7.73, forehead 0.74 / 2.10, ears 1.76 / 4.68. **Not
+yet usable to rank regions:** the eye region's p90 is inflated by hidden vertices (socket lining, eyeball parts) that
+no scan shows - the three scans with closed, clean eye surfaces (lps, scan02, rp_carla) give eyes p90 1.8-2.2 mm; the
+nose's p90 likewise by the nostrils' insides; the NICP's stiffness and scan holes add to all. Next: the same on the
+visible surface only (vertices seen from the gate's front and three-quarter cameras), and on level 0 with sliders only
+(the honest "can the sliders reach this face" number).
