@@ -2706,3 +2706,46 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   records) - but the .blend also carries "The Rain Rig is released under the Creative Commons Attribution 4.0 license"
   and two stylized meshes are "Based on" the CC BY Rain and Snow rigs. Epic's "Send to Unreal" add-on is MIT and ships
   no Unreal plugin; Reallusion's Unreal Auto Setup licence unread.
+- **The hand donor was on our disk** (*seen, 2026-11-06*; `.dev/audit/2026-11-06/research/R1.md` Q3, checked by me on a
+  crop of `.dev/downloads/ten24_sample/x/OBJ Package/Normal Maps/Level_01_Normal.PSD`, 8192² - not 16K - x 5100-7000,
+  y 200-2900): Ten24's sample has bare hands; its normal map shows the extensor tendons fanning to the knuckles, veins on
+  the back of the hand, knuckle and finger creases, palm creases and wrist skin lines (the forearm's colour carries hair;
+  the cuff is a sweater). Licence: "Feel free to use this scan as you wish for both commercial and personal projects. All
+  we ask is that you provide us with a credit wherever it's used" (the page saved 2026-11-04). Its feet are in shoes. So
+  run 11's flat hands have a donor in hand: our hand fitted to Ten24's mesh and its relief baked onto our hand tiles.
+  Feet: Thunk3D's "Leg-foot" (Sketchfab, "CC Attribution" [API], 2.97M faces, geometry only) is the one detailed bare
+  foot found; more hands: Arkify "Pencil Hand Pack" (3 female + 3 male, Artec Space Spider, CC Attribution [API]),
+  Thunk3D hands - their detail unseen until downloaded.
+- **HSR0042 is a 24-year-old, 179 cm, 112 kg African man** (*page read, 2026-11-06*, HSRD-100's
+  `manifest/persons.jsonl`: `{"person_id": "HSR0042", "age": "24", "sex": "Male", "ethnicity": "African", "height_cm":
+  "179", "weight": "112", ...}`) - L371-372 above ("an average-build older man") is wrong; L355's "a heavy man" is right.
+  HSR0040 (Scan man A's and B's main colour scan): 50, Caucasian, 180 cm, 92 kg.
+- **Bare bodies of women, heavier, older, darker** (*page read, R1 Q4*): none found fully bare under terms that let us
+  ship. On disk or in HSRD-100 (CC BY): poses with bare arms or legs - women 22, 23, 41, 60; men 50 and 62 (~90 kg)
+  (HSR0015-069/-070, HSR0112-078, HSR0040-074, HSR0023-071, HSR0042-043 - not downloaded); `d3d_bodysuit_woman` (CC BY, on
+  disk): a dark-skinned, heavier woman with bare arms, legs and feet. Renderbot (a one-year site licence), store
+  "Standard" licences, editorial-only and NC sources fail; Sketchfab's Store has closed.
+- **Hair out of scan colour** (*R1 Q1*): no studio publishes an automatic tool - avoid at capture, smooth geometry
+  (ZBrush), paint out by hand. Detection better than DullRazor: Telea et al. 2016 (training-free; code linked, licence
+  unstated) and learned SegFormer masks (Dice 0.967 vs DullRazor's 0.781 on skin-lesion images) [page]. Learned fills
+  (LaMa, Apache-2.0) smooth fine texture - a fill from the same scan keeps pores. Makeup-removal models work on
+  low-resolution photos only: picking makeup-free scans is the fix.
+- **Delighting** (*R1 Q2*): Unity's De-Lighting Tool (MIT, 2020) rebuilds the light from the surface with bent
+  normals, AO weighing near against overall light - it handles crease shading the SH fit can't; it needs a bent-normal
+  bake Blender 5.3 lacks (we would compute it). HSRD-100 ships each pose's 112 source photos and RealityCapture cameras
+  (CC BY) - multi-view specular separation (Su et al. 2022) is possible. MAGINet (2025-12): too low resolution.
+- **Anny paper, v3** (*page read*, arXiv 2511.03589): no scan-fitting method is described; adults fit at 2.5 mm against
+  SMPL-X 1.9 and ATLAS 1.8 (head and hands excluded); children 2.0 vs SMPL-X 3.2 on three scans; "SMPL-X better captures
+  fine skin-fold details of high-BMI bodies compared with Anny"; no MHR comparison. L360's 2.4 mm is v1's figure.
+- **Measuring skin detail** (*R1 Q6*): no published skin-specific measure. Better than our band standard deviation:
+  DISTS (MIT; built for textures that don't align pixel for pixel), the radially averaged power spectrum, ISO 25178
+  band-limited roughness on the relief maps (light-free); for mid-scale form a multi-scale ridge filter (Frangi 1998) at
+  ~1.5-8 mm - it separates long ridges (veins, tendons, creases) from speckle, why run 11's "fine" rose while the hand
+  read flatter.
+- **Blender 5.2's Random Walk radius** (*source read*, R1 Q7): from 5.2 plain Random Walk reads Subsurface Radius as the
+  mean free path (1/σt) - the same value scatters 4π ≈ 12.6x farther than in "Legacy" mode; Random Walk (Skin) is
+  unchanged (its radius the diffuse mean free path 1/σtr - our skin's, `skin_optics.py`). Our sclera, teeth, gums and
+  tongue use plain Random Walk (`head/part_materials.py`) - their radii to re-check.
+- **Weyrich et al. 2006** (*figure read*, R1 Q7: values read off Figure 15's vector paths - no table published): Torrance-
+  Sparrow m / ρs - nose 0.234 / 0.304, cheeks 0.271 / 0.234, forehead 0.270 / 0.272, chin 0.289 / 0.228, lips 0.285 /
+  0.289; measured diffuse mean free path 1.82 / 1.02 / 0.65 mm (R / G / B) - a target for our radius.
