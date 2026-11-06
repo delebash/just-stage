@@ -2749,3 +2749,45 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
 - **Weyrich et al. 2006** (*figure read*, R1 Q7: values read off Figure 15's vector paths - no table published): Torrance-
   Sparrow m / ρs - nose 0.234 / 0.304, cheeks 0.271 / 0.234, forehead 0.270 / 0.272, chin 0.289 / 0.228, lips 0.285 /
   0.289; measured diffuse mean free path 1.82 / 1.02 / 0.65 mm (R / G / B) - a target for our radius.
+- **Lid margin, measured** (*page read, 2026-11-06*; R3 Q2; the first re-read by me via Europe PMC's full text):
+  "the LMT was defined as the distance from the posterior lash line to the MCJ at the center eyelid, directly above or
+  below the center of the subject's pupil"; 56 normal adults: **upper 1.36 ± 0.25 mm, lower 1.0 ± 0.23 mm**, both rising
+  with age (Ophthalmol Ther 2021, PMC8770731, CC BY-NC). Lower lid by OCT / Keratograph 0.90 ± 0.20 / 0.86 ± 0.16 mm
+  (Wang et al., Graefes 2023, CC BY). The MCJ (line of Marx) "0.2-0.3 mm wide" (Knop et al. 2011). The whole margin
+  "Nearly flat, 2 mm wide" [snippet]. Base v2 places the lash row 2.6 mm off the eyeball (`tools/make_base_v2.py` LASH /
+  MARGIN / RIM = 2.6 / 1.3 / 0.25) - above every measured value: a measured target for the lid band.
+- **Lower tear meniscus** (*page read*, R3): ages 19-31 AS-OCT 0.21 ± 0.06, Keratograph 0.20 ± 0.05 mm (PMC11809819, CC
+  BY); ages 10-78: 0.34 ± 0.07 mm (0.11-0.61), ~0.002 mm a year (0.29 at 10-20 to 0.40 at 61-80), no sex difference
+  (Frontiers Med 2022, CC BY).
+- **Lashes** (*page read*, R3 Q3): the oatext study's Figure 2 seen - the vertical points down from the root, so upper
+  lashes leave the lid ~29 deg (men) / 18 deg (women) below straight ahead (L2385 above stands; our code sweeps them up
+  to match Aaron - a choice to state). Central density 12-15 upper lashes per 2 mm of lid. Shaft 77.8 x 63.9 µm,
+  elliptical (synchrotron CT) - our 0.08 mm fits. No frontal fan study found (again). Kerbiriou's data (InterDigital, 56
+  people): access by e-mail, evaluation only, no commercial use, no redistribution - blocked. MetaHuman's "7" lash
+  styles are its style list (None + six presets); its other controls are colour (melanin, redness, lightness,
+  roughness, salt-and-pepper, dye) - rec 8's "7 style parameters" was wrong.
+- **Blinks** (*page read*, R3 Q4): OmniFaceRig's rest of the page says only "upper-eyelid vertices snapped to lower lid
+  and locally relaxed" - no vertex set, weights or iterations: the details are ours. CC5's manual: Transformer >
+  Character > "Correct Eyeblink" snaps the upper lid onto the lower. MetaHuman moves the lids by joints (EyelidUpperA/B,
+  EyelidLowerA/B); expressions are joint animation with per-vertex corrective shapes at LOD0 only.
+- **Mouth** (*page read*, R3 Q5): no automatic lip-seal tool or method found; MetaHuman requires sealed neutral lips
+  and names no tool (edit the mesh, Update Vertices). Dental scans onto a template: per-tooth labels, a rigid fit of
+  each template tooth, a Laplacian deformation of the crown, the template's roots kept (RMS < 0.096 mm); Teeth3DS stores
+  per-vertex tooth labels in JSON; Poseidon3D's label format is not stated on its page.
+- **Hair colour in Cycles** (*code read*; R3 Q6, the coefficients re-read by me in Blender 5.3's
+  `intern/cycles/kernel/closure/bsdf_util.h` L430-431): eumelanin (0.506, 0.841, 1.653), pheomelanin (0.343, 0.733,
+  1.924) - pbrt's (0.419, 0.697, 1.37) / (0.187, 0.4, 1.05) x 1.207 / x 1.833; the 0-1 input maps by
+  `-log(1 - m)`. pbrt's *text*: eumelanin "roughly 8, 1.3, and 0.3" for black, brown, blonde (the "8, 2, 0.15" in our
+  mixing-hair research are its figure's examples). In Cycles' Melanin input (redness 0): black 0.9987, **brown 0.659
+  (we had 0.81), blonde 0.220 (we had 0.12)** [calc, re-done by me]. Measured single-fibre absorption (Bashkatov 2006)
+  is ~50x below rendering values - not a default source.
+- **Hair densities** (*page read*, R3 Q6-Q7): scalp terminal 223 / cm² (175-300; Barman 1965) - African 149, Asian 175,
+  Caucasian 226, Hispanic 178; Szabo's 980 counts all follicles. Beard shaft 125.6 ± 10.9 µm (Tolgyesi 1983); beard
+  densities reached run to ~120 / cm² (ours 160). Forearm 39 ± 12 follicles / cm². Brow shaft 54 µm (men), 47 (women);
+  no measured hairs-per-brow count found (a full transplanted brow ~200 follicles; ours 2,200 a brow). Strands2Cards'
+  paper unread (over the fetch limit). Groom comparison: HairCS's silhouette IoU (coverage), tangent and depth images,
+  volume Chamfer (clumping). MetaHuman binds brows by a Groom Binding through shared UVs (optional RBF); CC's brows and
+  beards carry skin weights and follow the head's morphs.
+- **Iris colour data** (*page read*, R3 Q1): Edwards' Dryad data (doi:10.5061/dryad.0kt87, CC0) holds iris surface
+  features only, no colour - drop it from the download list; Edwards 2012's tables paywalled; the only open numbers
+  reached: Korean dark-brown irises L* ~22, a* ~22, b* ~29 (CC BY-NC). No open per-category table found.
