@@ -36,7 +36,9 @@ EEVEE_OCCLUSION_GAIN = 2.5  # the live view's darker film (its lids' shadow is w
 OCCLUSION_LIFT = 0.0004  # off the eyeball (ICT's sits a median 0.5 mm off)
 OCCLUSION_UNDER_LIDS = 3.0  # degrees under each lid
 TEAR_ROUGHNESS = 0.3  # CC5's Tear Line examples: 0.25 and 0.45
-TEAR_FADE = 0.25  # the film fades in over this share of the strip from its edge on the eyeball (CC5's Edge Fadeout)
+#: the film fades in over this share of the strip from its edge on the eyeball (CC5's Edge Fadeout); 0.25 left a grey
+#: band lying on the eyeball (gate run 9; HD Aaron's a thin wet line at the lid)
+TEAR_FADE = 0.6
 TEAR_IOR = 1.336  # water
 LAYERS = {"eyeshell": "occlusion", "eyeEdge": "tearline"}
 #: each vertex's place about its eye (point attributes): which eye, azimuth and elevation (degrees), height off it (m)
