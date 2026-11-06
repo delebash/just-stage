@@ -66,3 +66,13 @@ edges with the eyeball forward. His lip line has a deep crease into the corners;
 is modelled anatomy (loops that make the margin's two edges and its lining, and the shape that sets the eye back), not
 more polygons. (His face is a sculpted character; the same-shape comparison - his topology and ours on one face - is
 still to do.)
+
+## 5 · Audit sheet 2 (2026-11-05, measured: `.dev/gate/parts/audit/sheet_regions_a.png`, `_b.png`)
+
+The gate's anatomy-placed views (profile, ear, lips, hand, foot, torso), hm08 at level 1 against Aaron's SubD 1 export,
+flat grey with each mesh's own edges, hair hidden on ours: **density again alike** at the same level. The differences
+are sculpted shape and anatomy: Aaron's hand has knuckles, tendons and modelled nail beds, ours smooth tube fingers;
+his toes have nail beds and toe pads, ours rounded blobs; his torso a sculpted athletic figure (a character choice,
+partly); ears comparable (his deeper concha); lips comparable at this view (his stubble groom hides the line). So
+beyond the eye's lid margin and the lip crease, hm08's gaps are mostly SHAPE at level 0 / detail at levels 1-2 (hands,
+feet, nails) - sculpt and HD-detail work on the existing topology, plus nail-bed loops to check.
