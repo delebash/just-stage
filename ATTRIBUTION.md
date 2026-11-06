@@ -15,6 +15,7 @@ into the user's JustStage library by `tools/build_skins.py` / `tools/build_libra
 | ICT-FaceKit neutral mesh (eye occlusion and tearline strips) | github.com/USC-ICT/ICT-FaceKit @ da5f95a6 | USC Institute for Creative Technologies | MIT |
 | GNM head model v3 | huggingface.co/google/gnm-v3 | Google | Apache-2.0 |
 | Studio Small 09 HDRI (2K) | polyhaven.com/a/studio_small_09 | Poly Haven | CC0-1.0 |
+| The skin's pore tile (`data/generated/skin/pores.png`, `tools/face_test/pore_tile.py`: the upper cheek's relief from Level_01_Normal, 33 mm) | ten24.info/sample-scan (Ten24 sample scan, OBJ package; the page as downloaded: `.dev/downloads/ten24_sample/sample-scan-page-2026-11-04.html`) | Ten24 Media | "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used." - credited here |
 | Haemoglobin molar extinction | omlc.org/spectra/hemoglobin | Scott Prahl, OMLC (1998) | no licence stated; cited |
 | CIE 1931 2° colour-matching functions; CIE D65 | files.cie.co.at | CIE | no licence stated; cited |
 
@@ -24,8 +25,6 @@ into the user's JustStage library by `tools/build_skins.py` / `tools/build_libra
 |---|---|---|---|
 | NIST skin reflectance (100 people) | opendata.nist.gov, doi:10.18434/M38597 | Cooksey, Allen & Tsai (NIST, 2017) | public domain |
 | OpenRigLogic (DNA and RigLogic, built into a wheel) | github.com/EpicGames/OpenRigLogic @ ea253d5 | Epic Games | MIT |
-
-| The skin's pore tile (`data/generated/skin/pores.png`, `tools/face_test/pore_tile.py`: the upper cheek's relief from Level_01_Normal, 33 mm) | ten24.info/sample-scan (Ten24 sample scan, OBJ package; the page as downloaded: `.dev/downloads/ten24_sample/sample-scan-page-2026-11-04.html`) | Ten24 Media | "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used." - credited here |
 
 ## Library skins and characters (built by our tools from these)
 
