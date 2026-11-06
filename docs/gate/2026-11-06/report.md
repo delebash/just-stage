@@ -38,4 +38,16 @@ measured where a measure exists:
 | Face shape | puffy lids, small eyes, broad flat nose (MakeHuman's average) | - | shape: step 4 (sliders) / a character's choice |
 | Scalp hair | flat, greasy-looking strands; his styled cards | - | step 6 (hair live view) |
 
-### Run 2 (after the fixes above): running
+### Runs 2-3 and what each changed (`.dev/gate/parts/2026-11-06b`, `-06c`, `hair_cal/`)
+
+| Found | Measured | Changed |
+|---|---|---|
+| The design's lash settings (180 upper, 0.08 mm, melanin 1.0) never in code; the caruncle (proof 4c) never in code | - | applied (`lashes.py`; base v2's record `caruncle`, the margin layer) |
+| Lashes at face distance | on / off: 6,550 px darker by > 5 L*, 1,063 by > 15 (`.dev/gate/parts/proof_lash/`) | they read - no cards or width floor needed now |
+| Brows thin without the painted ones | - | 1,400 fine short lighter hairs a brow under the 800 coarse (`brows.py`) |
+| The live view's hair a plain Principled surface (rec 1's lobes never written) | first model: hair white (lobes 3x narrow, unshadowed) | Karis' Marschner per light (Light Accumulation), Cycles' lobe width, Shadow Raycast, softened body shadow: scalp window 0.112 vs Cycles 0.121, brow window 0.405 vs 0.367 (`hair_shading.py`) |
+| Chest seam and shoulder patches remain | - | the neck fade sat in the face test's coordinates (removed); the body tiles take the head tile's border colour (`build_skins.py`) |
+| The lower margin still a glossy rim | - | wet pink at the rim only, fading across the margin (`base.mark`); marks refreshed on every load (`migrations`) |
+| No catch light in our eyes (Aaron's shows the key light) | hiding the films, a mirror cornea: none - the key light's reflection lands under our upper lid | the dressed human's eyes opened by MakeHuman's own sliders (no bags, fold, lid's middle up; proof 4b's measured set) |
+
+### Run 4: running (`.dev/gate/parts/2026-11-06d`, all 21 views, every fix above but the eye shape)
