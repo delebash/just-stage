@@ -132,9 +132,15 @@ wrong like this"; "update the docs and fix all of this". Memory `audit-inputs-be
   (measured the scans' way: already real). ALSO DONE: the six scan skins rebuilt (`tools/rebuild_scan_skins.py`;
   stubble found per texel), the men with Artec's torso (`tools/body_scan.py`: wrapped, baked, hair out - rows 10/15);
   teeth and gums shaded from the MIO photo (row 13); lashes rooted on base v2's lash line; the library's hair and
-  characters rebuilt on base v2 (backup `.dev/backup/library_2026-11-06/`). RUNNING: the gate, EEVEE, 21 views, into
-  `.dev/gate/parts/2026-11-06/` (inputs table: `docs/gate/2026-11-06/report.md`). NEXT: the sheets beside Aaron, the
-  lid band, lashes on/off (scratchpad `lash_onoff.py`), then the gaps the run shows.
+  characters rebuilt on base v2 (backup `.dev/backup/library_2026-11-06/`).
+
+- **Gate runs 1-4 on clean inputs (2026-11-06, `docs/gate/2026-11-06/report.md`):** pore depth 0.15 mm / microrelief
+  0.015 mm (cheek bands = Aaron's); stubble against Aaron's; the design's lash settings and the caruncle applied (never
+  were); fine brow hairs; the EEVEE hair model (rec 1) calibrated to Cycles (scalp 0.112 vs 0.121); body tiles take the
+  head tile's border colour (seams); the margin's wet pink at the rim only; the dressed human's eyes opened (no bags -
+  the catch light was under the upper lid). Run 4 (`.dev/gate/parts/2026-11-06d`, 21 views) RUNNING. NEXT: its sheets,
+  the face and eye views again with the new eye shape, then the multi-character run (Average woman, Older man, Heavy
+  woman, Muscular man: face, eye, cheek, torso) - THE ONE PRIORITY's step 7.
 
 ## Active job 0 (before the inputs audit) — the whole character redesigned, base mesh first
 
