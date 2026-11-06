@@ -333,9 +333,9 @@ Subjects: [1 · The machine](#1--the-machine) ·
   an alpha of 0; a separate greyscale map fixed it (`face_share.png`). Rule: no data in alpha for the live view. Also
   measured: the skin's scattering halved changes neither side of the face (our shadow side L* 50.7 either way against
   HD Aaron's 36.4 - his face's form, not our material); our upper lashes rise 12 deg median root to tip (p90 22, none
-  past 60 - the "spikes" at the eye view are the longest middle lashes seen end-on); Cycles' and the live view's
-  tearline (a Fresnel mix of transparent and glossy) drew a dark outline round the opening on a dark stage (hidden:
-  gone) - an additive film keeps the eye seen through it.
+  past 60 - the "spikes" at the eye view are the longest middle lashes seen end-on); the live view's tearline (a
+  Fresnel mix of transparent and glossy) drew a dark outline round the opening on a dark stage (hidden: gone; Cycles
+  not checked) - an additive film keeps the eye seen through it.
 - **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
