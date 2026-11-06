@@ -48,8 +48,12 @@ def add(obj: bpy.types.Object) -> list[str]:
         rows = makehuman.read_target(path)
         co = basis.copy()
         if rows:
+            from ..body import base
+
             index = np.fromiter((r[0] for r in rows), dtype=np.int64, count=len(rows))
-            co[index] += np.array([r[1:] for r in rows], dtype=np.float32) * makehuman.SCALE_TO_METRES
+            delta = np.array([r[1:] for r in rows], dtype=np.float32) * makehuman.SCALE_TO_METRES
+            index, delta = base.extend(obj, index, delta)
+            co[index] += delta
         key = obj.data.shape_keys.key_blocks.get(name) or obj.shape_key_add(name=name, from_mix=False)
         key.data.foreach_set("co", co.ravel())
         key.value = 0.0

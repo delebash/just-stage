@@ -148,12 +148,13 @@ def strands(body: bpy.types.Object, openings: dict, seed: int = 7):
 
 def _triangles(body: bpy.types.Object) -> tuple[np.ndarray, np.ndarray]:
     """The body's own polygons as triangles (fans, as Blender splits them): their vertex and loop indices."""
-    from ...core.makehuman import BODY_VERTICES
+    from ...core.makehuman import skin_mask
 
+    skin = skin_mask(len(body.data.vertices))
     tris, loops = [], []
     for p in body.data.polygons:
         v, lo = list(p.vertices), list(p.loop_indices)
-        if max(v) >= BODY_VERTICES:
+        if not skin[v].all():  # a helper's polygon
             continue
         for i in range(1, len(v) - 1):
             tris.append((v[0], v[i], v[i + 1]))

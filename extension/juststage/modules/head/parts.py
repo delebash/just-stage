@@ -59,17 +59,18 @@ def eye_clearance(character: bpy.types.Object) -> int:
     facing skin in front of the eye's centre and inside its sphere moves out along the eye's radius, its neighbours
     half as far; in a shape key of its own, made again on every refit. The socket's folded skin (it faces the eye) is
     left alone. Returns how many vertices moved."""
-    from ...core.makehuman import BODY_VERTICES
+    from ...core.makehuman import skin_mask
     from . import eye_layers
 
     keys = character.data.shape_keys
     key = keys.key_blocks.get(CLEARANCE) if keys else None
     if key is not None:
         key.value = 0.0
-    skin = build.shaped_coords(character)[:BODY_VERTICES]
+    skin = build.shaped_coords(character)  # every vertex; the helpers masked out below
+    is_skin = skin_mask(len(skin))
     normals = np.empty(len(character.data.vertices) * 3, np.float32)
     character.data.vertex_normals.foreach_get("vector", normals)
-    normals = normals.reshape(-1, 3)[:BODY_VERTICES]
+    normals = normals.reshape(-1, 3)
     push = np.zeros_like(skin)
     for part, eye in parts_of(character).items():
         if part not in ("eyeLeft", "eyeRight"):
@@ -78,7 +79,7 @@ def eye_clearance(character: bpy.types.Object) -> int:
         rel = skin - centre
         dist = np.linalg.norm(rel, axis=1)
         along = rel / np.maximum(dist, 1e-9)[:, None]
-        poke = (dist < radius + LID_GAP) & (dist > radius - 0.006) & (skin[:, 1] < centre[1])
+        poke = (dist < radius + LID_GAP) & (dist > radius - 0.006) & (skin[:, 1] < centre[1]) & is_skin
         poke &= np.einsum("ij,ij->i", normals, along) > 0.3
         push[poke] += (radius + LID_GAP - dist[poke])[:, None] * along[poke]
     moved = np.flatnonzero(np.abs(push).sum(axis=1) > 0)
@@ -89,7 +90,7 @@ def eye_clearance(character: bpy.types.Object) -> int:
     edges = np.empty(len(character.data.edges) * 2, np.int32)
     character.data.edges.foreach_get("vertices", edges)
     edges = edges.reshape(-1, 2)
-    edges = edges[(edges < BODY_VERTICES).all(axis=1)]
+    edges = edges[is_skin[edges].all(axis=1)]
     for a, b in ((edges[:, 0], edges[:, 1]), (edges[:, 1], edges[:, 0])):
         np.add.at(ring, a, push[b])
         np.add.at(count, a, 1.0)
@@ -102,10 +103,67 @@ def eye_clearance(character: bpy.types.Object) -> int:
     co = np.empty(len(character.data.vertices) * 3, np.float32)
     character.data.shape_keys.reference_key.data.foreach_get("co", co)
     co = co.reshape(-1, 3)
-    co[:BODY_VERTICES] += push.astype(np.float32)
+    co += push.astype(np.float32)
     key.data.foreach_set("co", co.ravel())
     key.value = 1.0
     return int(len(moved))
+
+
+RIM_GAP = 0.00025  # base v2's rim off the eyeball (modules/body/base.py: the prototype's 0.25 mm)
+#: the lash line's least gap off the eyeball: with the rim at 0.25 mm a margin at least 0.75 mm wide (the sweep of
+#: 2026-11-06: 38 of the 68 eye targets pressed the lash line up to 0.3 mm into the eyeball - the clearance key only
+#: moves skin facing outward, and the lash line sits on the lid's edge)
+LASH_MIN = 0.001
+
+
+def eyelid_contact(character: bpy.types.Object) -> int:
+    """Base v2's lid margin kept on the eyeball for the current shape: each rim RIM_GAP off its eyeball and the
+    margin's middle row midway between the rim and the lash line, along their own lines from the eye's centre - in a
+    shape key of its own (base.CONTACT), made again on every refit. The rim follows the lid's skin while the eyeball is
+    fitted from MakeHuman's helpers, so a slider that moves one differently from the other parts them (measured over
+    the 66 eye targets: 20 clip the rim into the eyeball by up to 1.6 mm, 4 lift it 2-3 mm off -
+    docs/plans/2026-11-05-research-base-mesh.md §7). Returns how many rows it placed (0 on hm08 itself)."""
+    from ..body import base
+    from . import eye_layers
+
+    if character.juststage.base_version < base.VERSION:
+        return 0
+    keys = character.data.shape_keys
+    key = keys.key_blocks.get(base.CONTACT) if keys else None
+    if key is not None:
+        key.value = 0.0
+    eyes = [p for name, p in parts_of(character).items() if name in ("eyeLeft", "eyeRight")]
+    if not eyes:
+        return 0
+    spheres = [eye_layers._eye_sphere(e) for e in eyes]
+    co = build.shaped_coords(character)
+    push = np.zeros_like(co)
+    rows = base.rows()
+    for lash, margin, rim in rows:
+        centre, radius = min(spheres, key=lambda s: np.linalg.norm(co[margin] - s[0]))
+
+        def off(i, c=centre, r=radius):
+            return np.linalg.norm(co[i] - c) - r
+
+        def to(i, gap, c=centre, r=radius):
+            d = (co[i] - c) / np.linalg.norm(co[i] - c)
+            return c + d * (r + gap) - co[i]
+
+        if rim >= 0:
+            push[rim] = to(rim, RIM_GAP)
+        if lash >= 0:
+            lash_gap = max(off(lash), LASH_MIN)  # a lid pressed onto the eyeball keeps its margin's width
+            push[lash] = to(lash, lash_gap)
+        else:
+            lash_gap = base.record()["radii_mm"]["lash"] / 1000
+        push[margin] = to(margin, (lash_gap + RIM_GAP) / 2)
+    if key is None:
+        key = character.shape_key_add(name=base.CONTACT, from_mix=False)
+    ref = np.empty(len(character.data.vertices) * 3, np.float32)
+    character.data.shape_keys.reference_key.data.foreach_get("co", ref)
+    key.data.foreach_set("co", (ref.reshape(-1, 3) + push.astype(np.float32)).ravel())
+    key.value = 1.0
+    return len(rows)
 
 
 def refit(character: bpy.types.Object) -> None:
@@ -117,9 +175,14 @@ def refit(character: bpy.types.Object) -> None:
         co = mhclo.fit(_binding(part), base).astype(np.float32)
         obj.data.vertices.foreach_set("co", co.ravel())
         obj.data.update()
+    from ..body import base
     from . import eye_layers, face_units
 
+    keys = character.data.shape_keys
+    if keys and base.CONTACT in keys.key_blocks:  # the clearance measures the lids without the last contact
+        keys.key_blocks[base.CONTACT].value = 0.0
     eye_clearance(character)
+    eyelid_contact(character)  # base v2's rim back on the eyeball, after the clearance moved the lid's skin
     eye_layers.refit(character)  # the occlusion and tearline ride the eyes
     teeth = parts_of(character).get("teeth")
     if teeth is not None:

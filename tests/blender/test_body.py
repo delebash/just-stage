@@ -13,6 +13,7 @@ import pytest
 
 api = importlib.import_module("bl_ext.system.juststage.api")
 build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
 
 
 @pytest.fixture
@@ -48,7 +49,7 @@ def _group_mean(obj, group):
 
 def test_the_whole_hm08_is_kept_and_the_helpers_masked(human):
     result, obj = human
-    assert result.vertices == 19158  # helpers and joint cubes kept (item 2)
+    assert result.vertices == base.record()["vertices"]  # helpers and joint cubes kept (item 2), base v2's lids appended
     assert obj.modifiers[build.HELPER_MASK].vertex_group == "body"
     assert len(obj.vertex_groups) == 144  # MPFB2's groups: body, helpers, joint cubes, sides
 

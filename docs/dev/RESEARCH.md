@@ -274,6 +274,23 @@ Subjects: [1 · The machine](#1--the-machine) ·
   included - a drawn pink ring (his upper margin hides under the lashes).
 - **The live view's fine detail against the film render** (*measured, 2026-11-05*, rec 1; `.dev/gate/parts/proof_eevee/`, bands fine/pore/fold on the gate's cheek view): HD Aaron (CC Blender Tools' material) in EEVEE keeps 58% / 64% / 70% of his Cycles detail; one factor at a time: skin scattering off 0.609 fine (+36%), film filter 0.75 px +7%, anisotropic 16x and 256 samples no change, cubic textures lower - EEVEE's screen-space scattering blurs his normal-map detail. **Our skin with its live-view calibration (`skin/material.py` EEVEE_SCATTER 2.0) is not affected:** Cycles 0.484 / 1.297 / 1.055 against EEVEE 0.546 / 1.512 / 1.169 (113-117%); scattering x1.0 and x0.5 sharpen further (0.715, 0.849 fine). The live view matches the film render on our content; the earlier 80-87% was Aaron's uncalibrated material.
 - **Anny (NAVER), read 2026-11-05** (github.com/naver/anny README [page], the user's link): "a free, open-source, differentiable human body mesh model" in PyTorch, infants to elders, "based on the tremendous work of the MakeHuman community"; licences: code Apache-2.0, `data/mpfb2` and `data/faceunits01` CC0 1.0, `data/soma` Apache-2.0, `smplx` non-commercial; topologies `anny` (default, triangulated, unattached vertices removed), `anny-quads`, `anny-full`, **`makehuman` ("unedited quad MakeHuman mesh")**, `smplx`, `smpl`, `soma`; rig 104 bones by default, 163 with `rig="makehuman"`; phenotype parameters in [0, 1], local changes in [-1, 1], facial actions from MakeHuman's Face Units (CC0). The README names no scan / keypoint / image fitting and doesn't say how ages are calibrated. Use for us: a differentiable copy of our base (if `makehuman` matches hm08's vertex order - to check) to fit our body's shape and pose to any scan by gradient descent (the Artec body fit that failed rigidly); the SOMA bridge for MHR shapes and SOMA-X correctives.
+- **Painted hair in our inputs - the measurements on them are void** (*checked 2026-11-06*, after the user: "why are
+  our lashes paintedt on cc5 lashes and beards are not painted on"). **CC5 paints no hair** (HD Aaron's files on disk,
+  `.dev/gate/cc5_aaron_blender/hd_aaron.fbm/`, `aron_with_hair.fbm/`): lashes a mesh (`Std_Eyelash` colour and
+  opacity - cards), brows a mesh (`Brows_Base`, `Brows_Color`, `Brows_Hair`), stubble a mesh (`Beard_Transparency`);
+  his head colour map `Std_Skin_Head_Diffuse.jpg` has no lashes and no brows, only a faint grey shaved tint on the jaw
+  and lip under the stubble mesh. **Ours:** Daniel's head colour (`.dev/skins/man_a/Daniel skin.base_color.1001.png`,
+  from the face test's AI-painted face, rounds 74-101 - `tools/build_skins.py`) has the lashes painted along both lids
+  and stray brow hairs; Scan man A's (HSRD scan photos) his stubble; Scan man A's normal map (the scan's geometry
+  baked) shows lumpy rows at the hairline and the beard's edge [seen, to confirm per region]; the pore tile on every
+  character (`.dev/facetest/pores_lps.png`, the Lee Perry-Smith scan's cheek) shows seams at its quarter lines and
+  elongated streaks like stubble [seen, to confirm against the scan]. Our strand lashes and brows (`hair/lashes.py`,
+  `brows.py`) are there but 0.1 mm thick and sub-pixel at face distance in EEVEE (no minimum width) - the painted
+  ones are what shows. No step ever removed hair from a skin; nothing approved painting it. **Void until re-measured on
+  clean inputs:** the face-skin proof (cheek pore band "equal on six characters"), the brows and lashes judgments, the
+  lower-lid wet margin and caruncle, the lid band (28-50 px), every face-distance comparison with Aaron (he wears his
+  Stubble mesh, ours none). **Stand:** iris, white and pupil (measured inside the opening), the geometry (lid
+  anatomy, slider sweep, recess), the gate's tooling, the live view's calibration (113-117% of Cycles).
 - **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's

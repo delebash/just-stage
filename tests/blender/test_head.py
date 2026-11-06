@@ -59,7 +59,7 @@ def test_a_random_scan_based_head(human):
     ):
         vg = obj.vertex_groups[group].index
         head_helpers |= {v.index for v in obj.data.vertices if any(g.group == vg for g in v.groups)}
-    stray = [v for v in moved if v >= 13380 and v not in head_helpers]
+    stray = [v for v in moved if 13380 <= v < makehuman.HM08_VERTICES and v not in head_helpers]  # base v2's appended lids are skin
     assert stray == []  # the head's helpers follow it (what eyes and teeth fit to); joint cubes and the rest don't
     assert len(obj.juststage.gnm_identity) == 170
 

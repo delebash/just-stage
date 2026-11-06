@@ -19,10 +19,88 @@ from __future__ import annotations
 import gzip
 import json
 from pathlib import Path
+from typing import NamedTuple
+
+import numpy as np
 
 #: MakeHuman's base is in decimetres; MPFB2's "METER" scale.
 SCALE_TO_METRES = 0.1
 BODY_VERTICES = 13380  # hm08's body is vertices 0–13379; the helpers and joint cubes follow (MPFB2's own bound)
+HM08_VERTICES = 19158  # hm08 whole; JustStage's base v2 appends its own vertices after these (modules/body/base.py)
+
+
+def skin_mask(n: int) -> np.ndarray:
+    """Which of a JustStage base's `n` vertices are skin: hm08's body (0-13,379) and every vertex appended after hm08's
+    19,158 (base v2's lid anatomy) - not the helpers and joint cubes between them."""
+    mask = np.zeros(n, dtype=bool)
+    mask[:BODY_VERTICES] = True
+    mask[HM08_VERTICES:] = True
+    return mask
+
+
+def skin_indices(n: int) -> np.ndarray:
+    return np.flatnonzero(skin_mask(n))
+
+
+class Appended(NamedTuple):
+    """Vertices appended after hm08's, each born on an edge of an hm08 face and carried by that face the way Blender's
+    Surface Deform carries a point: its offset kept in the frame of the edge and the face's third vertex (edge, face
+    normal, their cross), in units of the edge's length - so it turns, moves and scales with its face under every
+    target (docs/plans/2026-11-05-character-design.md piece 1: "an offset in the face's local frame")."""
+
+    parents: np.ndarray  # (n, 3) int: the edge's two ends, then a third vertex of the face it was born on
+    t: np.ndarray  # (n,) where on the edge it was born, 0 at the first end
+    local: np.ndarray  # (n, 3) its offset from that point, in the frame, per unit of edge length
+
+    @classmethod
+    def measure(cls, old: np.ndarray, parents: np.ndarray, t: np.ndarray, positions: np.ndarray) -> "Appended":
+        """The record that puts each appended vertex at `positions` on the hm08 vertices `old`."""
+        frame, length, origin = _frames(old, parents, t)
+        local = np.einsum("nji,nj->ni", frame, positions - origin) / length[:, None]
+        return cls(np.asarray(parents, dtype=np.int64), np.asarray(t, dtype=np.float64), local)
+
+
+def _frames(old: np.ndarray, parents: np.ndarray, t: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    a, b, c = (np.asarray(old[parents[:, k]], dtype=np.float64) for k in range(3))
+    edge = b - a
+    length = np.linalg.norm(edge, axis=1)
+    x = edge / length[:, None]
+    n = np.cross(edge, c - a)
+    n /= np.linalg.norm(n, axis=1, keepdims=True)
+    y = np.cross(n, x)
+    origin = a + (b - a) * np.asarray(t, dtype=np.float64)[:, None]
+    return np.stack([x, y, n], axis=2), length, origin  # frame columns: x, y, normal
+
+
+def place_appended(old: np.ndarray, app: Appended) -> np.ndarray:
+    """The appended vertices' positions on the hm08 vertices `old` (any shape: the basis, a target, a shape key)."""
+    frame, length, origin = _frames(old, app.parents, app.t)
+    return origin + np.einsum("nij,nj->ni", frame, app.local) * length[:, None]
+
+
+def extend_offsets(
+    index: np.ndarray, delta: np.ndarray, rest: np.ndarray, app: Appended, tol: float = 1e-9
+) -> tuple[np.ndarray, np.ndarray]:
+    """A target's (vertex indices, offsets) on hm08 extended to the appended vertices: each appended vertex where its
+    face puts it on the rest shape `rest` (the first 19,158 vertices) moved by the target, less where it is on the
+    rest shape. Appended vertices the target doesn't move are left out, as MakeHuman's targets leave out theirs."""
+    index = np.asarray(index, dtype=np.int64)
+    delta = np.asarray(delta)
+    keep = index < len(rest)
+    index, delta = index[keep], delta[keep]
+    rest = np.asarray(rest, dtype=np.float64)
+    moved = rest.copy()
+    moved[index] += delta
+    touched = np.zeros(len(rest), dtype=bool)
+    touched[index] = True
+    near = touched[app.parents].any(axis=1)
+    if not near.any():
+        return index, delta
+    sub = Appended(app.parents[near], app.t[near], app.local[near])
+    d = place_appended(moved, sub) - place_appended(rest, sub)
+    moving = np.linalg.norm(d, axis=1) > tol
+    new_index = len(rest) + np.flatnonzero(near)[moving]
+    return np.concatenate([index, new_index]), np.concatenate([delta, d[moving].astype(delta.dtype)])
 
 MACROS = ("gender", "age", "muscle", "weight", "proportions", "height", "cupsize", "firmness")
 RACES = ("asian", "caucasian", "african")

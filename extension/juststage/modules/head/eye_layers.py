@@ -302,7 +302,7 @@ def _shapes(kind: str, found: list, skin: np.ndarray) -> tuple[list, dict, list]
 
 def add(character: bpy.types.Object, openings: dict | None = None) -> dict[str, bpy.types.Object]:
     """Both layers on the character's eyes, replacing any it has; their shape from its lids as they are now."""
-    from ...core.makehuman import BODY_VERTICES
+    from ...core.makehuman import skin_indices
     from ..body import build
     from . import eyes
 
@@ -312,7 +312,8 @@ def add(character: bpy.types.Object, openings: dict | None = None) -> dict[str, 
 
         raise CommandError(f"{character.name} has no eyes; run juststage.head.add_parts first")
     found = openings or eyes.openings(character)
-    skin = build.shaped_coords(character)[:BODY_VERTICES].astype(np.float64)
+    co = build.shaped_coords(character)
+    skin = co[skin_indices(len(co))].astype(np.float64)
     for old in layers_of(character).values():
         bpy.data.objects.remove(old)
     made = {}
@@ -356,7 +357,7 @@ def refit(character: bpy.types.Object) -> None:
     """The layers onto the eyes where they are now and across the lids' opening as it is now (a body change moved or
     resized the eyes, or opened or narrowed the lids - the dressed human's EYE_OPEN): the same strips, their angles
     found again."""
-    from ...core.makehuman import BODY_VERTICES
+    from ...core.makehuman import skin_indices
     from ..body import build
     from . import eyes
 
@@ -365,7 +366,8 @@ def refit(character: bpy.types.Object) -> None:
     if not layers or len(eye_objs) != 2:
         return
     found = eyes.openings(character)
-    skin = build.shaped_coords(character)[:BODY_VERTICES].astype(np.float64)
+    co = build.shaped_coords(character)
+    skin = co[skin_indices(len(co))].astype(np.float64)
     spheres = [_eye_sphere(eye) for eye in eye_objs]
     for part, obj in layers.items():
         _, cols, extra = _shapes(LAYERS[part], [found[eye.name] for eye in eye_objs], skin)

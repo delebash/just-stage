@@ -49,7 +49,10 @@ def set_identity(obj: bpy.types.Object, coefficients: np.ndarray) -> float:
     co = np.empty(len(obj.data.vertices) * 3, dtype=np.float32)
     keys.reference_key.data.foreach_get("co", co)
     co = co.reshape(-1, 3)
-    co[index] += offset
+    from ..body import base
+
+    moved, offset = base.extend(obj, index, offset)
+    co[moved] += offset
     key = keys.key_blocks.get(SHAPE_KEY) or obj.shape_key_add(name=SHAPE_KEY, from_mix=False)
     key.data.foreach_set("co", co.ravel())
     key.value = 1.0

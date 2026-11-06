@@ -110,8 +110,14 @@ def _pack(obj, chosen: np.ndarray) -> np.ndarray:
 
 
 def main() -> None:
-    made = api.run("juststage.body.create", name="UDIM layout")
-    obj = bpy.data.objects[made.object]
+    # on hm08 itself (base v1): the layout is per hm08 loop; base v2's new faces take their old faces' place in it
+    # (modules/body/base.py), so every skin painted in it stays valid
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
+    defaults = create.Params()._asdict()
+    for k in ("name", "dressed"):
+        defaults.pop(k)
+    obj = build.create_human("UDIM layout", defaults, base_version=1)
     for o in bpy.context.selected_objects:
         o.select_set(False)
     bpy.context.view_layer.objects.active = obj

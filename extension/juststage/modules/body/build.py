@@ -24,7 +24,6 @@ from ...core import makehuman
 MACRO_PREFIX = "makehuman."
 HELPER_MASK = "JustStage helpers"
 LEVELS = "JustStage levels"
-BASE_VERSION = 1
 
 
 def _import_base(name: str) -> bpy.types.Object:
@@ -66,7 +65,9 @@ def _target_offsets(target: str) -> tuple[np.ndarray, np.ndarray]:
 
 
 def _add_target(obj: bpy.types.Object, target: str, weight: float, basis: np.ndarray) -> None:
-    index, delta = _target_offsets(target)
+    from . import base
+
+    index, delta = base.extend(obj, *_target_offsets(target))
     co = basis.copy()
     if len(index):  # MakeHuman's "average" macro targets are empty on purpose: the base already is that shape
         co[index] += delta
@@ -110,14 +111,18 @@ def apply_macros(obj: bpy.types.Object, values: dict) -> int:
     return len(stack)
 
 
-def create_human(name: str, values: dict) -> bpy.types.Object:
+def create_human(name: str, values: dict, base_version: int | None = None) -> bpy.types.Object:
+    """A new human on JustStage's base (`base.VERSION`; `base_version=1` keeps hm08 as MakeHuman ships it - the
+    tools that measure hm08 itself, e.g. tools/make_udim.py)."""
+    from . import base
+
     obj = _import_base(name)
     _add_vertex_groups(obj)
     _mask_helpers(obj)
     props = obj.juststage
     props.character_id = str(uuid.uuid4())
     props.kind = "HUMAN"
-    props.base_version = BASE_VERSION
+    props.base_version = 1  # hm08 as MakeHuman ships it, until base.upgrade below
     apply_macros(obj, values)
     from . import sliders
 
@@ -126,6 +131,8 @@ def create_human(name: str, values: dict) -> bpy.types.Object:
     from ..skin import maps
 
     maps.add_layout(obj)  # the body's UDIM layout: a skin's maps fit every character
+    if (base_version or base.VERSION) >= 2:
+        base.upgrade(obj)  # base v2: the lid anatomy appended - after the layout, so its faces share their old faces' UVs
     set_levels(obj, DEFAULT_LEVELS, DEFAULT_VIEW_LEVEL)
     return obj
 
@@ -155,7 +162,8 @@ def stand_on_floor(obj: bpy.types.Object) -> float:
             obj.shape_key_add(name="Basis", from_mix=False)
         key = obj.shape_key_add(name=FLOOR, from_mix=False)
     key.value = 0.0
-    own = -float(shaped_coords(obj)[: makehuman.BODY_VERTICES, 2].min())
+    co = shaped_coords(obj)
+    own = -float(co[makehuman.skin_indices(len(co)), 2].min())
     co = np.empty(len(obj.data.vertices) * 3, dtype=np.float32)
     obj.data.shape_keys.reference_key.data.foreach_get("co", co)
     co = co.reshape(-1, 3)
@@ -222,6 +230,7 @@ def set_levels(obj: bpy.types.Object, levels: int, viewport_level: int) -> None:
             bpy.ops.object.multires_higher_levels_delete(modifier=LEVELS)
     mod.render_levels = levels
     mod.levels = mod.sculpt_levels = viewport_level
+    mod.use_creases = True  # base v2's creased lid rims stay crisp
 
 
 def visible_face_count(obj: bpy.types.Object) -> int:

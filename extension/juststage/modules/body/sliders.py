@@ -91,7 +91,9 @@ def _key(obj: bpy.types.Object, group: str, target: str) -> bpy.types.ShapeKey:
         basis = np.empty(len(obj.data.vertices) * 3, dtype=np.float32)
         keys.reference_key.data.foreach_get("co", basis)
         basis = basis.reshape(-1, 3)
-        index, delta = _target(group, target)
+        from . import base
+
+        index, delta = base.extend(obj, *_target(group, target))
         basis[index] += delta
         key = obj.shape_key_add(name=PREFIX + target, from_mix=False)
         key.data.foreach_set("co", basis.ravel())

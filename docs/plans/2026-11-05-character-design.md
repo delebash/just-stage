@@ -26,7 +26,8 @@ nothing; each risky choice proved by a small measured test before adoption.
 - **Blender Studio's CC0 realistic head models the lid margin (2-3 loops) and an inner-corner pocket** [measured render].
 - **The live view keeps the film render's detail on our skin** (EEVEE 113-117% of Cycles' fine/pore/fold bands with the
   calibrated scattering) - the renderer is not the limit (RESEARCH, rec 1).
-- **The proven pieces:** face skin from scans (cheek pore band equal to Aaron's on six characters); eye white, iris
+- **The proven pieces** (2026-11-06: the skin and lid-margin proofs VOID - measured on skins with painted hair, to be
+  re-run on clean inputs; iris, white, pupil stand): face skin from scans (cheek pore band equal to Aaron's on six characters); eye white, iris
   (photo), pupil and the lower-lid wet margin equal by measure on one character and holding on five; the Artec scan
   carries real torso definition (form band 3.12 vs ours 2.27, Aaron 4.34).
 
@@ -253,6 +254,11 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
 
 ## Build order (after the user's approval of this design)
 
+0. **The inputs, first (added 2026-11-06, TASKS "THE INPUTS FIRST")** - every input of the character checked against
+   CC5's way before anything is measured on it (`2026-11-06-inputs-audit.md`): our skins carried painted hair (lashes,
+   brows, stubble) where CC5 has meshes and a hairless colour map, so the proofs measured on them are void. Hair out of
+   every skin's colour and relief; a hairless, seamless pore tile; stubble as a groom; lashes and brows visible at face
+   distance; no baked lighting in colour. Then every proof re-run.
 1. **The base mesh's lids** - the appended margin and caruncle, the recess, the face-frame transfer, the contact step;
    checked against Aaron's margin band and through a blink (pass 4's tests). If it fails: escalate (piece 1). With it:
    the vertex map, the library migration (backup first), groom re-binding (pass 2).

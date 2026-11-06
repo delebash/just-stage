@@ -15,7 +15,9 @@ polish and side fixes only when a proof needs them. Proof = ours beside Aaron at
 parts_gate.py`), equal or above, measured; then the same method, no per-character tuning, on 4+ different characters.
 Order, riskiest first: (1) face mid-scale relief (scan geometry -> normal maps) -> (2) body relief -> (3) scalp hair
 (groom vs shading) -> (4) eyes -> (5) smile shapes -> (6) the rest -> (7) multi-character run + full gate. Report per
-part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, bands = fine / pore / fold, L* std,
+part: proved / not proved / disproved. **2026-11-06: entries (1), (1b), (4b), (4c) and the brows / lashes judgments
+were measured on skins with painted hair (lashes, brows, stubble) and a pore tile that may carry stubble - VOID until
+re-measured on clean inputs (RESEARCH "Painted hair in our inputs"; the active job above).** Proof log (`.dev/gate/parts/proof1/`, bands = fine / pore / fold, L* std,
 `scratchpad bands.py` windows: forehead 0.02-0.25 x 0.3-0.75 of the eye view, cheek 0.25-0.6 of the cheek view):
 - (1) face skin, one character (Average man, composed 632 = HSR0040 + LPS colour and relief): cheek 0.42/0.97/0.72 vs
   Aaron 0.45/0.96/0.79 = EQUAL; forehead 0.96/0.91/0.57 vs 1.73/1.74/0.92, by eye close (his glossier). Made by: pore
@@ -101,7 +103,26 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   is read before its plan** (the user, 2026-11-05: "it was already part of the standard to match each part").
 - Memory: the index (loaded automatically) and `search-mistakes` before any search, rec or plan.
 
-## Active job 0 (NOW, before any build) — the whole character redesigned, base mesh first
+## Active job (NOW, 2026-11-06) — THE INPUTS FIRST: every input of the character audited against CC5's way, fixed, then re-measured
+
+The user, 2026-11-06 (TASKS "THE INPUTS FIRST"): our skins carry painted hair (lashes, brows, stubble) and the proofs
+were measured on them - "you a doing wrong things testing with wrong things ... check again if you are doing things
+wrong like this"; "update the docs and fix all of this". Memory `audit-inputs-before-measuring`.
+- **Read in full:** `docs/plans/2026-11-06-inputs-audit.md` (every input: source, CC5's way, checked how, verdict,
+  fix) and RESEARCH "Painted hair in our inputs" (what is void, what stands).
+- **Void until re-measured on clean inputs:** proof (1) face skin, (1b) six characters, the brows (rec 8) and lashes
+  judgments, (4b)/(4c) the lower-lid wet margin and caruncle, the lid band of build step 1. **Stand:** iris, white,
+  pupil; geometry (lid anatomy, the sweep, the recess); the gate's tooling; the live view's calibration.
+- **Base v2's code, built 2026-11-06 (uncommitted at the time of writing, tests green):** `core/makehuman.py`
+  (`skin_mask`, `Appended`, `extend_offsets`; `tests/unit/test_base_v2.py`), `modules/body/base.py` (`upgrade`: the
+  cut after the UDIM layout, every key placed by its faces; `extend` in every target reader), `tools/make_base_v2.py`
+  (`data/generated/base/v2.json`: rings 36 + 36, 128 vertices appended, 70 rows), `head/parts.py`
+  `eyelid_contact` (rim 0.25 mm, lash line >= 1.0 mm, margin midway; 68 eye targets green),
+  `tests/blender/test_base_v2.py` (4 green). Open in step 1: the upper lid's recess (measure ours by the scans'
+  method first), the library migration with groom re-binding, the margin's tint in the skin material, the gate's band
+  - on clean inputs.
+
+## Active job 0 (before the inputs audit) — the whole character redesigned, base mesh first
 
 The user, 2026-11-05 late (TASKS "THE BASE MESH FIRST; THE WHOLE CHARACTER REDESIGNED"): rethink every piece - mesh,
 parts, UVs, sliders, HD detail, face rig, expressions, skin, hair, materials, live view - against CC5 and MetaHuman

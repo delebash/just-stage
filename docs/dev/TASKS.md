@@ -1248,6 +1248,27 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            (1) the lids, with its measured checks and the escalation, the vertex map, the library migration (backup first),
            groom re-binding; (2) the remaining regions measured; (3) expressions and the face rig; (4) sliders and the mixer;
            (5) textures and the eyes into code; (6) hair; (7) correctives and the multi-character gate.
+           GO ON EVERYTHING, AND HAIR AS GEOMETRY LIKE CC5 (2026-11-06), the user, verbatim: "you have got to be kidding i
+           gave go for everything you should have been working non stop ... also why are our lashes paintedt on cc5
+           lashes and beards are not painted on make sure you do thing like cc5 and not half way!!! go go go go nad dont
+           stop coding not even after a turn"; then "so anwers why are our lashes painted on and is anything half way
+           like that instead of the way cc5 does it, and answer why". So the build-step-1 code plan
+           (`../plans/2026-11-05-lid-anatomy-build.md`) is approved, and found halfway, to be done CC5's way (checked
+           2026-11-06): (a) our skins' colour carries the scanned people's own lashes, brow hairs and stubble (Daniel's
+           head tile: lashes painted along the lids; Scan man A: stubble) - hair cleaned out of every skin's colour; (b)
+           our strand lashes (0.1 mm) vanish at face distance in the live view - a minimum strand width (design piece 9)
+           so lashes, brows and stubble read at every distance; (c) no stubble groom - stubble and beards as grooms.
+           THE INPUTS FIRST (2026-11-06), the user, verbatim: "ok so all this testing and measureing is done with painted
+           lashes, which may change with mesh lashes, so again you a doing wrong things testing with wrong things, i
+           thought you already adid an audit of what we where doing wrong, check again if you are doing things wrong
+           like this, stop just coding stop we have major problem"; then "so massive problem you have all this painted
+           stuff that you have been trying to fix instead of reall mesh again hours of wasted time, we just made a new
+           plan becaweu of this and you missed these major issues, what are you going to do, update the docs and fix all
+           of this". So: the proofs measured on painted-hair inputs are void (RESEARCH "Painted hair in our inputs");
+           every input of the character is audited against CC5's way before any further measurement
+           (`../plans/2026-11-06-inputs-audit.md`), the wrong ones fixed, then the proofs re-run. Base v2's geometry
+           (built and tested 2026-11-06, `modules/body/base.py`) stands; its band against Aaron is re-measured on clean
+           inputs.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md

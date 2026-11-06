@@ -85,19 +85,19 @@ def eye_opening(eye_points, verts, polys, seed, inside, reach):
 
 
 def skin_polygons(body: bpy.types.Object) -> list[list[int]]:
-    """The body's own polygons (not its helpers')."""
-    from ...core.makehuman import BODY_VERTICES
+    """The body's own polygons (not its helpers'): hm08's body and base v2's appended lid anatomy."""
+    from ...core.makehuman import skin_mask
 
-    return [list(p.vertices) for p in body.data.polygons if max(p.vertices) < BODY_VERTICES]
+    skin = skin_mask(len(body.data.vertices))
+    return [list(p.vertices) for p in body.data.polygons if skin[list(p.vertices)].all()]
 
 
 def openings(body: bpy.types.Object) -> dict[str, Opening]:
     """Both eyes' openings on the character's current shape (its eye parts `eyeLeft`, `eyeRight`), by eye object."""
-    from ...core.makehuman import BODY_VERTICES
     from ..body import build
     from . import parts
 
-    skin = build.shaped_coords(body)[:BODY_VERTICES].astype(np.float64)
+    skin = build.shaped_coords(body).astype(np.float64)  # every vertex: the skin's polygons index it
     polys = skin_polygons(body)
     found = {}
     for part in ("eyeLeft", "eyeRight"):
