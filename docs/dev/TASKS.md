@@ -1238,6 +1238,16 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            texture to hair to slider to everything, rethink it all and make sure you design is the best you can do".
            So: the append is approved only if no better way is found; the whole character design is re-researched and
            rethought piece by piece and as a whole, in adversarial passes, before Phase 2 builds anything.
+           THE CHARACTER DESIGN - APPROVED 2026-11-05 (late), the user, verbatim: "your rec go on all", on
+           `../plans/2026-11-05-character-design.md` as shown: hm08 kept whole with lid anatomy appended (margin, caruncle,
+           recess; face-frame transfer; a contact step) - the lids measured as the one topology gap; HD detail at level 2;
+           parts (photo iris library, the tearline back to a tear film, GNM teeth with Poseidon3D variety, a saliva film);
+           seam-continuous textures; sliders (makehuman, mhr via a measured Anny-to-hm08 step, gnm, scans, user) and a
+           region mixer (patents read first); expression sets scored against real scans; tension-driven wrinkles (patent
+           check first); SOMA-X correctives; the proven skin route re-run; hair live-view techniques; and the build order -
+           (1) the lids, with its measured checks and the escalation, the vertex map, the library migration (backup first),
+           groom re-binding; (2) the remaining regions measured; (3) expressions and the face rig; (4) sliders and the mixer;
+           (5) textures and the eyes into code; (6) hair; (7) correctives and the multi-character gate.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
