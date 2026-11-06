@@ -76,7 +76,12 @@ DEFAULT_SKIN = {"female": "Scan woman A skin", "male": "Scan man A skin"}
 #: the eyes' opening: MakeHuman's average is ~6 mm tall at its middle against an adult's 9-10 (HD Aaron's 9.3; measured
 #: at the part-by-part gate, 2026-11-05 - the upper lid covered the iris's top third, its pupil and catch light); its
 #: own middle-of-the-lid slider at +1 brings it to ~8.7 mm (the other two lift the lid's ends)
-EYE_OPEN = {"eyes/l-eye-height2-decr-incr": 1.0, "eyes/r-eye-height2-decr-incr": 1.0}
+#: 2026-11-06, with clean skins at the gate: MakeHuman's average lids read puffy and the upper lid hid the iris's top
+#: and the key light's catch light beside HD Aaron's - its own sliders (measured 2026-11-05, proof (4b): no bags, the
+#: fold concave and up, the lid's middle up) open the eye 9.7 -> 10.7 mm at the iris and show 3 deg more of it
+_EYE_SHAPE = {"height2-decr-incr": 1.0, "bag-decr-incr": -1.0, "eyefold-concave-convex": -0.7, "eyefold-down-up": 0.6,
+              "height1-decr-incr": 0.6}  # fmt: skip
+EYE_OPEN = {f"eyes/{side}-eye-{name}": value for side in ("l", "r") for name, value in _EYE_SHAPE.items()}
 
 
 def open_eyes(character: str) -> None:

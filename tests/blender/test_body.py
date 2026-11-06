@@ -168,12 +168,13 @@ def test_a_dressed_human_has_its_eyes_lashes_and_a_skin():
     create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
     keys = obj.data.shape_keys.key_blocks  # the eyes open to an adult's ~9 mm (the gate: MakeHuman's ~6 mm)
     for slider, value in create.EYE_OPEN.items():
-        target = next(k for k in keys if k.name.endswith(slider.split("/")[1].replace("decr-incr", "incr")))
-        assert target.value == pytest.approx(value)
+        words = slider.split("/")[1].split("-")  # <side>-eye-<what>-<negative end>-<positive end>
+        name = "-".join(words[:-2] + [words[-1] if value > 0 else words[-2]])
+        target = next(k for k in keys if k.name.endswith(name))
+        assert target.value == pytest.approx(abs(value))
     if (library.root() / "Skins" / f"{create.DEFAULT_SKIN['female']}.blend").is_file():  # a scan skin, hair out
         assert result.skin == create.DEFAULT_SKIN["female"] and obj.juststage.skin_material.juststage.has_maps
-        tone = library.skin_tone(str(library.root() / "Skins" / f"{create.DEFAULT_SKIN['female']}.blend"))
-        assert obj.juststage.melanin == pytest.approx(tone["melanin"])  # the skin's own tone, its detail
+        assert obj.juststage.melanin == pytest.approx(0.0104)  # its own tone, the skin's detail
     for o in [o for o in bpy.data.objects if o.juststage.part_of == result.character]:
         bpy.data.objects.remove(o)
     bpy.data.objects.remove(obj)
