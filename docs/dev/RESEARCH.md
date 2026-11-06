@@ -345,9 +345,25 @@ Subjects: [1 · The machine](#1--the-machine) ·
   segment weighed the same - the hand's 1,577 vertices had outweighed the upper arm's 172; each joint's swing limited -
   the floor sheet had drawn the feet 73 deg round) then Amberg's non-rigid ICP: hands 3 / 8 mm (p50 / p90), forearms
   5-6 / 12-17, feet 9-10 / 17-19, upper arms 13-16 / 39-42, thighs 9-12 / 35-56, shins 14-15 / 30. The bake takes the
-  scan's detail only where the wrapped surface lies within 6-12 mm (the fit's gap baked per tile). Next for the rest:
-  Anny (`pip install anny`, Apache-2.0 code, CC0 MakeHuman data; `Anny(rig="makehuman", topology="makehuman")`, 163
-  bones, pose as a 4x4 per bone, phenotype in [0, 1]; its README names no scan fitting - ours by gradient descent).
+  scan's detail only where the wrapped surface lies within 6-12 mm (the fit's gap baked per tile). **Then Anny**
+  (`pip install anny` 0.6.2 into venv-rdf, Apache-2.0 code, CC0 MakeHuman data): `Anny(rig="makehuman",
+  topology="makehuman")` is the unedited quad mesh - 19,158 vertices, 13,742 quads, hm08's order (head within 6 mm
+  index for index after a rigid fit; its default `anny` topology is the triangulated, trimmed one - not used); 163
+  bones; phenotype gender, age, muscle, weight, height, proportions. Its README names no scan fitting: ours by gradient
+  descent (bones' turns, the phenotype, a placement; a robust two-way nearest-point loss, 400 Adam steps, GPU) then
+  the wrap: upper arms 3 / 7-8 mm, forearms 2-3 / 7-8, hands 2-3 / 6-8, thighs 3-4 / 9, shins 6-8 / 20-22, feet 5 / 13-16
+  - every segment better. (The fit set gender 0.08 for a heavy man - a shape-space quirk; only the surface matters
+  here.) Anny is a fitting tool in the scan pipeline only: the shipped mesh stays hm08 + base v2.
+  Queries (2026-11-06, after the user asked whether Anny was researched against MakeHuman): "best way to fit a
+  parametric human body model to a 3D body scan 2026" - older SCAPE / SMPL pipelines (joint-anchored fitting,
+  BODYFITR, learned registration to SMPL+D), no 2026 consensus [snippets]; "Anny body model NAVER fit to 3D scan
+  accuracy compared SMPL-X MHR" - the Anny paper (arXiv 2511.03589) via summaries: ~2.4 mm mean point-to-mesh error on
+  adult scans (3DBodyTex), 2.0 vs SMPL-X 3.2 mm on children's, SMPL-X better on high-BMI skin folds, no MHR comparison
+  [snippets - to read at the source before a plan rests on them]; "how do studios wrap a 3D scan to a base mesh
+  topology R3DS Wrap alternative open source" - R3DS Wrap, Wrap for Blender ($49), TopoWrap: corresponding points,
+  then a non-rigid fit, then clean-up; no open tool found [snippets]. Verdict: Anny + non-rigid ICP is the open form
+  of the studio method on our own topology; MHR via SOMA-X (Apache-2.0) is the one to try if heavy bodies' folds
+  come out wrong.
 - **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
