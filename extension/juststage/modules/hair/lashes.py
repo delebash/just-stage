@@ -32,8 +32,10 @@ import numpy as np
 #: eyeball, a dark band at the margin. The face test's rounds 57-65 read it the other way (rise 0 to +15): a fringe of
 #: spikes standing above the lid. Lengths 0.65 / 0.55 of the study's: at full length round 79's 4096-px close-up drew
 #: long spikes across the iris and out past the outer corner, where its painting shows a fine short lash line.
-UPPER = {"count": 150, "long": 7.0, "short": 3.8, "rise": 0.0, "curl": 50.0, "band": (0.2, 1.0), "radius": 0.00005,
-         "melanin": 0.95}  # fmt: skip
+#: 2026-11-06: 180 upper at 0.08 mm, melanin 1.0 - the approved design's piece 3 ("measured to make a lash line",
+#: proof (4), 2026-11-05) - never put in the code until the clean-input gate showed the lash line thin
+UPPER = {"count": 180, "long": 7.0, "short": 3.8, "rise": 0.0, "curl": 50.0, "band": (0.2, 1.0), "radius": 0.00008,
+         "melanin": 1.0}  # fmt: skip
 LOWER = {"count": 80, "long": 3.8, "short": 1.8, "rise": 5.0, "curl": 25.0, "band": (0.2, 0.8), "radius": 0.000025,
          "melanin": 0.6}  # fmt: skip  # lower lashes are finer and lighter
 #: Changed 2026-11-05 (the part-by-part gate): with the eyes opened to an adult's 9 mm (body_create.EYE_OPEN) the
