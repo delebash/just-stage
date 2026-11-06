@@ -245,7 +245,8 @@ approved only if no better way is found.
 ## Coordination
 
 - **web-4c** holds the graphics card for its clips until I send "card free" - sent when CC5 is closed and my renders
-  stop. Its limits are requests (memory `peer-limits-are-requests`).
+  stop. Its limits are requests (memory `peer-limits-are-requests`). **2026-11-06 ~13:40: "card free" sent (the deep
+  read needs no card); message web-4c before putting anything on the card again.**
 - **"just-stage asset search"** fetches and searches assets; TASKS and RESEARCH are mine to record from what it sends
   (checked against its logs first).
 - **Needs the user:** no emails, no purchases (the user, 2026-11-05).
