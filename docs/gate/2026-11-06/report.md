@@ -50,4 +50,21 @@ measured where a measure exists:
 | The lower margin still a glossy rim | - | wet pink at the rim only, fading across the margin (`base.mark`); marks refreshed on every load (`migrations`) |
 | No catch light in our eyes (Aaron's shows the key light) | hiding the films, a mirror cornea: none - the key light's reflection lands under our upper lid | the dressed human's eyes opened by MakeHuman's own sliders (no bags, fold, lid's middle up; proof 4b's measured set) |
 
-### Run 4: running (`.dev/gate/parts/2026-11-06d`, all 21 views, every fix above but the eye shape)
+### Runs 4-6 and what each changed (`.dev/gate/parts/2026-11-06d`, `-06e`, `-06f`, `factors/`; scratchpad `factors.py`)
+
+Run 4 (all 21 views, every fix above but the eye shape) and run 5 (the eye shape, six views, then Average woman, Older
+man, Heavy woman, Muscular man) looked at beside Aaron, each gap found one factor at a time before a fix:
+
+| Found | Measured | Changed |
+|---|---|---|
+| A brown lower face with a hard edge on one cheek, dark sockets, on every scan skin | a flat colour map: unchanged; a flat normal map: gone. The head normal held tilt the composed relief has not (p50 0.13 / p90 0.31 against 0.00) - a plain BSDF baked it too: Cycles' Normal bake keeps its frames on the Basis while the shading follows the shape keys (RESEARCH "The head tile's false shading") | normals baked on the Basis, modifiers off (`build_skins._bake`): p50 0.002 / p90 0.032; skins and library characters rebuilt |
+| The chest seam and shoulder patches still there after run 3's colour match: the relief changes size across the line | hm08's UVs inside the head tile: face 600-700 mm a UV unit, neck and shoulders ~1150 - pores 1.6x the face's above the line | the relief layers cross-fade half-octave tilings by each place's density (`maps.add_texel`, `_levels`; CC5 tiles its micro normal by region) - run 6: no seam on the chest or arms |
+| The colour still steps at the tile borders (one median colour for the body) | - | a 3D border blend in the skin builder (`build_skins._border_blend`, the design's piece 4) |
+| Gashes and patches (Average woman's temple and cheek, Older man's and Heavy woman's necks) | the composed reliefs carry wedges of constant tilt where no scan reached - the hole fill streaked the scan's edge texel across wide holes | a relief's wide holes fade to flat (`hair.mirror_fill(neutral=0)`) |
+| Stubble dots, no white hairs | his 2.4-4.2 mm lying close, a third white; ours 1 mm at 45 degrees | 3.2 mm, 22 degrees, 0.1 mm thick, white melanin 0.04 (`stubble.py`) |
+| Brows a black bar with a brush at the head | his dark grey with a quarter white, sparse at the head, arched hairs | a fifth white, the head at 45% density, hairs arching toward the tail, 0.07 mm (`brows.py`) |
+| A swollen glossy lower rim with a kink under the iris | the lower lash line up to 5.2 mm off the eyeball (the next row 0.8 mm) - the contact key held only a minimum | the lash line capped at base v2's 2.6 mm, its move carried into two rings of skin (`parts.eyelid_contact`) |
+| Lashes in spiky clumps, no upper margin seen; lower lashes invisible; a dark grey outline round the opening; a flat white | - | next: one factor at a time (lashes remade on the opened lids, the tearline hidden) |
+
+Run 7 (`.dev/gate/parts/2026-11-06g`): the rebuilt skins (border blend, flat-faded relief holes), the stubble, on the
+five characters.
