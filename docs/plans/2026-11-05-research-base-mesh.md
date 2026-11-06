@@ -1,0 +1,57 @@
+# Research — the base mesh: is MakeHuman's hm08 the right foundation for CC5-level realism? (2026-11-05)
+
+Why (the user, 2026-11-05 late): "resarch this, you should research anything that might help the overal use instead
+of just trying to fix little by little". Two workarounds today had one root cause - hm08 lacks anatomy: (1) the lid
+margin (its lower lid's free edge stands up to 3.3 mm off the eyeball, one vertex ring - a dark crevice; sealing that
+ring gave a 4-8 px band against HD Aaron's ~36 px; ICT's tearline strip shaded pink stood in for it); (2) the body's
+muscle definition (MakeHuman's muscle macro gives bulk, not definition - RESEARCH "Body relief and muscle definition").
+
+## 0 · What we already had (rule 0, read before searching)
+
+| Question | Covered where | Evidence | Our code follows it? |
+|---|---|---|---|
+| hm08's counts, quads, subdivision | `2026-10-29-research-05-bases-pass2.md` §2 | MakeHuman's topology doc [page]: 14,766 faces, all quads, poles <= 5; body 13,380 vertices | yes |
+| Other open bases (MHR, SOMA-X, GNM head, MB-Lab, CharMorph) | same §2, top findings | their repos [page]; counts | n/a |
+| Realism of any open base against CC5 / MetaHuman | same, finding 7 | "still unsourced"; a photoreal MakeHuman example "needed a custom eyelid target" (Polito thesis) | - |
+| HD detail (CC5's HD morphs) | `docs/standards/character-data-model.md` §1.4 (APPROVED 2026-10-29, NOT STANDARD N3) | an HD slider = a displacement map at subdivision level 2, faded by the slider | not built |
+| Whether hm08 has lid-margin / caruncle geometry | - | - (measured today: no) | - |
+| A better topology under MakeHuman's sliders | - | - | - |
+
+Gaps researched below: the last two rows. Body definition is the approved HD-slider design (a researched rec never
+built), not a research gap.
+
+## 1 · Queries run and what they returned (standard mode)
+
+1. "best open source realistic human base mesh topology eyelids mouth CC0 2026" - Blender Studio's Human Base Meshes
+   (CC0, CG Channel 2023; devtalk asset tracker), a Fab listing "derived from the MakeHuman CC0 base" naming eyelid and
+   lip parts (unread), OpenGameArt low-poly bases (dated).
+2. "MakeHuman proxy custom topology high poly realistic face eyelid MPFB" - MakeHuman's proxy concept pages
+   (static.makehumancommunity.org: "a 'proxy' (also known as 'proxymesh' or 'topology') is an alternative mesh topology
+   that can be applied to a human model"; made "as full body clothing", the `.mhclo` renamed `.proxy`; refit when the
+   base changes); an MPFB2 issue on per-topology morph targets. No tested high-poly-face proxy found.
+3. "Blender Studio Human Base Meshes CC0 topology realistic head" - CG Channel and 80.lv (2023): "closed volumes with
+   clean quad topology", multi-resolution detail, UVs; Blender 4.0 release notes: an update with "improved topology".
+
+## 2 · Blender Studio's Human Base Meshes — downloaded and inspected
+
+- Downloaded 2026-11-05: `human-base-meshes-bundle-v1.4.1.zip` (50.6 MB) from Blender's demo-files page
+  (www.blender.org/download/demo-files/ -> mirror.blender.org/demo/asset-bundles/human-base-meshes/), in
+  `.dev/downloads/blender_human_base_meshes/`. Licence from the file's own asset metadata [file]: "Eye - Realistic"
+  CC0 (Dan Ulrich), "Foot - Realistic" CC0 (Dan Ulrich), "Eye - Stylized" CC0 (Julien Kaspar); the realistic heads and
+  bodies carry no per-object metadata - the bundle is published as CC0 (CG Channel [article]; the bundle page itself
+  unread - read before anything ships).
+- Contents [file]: realistic head for animation (3,242 vertices, Multires 1 level, separate sclera 546 v and iris 400 v
+  per eye), realistic head for sculpting (3,307 v), realistic male and female bodies (female 10,582 v, Multires),
+  realistic hand, foot (Multires), jaw, skull, skeleton, eye; stylized and primitive sets.
+- **The realistic animation head's eye region [rendered, `.dev/gate/parts/proof_eyes/hbm_eye.png`]: a modelled lid margin - two to three
+  tight edge loops make a thick margin band on both lids, turning in toward the eyeball - and a dense pocket of loops at
+  the inner corner (the caruncle's place).** hm08 has one ring there. Its lips have proper loops (`.dev/gate/parts/proof_eyes/hbm_mouth.png`).
+
+## 3 · Open (the next step's questions)
+
+- Can that head sit under MakeHuman's sliders? Two routes: (a) MakeHuman's own proxy system (`.mhclo` / `.proxy`, the
+  standard - our parts already fit this way: `core/mhclo.fit`); (b) MakeHuman's CC0 targets transferred onto the new
+  topology by a wrap (our NICP tools) - a new base with every slider. Unknown: how well an mhclo fit holds fine lid
+  geometry when the eye sliders move; what our skins (in hm08's UDIM layout) need - a re-bake onto the new UVs.
+- The bodies' Multires detail: how much muscle definition they hold (a source for HD sliders).
+- The Fab listing's licence and contents; MB-Lab / CharMorph eye regions; Anny's topology.

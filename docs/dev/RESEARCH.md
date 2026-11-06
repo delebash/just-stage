@@ -272,6 +272,7 @@ Subjects: [1 · The machine](#1--the-machine) ·
   leaves a 4-8 px band against his ~36 px. ICT's tearline strip shaded as wet pink tissue gives the band on the
   Average man (32 px, the same colour) but on four other library characters it outlines the whole opening, upper lid
   included - a drawn pink ring (his upper margin hides under the lashes).
+- **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
   torso; the same horizontal chest seam and arm bands show on Average and Muscular man (a texture-tile defect, not
