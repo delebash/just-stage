@@ -16,6 +16,7 @@ into the user's JustStage library by `tools/build_skins.py` / `tools/build_libra
 | GNM head model v3 | huggingface.co/google/gnm-v3 | Google | Apache-2.0 |
 | Studio Small 09 HDRI (2K) | polyhaven.com/a/studio_small_09 | Poly Haven | CC0-1.0 |
 | The skin's pore tile (`data/generated/skin/pores.png`, `tools/face_test/pore_tile.py`: the upper cheek's relief from Level_01_Normal, 33 mm) | ten24.info/sample-scan (Ten24 sample scan, OBJ package; the page as downloaded: `.dev/downloads/ten24_sample/sample-scan-page-2026-11-04.html`) | Ten24 Media | "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used." - credited here |
+| The eye's iris structure (`data/generated/eyes/iris.png`, `tools/make_iris.py`: the photo unwrapped, its lightness kept, tinted per character) | commons.wikimedia.org/wiki/File:Green_iris.jpg | Lizapopova143 | CC BY 4.0 (its file page: "This file is licensed under the Creative Commons Attribution 4.0 International license") |
 | Haemoglobin molar extinction | omlc.org/spectra/hemoglobin | Scott Prahl, OMLC (1998) | no licence stated; cited |
 | CIE 1931 2° colour-matching functions; CIE D65 | files.cie.co.at | CIE | no licence stated; cited |
 

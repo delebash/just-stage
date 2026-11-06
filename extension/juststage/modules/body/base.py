@@ -115,6 +115,9 @@ def upgrade(obj: bpy.types.Object) -> bool:
     if len(me.vertices) != makehuman.HM08_VERTICES:
         raise ValueError(f"{obj.name}: {len(me.vertices)} vertices, not hm08's {makehuman.HM08_VERTICES}")
     rec = record()
+    from ..skin import maps
+
+    maps.add_layout(obj)  # the UDIM layout is per hm08 loop: on before the cut, so the new faces take their place in it
     levels = _drop_levels(obj)
     cut(me, rec["cut"])
     if topology_hash(me) != rec["topology"]:

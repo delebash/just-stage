@@ -147,6 +147,12 @@ def set_colour(eye, iris, accent, white) -> int:
         mat = slot.material
         if mat is None or mat.node_tree is None:
             continue
+        nodes = mat.node_tree.nodes
+        if NODE + "iris" in nodes:  # the photo iris: its tint and its white (the structure carries the accent's role)
+            nodes[NODE + "iris"].outputs[0].default_value = (*iris, 1.0)
+            nodes[NODE + "white"].outputs[0].default_value = (*white, 1.0)
+            done += 1
+            continue
         for node in mat.node_tree.nodes:
             if node.type != "GROUP" or "IrisMajorColor" not in node.inputs:
                 continue
@@ -190,31 +196,115 @@ def linear_iris_uvs(eye, ids=None):
     return rho_max, r_max
 
 
-def shade(eye) -> None:
-    """MPFB2's procedural eye on the iris, pupil and white (each keeps its material and name - the gaze and the face
-    test find the iris by them), one eye per UV map; the cornea keeps its own (modules/head/part_materials.py)."""
-    from ... import paths
-    from ...core import node_trees
+#: the photo iris (tools/make_iris.py: a photographed iris's lightness structure, tinted by the character's iris colour)
+#: and its settings, measured equal to HD Aaron's eye at the gate's eye view on one character and holding on five
+#: (2026-11-05, RESUME (4b)/(4c)): the pupil 0.45 of the iris's radius (his 0.49), the limbus's soft edge LIMBUS of the
+#: radius, the white x WHITE_GAIN (warmer: red x 1.05), no specular of its own (the cornea's shell carries the gloss -
+#: at 0.5 a grey haze sat on the pupil)
+IRIS_TOOL = ".dev/venv-rdf/Scripts/python -I tools/make_iris.py"
+PUPIL, LIMBUS, IRIS_PAST = 0.45, 0.06, 1.04
+WHITE_GAIN = (0.71 * 1.05, 0.71, 0.71)
+EYE_ROUGHNESS = 0.4
+NODE = "js_eye."
 
-    linear_iris_uvs(eye)
-    prefix = f"mpfb_eye.{eye.name}."
-    tree = str(paths.makehuman(*EYE_TREE))
+
+def _iris_image():
+    from ... import paths
+
+    image = bpy.data.images.load(str(paths.generated("eyes", "iris.png", tool=IRIS_TOOL)), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _photo_tree(mat, uv_name: str, limbus_uv: float) -> None:
+    """One eye material as the photo iris, the pupil and the white by the radius on the eye's UVs (the same tree on
+    the iris, pupil and white materials - each keeps its name: the gaze and the face test find the iris by them)."""
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+
+    def math(op, a, b=None):
+        n = nt.nodes.new("ShaderNodeMath")
+        n.operation = op
+        for i, x in enumerate((a, b)):
+            if x is None:
+                continue
+            if isinstance(x, (int, float)):
+                n.inputs[i].default_value = x
+            else:
+                nt.links.new(x, n.inputs[i])
+        return n.outputs[0]
+
+    def ramp(x, lo, hi, clamp=True):
+        n = nt.nodes.new("ShaderNodeMapRange")
+        n.interpolation_type, n.clamp = "SMOOTHSTEP", clamp
+        nt.links.new(x, n.inputs["Value"])
+        n.inputs["From Min"].default_value, n.inputs["From Max"].default_value = lo, hi
+        return n.outputs["Result"]
+
+    def mix(f, a, b):
+        n = nt.nodes.new("ShaderNodeMix")
+        n.data_type = "RGBA"
+        nt.links.new(f, n.inputs["Factor"])
+        for ident, v in (("A_Color", a), ("B_Color", b)):
+            sock = next(i for i in n.inputs if i.identifier == ident)
+            if isinstance(v, tuple):
+                sock.default_value = (*v, 1.0)
+            else:
+                nt.links.new(v, sock)
+        return next(o for o in n.outputs if o.identifier == "Result_Color")
+
+    def rgb(name, value):
+        n = nt.nodes.new("ShaderNodeRGB")
+        n.name = NODE + name
+        n.outputs[0].default_value = (*value, 1.0)
+        return n.outputs[0]
+
+    uv = nt.nodes.new("ShaderNodeUVMap")
+    uv.uv_map = uv_name
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(uv.outputs["UV"], sep.inputs[0])
+    du, dv = math("SUBTRACT", sep.outputs["X"], 0.5), math("SUBTRACT", sep.outputs["Y"], 0.5)
+    d = math("SQRT", math("ADD", math("MULTIPLY", du, du), math("MULTIPLY", dv, dv)))
+    angle = math("ADD", math("DIVIDE", math("ARCTAN2", dv, du), 2 * np.pi), 0.5)
+    pupil = limbus_uv * PUPIL
+    t = nt.nodes.new("ShaderNodeMapRange")
+    t.clamp = True
+    nt.links.new(d, t.inputs["Value"])
+    t.inputs["From Min"].default_value, t.inputs["From Max"].default_value = pupil * 1.02, limbus_uv * IRIS_PAST
+    coords = nt.nodes.new("ShaderNodeCombineXYZ")
+    nt.links.new(angle, coords.inputs["X"])
+    nt.links.new(math("SUBTRACT", 1.0, t.outputs["Result"]), coords.inputs["Y"])
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.name = NODE + "iris_structure"
+    tex.image, tex.extension, tex.interpolation = _iris_image(), "EXTEND", "Cubic"
+    nt.links.new(coords.outputs[0], tex.inputs["Vector"])
+    tint = nt.nodes.new("ShaderNodeVectorMath")
+    tint.operation = "MULTIPLY"
+    nt.links.new(tex.outputs["Color"], tint.inputs[0])
+    nt.links.new(rgb("iris", IRIS_MAJOR), tint.inputs[1])
+    iris = nt.nodes.new("ShaderNodeVectorMath")
+    iris.operation, iris.inputs[3].default_value = "SCALE", 2.0  # the structure is stored halved (0.5 = its mean)
+    nt.links.new(tint.outputs["Vector"], iris.inputs[0])
+    col = mix(ramp(d, pupil * 0.94, pupil * 1.04), (0.0, 0.0, 0.0), iris.outputs["Vector"])
+    white = nt.nodes.new("ShaderNodeVectorMath")
+    white.operation = "MULTIPLY"
+    nt.links.new(rgb("white", WHITE), white.inputs[0])
+    white.inputs[1].default_value = WHITE_GAIN
+    col = mix(ramp(d, limbus_uv * (1 - LIMBUS / 2), limbus_uv * (1 + LIMBUS)), col, white.outputs["Vector"])
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    nt.links.new(col, bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = EYE_ROUGHNESS
+    bsdf.inputs["Specular IOR Level"].default_value = 0.0
+    nt.links.new(bsdf.outputs[0], out.inputs["Surface"])
+
+
+def shade(eye) -> None:
+    """The photo iris on the eye's iris, pupil and white (_photo_tree), its UVs laid out by the 3D radius first
+    (linear_iris_uvs); the cornea keeps its own (modules/head/part_materials.py)."""
+    limbus_uv, _r = linear_iris_uvs(eye)
     for slot in eye.material_slots:
         mat = slot.material
         if mat is None or not any(r in mat.name for r in ("Iris", "Pupil", "Sclera")):
             continue
-        made = node_trees.build_material(tree, mat, prefix)
-        inputs = made["EnhancedEye"].inputs
-        inputs["IrisToEyeWhiteRelation"].default_value = IRIS_SIZE
-        inputs["PupilSize"].default_value = IRIS_SIZE * PUPIL_SHARE
-        inputs["IrisMajorColor"].default_value = (*IRIS_MAJOR, 1.0)
-        inputs["IrisMinorColor"].default_value = (*IRIS_MINOR, 1.0)
-        inputs["IrisSection4Color"].default_value = (*(0.9 * c for c in IRIS_MINOR), 1.0)  # a soft limbal ring
-        inputs["EyeWhiteColor"].default_value = (*WHITE, 1.0)
-        for name, value in SETTINGS.items():
-            inputs[name].default_value = value
-    centre = bpy.data.node_groups[prefix + "CenterCoordinates"]
-    combs = sorted((n for n in centre.nodes if n.type == "COMBXYZ"), key=lambda n: n.name)
-    combs[0].inputs["X"].default_value, combs[0].inputs["Y"].default_value = 0.5, 0.5
-    combs[1].inputs["X"].default_value, combs[1].inputs["Y"].default_value = 5.0, 5.0  # its two-eye sum: one eye a map
-    next(n for n in centre.nodes if n.type == "VALUE").outputs[0].default_value = UV_EYE_RADIUS
+        _photo_tree(mat, eye.data.uv_layers[0].name, limbus_uv)

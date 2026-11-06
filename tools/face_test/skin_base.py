@@ -62,6 +62,10 @@ LOW_NEAR = 0.4  # the share of skin round a texel it needs: holes filled only we
 #: hairline (HAIRLINE texels, ~6 mm, outside the eye zone) stray strands are found and filled (hair.py, DullRazor).
 #: Stubble stays out (a stubble groom, not paint): a stubbled scan is left out of the beard, the clean scans fill it;
 #: a man keeps only the faint shaved tint CC5's diffuse has (`beard_shadow`, his stubbled scans' broad colour there).
+#: stubble found per texel (the scan list's by-eye tags missed HSR0040's upper lip): in the beard's region, skin whose
+#: dark marks (a 7-texel closing over the fine layer, averaged over STUBBLE_AREA texels) run STUBBLE_RATIO x the scan's
+#: own clean face's is left out like hair
+STUBBLE_RATIO, STUBBLE_AREA = 1.35, 18.0
 EYE_ZONE = 0.035  # m
 HAIR_BAND, HAIRLINE = 30, 36  # texels
 BEARD_SHADOW = 0.35  # a man's default
@@ -262,6 +266,19 @@ def split(name):
     b_mid = masked_blur(lin, valid, MID_SIGMA)
     fine = np.log(lin / np.maximum(b_fine, 1e-4))
     mid = np.log(np.maximum(b_fine, 1e-4) / np.maximum(b_mid, 1e-4))
+    # stubble, per texel: the beard's skin with far more dark marks than this scan's own clean face
+    beard_r, scalp_r = (m.astype(np.float32) for m in regions(size))
+    lum_f = fine @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    marks_d = cv2.morphologyEx(lum_f, cv2.MORPH_CLOSE, _disc(STUBBLE_KERNEL // 2)) - lum_f
+    dens = masked_blur(marks_d[..., None], valid, STUBBLE_AREA)[..., 0]
+    clean = valid & (beard_r < 0.05) & (scalp_r < 0.05) & ~zone
+    stubbly = np.zeros_like(valid)
+    if clean.sum() > 1000:
+        stubbly = (beard_r > 0.3) & valid & (dens > STUBBLE_RATIO * float(np.median(dens[clean])))
+        stubbly = cv2.morphologyEx(stubbly.astype(np.uint8), cv2.MORPH_OPEN, _disc(3)) > 0
+        stubbly = cv2.dilate(stubbly.astype(np.uint8), _disc(12)) > 0
+        valid &= ~stubbly
+        fine[stubbly], mid[stubbly] = 0.0, 0.0
     # the scanned person's own marks: spots darker than their surroundings by >30%, ~0.5-6 mm across (at >12% the bald
     # scan's scalp stubble and pores went too - 23% of its texels, a patchwork of blurred holes)
     lum = (mid + fine) @ np.array([0.2126, 0.7152, 0.0722], np.float32)
@@ -284,7 +301,7 @@ def split(name):
     extra = {"tone": np.median(lin[valid], axis=0).astype(np.float32)}  # its skin's own colour, linear
     if (d / "colour.png").exists() and (d / "normals.npy").exists():  # scan_skin.py's colour mask and normals
         colour = cv2.resize(cv2.imread(str(d / "colour.png"), 0), (size, size), interpolation=cv2.INTER_LINEAR) > 127
-        valid_colour = cover & colour & ~band & (srgb.max(axis=2) > 0.05)
+        valid_colour = cover & colour & ~band & ~stubbly & (srgb.max(axis=2) > 0.05)
         valid_colour = cv2.erode(valid_colour.astype(np.uint8),
                                  cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
         normals = cv2.resize(np.load(d / "normals.npy").astype(np.float32), (size, size),
@@ -307,7 +324,8 @@ def split(name):
         print(f"{name}: broad layer - the fitted light's spread {lit:.3f} (log luminance), what stays {rest:.3f}")
     np.savez_compressed(d / "layers.npz", fine=fine.astype(np.float16), mid=mid.astype(np.float16), valid=valid,
                         **extra)
-    print(f"{name}: hair out - the eye and brow band {band.sum()} texels, {strands.sum()} texels of strands by the hairline")
+    print(f"{name}: hair out - the eye and brow band {band.sum()} texels, {strands.sum()} texels of strands, "
+          f"{stubbly.sum()} texels of stubble")
     print(f"{name}: skin on {valid.mean() / mask.mean():.0%} of the texels the scan reached ({valid.mean():.1%} of the "
           f"tile); {count - 1} dark spots, "
           f"{int(small.any() and np.unique(labels[small]).size)} small ones taken out ({marks.sum()} texels); "

@@ -74,8 +74,10 @@ def _bake_uv(body, number: int = 1001) -> None:
     """A UV layer for baking one tile as a plain 0-1 image: that tile's loops where the UDIM layer has them, the rest
     pushed off the image."""
     me = body.data
-    uv, tile = maps.layout()
-    loop_tile = np.repeat(tile, 4)  # hm08 is all quads
+    uv = np.empty(len(me.loops) * 2, np.float32)  # the body's own UDIM layer (hm08's or base v2's loops)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    loop_tile = 1001 + np.floor(uv[:, 0]).astype(int)
     flat = uv - np.array([number - 1001, 0.0], np.float32)
     flat[loop_tile != number] += 5.0
     layer = me.uv_layers.get("bake") or me.uv_layers.new(name="bake")

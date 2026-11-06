@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2026 JustStage contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The eyes (modules/head/eyes.py): MPFB2's procedural iris and white on the iris, pupil and white faces - a smooth
-iris instead of GNM's faceted regions - on UVs that run with the 3D radius; the cornea keeps its glass."""
+"""The eyes (modules/head/eyes.py): the photo iris (a photographed iris's structure, tinted by the character's iris
+colour), the pupil and the white on the iris, pupil and white faces - on UVs that run with the 3D radius; the cornea
+keeps its glass."""
 
 import importlib
 
@@ -25,16 +26,15 @@ def eye():
     bpy.data.objects.remove(body)
 
 
-def _groups(mat):
-    return {n.node_tree.name.split(".")[-1] for n in mat.node_tree.nodes if n.type == "GROUP" and n.node_tree}
-
-
-def test_the_iris_pupil_and_white_are_mpfb2s_procedural_eye(eye):
+def test_the_iris_pupil_and_white_are_the_photo_iris(eye):
     mats = {m.name.split(" (")[0]: m for m in eye.data.materials}
     for name in ("JustStage Iris", "JustStage Pupil", "JustStage Sclera"):
-        assert "EnhancedEye" in _groups(mats[name]), name
+        nodes = mats[name].node_tree.nodes
+        assert nodes[eyes.NODE + "iris_structure"].image.name.startswith("iris"), name
+        bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+        assert bsdf.inputs["Specular IOR Level"].default_value == 0.0  # the cornea's shell glosses
     cornea = mats["JustStage Cornea"]
-    assert "EnhancedEye" not in _groups(cornea)
+    assert eyes.NODE + "iris_structure" not in cornea.node_tree.nodes
     assert eyes.gaze(eye)  # still found by the iris' and pupil's materials
 
 
@@ -55,11 +55,10 @@ def test_the_iris_uvs_run_with_the_3d_radius(eye):
     assert np.corrcoef(rho, r)[0, 1] > 0.999  # GNM's own squeezes the pupil into 0-0.05 (0.97 or less)
 
 
-def _iris_inputs(eye):
-    for mat in eye.data.materials:
-        for node in mat.node_tree.nodes:
-            if node.type == "GROUP" and "IrisMajorColor" in node.inputs:
-                yield node.inputs
+def _iris_nodes(eye):
+    found = [m.node_tree.nodes for m in eye.data.materials if eyes.NODE + "iris" in m.node_tree.nodes]
+    assert len(found) == 3
+    return found
 
 
 def test_the_eye_colour_presets_and_custom_colours(eye):
@@ -69,13 +68,13 @@ def test_the_eye_colour_presets_and_custom_colours(eye):
     body = next(o for o in bpy.data.objects if o.juststage.character_id == character)
     api.run("juststage.head.set_eye_colour", character=character, preset="blue")
     blue = eyes.PRESETS["blue"][0]
-    for inputs in _iris_inputs(eye):
-        assert tuple(inputs["IrisMajorColor"].default_value)[:3] == pytest.approx(blue)
+    for nodes in _iris_nodes(eye):
+        assert tuple(nodes[eyes.NODE + "iris"].outputs[0].default_value)[:3] == pytest.approx(blue)
     assert body.juststage.eye_preset == "blue" and tuple(body.juststage.iris_colour) == pytest.approx(blue)
     out = api.run("juststage.head.set_eye_colour", character=character, iris=[0.2, 0.1, 0.05], white=[0.6, 0.55, 0.5])
     assert out.eyes == 2 and body.juststage.eye_preset == "custom"
-    for inputs in _iris_inputs(eye):
-        assert tuple(inputs["EyeWhiteColor"].default_value)[:3] == pytest.approx((0.6, 0.55, 0.5))
+    for nodes in _iris_nodes(eye):
+        assert tuple(nodes[eyes.NODE + "white"].outputs[0].default_value)[:3] == pytest.approx((0.6, 0.55, 0.5))
     with pytest.raises(api.CommandError):
         api.run("juststage.head.set_eye_colour", character=character, iris=[1.5, 0.0, 0.0])
     # the eyes added again (a new pair) take the character's colours
@@ -83,5 +82,5 @@ def test_the_eye_colour_presets_and_custom_colours(eye):
         bpy.data.objects.remove(part)
     api.run("juststage.head.add_parts", character=character)
     again = next(o for o in bpy.data.objects if o.juststage.part_of == character and o.juststage.part == "eyeLeft")
-    for inputs in _iris_inputs(again):
-        assert tuple(inputs["IrisMajorColor"].default_value)[:3] == pytest.approx((0.2, 0.1, 0.05))
+    for nodes in _iris_nodes(again):
+        assert tuple(nodes[eyes.NODE + "iris"].outputs[0].default_value)[:3] == pytest.approx((0.2, 0.1, 0.05))
