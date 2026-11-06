@@ -44,3 +44,23 @@ nothing; each risky choice proved by a small measured test before adoption.
 9. Hair (scalp, facial, body; strands, cards; shading) - awaiting the mixing-hair file.
 10. Materials and the two renderers (EEVEE live, Cycles film).
 11. Live-view budget (8 GB card), LODs, export.
+
+## Research files audited (2026-11-05)
+
+- `2026-11-05-research-face-animation.md` (agent): 36 queries logged; 28 [page], 20 [code]/[measured], 11 [snippet]
+  marks; the a-n check written in. Spot-checked by me: FACSHuman's licence LGPL-3.0, last push 2026-04-18 (GitHub API);
+  CC5's wrinkle set `HD Aaron 2K.rlWrinkle` on disk under `F:\Reallusion Content\Reallusion Templates\Actor\Expression
+  Wrinkles\CC5 2K\`. Usable.
+- `2026-11-05-research-base-mesh-2.md` (agent): 39 queries logged; 46 [page], 14 [code], 6 [file], 18 [snippet], 6
+  [inferred]. Spot-checked by me: CharMorph's binding is `kd.find_n(v, 16)` nearest hm08 vertices plus nearest-face
+  points (`lib/fit_calc.py`) - an averaging map, as the file says. Usable.
+
+What they change: (1) the append (option A) ranks first and is the industry's own move (Maya's "Bake Topology To
+Targets"); switching topology (B, D) loses at the lids, where no hm08 surface exists to transfer from; Blender's CC0
+head is coarser at level 0 (3,242 v) than hm08's head (4,986). (2) Two conditions on A: each appended vertex keeps its
+offset in its birth face's local frame (turns with the face; plain averaging puts a margin vertex ~1 mm wrong in a
+blink - the file's arithmetic), and every closing expression gets a contact step (lids meet, lips seal). (3) A second
+expression source on hm08 itself: FACSHuman's 133 FACS action units (LGPL-3.0); the expression sets are to be scored
+against real expression scans, not picked. (4) Wrinkles: no shippable scanned library exists; mesh tension (MIT) drives
+RigLogic's wrinkle maps. (5) Body correctives: SOMA-X (Apache-2.0) has one learned model reaching MakeHuman's mesh
+through Anny's SOMA topology.
