@@ -179,12 +179,27 @@ def linear(srgb):
     return np.where(srgb <= 0.04045, srgb / 12.92, ((srgb + 0.055) / 1.055) ** 2.4)
 
 
+WIDE = 16.0  # texels: masked_blur works on a shrunk copy beyond this
+
+
 def masked_blur(img, valid, sigma):
-    """A blur that only averages valid texels (normalized convolution)."""
+    """A blur that only averages valid texels (normalized convolution). Wide ones (sigma over WIDE texels) on a copy
+    shrunk so the blur is WIDE there, then grown back - the same smooth result, a kernel thousands of texels wide
+    otherwise."""
     w = valid.astype(np.float32)
-    num = cv2.GaussianBlur(img * w[..., None], (0, 0), sigma)
-    den = cv2.GaussianBlur(w, (0, 0), sigma)
-    return num / np.maximum(den[..., None], 1e-6)
+    if sigma <= WIDE:
+        num = cv2.GaussianBlur(img * w[..., None], (0, 0), sigma)
+        den = cv2.GaussianBlur(w, (0, 0), sigma)
+        return num / np.maximum(den[..., None], 1e-6)
+    h, wd = w.shape
+    f = sigma / WIDE
+    small = (max(1, int(round(wd / f))), max(1, int(round(h / f))))
+    num = cv2.GaussianBlur(cv2.resize(img * w[..., None], small, interpolation=cv2.INTER_AREA), (0, 0), WIDE)
+    den = cv2.GaussianBlur(cv2.resize(w, small, interpolation=cv2.INTER_AREA), (0, 0), WIDE)
+    if num.ndim == 2:
+        num = num[..., None]
+    out = num / np.maximum(den[..., None], 1e-6)
+    return cv2.resize(out, (wd, h), interpolation=cv2.INTER_LINEAR).reshape(h, wd, -1)
 
 
 def _sh9(n):

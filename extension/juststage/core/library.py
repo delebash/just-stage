@@ -153,6 +153,11 @@ def add(path: str, scene) -> bpy.types.Object:
         if obj.juststage.part_of == old:
             obj.juststage.part_of = new
     body.juststage.character_id = new
+    from .. import migrations
+
+    bpy.context.view_layer.update()
+    if migrations.run([body]):  # a character saved by an older JustStage (base v1: hm08 without the lid anatomy)
+        objects = [body, *(o for o in bpy.data.objects if o.juststage.part_of == new)]  # its grooms may be new ones
     if any(o.juststage.part in ("eyeLeft", "eyeRight") for o in objects):  # today's fit: the eyes' lid clearance
         from ..modules.head import parts
 

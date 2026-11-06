@@ -42,29 +42,30 @@ build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
 #: the mapped skins' licence (tools/build_skins.py's LICENCE)
 SKIN_LICENCE = "CC-BY-4.0 (scans) / CC-BY-3.0 (pores); painted with FLUX 3 Image Klein (FLUX Kommunity licence)"
 
+#: "scanned" (the face test's four people) only when asked: their skins are AI paintings with painted lashes and the
+#: paintings' light (docs/plans/2026-11-06-inputs-audit.md) - not CC5's way, so not built by default
 WANTED = set(sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else ()) or {
     "characters",
     "hair",
     "skins",
-    "scanned",
 }
 MAKEHUMAN = "JustStage body.create on MakeHuman's CC0 base and targets (MPFB2 6ff1eb35)"
 
 #: (name, body.create's macros, skin melanin, its mapped skin, description) - each wears a mapped skin
 #: (tools/build_skins.py) recoloured to its own tone: the women Mei's, the men Daniel's, the older man Walter's
 PRESETS = (
-    ("Average woman", {"gender": 0.0}, 0.03, "Mei", "MakeHuman's average woman"),
-    ("Average man", {"gender": 1.0}, 0.03, "Daniel", "MakeHuman's average man"),
-    ("Young woman", {"gender": 0.0, "age": 0.35, "weight": 0.4}, 0.012, "Mei", "A slim young woman"),
-    ("Older man", {"gender": 1.0, "age": 0.85, "weight": 0.6}, 0.08, "Walter", "A man in his sixties"),
+    ("Average woman", {"gender": 0.0}, 0.03, "Scan woman A", "MakeHuman's average woman"),
+    ("Average man", {"gender": 1.0}, 0.03, "Scan man A", "MakeHuman's average man"),
+    ("Young woman", {"gender": 0.0, "age": 0.35, "weight": 0.4}, 0.012, "Scan woman B", "A slim young woman"),
+    ("Older man", {"gender": 1.0, "age": 0.85, "weight": 0.6}, 0.08, "Scan man C", "A man in his sixties"),
     (
         "Muscular man",
         {"gender": 1.0, "muscle": 0.9, "weight": 0.6, "height": 0.7},
         0.15,
-        "Daniel",
+        "Scan man B",
         "A tall muscular man",
     ),
-    ("Heavy woman", {"gender": 0.0, "weight": 0.9, "age": 0.6}, 0.25, "Amara", "A heavy-set woman"),
+    ("Heavy woman", {"gender": 0.0, "weight": 0.9, "age": 0.6}, 0.25, "Scan woman C", "A heavy-set woman"),
 )
 #: the face test's people (tools/face_test/face_character.py; `man_a` its first man): folder -> name, description
 SCANNED = {

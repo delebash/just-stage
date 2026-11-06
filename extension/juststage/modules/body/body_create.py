@@ -67,8 +67,10 @@ def main(params: Params) -> Result:
     )
 
 
-#: a new human's skin by sex (tools/build_skins.py's people): the women Mei's, the men Daniel's
-DEFAULT_SKIN = {"female": "Mei skin", "male": "Daniel skin"}
+#: a new human's skin by sex: the scan-composed skins (tools/face_test/skin_base.py + tools/build_skins.py --composed),
+#: hair out of them as CC5's skins have none (2026-11-06; Mei's and Daniel's, the face test's AI paintings, carried
+#: painted lashes and the paintings' light - docs/plans/2026-11-06-inputs-audit.md)
+DEFAULT_SKIN = {"female": "Scan woman A skin", "male": "Scan man A skin"}
 
 
 #: the eyes' opening: MakeHuman's average is ~6 mm tall at its middle against an adult's 9-10 (HD Aaron's 9.3; measured

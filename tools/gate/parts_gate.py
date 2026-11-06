@@ -35,7 +35,9 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".dev" / "gate" / "parts"
 CC5_DIR = ROOT / ".dev" / "gate" / "cc5_aaron_blender"
 CC5_BLEND = {"eevee": CC5_DIR / "aaron_hair_eevee.blend", "cycles": CC5_DIR / "aaron_hair_cycles.blend"}
-OURS = {"character": "Daniel", "scalp": "JustStage short combed", "brows": "JustStage brows"}  # recs 11, 8: 2026-11-05
+#: the library's Average man in the Scan man A skin (2026-11-06: Daniel's skin is a face-test AI painting with painted
+#: lashes - docs/plans/2026-11-06-inputs-audit.md); recs 11, 8 for the scalp and brows; stubble as hair (build_ours)
+OURS = {"character": "Average man", "scalp": "JustStage short combed", "brows": "JustStage brows"}
 LENS = 85.0  # quality-gate.md §3
 SENSOR = 36.0
 SIZE = 2048

@@ -30,9 +30,9 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".dev" / "gate"
 CONTENT = OUT / "content"
 RENDERS = OUT / "renders"
-CHARACTER = "Average man"  # the library's man wears Daniel's skin (tools/build_library.py)
-SKIN_MAPS = ROOT / ".dev" / "skins" / "man_a"
-SKIN_STEM = "Daniel skin"
+CHARACTER = "Average man"  # the library's man wears the Scan man A skin (tools/build_library.py, 2026-11-06)
+SKIN_MAPS = ROOT / ".dev" / "skins" / "Scan_man_A"
+SKIN_STEM = "Scan man A skin"
 PORES = ROOT / "extension" / "juststage" / "data" / "generated" / "skin" / "pores.png"  # the shared clean tile (maps.pore_relief)
 PORE_TILE_MM = json.loads(PORES.with_suffix(".json").read_text(encoding="utf-8"))["size_mm"]
 #: Unreal's Specular is F0 / 0.08; ours: IOR 1.4 (F0 0.0278) scaled by Specular IOR Level x 2, the level = cavity x 0.5

@@ -350,3 +350,41 @@ def make(character: bpy.types.Object, openings: dict | None = None, seed: int = 
     miss = place(obj, rest[:, 0], wanted)
     print(f"lashes: {len(rest)} strands ({missed} roots missed), {POINTS} points each, within {miss * 1000:.4f} mm")
     return obj
+
+
+def evaluated_points(obj: bpy.types.Object) -> np.ndarray:
+    """Every point of a groom as drawn (its modifiers applied), the groom's own space, flat (points x 3)."""
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    curves = obj.evaluated_get(depsgraph).data
+    pos = np.empty(len(curves.points) * 3, np.float32)
+    curves.attributes["position"].data.foreach_get("vector", pos)
+    return pos.reshape(-1, 3).astype(np.float64)
+
+
+def keep_in_place(obj: bpy.types.Object, wanted: np.ndarray) -> float:
+    """Any groom's rest positions set so that its surface deform draws every point at `wanted` (flat, the groom's
+    space) - `place` for curves of any point count: each curve's move measured on PROBE's first points and inverted
+    (curves with fewer than three points left as they are). Returns the largest miss left (m) - after a change to the
+    surface under the groom (base v2's cut: modules/body/base.py) it is put back where it was drawn."""
+    curves = obj.data
+    offs = np.empty(len(curves.curves) + 1, np.int32)
+    curves.curve_offset_data.foreach_get("value", offs)
+    counts = np.diff(offs)
+    rest = np.empty(len(curves.points) * 3, np.float32)
+    curves.position_data.foreach_get("vector", rest)
+    rest = rest.reshape(-1, 3).astype(np.float64)
+    roots = rest[offs[:-1]]
+    k_of_point = np.arange(len(rest)) - np.repeat(offs[:-1], counts)
+    probe = np.repeat(roots, counts, axis=0) + PROBE[np.minimum(k_of_point, len(PROBE) - 1)]
+    _set_positions(obj, probe)
+    moved = evaluated_points(obj)
+    out = rest.copy()
+    for k in np.unique(counts):
+        if k < 3:
+            continue
+        which = np.flatnonzero(counts == k)
+        idx = offs[which][:, None] + np.arange(k)[None, :]
+        r, t = _rigid(probe[idx], moved[idx])
+        out[idx] = np.einsum("nji,nkj->nki", r, wanted[idx] - t[:, None, :])
+    _set_positions(obj, out)
+    return float(np.linalg.norm(evaluated_points(obj) - wanted, axis=1).max())

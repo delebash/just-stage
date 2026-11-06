@@ -5,7 +5,7 @@
 
 import bpy
 
-from . import api, character
+from . import api, character, migrations
 from .commands import api_status
 from .core import usd_hooks
 from .modules import body, hair, head, io, skin
@@ -34,9 +34,11 @@ def register():
     menus.register()
     character_panel.register()
     content.register()
+    migrations.register()
 
 
 def unregister():
+    migrations.unregister()
     content.unregister()
     character_panel.unregister()
     menus.unregister()

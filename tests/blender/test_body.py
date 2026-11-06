@@ -170,9 +170,10 @@ def test_a_dressed_human_has_its_eyes_lashes_and_a_skin():
     for slider, value in create.EYE_OPEN.items():
         target = next(k for k in keys if k.name.endswith(slider.split("/")[1].replace("decr-incr", "incr")))
         assert target.value == pytest.approx(value)
-    if (library.root() / "Skins" / "Mei skin.blend").is_file():
-        assert result.skin == "Mei skin" and obj.juststage.skin_material.juststage.has_maps
-        assert obj.juststage.melanin == pytest.approx(0.0104)  # its own tone, the skin's detail
+    if (library.root() / "Skins" / f"{create.DEFAULT_SKIN['female']}.blend").is_file():  # a scan skin, hair out
+        assert result.skin == create.DEFAULT_SKIN["female"] and obj.juststage.skin_material.juststage.has_maps
+        tone = library.skin_tone(str(library.root() / "Skins" / f"{create.DEFAULT_SKIN['female']}.blend"))
+        assert obj.juststage.melanin == pytest.approx(tone["melanin"])  # the skin's own tone, its detail
     for o in [o for o in bpy.data.objects if o.juststage.part_of == result.character]:
         bpy.data.objects.remove(o)
     bpy.data.objects.remove(obj)
