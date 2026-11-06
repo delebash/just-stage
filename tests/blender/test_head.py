@@ -153,3 +153,29 @@ def test_the_lids_stay_in_front_of_the_eyes():
     for o in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
         bpy.data.objects.remove(o)
     bpy.data.objects.remove(body)
+
+
+def test_the_teeth_shade_from_gum_line_to_biting_edge():
+    """Rec 13 (the MIO photo's ratios): each tooth's height above the gum line drives its colour; teeth and gums wet."""
+    pm = importlib.import_module("bl_ext.system.juststage.modules.head.part_materials")
+    made = api.run("juststage.body.create", name="Teeth test")
+    api.run("juststage.head.add_parts", character=made.character)
+    body = bpy.data.objects[made.object]
+    try:
+        teeth = parts.parts_of(body)["teeth"]
+        t = np.empty(len(teeth.data.vertices), np.float32)
+        teeth.data.attributes[pm.TOOTH_T].data.foreach_get("value", t)
+        groups = parts.groups("teeth")
+        on_teeth = t[groups["teeth"]]
+        assert on_teeth.min() == 0.0 or on_teeth.min() < 0.05
+        assert on_teeth.max() == pytest.approx(1.0) and (t[groups["gums"]] == 0).all()
+        mats = {m.name.split(" (")[0]: m for m in teeth.data.materials}
+        tooth = mats["JustStage Teeth"]
+        assert any(n.type == "ATTRIBUTE" and n.attribute_name == pm.TOOTH_T for n in tooth.node_tree.nodes)
+        for name in ("JustStage Teeth", "JustStage Gums"):
+            bsdf = next(n for n in mats[name].node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+            assert bsdf.inputs["Coat Weight"].default_value == pytest.approx(pm.WET_COAT)
+    finally:
+        for o in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
+            bpy.data.objects.remove(o)
+        bpy.data.objects.remove(body)
