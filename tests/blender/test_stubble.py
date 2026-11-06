@@ -53,6 +53,9 @@ def test_stubble_is_short_hair_on_the_beard_not_on_the_lips_or_nose(man):
     mid = (eyes[0] + eyes[1]) / 2
     rel = roots - mid
     assert (rel[:, 2] < -0.025).all()  # all below the eyes' level by the cheekbones
+    # a neckline as HD Aaron's: none down the throat (run 7 had them to the collarbones) - under the chin no lower than
+    # 15.5 cm below the eyes, rising toward the jaw's angle behind it
+    assert (rel[:, 2] > -0.155 + 0.7 * np.clip(rel[:, 1] - 0.03, 0.0, None) - 0.003).all()
     lips = stubble.lip_points(body)
     near_lips = np.linalg.norm(roots[:, None] - lips[None, ::20], axis=2).min(axis=1) < 0.0015
     assert near_lips.mean() < 0.01  # none on the lips

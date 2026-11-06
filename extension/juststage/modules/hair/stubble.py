@@ -36,7 +36,8 @@ LENGTH = 3.2  # mm
 RADIUS, TIP = 0.00005, 0.7  # m at the root (a beard hair ~0.1 mm across); a cut hair's blunt end
 RISE = 22.0  # degrees off the skin at the root
 CURL = 25.0  # degrees the hair turns along its length (each its own way)
-GREY_SHARE, GREY_MELANIN = 0.33, 0.04  # the white ones (Aaron's read white at face distance)
+GREY_SHARE, GREY_MELANIN = 0.25, 0.12  # the grey ones (run 7: a third at 0.04 read as a white beard; his mostly dark)
+NECKLINE = (0.155, 0.7, 0.03)  # m below the eyes under the chin; its rise a metre back; from this far behind them
 GROWTH = np.array([0.0, 0.5, -1.0])  # down and back (-Y is the face's front)
 FLARE = 0.25  # the cheeks' outward share
 SPREAD = 20.0  # degrees
@@ -51,13 +52,21 @@ def _smooth(x, lo, hi):
     return t * t * (3 - 2 * t)
 
 
+def _neckline(rel: np.ndarray) -> np.ndarray:
+    """1 above the beard's neckline, 0 below (HD Aaron's: none down the throat - run 7 of the clean-input gate had
+    ours to the collarbones): NECKLINE[0] below the eyes under the chin, rising by NECKLINE[1] a metre back."""
+    cut = -NECKLINE[0] + NECKLINE[1] * np.clip(rel[:, 1] - NECKLINE[2], 0.0, None)
+    return _smooth(rel[:, 2] - cut, 0.002, 0.014)
+
+
 def beard_weight(rel: np.ndarray, mouth: np.ndarray | None = None) -> np.ndarray:
     """The beard's soft region at points relative to the eyes' midpoint (m, the character's axes): skin_base.regions'
     formula, and - with the mouth's centre (relative too) - stubble's own: the upper lip up to the nose, the chin, the
-    jaw and the cheeks below the mouth's level, down the throat (HD Aaron's: his cheeks above are clean)."""
+    jaw and the cheeks below the mouth's level, to a neckline under the jaw (HD Aaron's: his cheeks above are clean)."""
     x, y, z = rel[:, 0], rel[:, 1], rel[:, 2]
     front = 1.0 - _smooth(y, 0.06, 0.09)
-    w = front * _smooth(-z, 0.035, 0.050) * (1.0 - _smooth(-z, 0.15, 0.18)) * (1.0 - _smooth(np.abs(x), 0.07, 0.09))
+    w = front * _smooth(-z, 0.035, 0.050) * (1.0 - _smooth(np.abs(x), 0.07, 0.09))
+    w = w * _neckline(rel)
     if mouth is not None:
         side = _smooth(np.abs(x - mouth[0]), 0.018, 0.035)  # 0 over the lip, 1 out on the cheeks
         top = mouth[2] + 0.017 * (1.0 - side) - 0.004 * side  # the moustache's top, the cheeks' at the mouth's level
@@ -129,12 +138,16 @@ def strands(body: bpy.types.Object, seed: int = 5, density: float = DENSITY, len
     cross = np.cross(b - a, c - a)
     area = 0.5 * np.linalg.norm(cross, axis=1)
     normal = cross / np.maximum(2.0 * area, 1e-12)[:, None]
-    w_tri = weight[tris].mean(axis=1)
-    count = rng.poisson(density * 1e4 * area * w_tri)
+    w_max = weight[tris].max(axis=1)  # sampled at each triangle's most, kept by each root's own weight below
+    count = rng.poisson(density * 1e4 * area * w_max)
     which = np.repeat(np.arange(len(tris)), count)
     r1, r2 = rng.uniform(size=len(which)), rng.uniform(size=len(which))
     s = np.sqrt(r1)
-    roots = (1 - s)[:, None] * a[which] + (s * (1 - r2))[:, None] * b[which] + (s * r2)[:, None] * c[which]
+    bary = np.stack([1 - s, s * (1 - r2), s * r2], axis=1)
+    roots = bary[:, :1] * a[which] + bary[:, 1:2] * b[which] + bary[:, 2:] * c[which]
+    own = (bary * weight[tris[which]]).sum(axis=1) * _neckline(roots - mid)  # a big neck triangle across the line
+    kept = rng.uniform(size=len(roots)) < own / np.maximum(w_max[which], 1e-9)
+    roots, which = roots[kept], which[kept]
     n = normal[which]
     tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())
     keep = np.ones(len(roots), bool)
