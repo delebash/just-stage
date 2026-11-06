@@ -96,3 +96,23 @@ fit free to move every vertex, a tenth of the visible lid ring stays more than 1
 follows real faces within ~2 mm (ears 4.4). **The lids are where hm08's topology can't take a real face's shape** -
 the measured case for lid anatomy in the base. (Three scans with clean, simple eye surfaces - lps, scan02, rp_carla -
 fit the whole eye region within ~2 mm p90; the HSRD scans with open, real lids 9-10 mm.)
+
+## 7 · Build step 1, the lid prototype (2026-11-05, measured; scratchpad `lid_proto.py`, renders `.dev/gate/parts/audit/lid_proto_*`)
+
+- **Finding the lid-edge loop:** the edges between skin faces facing away from the eyeball and socket faces facing it,
+  near the eye. Threshold 0.15 on the normal-to-eye dot: 19 edges / 22 vertices an eye (three corner edges missed - a
+  folded flap at the inner corner after shaping); 0.05: open ends; **0.0: closed (46 edges / 45 vertices left, 44 / 43
+  right) with one branch point each - to trim.**
+- **The cut:** Blender's subdivide on the 88 edges crossing that loop (one cut each) adds **88 vertices, appended after
+  the 19,158** (every old index kept), faces 18,564; all 60 shape keys carried and interpolated.
+- **Before shaping (shaped mesh, mm off the eyeball, p10/50/90):** old ring 0.19 / 0.75 / 2.16; new loop, socket side
+  -0.63 / 0.51 / 1.70; new loop, skin side 0.73 / 1.25 / 2.58.
+- **Shaped** (each vertex moved along its own line from the eye's centre; the move added to the basis and every shape
+  key so their offsets stay): lash line 2.0, margin 1.1, eyeball rim 0.25 mm on all 44 triplets; 76 rim edges creased
+  0.6. In flat grey the lid now hugs the eyeball - the crevice gone.
+- **Blink** (MakeHuman's `eyeBlinkLeft/Right` at 1): the new eyeball rim stays 0.3 mm off at the median (min -0.16 mm);
+  the closed lids' gap 2.0 mm median, 3.1 max - **and the original mesh's lid edges leave the same 2.0 mm (max 4.0)**: the
+  face unit's blink doesn't close from our opened eye (EYE_OPEN). The gap belongs to the blink shape (build step 3,
+  expressions), not the new loops.
+- **Next:** trim the branch, re-shape on the closed loop, render subdivided with the margin tinted, measure the band
+  against Aaron's (~36 px at the gate's eye view).

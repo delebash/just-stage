@@ -117,7 +117,7 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
   `makehuman` (1,258 CC0), `mhr` (Meta, 7,110 body scans, Apache-2.0), `gnm` (Google, 253 head components incl. eyes
   and teeth, Apache-2.0; `mhr` reaches hm08 through Anny, whose MakeHuman topology is edited - 13,718 body vertices
   against 13,380 - so the Anny-to-hm08 correspondence is a measured step of its own, pass 1), `scans` (every person our scan route wraps - HSRD heads, Artec's body, the user's finds),
-  `user` (sculpts saved as sliders). **Mixing:** a library of identities (scan identities and saved characters); soft,
+  `user` (sculpts saved as sliders). **Anny** (NAVER, Apache-2.0 / CC0, read 2026-11-05) offers a `makehuman` topology, "unedited quad MakeHuman mesh" - if its vertex order is hm08's (to check), it is a differentiable copy of our base: the Anny-to-hm08 step shrinks to nothing, and our body's shape and pose can be fitted to any scan by gradient descent (the body scans' wrap - the Artec fit that failed rigidly). **Mixing:** a library of identities (scan identities and saved characters); soft,
   overlapping region masks (CC5's part list); per region up to N identities with weights (CC5's wheel), a features /
   proportions mode and a strength (MetaHuman's); ordinary sliders stay outside the mix (CC5's rule); skins blend per
   detail layer.
