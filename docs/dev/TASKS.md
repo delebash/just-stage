@@ -1213,6 +1213,19 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            parts first - if one can't reach the bar, the approach changes. Order: face mid-scale relief (the scans'
            geometry baked to normal maps) -> body relief -> scalp hair (groom or shading) -> eyes -> smile -> the rest
            -> the multi-character run.
+           REALISM IN THE LIVE VIEW IS THE BAR; RECS 1-4 GO (2026-11-05, late), the user, verbatim: "look i want is
+           realism both cc5 and metahumn in their live render look very close to real humans, so as you said realism in
+           live view is the bar with known improvement with cycles render"; "80 -87 is i big margin ... so less is just
+           not acceptable"; not CC5's exact viewport look ("the reaslism is the bar, not the exact same viewport"). Then,
+           on the list (1) the live view's fine detail - why EEVEE shows 0.49 against Cycles' 0.88 on the same content,
+           one factor at a time (texture filtering, film filter, scattering), live frame rate kept, target EEVEE within a
+           few percent of Cycles; (2) the body test - the Artec relief on our Average and Muscular men beside HD Aaron;
+           (3) the eye results into code (photo iris, white, pupil, the lower-lid wet margin, caruncle, thicker lashes)
+           with a set of Commons iris photos; (4) the chest seam (pad the islands, blend the head tile into the torso):
+           "yes i know i told you before you can run any task any program any search download anything you need yes yes
+           yes yes yes!!! stop asking every time!!!" - a standing go for runs, searches and downloads (memory
+           `standing-go-downloads`). The user searches for: bare full-body scans (women, heavier, older, darker skin,
+           more athletic men) and bare hand and foot scans.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
