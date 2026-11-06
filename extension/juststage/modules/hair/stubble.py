@@ -29,18 +29,20 @@ from . import lashes
 NAME = "JustStage stubble"
 #: 2026-11-06, against HD Aaron's Stubble at the gate's mouth and cheek views: denser, shorter, finer, curved, a third
 #: of the hairs grey (the first pass - 60 a cm2, 1.5 mm, straight black - read as scattered black lines over the cheeks)
-DENSITY = 100.0  # hairs a cm2
+DENSITY = 160.0  # hairs a cm2
 #: 2026-11-06, the clean-input gate's cheek view: HD Aaron's Stubble hairs 2.4-4.2 mm, lying close along the skin,
 #: a third of them white - ours (1 mm, rising 45 degrees, grey at melanin 0.25) read as scattered dots, no white
-LENGTH = 3.2  # mm
-RADIUS, TIP = 0.00005, 0.7  # m at the root (a beard hair ~0.1 mm across); a cut hair's blunt end
+#: Gate run 10's lips view: ours thick (0.1 mm), sparse-looking, every way - each strand stood out (chin share >8 L*
+#: darker 0.173 against his 0.061); his finer, denser, flowing one way, reading as a texture
+LENGTH = 2.8  # mm
+RADIUS, TIP = 0.00003, 0.7  # m at the root; a cut hair's blunt end
 RISE = 22.0  # degrees off the skin at the root
-CURL = 25.0  # degrees the hair turns along its length (each its own way)
+CURL = 12.0  # degrees the hair turns along its length (each its own way)
 GREY_SHARE, GREY_MELANIN = 0.25, 0.12  # the grey ones (run 7: a third at 0.04 read as a white beard; his mostly dark)
 NECKLINE = (0.155, 0.7, 0.03)  # m below the eyes under the chin; its rise a metre back; from this far behind them
 GROWTH = np.array([0.0, 0.5, -1.0])  # down and back (-Y is the face's front)
 FLARE = 0.25  # the cheeks' outward share
-SPREAD = 20.0  # degrees
+SPREAD = 10.0  # degrees
 CAVITY = 0.02  # m
 LIPS_AT = 0.4
 MELANIN, REDNESS, MELANIN_SPREAD = 0.9, 0.15, 0.05
