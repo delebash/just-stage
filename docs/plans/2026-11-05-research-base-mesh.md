@@ -116,3 +116,14 @@ fit the whole eye region within ~2 mm p90; the HSRD scans with open, real lids 9
   expressions), not the new loops.
 - **Next:** trim the branch, re-shape on the closed loop, render subdivided with the margin tinted, measure the band
   against Aaron's (~36 px at the gate's eye view).
+
+**On the library's Average man in the gate's stage** (scratchpad `lidlib.py` + `lid_gate.py`; `.dev/gate/parts/proof_lid/`):
+the loop closed by keeping the longest single cycle (40 and 38 edges), 72 triplets shaped, 150 vertices appended (19,308),
+Multires swapped for a level-2 subdivision, the margin tinted wet pink by a `js_margin` point attribute, the occlusion
+refit, **lashes and brows re-made on the new topology** (the old grooms' Surface Deform bind broke: sparse, spiky lashes -
+pass 2's prediction confirmed). **Tilting the rim away from the opening (5, 9 deg) enlarged the eye - rejected.** Lash line
+2.6 / margin 1.3 / rim 0.25 mm, colour (0.45, 0.17, 0.15) at 0.95: **the lower-lid band (rows with a* > 7, b* < 12, L* > 55,
+three columns) 28-50 px, a* 9-14, L* 65-75, against HD Aaron's 26-63 px, a* 12-14, L* ~70 - in his range**
+(`eevee_eye_ours_v2.png`). Still open in step 1: the recess (his eyeball sits behind thick lids), no clipping over the
+eye sliders' range, the blink (MakeHuman's blink shape - step 3), and the production code (face-frame data, tests,
+`baseVersion` 2, library migration, groom re-binding).
