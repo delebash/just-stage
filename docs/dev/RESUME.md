@@ -129,10 +129,12 @@ wrong like this"; "update the docs and fix all of this". Memory `audit-inputs-be
   the skin (`maps._margin_layer`); the photo iris in code (`tools/make_iris.py`, `eyes.shade`); migrations
   (`juststage/migrations/`: v1 -> v2 on load and library add, grooms put back, our lashes re-made); defaults and the
   library's characters on the scan skins; the gate's man = Average man (Scan man A). The upper lid's move dropped
-  (measured the scans' way: already real). RUNNING: `tools/rebuild_scan_skins.py` (six skins), `build_library.py hair`.
-  NEXT: `build_library.py characters` (backup in `.dev/backup/library_2026-11-06/`), then the gate (EEVEE, 21 views)
-  on clean inputs, each proof with its inputs table; then audit rows 10 (body skin), 13 (teeth maps), 11 (subsurface
-  and transmission maps), 3 (a brow base layer), 1 (lashes at distance: measure on/off first).
+  (measured the scans' way: already real). ALSO DONE: the six scan skins rebuilt (`tools/rebuild_scan_skins.py`;
+  stubble found per texel), the men with Artec's torso (`tools/body_scan.py`: wrapped, baked, hair out - rows 10/15);
+  teeth and gums shaded from the MIO photo (row 13); lashes rooted on base v2's lash line; the library's hair and
+  characters rebuilt on base v2 (backup `.dev/backup/library_2026-11-06/`). RUNNING: the gate, EEVEE, 21 views, into
+  `.dev/gate/parts/2026-11-06/` (inputs table: `docs/gate/2026-11-06/report.md`). NEXT: the sheets beside Aaron, the
+  lid band, lashes on/off (scratchpad `lash_onoff.py`), then the gaps the run shows.
 
 ## Active job 0 (before the inputs audit) — the whole character redesigned, base mesh first
 
