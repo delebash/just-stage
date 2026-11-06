@@ -19,9 +19,9 @@ SOURCE (SOURCES):
   `scan_fit.py`), so only the scan's own detail is left.
 - `hsr0042`: the arms with the hands and the legs with the feet (tiles 1003, 1004) from HSRD-100's HSR0042-Body-045
   (CC BY 4.0, Digital Reality Lab; bare but for swim trunks and a cap, barefoot, near A-pose) - the gate's hand and
-  foot views (2026-11-06): ours flat beside HD Aaron's veins, tendons and knuckle creases. Its arms hang ~20 deg out
-  against our ~45: each limb is turned about its shoulder or hip to the scan (searched), its segments then aligned
-  rigidly and blended at the joints, then wrapped (fit_limbs). The swim trunks are left out by their colour.
+  foot views (2026-11-06): ours flat beside HD Aaron's veins, tendons and knuckle creases. Fitted through Anny
+  (fit_anny: its pose and body sliders by gradient descent, then the wrap) - run its fit in `.dev/venv-rdf` (torch,
+  anny). The swim trunks are left out by their colour; the scan's detail is taken only where the fit lies close.
 Writes `.dev/facetest/body/[SOURCE]/` (work files) and `extension/juststage/data/generated/skin/body_<tile>_relief.png`,
 `body_<tile>_colour.png` with `body_<tile>.json`."""
 
@@ -44,7 +44,7 @@ SOURCES = {
               "licence": "CC BY 3.0 Unported ('Body scan by Artec 3D')"},
     "hsr0042": {"scan": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0042-Body-045" / "x" / "HSR0042-Body-045_LOD0.obj",
                 "image": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0042-Body-045" / "x" / "HSR0042-Body-045_LOD0_u0_v0_diffuse.png",
-                "scale": 1.0, "tiles": (2, 3), "fit": "limbs", "work": WORK_ROOT / "hsr0042",
+                "scale": 1.0, "tiles": (2, 3), "fit": "anny", "work": WORK_ROOT / "hsr0042",
                 "source": "HSRD-100, HSR0042-Body-045 (huggingface.co/datasets/digitalrealitylab/HSRD-100)",
                 "licence": "CC BY 4.0 (Digital Reality Lab)"},
 }  # fmt: skip
@@ -52,18 +52,14 @@ SIZE = 2048
 RELIEF_HP_MM = 40.0  # the relief kept below this scale (the fit's leftover above it)
 COLOUR_HP_MM = 60.0  # the colour's detail around 1: its regional tone above this is the character's
 EDGE_FADE = 96.0  # texels (~4 cm) to full strength from the scan's and the tile island's edges
-#: the limbs' joints (MakeHuman's joint helpers, each a vertex group of the body): per side, the arm's and the leg's
-ARM = ("shoulder", "elbow", "hand", "finger-3-4")
-LEG = ("upper-leg", "knee", "ankle", "toe-3-3")
-TRUNK = ("pelvis", "neck", "head")
-#: each joint's swing in the pose search (degrees each way): shoulder / elbow / wrist, hip / knee / ankle
-SWING = {"arm": (70.0, 45.0, 30.0), "leg": (35.0, 35.0, 20.0)}
-FLOOR = 0.006  # m: the scan's points below this (its floor sheet) are left out of the pose search
+FLOOR = 0.006  # m: the scan's points below this (its floor sheet) are left out of the fit
+#: the Anny fit: scan points used, steps, the robust distance's scale (m), the pose's pull back to rest
+ANNY_SCAN_POINTS, ANNY_STEPS, ANNY_ROBUST, ANNY_POSE_REG = 60000, 400, 0.02, 1e-4
 #: the fit's gap (m) up to which a texel takes the scan's detail fully, and past which none (limbs: hands, forearms and
 #: feet lie within 3-10 mm after the wrap; upper arms, thighs and shins 9-16 mm, p90 30-56 - 2026-11-06)
 FIT_GAP = (0.006, 0.012)
 #: a fabric texel (the swim trunks, black): darker than this and greyer than this saturation
-FABRIC_VALUE, FABRIC_SATURATION = 0.10, 0.25
+FABRIC_VALUE, FABRIC_SATURATION = 0.15, 0.25  # linear; HSR0042: skin S p50 0.71, the trunks under 0.2
 
 
 def export(src: str = "artec") -> None:
@@ -188,8 +184,8 @@ def fit(src: str = "artec") -> None:
     spec = SOURCES[src]
     work = spec["work"]
     o, s = np.load(work / "ours.npz"), np.load(work / "scan.npz", allow_pickle=True)
-    if spec["fit"] == "limbs":
-        return fit_limbs(src, o, s)
+    if spec["fit"] == "anny":
+        return fit_anny(src, o, s)
     co, tris, tile = o["co"], o["tris"], o["tile"]
     sv, sf = s["co"].astype(np.float64), s["faces"]
     torso_tris = tris[tile == spec["tiles"][0]]
@@ -202,103 +198,87 @@ def fit(src: str = "artec") -> None:
     np.savez(work / "fit.npz", place=place, fitted=fitted, moved_v=tv)
 
 
-def _segment_labels(co, verts, chains):
-    """Each vertex's nearest bone segment (point-to-segment distance) among `chains` (lists of joint points): (labels
-    as (chain, segment) indices, the distance, the share t along its segment)."""
-    best = np.full(len(verts), np.inf)
-    lab = np.zeros((len(verts), 2), int)
-    tt = np.zeros(len(verts))
-    p = co[verts]
-    for ci, chain in enumerate(chains):
-        for si in range(len(chain) - 1):
-            a, b = chain[si], chain[si + 1]
-            ab = b - a
-            t = np.clip(((p - a) @ ab) / max(ab @ ab, 1e-12), 0.0, 1.0)
-            d = np.linalg.norm(p - (a + t[:, None] * ab), axis=1)
-            better = d < best
-            best[better], tt[better] = d[better], t[better]
-            lab[better] = (ci, si)
-    return lab, best, tt
+def fit_anny(src: str, o, s) -> None:
+    """Our body onto the scan through Anny (NAVER's differentiable MakeHuman: the same 19,158 vertices in hm08's order
+    - its head within 6 mm of ours index for index after a rigid fit, 2026-11-06): its 163 bones' turns, its six body
+    sliders and a global placement fitted by gradient descent to a robust two-way nearest-point distance between our
+    skin and the scan (the matches renewed every step), then the non-rigid wrap of the arms and legs. (A hand-made
+    joint-by-joint pose search before it left the upper arms, thighs and shins 13-16 mm off - pose without shape.)"""
+    import os
 
-
-def _rotation(axis, angle):
-    axis = axis / np.linalg.norm(axis)
-    k = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
-    return np.eye(3) + np.sin(angle) * k + (1 - np.cos(angle)) * (k @ k)
-
-
-def fit_limbs(src: str, o, s) -> None:
-    """Our arms and legs onto the scan's: placed rigidly by the torso, then each limb posed down its chain - at each
-    joint (shoulder or hip, elbow or knee, wrist or ankle) everything below it turned by two angles (about the body's
-    front-to-back and side-to-side axes) to lie closest to the scan, searched coarse then fine, blended into the joint
-    over the first fifth of its segment - then all four wrapped. (Our A-pose bends the forearm 19 cm forward; the
-    scan's arm hangs straight down: a turn at the shoulder alone left them 8 cm apart.)"""
+    os.environ.setdefault("WARP_CACHE_PATH", str(ROOT / ".dev" / "cache" / "warp"))
+    import anny
+    import roma
+    import torch
     from scipy.spatial import cKDTree
 
     spec = SOURCES[src]
     work = spec["work"]
     co, tris, tile = o["co"].astype(np.float64), o["tris"], o["tile"]
-    joints = dict(zip(o["joint_names"].tolist(), o["joint_co"], strict=True))
+    n_hm08 = 19158
     sv, sf = s["co"].astype(np.float64), s["faces"]
     torso_tris = tris[tile == 1]
-    place = _place_rigid(co, torso_tris, sv, sf)
+    place = _place_rigid(co, torso_tris, sv, sf)  # the scan into our frame (scale to our height, the torso on ours)
     svp = (np.c_[sv, np.ones(len(sv))] @ place.T)[:, :3]
-    tree = cKDTree(svp[svp[:, 2] > FLOOR])  # the scan's floor sheet out (it drew the feet onto it)
+    target = svp[svp[:, 2] > FLOOR]
+    rng = np.random.default_rng(0)
+    target = target[rng.choice(len(target), min(ANNY_SCAN_POINTS, len(target)), replace=False)]
+    skin = np.unique(tris)
+    skin = skin[skin < n_hm08]
+    dev = "cuda" if torch.cuda.is_available() else "cpu"
+    model = anny.Anny(rig="makehuman", topology="makehuman").to(device=dev, dtype=torch.float32)
+    labels = list(model.phenotype_labels)
+    rot = torch.zeros(model.bone_count, 3, device=dev, requires_grad=True)
+    pheno = torch.zeros(len(labels), device=dev, requires_grad=True)  # logits: 0.5 at the start
+    with torch.no_grad():
+        pheno[labels.index("gender")] = 4.0  # a man
+    shift = torch.zeros(3, device=dev, requires_grad=True)
+    tgt = torch.tensor(target, dtype=torch.float32, device=dev)
+    tgt_tree = cKDTree(target)
+    skin_t = torch.tensor(skin, device=dev)
+    eye = torch.eye(4, device=dev)
+
+    def body():
+        pose = eye.repeat(1, model.bone_count, 1, 1).clone()
+        pose[0, :, :3, :3] = roma.rotvec_to_rotmat(rot)
+        ph = {k: torch.sigmoid(pheno[i])[None] for i, k in enumerate(labels)}
+        v = model(pose_parameters=pose, phenotype_kwargs=ph)["vertices"][0]
+        return v, ph
+
+    with torch.no_grad():  # Anny's frame (centred) onto ours: its skin's centre and its feet on the scan's
+        v0, _ = body()
+        sk = v0[skin_t].cpu().numpy()
+        start = np.array([target[:, 0].mean() - sk[:, 0].mean(), target[:, 1].mean() - sk[:, 1].mean(),
+                          target[:, 2].min() - sk[:, 2].min()])  # fmt: skip
+        shift[:] = torch.tensor(start, dtype=torch.float32, device=dev)
+    opt = torch.optim.Adam([{"params": [rot], "lr": 0.01}, {"params": [pheno], "lr": 0.05},
+                            {"params": [shift], "lr": 0.003}])  # fmt: skip
+    sigma2 = ANNY_ROBUST**2
+    for it in range(ANNY_STEPS):
+        opt.zero_grad()
+        v, _ph = body()
+        ours = v[skin_t] + shift
+        on = ours.detach().cpu().numpy()
+        _, near = tgt_tree.query(on)  # ours -> the scan
+        _, back = cKDTree(on).query(target)  # the scan -> ours
+        d1 = ((ours - tgt[torch.tensor(near, device=dev)]) ** 2).sum(-1)
+        d2 = ((tgt - ours[torch.tensor(back, device=dev)]) ** 2).sum(-1)
+        loss = (d1 / (d1 + sigma2)).mean() + (d2 / (d2 + sigma2)).mean() + ANNY_POSE_REG * (rot**2).sum()
+        loss.backward()
+        opt.step()
+        if it % 50 == 0 or it == ANNY_STEPS - 1:
+            print(f"ANNY step {it}: loss {loss.item():.4f}, ours->scan p50 {np.sqrt(d1.detach().median().item()) * 1000:.1f} mm",
+                  flush=True)  # fmt: skip
+    with torch.no_grad():
+        v, ph = body()
+        fitted_all = (v + shift).cpu().numpy().astype(np.float64)
+    print("ANNY body:", {k: round(float(x.item()), 2) for k, x in ph.items()})
+    posed = co.copy()
+    posed[:n_hm08] = fitted_all  # base v2's appended lid vertices stay where they were (not on these tiles)
     limb_tris = tris[np.isin(tile, spec["tiles"])]
     lv = np.unique(limb_tris)
-    trunk = [joints[f"joint-{n}"] for n in TRUNK]
-    chains = [trunk]
-    for side in ("l", "r"):
-        chains.append([joints["joint-neck"], joints[f"joint-{side}-shoulder"]])
-        chains.append([joints[f"joint-{side}-{n}"] for n in ARM])
-        chains.append([joints["joint-pelvis"], joints[f"joint-{side}-upper-leg"]])
-        chains.append([joints[f"joint-{side}-{n}"] for n in LEG])
-    lab, _dist, tt = _segment_labels(co, lv, chains)
-    posed = co.copy()
-    pts = co[lv].copy()
-    axes = (np.array([0.0, 1.0, 0.0]), np.array([1.0, 0.0, 0.0]))  # front-to-back, side-to-side
-    limbs = [(2, "l-arm"), (4, "l-leg"), (6, "r-arm"), (8, "r-leg")]
-    rng = np.random.default_rng(1)
-    for chain_i, name in limbs:
-        chain = [c.copy() for c in chains[chain_i]]
-        spans = SWING[name[2:]]
-        mine = lab[:, 0] == chain_i
-        for k in range(len(chain) - 1):
-            below = mine & (lab[:, 1] >= k)
-            # the joint's own segment blends in over its first fifth; the segments past it move whole
-            w = np.where(lab[:, 1] > k, 1.0, np.clip(tt / 0.2, 0.0, 1.0)) * below
-            w = w * w * (3 - 2 * w)
-            # each segment below the joint weighs the same (the hand's 1,577 vertices outweighed the upper arm's 172)
-            groups = []
-            for seg in range(k, len(chain) - 1):
-                on = np.flatnonzero(mine & (lab[:, 1] == seg) & ((seg > k) | (tt > 0.3)))
-                if len(on) >= 20:
-                    groups.append(rng.choice(on, min(300, len(on)), replace=False))
-            if not groups:
-                continue
-            root = chain[k]
-
-            def turned(a, b, root=root):
-                return _rotation(axes[1], np.radians(b)) @ _rotation(axes[0], np.radians(a))
-
-            best = (np.inf, 0.0, 0.0)
-            for span, step in ((spans[k], 5.0), (6.0, 1.0)):  # coarse within the joint's swing, then fine
-                ca, cb = best[1], best[2]
-                for a in np.arange(ca - span, ca + span + 0.1, step):
-                    for b in np.arange(cb - span, cb + span + 0.1, step):
-                        if max(abs(a), abs(b)) > spans[k] + 1e-6:
-                            continue
-                        r = turned(a, b)
-                        score = float(np.mean([np.median(tree.query((pts[g] - root) @ r.T + root)[0]) for g in groups]))
-                        if score < best[0]:
-                            best = (score, a, b)
-            r = turned(best[1], best[2])
-            moved = (pts - root) @ r.T + root
-            pts = pts * (1 - w[:, None]) + moved * w[:, None]
-            for j in range(k + 1, len(chain)):
-                chain[j] = (chain[j] - root) @ r.T + root
-            print(f"POSE {name} joint {k}: {best[1]:+.0f} / {best[2]:+.0f} deg, median gap {best[0] * 1000:.1f} mm")
-    posed[lv] = pts
+    d, _ = tgt_tree.query(posed[lv])
+    print(f"ANNY limbs: to the scan p50 {np.median(d) * 1000:.1f} / p90 {np.percentile(d, 90) * 1000:.1f} mm")
     idx = -np.ones(len(co), int)
     idx[lv] = np.arange(len(lv))
     fitted = _wrap(posed[lv], idx[limb_tris], svp, sf, "limbs")
@@ -382,7 +362,7 @@ def bake(src: str = "artec") -> None:
             px = np.array(img.pixels[:], np.float32).reshape(SIZE, SIZE, 4)[::-1, :, :3]
             np.save(work / f"bake_{kind.lower()}_{1001 + number}.npy", px)
             print(f"BAKED {kind} {1001 + number}")
-        if spec["fit"] == "limbs":  # the fit's gap on this tile (our own surface's attribute, emitted)
+        if spec["fit"] == "anny":  # the fit's gap on this tile (our own surface's attribute, emitted)
             img = bpy.data.images.new("GAP", SIZE, SIZE, alpha=False, float_buffer=True)
             img.colorspace_settings.name = "Non-Color"
             g_node.image = img
