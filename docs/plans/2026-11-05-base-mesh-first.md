@@ -25,6 +25,21 @@ instead of tracing to the mesh. The proof order ranked "face relief" riskiest; t
 hm08 at level 2 carries ~16x its faces - CC5's HD density. What hm08 lacks is not density but **anatomy at level 0**:
 measured, the lid margin and the caruncle; unknown until audited, the rest.
 
+## The aim: better than both — the best of CC5 and MetaHuman, part by part
+
+The user, 2026-11-05: "and what about metahuman the idea is to make it even better than cc5 take best of cc5 and
+metahuman that inlcudes base mesh imporvements and any thing else". What each does best (our research files; each
+re-checked in Phase 1 against the real assets - Aaron in Blender, a MetaHuman in the user's Unreal):
+
+| Area | CC5 (best known) | MetaHuman (best known) | JustStage takes / beats |
+|---|---|---|---|
+| Base mesh | modelled lid margins and lid ledge, mouth and nostril volume (audit sheet 1, 2026-11-05); 17,683 polygons at the slider level, SubD 1-2 for HD | 24,000-vertex head at LOD0 (denser face for deformation); separate eye layers incl. a `cartilage` (inner-corner) mesh and `saliva` | CC5's anatomy and MetaHuman's face density where the audit shows the need |
+| Sliders | thousands of morphs incl. HD Ultimate Morphs (displacement at SubD 1-2); Actor Mixer | identity blending from a scan-based preset library | MakeHuman's 1,258 + MHR bodies (7,110 scans) + GNM heads (253) + our scans + HD maps; mixing over identities |
+| Face rig | facial profiles, expression wrinkles (regions and wrinkle sets) | DNA rig: 713 joints, 669 blend shapes (LOD0), animated wrinkle maps, RigLogic | the DNA standard via OpenRigLogic (spec §2) on our mesh |
+| Skin | SkinGen layer stack (muscle, sinew, veins, blemish ... ), micro-normal licensed from Texturing.XYZ, Digital Human Shader | scan-trained albedo, region masks, micro detail | the proven scan route (face equal on six characters) + layer stack + HD maps; Cycles film render (neither ships a path tracer) |
+| Eyes | Digital Human eye shader, occlusion and tearline shells | eyeshell / eyeEdge / cartilage meshes, refraction model | measured today: photo iris, white, margin, caruncle; parallax iris (NOT STANDARD, waits) |
+| Hair | cards + HD hair | strand grooms (Unreal groom) | strand grooms with Blender's hair nodes; cards for the live view (step 3) |
+
 ## The plan — five phases, each gated by a measured check
 
 ### Phase 1 · The anatomy audit (research; no code) — first
