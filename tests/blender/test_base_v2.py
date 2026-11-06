@@ -165,3 +165,25 @@ def test_the_eyes_openings_are_found_as_on_hm08(opened):
         assert cid
     finally:
         _remove(v1)
+
+
+def test_the_lash_line_keeps_the_margins_width(opened):
+    """The clean-input gate's eye view (2026-11-06): under the iris our lower lash line stood up to 5.2 mm off the
+    eyeball, the next row 0.8 mm (the opened eye's sliders push the lid's skin out; the contact key only held the rim
+    and a minimum) - a swollen glossy roll with a kink. The margin keeps base v2's width: the lash line no farther than
+    the record's, the skin beyond carried with it (no step)."""
+    _, body = opened
+    _rims, lashes = _rim_gaps(body)
+    most = base.record()["radii_mm"]["lash"] / 1000
+    assert lashes.max() <= most + 0.00005
+    rows = base.rows()
+    co = build.shaped_coords(body)
+    taken = set(rows.ravel().tolist()) - {-1}
+    edges = np.empty(len(body.data.edges) * 2, np.int64)
+    body.data.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    lash = set(rows[rows[:, 0] >= 0, 0].tolist())
+    beyond = {int(b) for a, b in edges.tolist() + edges[:, ::-1].tolist() if a in lash and b not in taken}
+    # the first ring of skin beyond the lash line lies within 2.5 mm of it (a step would leave it standing off)
+    near = [min(np.linalg.norm(co[v] - co[a]) for a in lash) for v in beyond]
+    assert max(near) < 0.0035

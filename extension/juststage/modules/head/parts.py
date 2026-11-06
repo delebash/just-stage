@@ -114,6 +114,11 @@ RIM_GAP = 0.00025  # base v2's rim off the eyeball (modules/body/base.py: the pr
 #: 2026-11-06: 38 of the 68 eye targets pressed the lash line up to 0.3 mm into the eyeball - the clearance key only
 #: moves skin facing outward, and the lash line sits on the lid's edge)
 LASH_MIN = 0.001
+#: and its most: base v2's own lash line (the record's radii, 2.6 mm) - the clean-input gate's eye view (2026-11-06):
+#: the opened eye's sliders push the lower lid's skin out, its lash line stood up to 5.2 mm off the eyeball under the
+#: iris (the next row 0.8 mm), the margin a swollen glossy roll with a kink beside HD Aaron's ledge (1.0-2.3 mm seen);
+#: the lash line's move is carried into the next two rings of lid skin (CARRY) so no step is left
+CARRY = (0.6, 0.25)
 
 
 def eyelid_contact(character: bpy.types.Object) -> int:
@@ -151,12 +156,13 @@ def eyelid_contact(character: bpy.types.Object) -> int:
 
         if rim >= 0:
             push[rim] = to(rim, RIM_GAP)
-        if lash >= 0:
-            lash_gap = max(off(lash), LASH_MIN)  # a lid pressed onto the eyeball keeps its margin's width
+        if lash >= 0:  # a lid pressed onto the eyeball or pushed off it keeps its margin's width
+            lash_gap = min(max(off(lash), LASH_MIN), base.record()["radii_mm"]["lash"] / 1000)
             push[lash] = to(lash, lash_gap)
         else:
             lash_gap = base.record()["radii_mm"]["lash"] / 1000
         push[margin] = to(margin, (lash_gap + RIM_GAP) / 2)
+    _carry(character, rows, push)
     if key is None:
         key = character.shape_key_add(name=base.CONTACT, from_mix=False)
     ref = np.empty(len(character.data.vertices) * 3, np.float32)
@@ -164,6 +170,33 @@ def eyelid_contact(character: bpy.types.Object) -> int:
     key.data.foreach_set("co", (ref.reshape(-1, 3) + push.astype(np.float32)).ravel())
     key.value = 1.0
     return len(rows)
+
+
+def _carry(character: bpy.types.Object, rows: np.ndarray, push: np.ndarray) -> None:
+    """The lash line's moves carried into the lid's skin beyond it: each ring outward (by the mesh's edges, away from
+    the margin's rows) takes CARRY's share of the mean move of its neighbours in the lash line."""
+    edges = np.empty(len(character.data.edges) * 2, np.int64)
+    character.data.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    both = np.vstack([edges, edges[:, ::-1]])
+    taken = np.zeros(len(push), bool)
+    taken[rows[rows >= 0]] = True
+    ring = np.zeros(len(push), bool)
+    ring[rows[rows[:, 0] >= 0, 0]] = True
+    source = push.copy()
+    for share in CARRY:
+        reach = both[ring[both[:, 0]] & ~taken[both[:, 1]]]
+        if not len(reach):
+            break
+        total = np.zeros_like(push)
+        np.add.at(total, reach[:, 1], source[reach[:, 0]])
+        count = np.bincount(reach[:, 1], minlength=len(push))
+        nxt = count > 0
+        push[nxt] = share * total[nxt] / count[nxt, None]
+        source = np.zeros_like(push)
+        source[nxt] = total[nxt] / count[nxt, None]  # the lash line's own move, shared on by its distance in rings
+        taken |= nxt
+        ring = nxt
 
 
 def refit(character: bpy.types.Object) -> None:
