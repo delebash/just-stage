@@ -1,4 +1,4 @@
-# The character, redesigned — every piece, verified (DRAFT, in progress 2026-11-05)
+# The character, redesigned — every piece, verified (for the user's approval, 2026-11-05)
 
 The user, 2026-11-05 (TASKS "THE BASE MESH FIRST; THE WHOLE CHARACTER REDESIGNED"): "really think on the design and make
 sure you have it correct and ll the pieces correct, think adverserially multiple times on this desing of the charctaer
@@ -87,7 +87,8 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
   MetaHuman's role) once the margin is real geometry; the margin's pink, wet look moves to the skin (a margin region on
   the new loops' UVs), the caruncle likewise (the appended pocket plus a wet pink region) - MetaHuman's `cartilage`
   role. **Teeth, gums, tongue:** GNM's geometry and its 80 teeth components (Apache-2.0); shape variety from Poseidon3D's
-  dental scans (CC BY 4.0) wrapped on; colour from MIO's photos (CC BY 4.0). **Lashes and brows:** our strand
+  dental scans (CC BY 4.0) wrapped on; colour from MIO's photos (CC BY 4.0); a thin wet `saliva` film on teeth and lips
+  (MetaHuman's layer; pass 6). **Lashes and brows:** our strand
   generators (lashes at 180 upper, 0.08 mm radius, melanin 1.0 - measured to make a lash line).
 - **Attack:** the eye's measured results came from a test shader - they become the eye module's own code with its own
   tests; the iris photo shows one photo's structure on every character until the library has several per colour.
@@ -112,7 +113,8 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
   in its scan database; skin picked from a list [page].
 - **Ours (spec §1.2-1.4):** shape spaces on the level-0 base, extended to the appended vertices by the face-frame rule:
   `makehuman` (1,258 CC0), `mhr` (Meta, 7,110 body scans, Apache-2.0), `gnm` (Google, 253 head components incl. eyes
-  and teeth, Apache-2.0), `scans` (every person our scan route wraps - HSRD heads, Artec's body, the user's finds),
+  and teeth, Apache-2.0; `mhr` reaches hm08 through Anny, whose MakeHuman topology is edited - 13,718 body vertices
+  against 13,380 - so the Anny-to-hm08 correspondence is a measured step of its own, pass 1), `scans` (every person our scan route wraps - HSRD heads, Artec's body, the user's finds),
   `user` (sculpts saved as sliders). **Mixing:** a library of identities (scan identities and saved characters); soft,
   overlapping region masks (CC5's part list); per region up to N identities with weights (CC5's wheel), a features /
   proportions mode and a strength (MetaHuman's); ordinary sliders stay outside the mix (CC5's rule); skins blend per
@@ -136,7 +138,7 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
   the best per shape wins; all extended to the appended loops with the contact step. **Wrinkles:** RigLogic's animated
   maps (3 colour + 3 normal variants, MetaHuman's model); their weights from mesh tension (Raman et al., MIT code);
   their content generated per character by the published orientation-bin method (Weiss et al. EG 2024, CC-BY paper -
-  our code) because no open scanned wrinkle library exists.
+  our code - after a patent check, it being Disney research) because no open scanned wrinkle library exists.
 - **Attack:** no source ranks the expression sets - so the score decides; FACSHuman's LGPL is a label (data in a GPL
   app); generated wrinkles may read synthetic - the gate's smile and brow views judge them against Aaron's set.
 
@@ -189,12 +191,68 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
   live view, level 2 for film; hair LODs (piece 9); DNA LODs 0-3 first. Export per spec (USD package, FBX + sidecar,
   glTF/VRM), HD detail baked to per-level normal and displacement maps.
 
+## Adversarial passes (each from a new angle; what it found and what it changed)
+
+**Pass 1 - each piece alone.**
+- Base mesh: the eye's look against Aaron is not only the missing margin - his eyeball sits **recessed** behind thick
+  lids; ours bulges forward (audit sheet 1). That is shape: the base's lid thickness and the eyeball's depth in the
+  orbit. *Changed:* piece 1's lid work includes the recess, set from the 20 real faces our scan route already fitted
+  (their eye depth measured, not guessed).
+- Sliders and correctives reach MakeHuman's mesh "through Anny" - but Anny's MakeHuman topology is an **edited**
+  figure (13,718 body vertices against hm08's 13,380; `2026-10-29-research-05-bases-pass2.md`). *Changed:* pieces 5 and
+  7 name the Anny-to-hm08 correspondence as a step of its own, measured (it may be near-identity plus edits).
+- Wrinkles: Weiss et al.'s orientation-bin method is Disney research - a patent may cover it. *Changed:* piece 6 checks
+  for one before code (as for the mixer).
+
+**Pass 2 - how the pieces fit (mesh -> UVs -> sliders -> rig -> textures -> hair -> library).**
+- Appended vertices leave every old index, UV and `.mhclo` binding valid: clothes, eyes, teeth and the occlusion
+  refit (it finds the lids' opening by ray casting each time) keep working. Per-vertex masks (face regions, mouth,
+  margin) need values on the new vertices - their tools re-run.
+- **Grooms are bound to the body by Surface Deform, whose bind breaks when the vertex count changes.** *Changed:* the
+  build re-binds every groom on the new base; library hair assets are migrated.
+- **The library** (characters, skins, hair) is hm08-based. *Changed:* step 1 ships the vertex map (spec §1.1) and a
+  library migration, with the backup first.
+- The DNA's geometry layer must list the new vertices; it is built from our mesh, so it follows.
+
+**Pass 3 - my own claims.**
+- "The live view matches the film render" rests on one view of one character (the cheek, our Average man). *Changed:*
+  the claim is scoped so, and the gate's face and torso views on two more characters are added to the check.
+- "The lids are the only topology gap" rests on head scans: hands, feet and torso were judged by eye only (no body-scan
+  fits yet). *Changed:* build step 2 measures them (the Artec body fitted for torso and arms; hand and foot scans when
+  found); no claim for them until then.
+- "Maya's Bake Topology To Targets is the industry tool" - the agent's [page]; kept, marked.
+
+**Pass 4 - the tests that would catch a mistake.**
+- Base: every target loads and moves each appended vertex where Blender's own loop-cut interpolation would put it (a
+  reference built in Blender for a sample of targets); a full blink closes with no gap and no clip (lid-to-lid and
+  margin-to-eyeball distances); no margin vertex inside the eyeball over every eye slider's range; the margin band
+  measured against Aaron's (~36 px at the gate's eye view); creases keep both rims at level 2.
+- Seams: every tile border rendered at the gate's views; colour step across each border (Delta E) under a threshold.
+- Expressions: each candidate shape's distance to real expression scans after fitting (the scoring harness).
+- Hair: frame time on the 2070 Super; EEVEE against Cycles on the hair views (bands, coverage).
+
+**Pass 5 - the neighbours this doesn't touch.**
+- Tests asserting hm08's 19,158 vertices change with `baseVersion` 2. The face-test tools export the head at level 1
+  (`head_export.npz`): re-exported; the scan skins are UV-based and stay valid. Exports (USD, FBX, glTF) read the mesh
+  as it is. The Unreal plugin's MetaHuman names are untouched.
+
+**Pass 6 - what CC5 or MetaHuman have that this design leaves out.**
+- MetaHuman's `saliva` film on the teeth and lips - *added* to piece 3 for the mouth step (a wet film like the
+  tearline). CC5's Headshot (photo to head) is a feature, not the character model - out of scope here (the scan route
+  is ours). Clothing, accessories and makeup layers stay as the spec has them.
+
+**Pass 7 - the riskiest assumption, and whether the order tests it first.**
+- That an appended lid with face-frame transfer and a contact step blinks and looks like Aaron's. It is build step 1,
+  with its measured checks and an escalation (the head on a new topology). A fresh look at passes 1-6 against this
+  order found nothing further to change.
+
 ## Build order (after the user's approval of this design)
 
-1. **The base mesh's lids** - the appended margin and caruncle, the face-frame transfer, the contact step; checked
-   against Aaron's margin band and through a blink. If it fails: escalate (piece 1).
-2. **The audit's remaining regions** (inner lips / mouth bag, nail beds, nostrils, ears) measured the same way; loops only
-   where measured.
+1. **The base mesh's lids** - the appended margin and caruncle, the recess, the face-frame transfer, the contact step;
+   checked against Aaron's margin band and through a blink (pass 4's tests). If it fails: escalate (piece 1). With it:
+   the vertex map, the library migration (backup first), groom re-binding (pass 2).
+2. **The audit's remaining regions** (inner lips / mouth bag, nail beds, nostrils, ears; torso and arms from the Artec
+   body fit; hands and feet when scans are found) measured the same way; loops only where measured.
 3. **Expressions and the face rig** on the final base (the scored sets, wrinkles).
 4. **Sliders:** `mhr`, `gnm`, `scans` wrapped onto the base; the mixer (after the patent read).
 5. **Textures** re-run on the base, seam-continuous; eyes into code; body HD maps.
