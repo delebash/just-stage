@@ -150,9 +150,10 @@ def mark(me: bpy.types.Mesh) -> None:
     crease = me.attributes.get("crease_edge") or me.attributes.new("crease_edge", "FLOAT", "EDGE")
     crease.data.foreach_set("value", np.where(on, CREASE, 0.0).astype(np.float32))
     share = np.zeros(len(me.vertices), np.float32)
-    share[r[:, 1]] = 1.0
+    # wet pink at the rim on the eyeball, fading across the margin to the lash line's plain skin (the clean-input gate,
+    # 2026-11-06: margin and rim alike at 1 read as a swollen glossy rim beside HD Aaron's thin wet line)
+    share[r[:, 1]] = 0.45
     share[r[r[:, 2] >= 0, 2]] = 1.0
-    share[r[r[:, 0] >= 0, 0]] = 0.35  # the lash line: the margin's pink fades into the lid's skin across it
     share[record().get("caruncle", [])] = 1.0  # the inner corner's wet pink tissue
     attr = me.attributes.get(MARGIN_ATTR) or me.attributes.new(MARGIN_ATTR, "FLOAT", "POINT")
     attr.data.foreach_set("value", share)

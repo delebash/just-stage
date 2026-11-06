@@ -22,6 +22,8 @@ def run(objects) -> list[str]:
         if v2_base.needed(obj):
             v2_base.migrate(obj)
             changed.append(obj.name)
+        elif v2_base.is_v2(obj):
+            v2_base.remark(obj)  # the lid's marks (creases, the margin's and caruncle's shares) as this code sets them
     return changed
 
 

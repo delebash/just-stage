@@ -41,3 +41,16 @@ def migrate(body: bpy.types.Object) -> None:
         parts.refit(body)
         if any(o.name.removeprefix(f"{body.name}.").startswith(lashes.NAME) for o in grooms):
             lashes.make(body)  # replaces the part
+
+
+def is_v2(body: bpy.types.Object) -> bool:
+    from ..modules.body import base
+
+    return body.juststage.base_version >= base.VERSION and len(body.data.vertices) == base.record()["vertices"]
+
+
+def remark(body: bpy.types.Object) -> None:
+    from ..modules.body import base
+
+    base.mark(body.data)
+    body.data.update()
