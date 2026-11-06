@@ -4,6 +4,27 @@
 > Decisions are recorded as the exact text the user approved. A tracker line is a claim, not
 > evidence. Facts live in [`RESEARCH.md`](RESEARCH.md).
 
+## THE DEEP READ, THEN ONE PLAN [2026-11-06] — active
+
+The user, 2026-11-06: "i think you should look at all the reserach finish anything that should be finished,
+consilidate our research into eithier 1 doc or multiple docs with index ... finazlize the actaul plan doc that you work
+from with our final best method from all the reserach"; on my rec: "do a deeper read then just qucikl read you keep
+missing things ... do not take easy way or quick wat out"; "you rec do it right do it deep, think dversiraly before
+each action, think again adversierly on this rec before you do it, now go!"
+
+The rec approved, as given: (1) an inventory - every doc read in full, by job: every method with its file:line, its
+evidence (page read / snippet / measured), the user's decisions verbatim, whether the code follows it; (2) only the
+real gaps researched, each through the search-mistakes list - done when every job has a method read at its source or
+measured, or "searched X, nothing better than Y"; (3) one plan doc worked from (the character design upgraded, ~500
+lines, per part: the final method, why best, its code, status, the gate measure), RESUME pointing only to it, kept in
+the same commit as any method change; (4) RESEARCH.md made the index of facts by topic, nothing deleted (every line
+checked to survive); (5) TASKS: open work only, decisions to an append-only log - WAITS for the user's word; (6) no new
+app work while 1-4 run but checking run 11's results. The deep-read method: every file read whole (a checklist ticks
+each); ~8 readers of ~4,000 lines each quoting whole passages with file:line ranges and coverage proof; a second,
+independent read of the skin, the eyes and lids, and the hair; I re-read every cited passage of each job's final method
+before it enters the plan; the code checked by reading its modules whole. Work files: `.dev/audit/2026-11-06/`
+(CHECKLIST.md, G1-G10.md).
+
 ## Research: what JustStage is built on, its features and its standards — the go [2026-10-29]
 
 GO:     the user, verbatim (2026-10-29, the opening request): "i want to start working on a clone of reallusion

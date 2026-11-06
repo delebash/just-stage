@@ -103,7 +103,19 @@ re-measured on clean inputs (RESEARCH "Painted hair in our inputs"; the active j
   is read before its plan** (the user, 2026-11-05: "it was already part of the standard to match each part").
 - Memory: the index (loaded automatically) and `search-mistakes` before any search, rec or plan.
 
-## Active job (NOW, 2026-11-06) — THE INPUTS FIRST: every input of the character audited against CC5's way, fixed, then re-measured
+## Active job (NOW, 2026-11-06, from ~13:00) — THE DEEP READ, THEN ONE PLAN (TASKS, the first entry - read it)
+
+The user stopped app work to fix how I work: every doc read in full by job, the real gaps researched, one plan doc
+(the final best method per part) worked from, RESEARCH made an index. **Read first:** TASKS "THE DEEP READ, THEN ONE
+PLAN" (the approved rec, verbatim) and `.dev/audit/2026-11-06/CHECKLIST.md`. **State:** ten readers launched ~13:00
+(G1-G8 every doc by topic, G9 / G10 second reads of skin+body and eyes+lids+lashes+brows+hair), reports to
+`.dev/audit/2026-11-06/G<n>.md`. **Next:** check each report's coverage proof and tick the checklist; build the
+coverage table (job -> methods, evidence, decisions, code follows?); re-read every cited source passage of each job's
+final method myself; read each job's code modules whole; then gaps -> plan -> RESEARCH index. TASKS' reshaping waits
+for the user. App work paused except run 11's check (`.dev/gate/parts/2026-11-06k`: hands, nails, feet from the
+HSR0042 / Anny fit - not yet looked at).
+
+## Previous job (2026-11-06 morning) — THE INPUTS FIRST: every input of the character audited against CC5's way, fixed, then re-measured
 
 The user, 2026-11-06 (TASKS "THE INPUTS FIRST"): our skins carry painted hair (lashes, brows, stubble) and the proofs
 were measured on them - "you a doing wrong things testing with wrong things ... check again if you are doing things
