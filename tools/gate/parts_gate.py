@@ -45,6 +45,7 @@ SCALP_COLOUR = {"melanin": 0.96, "redness": 0.6}
 #: and his little grey (the style's fifth grey strands made it L* 41; a twentieth: 28 at melanin 0.93) - the scalp
 #: groom's "Strand colour" modifier input (Blender 5.3: mod.properties.inputs.<identifier>.value)
 SCALP_GREY = 0.05
+BROW_GREY = 0.2  # his brows: about a fifth of the coarse hairs white (gate run 5's eye view)
 LENS = 85.0  # quality-gate.md §3
 SENSOR = 36.0
 SIZE = 2048
@@ -128,9 +129,10 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
                     ident = next(i.identifier for i in mod.node_group.interface.items_tree
                                  if getattr(i, "in_out", "") == "INPUT" and i.name == "Grey Share")
                     getattr(mod.properties.inputs, ident).value = SCALP_GREY
-    if brows == "generated":  # JustStage's own (modules/hair/brows.py, rec 8)
+    if brows == "generated" or not character:  # JustStage's own (modules/hair/brows.py, rec 8); the gate's man greying
         importlib.import_module("bl_ext.system.juststage.modules.hair.brows").make(
-            next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of))
+            next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of),
+            grey_share=BROW_GREY if not character else 0.0)
     else:
         api.run("juststage.library.add", path=str(root / "Hair" / "Brows" / f"{OURS['brows']}.blend"),
                 character=shown.character)

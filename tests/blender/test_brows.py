@@ -88,11 +88,13 @@ def test_brows_have_hd_aarons_grey_hairs_soft_head_and_arched_hairs(man):
     """The clean-input gate's eye view (2026-11-06): our brows a black bar with a brush of upright hairs at the head;
     HD Aaron's dark grey with about a quarter white, sparser at the head, each hair arching toward the tail."""
     _made, body = man
-    found, radii, melanin = brows.strands(body)
+    found, radii, melanin = brows.strands(body, grey_share=0.22)  # a greying man's, as HD Aaron's
     melanin = np.array(melanin)
     coarse = np.arange(len(found)) % (brows.COUNT + brows.FINE) < brows.COUNT
     white = melanin[coarse] < 0.2
     assert 0.1 < white.mean() < 0.35  # white hairs among the coarse ones
+    _f, _r, plain = brows.strands(body)
+    assert (np.array(plain) > 0.2).all()  # by default none: greying is a character's (gate run 10 - every brow whitish)
     roots = np.array([s[0] for s in found])
     for side in (-1.0, 1.0):
         mine = roots[np.sign(roots[:, 0]) == side]

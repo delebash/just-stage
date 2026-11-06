@@ -39,7 +39,9 @@ TAIL_DENSITY = 0.35  # the tail's density as a share of the body's
 #: straight; HD Aaron's dark grey with about a quarter white, sparser at the head, each hair arching toward the tail
 HEAD_DENSITY, HEAD_TO = 0.45, 0.2  # the head's density as a share of the body's, rising to it by HEAD_TO
 BEND = 30.0  # degrees a hair standing square to the brow's line turns toward the tail along its length (x sin)
-GREY_SHARE, GREY_MELANIN = 0.22, 0.05  # the coarse hairs that are white
+#: the share of the coarse hairs that are white - a character's own (greying): none by default (gate run 10: a fifth
+#: on everyone made every brow whitish); HD Aaron's about a fifth
+GREY_SHARE, GREY_MELANIN = 0.0, 0.05
 MELANIN, REDNESS, MELANIN_SPREAD = 0.92, 0.12, 0.05
 #: the brow's soft body under the coarse hairs (CC5's brows lay a soft base layer under their hair cards; MetaHuman's
 #: strand brows hold fine short hairs among the coarse ones): FINE hairs a brow, at FINE_LENGTH x the coarse ones'
@@ -70,7 +72,7 @@ def region_uvs(style: str = STYLE) -> np.ndarray:
     return uv.reshape(-1, 2).astype(np.float64)
 
 
-def strands(body: bpy.types.Object, seed: int = 11):
+def strands(body: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHARE):
     """Both brows' hairs on the body's current shape, in world space: (strands, radii, melanin per strand)."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
@@ -151,17 +153,17 @@ def strands(body: bpy.types.Object, seed: int = 11):
                     strand[i:] += to_world[:3, :3] @ (near + 0.00008 * n_near - q)
             found.append(strand)
             radii.append((FINE_RADIUS if fine else RADIUS) * np.interp(t_points, [0.0, 1.0], [1.0, TIP]))
-            own = FINE_MELANIN if fine else (GREY_MELANIN if rng.uniform() < GREY_SHARE else MELANIN)
+            own = FINE_MELANIN if fine else (GREY_MELANIN if rng.uniform() < grey_share else MELANIN)
             melanin.append(float(np.clip(own + rng.normal(0.0, MELANIN_SPREAD), 0.0, 1.0)))
     return found, radii, melanin
 
 
-def make(character: bpy.types.Object, seed: int = 11) -> bpy.types.Object:
+def make(character: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHARE) -> bpy.types.Object:
     """JustStage's brows on the character, replacing its brows: one groom for both (part "eyebrows")."""
     from . import groom
 
     groom._check_surface(character)
-    found, radii, melanin = strands(character, seed)
+    found, radii, melanin = strands(character, seed, grey_share)
     rest, uvs = lashes.to_rest(character, found)
     curves = bpy.data.hair_curves.new(NAME)
     curves.add_curves([POINTS] * len(rest))
