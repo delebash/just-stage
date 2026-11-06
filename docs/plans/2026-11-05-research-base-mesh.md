@@ -55,3 +55,14 @@ built), not a research gap.
   geometry when the eye sliders move; what our skins (in hm08's UDIM layout) need - a re-bake onto the new UVs.
 - The bodies' Multires detail: how much muscle definition they hold (a source for HD sliders).
 - The Fab listing's licence and contents; MB-Lab / CharMorph eye regions; Anny's topology.
+
+## 4 · Audit sheet 1 (2026-11-05, measured: `.dev/gate/parts/audit/sheet_eye.png`, `sheet_mouth.png`)
+
+hm08 at level 1 (53,514 vertices with helpers) beside CC5's HD Aaron as exported (SubD 1, 56,412 body vertices), the
+same Blender stage, flat grey with each mesh's own edges drawn (Blender's Wireframe node): **the two meshes are about as
+dense at the same level** - similar triangle sizes round the eye and mouth. The difference is anatomy and shape: Aaron's
+lids are thick flaps - a real upper-lid margin and a lower-lid ledge - set back round a recessed eyeball; ours are thin
+edges with the eyeball forward. His lip line has a deep crease into the corners; ours is as dense, flatter. So the fix
+is modelled anatomy (loops that make the margin's two edges and its lining, and the shape that sets the eye back), not
+more polygons. (His face is a sculpted character; the same-shape comparison - his topology and ours on one face - is
+still to do.)
