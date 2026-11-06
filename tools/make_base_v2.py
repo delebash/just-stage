@@ -37,6 +37,9 @@ parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
 eyes = importlib.import_module("bl_ext.system.juststage.modules.head.eyes")
 
 LASH, MARGIN, RIM = 2.6, 1.3, 0.25  # mm off the eyeball (the prototype's, measured against HD Aaron's band)
+#: the caruncle: the skin within CARUNCLE m of each eye's inner corner (the ring's vertex nearest the nose), wet pink
+#: like the margin (design piece 3; proof 4c, 2026-11-05: "the corner skin painted wet pink ... shows, as on Aaron")
+CARUNCLE = 0.0028
 HM08 = makehuman.HM08_VERTICES
 
 
@@ -156,11 +159,15 @@ def open_probe():
     """The default human with its eyes opened as a dressed one's (body_create.EYE_OPEN) and GNM's eyes fitted: the
     lids as characters wear them, where the ring between lid skin and socket is found (on MakeHuman's own, nearly
     closed lids it runs into the corners' folds - 50 and 52 edges, 62 of 100 ring vertices with a clean row)."""
-    api = importlib.import_module("bl_ext.system.juststage.api")
-    made = api.run("juststage.body.create", name="ring probe")
-    importlib.import_module("bl_ext.system.juststage.modules.body.body_create").open_eyes(made.character)
-    api.run("juststage.head.add_parts", character=made.character)
-    probe = bpy.data.objects[made.object]
+    create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
+    sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
+    values = create.Params()._asdict()
+    for k in ("name", "dressed"):
+        values.pop(k)
+    probe = build.create_human("ring probe", values, base_version=1)  # hm08 itself: the ring is found on it
+    for slider, value in create.EYE_OPEN.items():
+        sliders.apply(probe, sliders.catalog()[slider], value)
+    parts.add(probe)
     eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
     found = parts.parts_of(probe)
     return probe, build.shaped_coords(probe), [eye_layers._eye_sphere(found[p]) for p in ("eyeLeft", "eyeRight")]
@@ -214,6 +221,14 @@ def main() -> None:
     print("RING VERTICES", len(ring_verts), "WITHOUT A CLEAN ROW", odd, flush=True)
     print("APPENDED", n - HM08, "ROWS", len(out_rows), "MOVED", len(moved),
           "CHECK mm", float(np.abs(check - target[HM08:]).max() * 1000), flush=True)  # fmt: skip
+    caruncle = []
+    for c, _r in eye_spheres:
+        mine = [i for i in ring_verts if np.linalg.norm(target[i] - c) < 0.02]
+        corner = min(mine, key=lambda i: abs(target[i][0]))  # nearest the nose (x 0)
+        near = np.flatnonzero(np.linalg.norm(target[:HM08] - target[corner], axis=1) < CARUNCLE)
+        inside = np.abs(target[near, 0]) >= abs(target[corner][0]) - 0.0003  # in the opening, not on the nose's side
+        caruncle += [int(i) for i in near[inside] if i < makehuman.BODY_VERTICES]
+    print("CARUNCLE", len(caruncle), flush=True)
     record = {
         "baseVersion": base.VERSION,
         "from": "MPFB2 base.obj (hm08, CC0) + tools/make_base_v2.py",
@@ -222,6 +237,7 @@ def main() -> None:
         "appended": {"parents": parents.tolist(), "t": t.tolist(), "local": app.local.tolist()},
         "moved": {"index": moved.tolist(), "delta": (old_target[moved] - after[moved]).tolist()},
         "rows": [list(map(int, r)) for r in out_rows],
+        "caruncle": caruncle,
         "topology": base.topology_hash(me),
         "vertices": n,
     }

@@ -153,6 +153,7 @@ def mark(me: bpy.types.Mesh) -> None:
     share[r[:, 1]] = 1.0
     share[r[r[:, 2] >= 0, 2]] = 1.0
     share[r[r[:, 0] >= 0, 0]] = 0.35  # the lash line: the margin's pink fades into the lid's skin across it
+    share[record().get("caruncle", [])] = 1.0  # the inner corner's wet pink tissue
     attr = me.attributes.get(MARGIN_ATTR) or me.attributes.new(MARGIN_ATTR, "FLOAT", "POINT")
     attr.data.foreach_set("value", share)
 
