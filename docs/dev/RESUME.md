@@ -101,6 +101,25 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   is read before its plan** (the user, 2026-11-05: "it was already part of the standard to match each part").
 - Memory: the index (loaded automatically) and `search-mistakes` before any search, rec or plan.
 
+## Active job 0 (NOW, before any build) — the whole character redesigned, base mesh first
+
+The user, 2026-11-05 late (TASKS "THE BASE MESH FIRST; THE WHOLE CHARACTER REDESIGNED"): rethink every piece - mesh,
+parts, UVs, sliders, HD detail, face rig, expressions, skin, hair, materials, live view - against CC5 and MetaHuman
+("better than both"), in adversarial passes, before Phase 2 builds anything; the append onto hm08 (NOT STANDARD) is
+approved only if no better way is found.
+- **Read in full:** `docs/plans/2026-11-05-base-mesh-first.md` (the plan: audit -> base -> sliders -> rig ->
+  texturing; the best-of-both table), `docs/plans/2026-11-05-research-base-mesh.md` (Blender's CC0 realistic head models
+  the lid margin and caruncle; MakeHuman's proxy system), `docs/standards/character-data-model.md` (whole - §1.1 already
+  names Blender's CC0 base meshes as the FALLBACK BASE, sliders moved by wrapping, CharMorph's alternative-topology
+  transfer as the code reference; topology frozen behind `baseVersion` + a vertex map), `skeleton-and-face.md` §2.
+- **Measured so far:** hm08 lid edge one ring, up to 3.3 mm off the eyeball; CC5's HD Aaron (SubD 1 export, 56,412 body
+  vertices) models a thick upper-lid margin and a lower-lid ledge (`.dev/gate/parts/audit/sheet_eye.png`,
+  `sheet_mouth.png` - his wireframe didn't render yet); CC5 base 17,683 polygons at SubD 0; MetaHuman head LOD0 24,000
+  vertices, 669 blend shapes, 713 joints; hm08 14,766 faces, head tile 4,986 vertices.
+- **Next:** the design document (`docs/plans/2026-11-05-character-design.md`): per piece CC5's way, MetaHuman's way,
+  ours, the best, its standard, its attack; research only the verified gaps (rule 0 coverage map first); the audit
+  sheets (eye, mouth, nose, ears, hands, feet, torso, joints, expressions) for ours / Aaron / Blender's CC0 / MetaHuman.
+
 ## Active job 1 — the quality bar: every body part at or above CC5's HD Aaron
 
 - **The standard — read in full:** `docs/standards/quality-gate.md` (the gate: a CC5 HD character exported by the
