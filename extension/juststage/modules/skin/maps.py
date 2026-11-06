@@ -425,17 +425,20 @@ def face_share() -> bpy.types.Image:
 
 def _region_relief(nt, uv, which):
     """The relief's depth factors (pores, microrelief): the region map's on the head tile (R, B x
-    REGION_RELIEF_SCALE), 1 elsewhere."""
+    REGION_RELIEF_SCALE), 0 on the nails' tile, 1 elsewhere."""
     regions = _node(nt, "ShaderNodeTexImage", "face_regions", (-1600, -2700))
     regions.image, regions.interpolation, regions.extension = face_regions(), "Linear", "EXTEND"
     nt.links.new(uv.outputs["UV"], regions.inputs["Vector"])
     parts = _node(nt, "ShaderNodeSeparateColor", "face_regions_split", (-1350, -2700))
     nt.links.new(regions.outputs["Color"], parts.inputs["Color"])
     on_head = _math(nt, "regions_on_head", "COMPARE", which.outputs["Value"], 0.0, 0.5)
+    on_nails = _math(nt, "regions_on_nails", "COMPARE", which.outputs["Value"], float(NAIL_TILE_INDEX), 0.5)
     factors = []
     for channel, key in (("Red", "pore"), ("Blue", "micro")):
         head = _math(nt, f"regions_{key}", "MULTIPLY", parts.outputs[channel], REGION_RELIEF_SCALE)
-        factors.append(_mix(nt, f"{key}_factor", "FLOAT", on_head, 1.0, head))
+        factor = _mix(nt, f"{key}_factor", "FLOAT", on_head, 1.0, head)
+        # none on the nails' tile: tiled under the nails' coat they read as a bumpy plate with white specks (gate run 4)
+        factors.append(_mix(nt, f"{key}_off_nails", "FLOAT", on_nails, factor, 0.0))
     return factors
 
 

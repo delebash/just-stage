@@ -309,3 +309,14 @@ def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
     assert "lips_rough" in chain("Roughness")
     tint = maps.LIP_TINT
     assert tint[1] < tint[2]  # redder, less yellow: blue kept above green
+
+
+def test_the_nails_have_no_pores(human, tmp_path):
+    """The skin's pores and microrelief tiled onto the nails' tile under their coat read as a bumpy plate with white
+    specks (gate run 4's nails view; HD Aaron's plates smooth) - nails have none."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    for key in ("pore", "micro"):
+        factor = nodes[maps.NODE + f"{key}_depth"].inputs[0].links[0].from_node
+        assert factor.name == maps.NODE + f"{key}_off_nails", factor.name
