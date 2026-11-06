@@ -122,3 +122,19 @@ def test_a_wide_hole_in_a_relief_fades_to_flat_not_streaks():
     assert np.abs(near).mean() > 0.03  # the skin's detail carried in near the edge
     old = hair.mirror_fill(relief, have, where)
     assert np.abs(old[:, 104 + 60 :]).mean() > 0.1  # the old fill streaked the edge (kept for colour)
+
+
+def test_relief_debris_is_found_and_folds_are_kept():
+    """A scan's relief carries debris - rings round its holes (nostrils), arcs at its edges - far steeper than skin's
+    folds (gate run 7: gashes on the Average woman's temple and cheek; her head relief's p99.5 0.5 against folds under
+    0.25). The mask covers the debris and a few texels round it, not the folds."""
+    size = 256
+    yy, xx = np.mgrid[0:size, 0:size].astype(np.float32)
+    relief = np.zeros((size, size, 2), np.float32)
+    relief[..., 1] = 0.12 * np.sin(xx / 9.0)  # folds: gentle, everywhere
+    ring = np.abs(np.hypot(xx - 180, yy - 80) - 12) < 1.5
+    relief[ring, 0] = 0.7  # a nostril's ring
+    mask = hair.relief_debris(relief, limit=0.3, grow=4)
+    assert mask[ring].all()
+    assert mask[np.abs(np.hypot(xx - 180, yy - 80) - 12) < 5].mean() > 0.9  # and round it
+    assert mask[:, :120].mean() == 0.0  # the folds kept

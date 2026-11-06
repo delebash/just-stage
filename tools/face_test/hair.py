@@ -126,3 +126,14 @@ def mirror_fill(layer: np.ndarray, have: np.ndarray, where: np.ndarray, neutral:
     fade = fade.reshape(-1, *([1] * (layer.ndim - 2)))
     out[ys, xs] = neutral + fade * (layer[sy, sx] - neutral)
     return out
+
+
+def relief_debris(relief: np.ndarray, limit: float = 0.3, grow: int = 6) -> np.ndarray:
+    """Where a scan's relief (tangent XY, high-passed) is debris: steeper than `limit` - rings round the scan's holes
+    (nostrils, eyes), arcs and spikes at its edges; skin's folds stay well under it (gate run 7, the Average woman's
+    gashes: her head relief's p99.5 0.5, its folds under 0.25) - and `grow` texels round it (their slopes' feet).
+    A bool mask; the composer drops the scan there, another scan or the flat fill takes the place."""
+    steep = (np.sqrt((relief.astype(np.float32) ** 2).sum(-1)) > limit).astype(np.uint8)
+    if grow > 0:
+        steep = cv2.dilate(steep, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * grow + 1, 2 * grow + 1)))
+    return steep.astype(bool)

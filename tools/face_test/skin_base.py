@@ -371,6 +371,9 @@ def _feathered(valid):
 #: low frequencies above RELIEF_HP texels (~7 mm - the fit's leftover) taken out, kept inside each scan's skin mask
 #: (no hair, brows or eyes), faded in over RELIEF_FEATHER
 RELIEF_HP, RELIEF_FEATHER = 40.0, 16.0
+#: debris in a scan's relief (rings round its holes, arcs at its edges - gate run 7's gashes): steeper than this,
+#: and this many texels round it, the scan is dropped (hair.relief_debris)
+RELIEF_DEBRIS, RELIEF_DEBRIS_GROW = 0.3, 8
 
 
 def _relief(p, layers, shape, keep=None, scans=None, inside=None):
@@ -389,6 +392,8 @@ def _relief(p, layers, shape, keep=None, scans=None, inside=None):
         hp = xy - masked_blur(np.dstack([xy, np.zeros(shape, np.float32)]), valid, RELIEF_HP)[..., :2]
         v = valid.astype(np.float32)
         a = w * np.clip(cv2.GaussianBlur(v, (0, 0), RELIEF_FEATHER) * 2.0 - 1.0, 0.0, 1.0) * v
+        debris = _hair().relief_debris(hp, RELIEF_DEBRIS, RELIEF_DEBRIS_GROW).astype(np.float32)
+        a = a * (1.0 - np.clip(cv2.GaussianBlur(debris, (0, 0), 2.0) * 1.5, 0.0, 1.0))  # the scan's holes and edges out
         if keep is not None and scans is not None and scans[n]["stubble"]:
             a = a * keep
         num += a[..., None] * hp
