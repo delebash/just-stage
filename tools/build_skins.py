@@ -262,19 +262,23 @@ BODY_SCAN_SIZE = 2048
 
 
 def _body_scan() -> dict | None:
-    """The torso's detail from a bare-body scan (tools/body_scan.py: Artec's, CC BY 3.0) - its colour ratio around 1
-    and its relief, rows bottom first as Blender's pixels; None when not made."""
+    """The body tiles' detail from bare-body scans (tools/body_scan.py: the torso's from Artec's, CC BY 3.0; the arms',
+    hands', legs' and feet's from HSRD-100's HSR0042-Body-045, CC BY 4.0) - by tile number, its colour ratio around 1
+    and its relief, rows bottom first as Blender's pixels; None when none is made."""
     folder = paths.GENERATED / "skin"
-    if not (folder / "body_1002_relief.png").exists():
-        return None
     import OpenImageIO as oiio
 
     def read(name):
         buf = oiio.ImageBuf(str(folder / name))
         return np.asarray(buf.get_pixels(oiio.FLOAT), np.float32)[::-1, :, :3]
 
-    colour = read("body_1002_colour.png") * 2.0
-    return {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3, "relief": read("body_1002_relief.png")}
+    found = {}
+    for number in maps.TILES[1:4]:
+        if (folder / f"body_{number}_relief.png").exists():
+            colour = read(f"body_{number}_colour.png") * 2.0
+            found[number] = {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3,
+                             "relief": read(f"body_{number}_relief.png")}  # fmt: skip
+    return found or None
 
 
 def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tables, scan: dict | None = None) -> None:
@@ -290,16 +294,17 @@ def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tabl
     base = _decode(body_srgb)
     for number in maps.TILES[1:]:
         _bake_uv(body, number)
-        with_scan = scan is not None and number == 1002
+        tile_scan = (scan or {}).get(number)
+        with_scan = tile_scan is not None
         masks = _bake(body, "EMIT", _masks_of(), BODY_SCAN_SIZE if with_scan else BODY_SIZE)
         colour = np.broadcast_to(base, masks.shape).copy()
         for k, region in enumerate(("areolae", "nails", "genitals")):
             m = _blur(np.clip(masks[..., k], 0.0, 1.0), MASK_BLUR)[..., None]
             if with_scan and region == "areolae":
-                m = m * (1.0 - scan["cover"][..., None])  # the scan's own areolas there
+                m = m * (1.0 - tile_scan["cover"][..., None])  # the scan's own areolas there
             colour *= 1.0 + m * (ratio[region] - 1.0)
         if with_scan:
-            colour *= scan["ratio"]
+            colour *= tile_scan["ratio"]
         maps.write_png(out / f"{stems['base_color']}.{number}.png", _encode(colour))
         nails = _blur(np.clip(masks[..., 1], 0.0, 1.0), MASK_BLUR)
         rough = FLAT["roughness"] + nails * (NAIL_ROUGHNESS - FLAT["roughness"])
@@ -307,7 +312,7 @@ def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tabl
         for channel in ("cavity", "height"):
             flat = np.broadcast_to(np.full(3, FLAT[channel], np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
             maps.write_png(out / f"{stems[channel]}.{number}.png", flat, "8")
-        normal = scan["relief"] if with_scan else np.broadcast_to((0.5, 0.5, 1.0), (FLAT_SIZE, FLAT_SIZE, 3))
+        normal = tile_scan["relief"] if with_scan else np.broadcast_to((0.5, 0.5, 1.0), (FLAT_SIZE, FLAT_SIZE, 3))
         maps.write_png(out / f"{stems['normal']}.{number}.png", normal, "16")
     _bake_uv(body, 1001)
 

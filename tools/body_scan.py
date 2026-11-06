@@ -56,6 +56,9 @@ EDGE_FADE = 96.0  # texels (~4 cm) to full strength from the scan's and the tile
 ARM = ("shoulder", "elbow", "hand", "finger-3-4")
 LEG = ("upper-leg", "knee", "ankle", "toe-3-3")
 TRUNK = ("pelvis", "neck", "head")
+#: each joint's swing in the pose search (degrees each way): shoulder / elbow / wrist, hip / knee / ankle
+SWING = {"arm": (70.0, 45.0, 30.0), "leg": (35.0, 35.0, 20.0)}
+FLOOR = 0.006  # m: the scan's points below this (its floor sheet) are left out of the pose search
 #: a fabric texel (the swim trunks, black): darker than this and greyer than this saturation
 FABRIC_VALUE, FABRIC_SATURATION = 0.10, 0.25
 
@@ -237,7 +240,7 @@ def fit_limbs(src: str, o, s) -> None:
     torso_tris = tris[tile == 1]
     place = _place_rigid(co, torso_tris, sv, sf)
     svp = (np.c_[sv, np.ones(len(sv))] @ place.T)[:, :3]
-    tree = cKDTree(svp)
+    tree = cKDTree(svp[svp[:, 2] > FLOOR])  # the scan's floor sheet out (it drew the feet onto it)
     limb_tris = tris[np.isin(tile, spec["tiles"])]
     lv = np.unique(limb_tris)
     trunk = [joints[f"joint-{n}"] for n in TRUNK]
@@ -252,16 +255,23 @@ def fit_limbs(src: str, o, s) -> None:
     pts = co[lv].copy()
     axes = (np.array([0.0, 1.0, 0.0]), np.array([1.0, 0.0, 0.0]))  # front-to-back, side-to-side
     limbs = [(2, "l-arm"), (4, "l-leg"), (6, "r-arm"), (8, "r-leg")]
+    rng = np.random.default_rng(1)
     for chain_i, name in limbs:
         chain = [c.copy() for c in chains[chain_i]]
+        spans = SWING[name[2:]]
         mine = lab[:, 0] == chain_i
         for k in range(len(chain) - 1):
             below = mine & (lab[:, 1] >= k)
             # the joint's own segment blends in over its first fifth; the segments past it move whole
             w = np.where(lab[:, 1] > k, 1.0, np.clip(tt / 0.2, 0.0, 1.0)) * below
             w = w * w * (3 - 2 * w)
-            score_on = np.flatnonzero(below & ((lab[:, 1] > k) | (tt > 0.3)))
-            if len(score_on) < 30:
+            # each segment below the joint weighs the same (the hand's 1,577 vertices outweighed the upper arm's 172)
+            groups = []
+            for seg in range(k, len(chain) - 1):
+                on = np.flatnonzero(mine & (lab[:, 1] == seg) & ((seg > k) | (tt > 0.3)))
+                if len(on) >= 20:
+                    groups.append(rng.choice(on, min(300, len(on)), replace=False))
+            if not groups:
                 continue
             root = chain[k]
 
@@ -269,13 +279,14 @@ def fit_limbs(src: str, o, s) -> None:
                 return _rotation(axes[1], np.radians(b)) @ _rotation(axes[0], np.radians(a))
 
             best = (np.inf, 0.0, 0.0)
-            for span, step in ((70.0, 5.0), (6.0, 1.0)):  # coarse, then fine round the coarse best
+            for span, step in ((spans[k], 5.0), (6.0, 1.0)):  # coarse within the joint's swing, then fine
                 ca, cb = best[1], best[2]
                 for a in np.arange(ca - span, ca + span + 0.1, step):
                     for b in np.arange(cb - span, cb + span + 0.1, step):
+                        if max(abs(a), abs(b)) > spans[k] + 1e-6:
+                            continue
                         r = turned(a, b)
-                        d, _ = tree.query((pts[score_on] - root) @ r.T + root)
-                        score = float(np.median(d))
+                        score = float(np.mean([np.median(tree.query((pts[g] - root) @ r.T + root)[0]) for g in groups]))
                         if score < best[0]:
                             best = (score, a, b)
             r = turned(best[1], best[2])
