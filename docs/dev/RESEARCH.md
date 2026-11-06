@@ -2791,3 +2791,9 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
 - **Iris colour data** (*page read*, R3 Q1): Edwards' Dryad data (doi:10.5061/dryad.0kt87, CC0) holds iris surface
   features only, no colour - drop it from the download list; Edwards 2012's tables paywalled; the only open numbers
   reached: Korean dark-brown irises L* ~22, a* ~22, b* ~29 (CC BY-NC). No open per-category table found.
+- **A face-recognition model for the likeness test** (*API + snippet, 2026-11-06*; query "best open source face
+  recognition model 2026 face similarity"): the strongest open recogniser is InsightFace's ArcFace (its weights a
+  non-commercial label [snippet: a 2026 playbook, fullstackcv.github.io/playbook/face]); `timesler/facenet-pytorch` is
+  MIT (GitHub API, last push 2025-09-16; its pretrained weights' terms unread); no recogniser with both a commercial
+  licence and ArcFace-class accuracy was found. The likeness test is a build-time check - nothing of it ships - so the
+  weights' licence is a label: ArcFace for accuracy, facenet-pytorch as the MIT fallback.
