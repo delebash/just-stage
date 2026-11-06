@@ -1226,6 +1226,18 @@ STEP 1 — the quality gate (R3), the plan (each line closes when its test passe
            yes yes yes!!! stop asking every time!!!" - a standing go for runs, searches and downloads (memory
            `standing-go-downloads`). The user searches for: bare full-body scans (women, heavier, older, darker skin,
            more athletic men) and bare hand and foot scans.
+           THE BASE MESH FIRST; THE WHOLE CHARACTER REDESIGNED (2026-11-05, late), the user, verbatim: "get that base
+           mesh correct first one that has all the sub div needed high poly like metahuman with all the sliders cc5 and
+           muthuman and actormixng ect, if you dont have this corect how can you texture it correclty"; "the idea is to
+           make it even better than cc5 take best of cc5 and metahuman that inlcudes base mesh imporvements and any thing
+           else"; then, on `../plans/2026-11-05-base-mesh-first.md` (the audit, a JustStage base = hm08 plus appended
+           anatomy, sliders, rig, texturing) and its NOT STANDARD piece (appending vertices to MakeHuman's base and
+           interpolating its data): "yes non standard is approved if you cant find any other way, i want the best way not
+           a lazy shortcut ... really think on the design and make sure you have it correct and ll the pieces correct,
+           think adverserially multiple times on this desing of the charctaer and how the pieices fit from mesh to
+           texture to hair to slider to everything, rethink it all and make sure you design is the best you can do".
+           So: the append is approved only if no better way is found; the whole character design is re-researched and
+           rethought piece by piece and as a whole, in adversarial passes, before Phase 2 builds anything.
            PRACTICES FROM STORYTOLD'S CRAFT APPS (2026-11-04, on the user's "your rec on all go, yes look at craft-skills
            and any other skills you might find usefull to build better software, go"; craft-skills is an empty repo,
            craftrules private - read: TextureCraft's AGENTS.md, craft-anything's README): adopted now - ATTRIBUTION.md
