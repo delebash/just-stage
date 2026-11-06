@@ -114,9 +114,13 @@ decisions verbatim, contradictions, the code read whole, one recommended method,
 `.dev/audit/2026-11-06/synth/S1-S10.md` (S1 J04 skin colour; S2 J05+J07 relief, shading; S3 J06+J03+J02 body, fit,
 shape; S4 J08 eyes; S5 J09-J11+J13+J14 lids, lashes, brows, facial and body hair; S6 J12+J20 scalp hair, live view;
 S7 J01+J15-J17 base, mouth, nails, ears; S8 J18+J19+J24 rigs, animation; S9 J21+J22 gate, licences; S10 J23
-architecture). Drafts, not decisions. **Next:** check each draft; re-read the cited source passages of each job's
-recommended method myself; the gaps researched through the search-mistakes list; then the plan doc, the RESEARCH index;
-the questions for the user in one list. TASKS' reshaping waits for the user. App work paused. Run 11
+architecture). Drafts, not decisions. All ten in and checked by ~16:45 - what I re-read at the source and what I
+changed: `.dev/audit/2026-11-06/synth/VERIFY.md` (read it). Step 2 from ~16:55: four research agents (R1 skin and body
+sources and methods, R2 patents and licences, R3 eye / lid / hair / mouth data, R4 app plumbing) ->
+`.dev/audit/2026-11-06/research/R1-R4.md`; HSRD-100's licence read by me (CC BY 4.0, RESEARCH §14). New facts go to
+RESEARCH's §14 at the end (so the drafts' line citations stay valid until the index step). **Next:** check R1-R4
+(query logs, marks); write the plan (`docs/plans/2026-11-06-the-plan.md`, the character design upgraded - the design
+doc kept as the approved record); the RESEARCH index; the questions for the user in one list. TASKS' reshaping waits for the user. App work paused. Run 11
 (`.dev/gate/parts/2026-11-06k`, the HSR0042 / Anny limbs) looked at ~15:10: hands and feet still flat (the donor's
 hands are smooth), its leg hair speckles the thighs, nails white plates - `docs/gate/2026-11-06/report.md` "Run 11";
 for the plan.
