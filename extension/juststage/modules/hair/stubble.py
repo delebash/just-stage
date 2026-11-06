@@ -15,7 +15,8 @@ direction, a length per style; 1-3 mm strands. The faint shaved tint stays in th
   against scan photos - rec 9's attack), each triangle's share by its area and its mean weight.
 - **Which way:** down and back over the face and neck (GROWTH: under the chin that is toward the throat), flaring
   out over the cheeks (FLARE), each hair SPREAD degrees its own; leaving the skin at RISE, lying to half that at the tip.
-- **How long, how thick:** LENGTH mm (two or three days' growth), +-30%; RADIUS at the root, cut blunt (TIP).
+- **How long, how thick:** LENGTH mm (about a week's growth - HD Aaron's Stubble, measured), +-30%; RADIUS at the
+  root, cut blunt (TIP).
 Attached as the lashes are (lashes.py: rest shape, surface UVs, Deform Curves on Surface, placed exactly)."""
 
 from __future__ import annotations
@@ -29,11 +30,13 @@ NAME = "JustStage stubble"
 #: 2026-11-06, against HD Aaron's Stubble at the gate's mouth and cheek views: denser, shorter, finer, curved, a third
 #: of the hairs grey (the first pass - 60 a cm2, 1.5 mm, straight black - read as scattered black lines over the cheeks)
 DENSITY = 100.0  # hairs a cm2
-LENGTH = 1.0  # mm
-RADIUS, TIP = 0.00004, 0.7  # m at the root; a cut hair's blunt end
-RISE = 45.0  # degrees off the skin at the root
-CURL = 35.0  # degrees the hair turns along its length (each its own way)
-GREY_SHARE, GREY_MELANIN = 0.33, 0.25
+#: 2026-11-06, the clean-input gate's cheek view: HD Aaron's Stubble hairs 2.4-4.2 mm, lying close along the skin,
+#: a third of them white - ours (1 mm, rising 45 degrees, grey at melanin 0.25) read as scattered dots, no white
+LENGTH = 3.2  # mm
+RADIUS, TIP = 0.00005, 0.7  # m at the root (a beard hair ~0.1 mm across); a cut hair's blunt end
+RISE = 22.0  # degrees off the skin at the root
+CURL = 25.0  # degrees the hair turns along its length (each its own way)
+GREY_SHARE, GREY_MELANIN = 0.33, 0.04  # the white ones (Aaron's read white at face distance)
 GROWTH = np.array([0.0, 0.5, -1.0])  # down and back (-Y is the face's front)
 FLARE = 0.25  # the cheeks' outward share
 SPREAD = 20.0  # degrees

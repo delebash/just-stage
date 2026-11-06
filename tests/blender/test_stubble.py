@@ -47,7 +47,7 @@ def test_stubble_is_short_hair_on_the_beard_not_on_the_lips_or_nose(man):
     n = len(pts)
     assert 4000 < n < 40000  # ~60 a cm2 over the beard's ~150-300 cm2
     length = np.linalg.norm(np.diff(pts, axis=1), axis=2).sum(axis=1) * 1000
-    assert 0.8 < np.median(length) < 2.5  # mm: two or three days' growth
+    assert 2.5 < np.median(length) < 4.5  # mm: HD Aaron's Stubble at the gate's cheek view, 2.4-4.2 (2026-11-06)
     roots = pts[:, 0]
     eyes = [eye_layers._eye_sphere(parts.parts_of(body)[p])[0] for p in ("eyeLeft", "eyeRight")]
     mid = (eyes[0] + eyes[1]) / 2
