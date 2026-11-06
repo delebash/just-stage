@@ -35,6 +35,17 @@ HEIGHT_STRENGTH, HEIGHT_DISTANCE = 0.15, 0.0004  # the painting's own fine relie
 #: every tile. hm08's own `UVMap`, which carried the pores before, spans 1.1 m a unit on the face but 2.1 on the torso
 #: and 7.0 on the thigh - the pores were twice and six times their size there
 MM_PER_UV = {1001: 724.0, 1002: 851.0, 1003: 753.0, 1004: 1224.0, 1005: 48.0}
+#: hm08's UVs are not even inside a tile (measured 2026-11-06 on the default man: the head tile's face 600-700 mm a UV
+#: unit, its neck and shoulders ~1150, ears and the back of the head up to 1560) - one tiling a tile gave the neck and
+#: shoulders pores 1.6x the face's and a step at the torso's border. CC5 tiles its micro normal by region (one tiling a
+#: material - Reallusion's manual, "Micro Normal": https://manual.reallusion.com/Character-Creator-5/Content/ENU/5.0/
+#: 15_Digital_Human_Shader/Skin/Micro_Normal.htm); ours by each place's own density: a corner attribute TEXEL (2 log2 of
+#: the place's mm per UV over its tile's, on the rest shape, smoothed inside the tile - add_texel), the relief layers
+#: sampled at TEXEL_LEVELS' half-octave tilings and cross-faded by it, their contrast kept (_levels). No attribute
+#: (a character from before) reads 0: one tiling a tile, as before.
+TEXEL = "juststage_texel"
+TEXEL_LEVELS = (-1, 0, 1, 2)  # half octaves: x0.71, x1, x1.41, x2 the tile's tiling
+TEXEL_SMOOTH = 12  # passes of the corner average inside a tile (a few cm on hm08)
 #: the pore tile (pore_relief): Ten24's scanned cheek relief, its own size in its pores.json (2026-11-06; the Lee
 #: Perry-Smith cheek tile it replaced, 56 mm, carried his stubble's streaks - docs/plans/2026-11-06-inputs-audit.md)
 PORE_TOOL = ".dev/venv-rdf/Scripts/python -I tools/face_test/pore_tile.py"
@@ -123,6 +134,54 @@ def add_layout(obj: bpy.types.Object) -> None:
         me.uv_layers.active = active  # hm08's own map stays the one the tools edit
     for layer in me.uv_layers:
         layer.active_render = layer.name == "UVMap"
+
+
+def add_texel(obj: bpy.types.Object) -> None:
+    """TEXEL on `obj`'s corners: 2 log2 of each place's millimetres a UV unit (sqrt(3D area / UV area) of its polygons
+    on the rest shape - the Basis, before shape keys and modifiers) over its tile's MM_PER_UV, averaged over the
+    polygons round each corner inside its tile, TEXEL_SMOOTH times; 0 on the nails' tile (their own coordinates)."""
+    me = obj.data
+    if UV not in me.uv_layers or not me.polygons:
+        return
+    co = np.empty(len(me.vertices) * 3, np.float64)
+    (me.shape_keys.reference_key.data if me.shape_keys else me.vertices).foreach_get("co", co)
+    co = co.reshape(-1, 3) @ np.array(obj.matrix_world)[:3, :3].T
+    uv = np.empty(len(me.loops) * 2, np.float64)
+    me.uv_layers[UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    loop_vert = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_vert)
+    me.calc_loop_triangles()
+    tri = np.empty(len(me.loop_triangles) * 3, np.int64)
+    me.loop_triangles.foreach_get("loops", tri)
+    tri = tri.reshape(-1, 3)
+    tri_poly = np.empty(len(me.loop_triangles), np.int64)
+    me.loop_triangles.foreach_get("polygon_index", tri_poly)
+    p = co[loop_vert[tri]]
+    a3 = np.linalg.norm(np.cross(p[:, 1] - p[:, 0], p[:, 2] - p[:, 0]), axis=1) / 2
+    q = uv[tri]
+    d1, d2 = q[:, 1] - q[:, 0], q[:, 2] - q[:, 0]
+    a2 = np.abs(d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0]) / 2
+    n = len(me.polygons)
+    area3 = np.bincount(tri_poly, a3, n)
+    area2 = np.bincount(tri_poly, a2, n)
+    loop_total = np.empty(n, np.int64)
+    me.polygons.foreach_get("loop_total", loop_total)
+    loop_poly = np.repeat(np.arange(n), loop_total)  # loops are stored polygon by polygon
+    tile = np.clip(np.floor(np.bincount(loop_poly, uv[:, 0], n) / loop_total).astype(np.int64), 0, len(TILES) - 1)
+    mm = np.array([MM_PER_UV[t] for t in TILES])[tile]
+    density = np.sqrt(area3 / np.maximum(area2, 1e-12)) * 1000.0
+    value = np.where(area2 > 1e-12, np.clip(2.0 * np.log2(np.maximum(density, 1e-6) / mm), -2.0, 3.0), 0.0)
+    value[tile == len(TILES) - 1] = 0.0
+    weight = np.maximum(area3, 1e-12)[loop_poly]
+    _, group = np.unique(loop_vert * len(TILES) + tile[loop_poly], return_inverse=True)
+    for _ in range(TEXEL_SMOOTH):
+        corner = np.bincount(group, weight * value[loop_poly]) / np.bincount(group, weight)
+        value = np.bincount(loop_poly, corner[group], n) / loop_total
+    corner = (np.bincount(group, weight * value[loop_poly]) / np.bincount(group, weight))[group]
+    if TEXEL in me.attributes:
+        me.attributes.remove(me.attributes[TEXEL])
+    me.attributes.new(TEXEL, "FLOAT", "CORNER").data.foreach_set("value", corner.astype(np.float32))
 
 
 def write_png(path, rgb: np.ndarray, depth: str = "8") -> None:
@@ -415,6 +474,38 @@ def _tiled_coords(nt, name: str, uv, which, tile_mm: float, location):
     return scaled.outputs["Vector"]
 
 
+def _levels(nt, name: str, image, coords, texel, location):
+    """`image` (a relief tile) at each of TEXEL_LEVELS' tilings of `coords` (x 2^(k/2), each level shifted so they
+    don't line up), cross-faded by `texel` (hat weights: two levels at most), the blend's contrast kept - 0.5 + sum
+    w (h - 0.5) / sqrt(sum w^2) (the variance-preserving blend of texture tiles). The level 0 node is `name` itself
+    (as before); returns the blended height."""
+    x, y = location
+    t = _math(nt, f"{name}_texel_hi", "MINIMUM", _math(nt, f"{name}_texel_lo", "MAXIMUM", texel, float(TEXEL_LEVELS[0])),
+              float(TEXEL_LEVELS[-1]))  # fmt: skip
+    num = den = None
+    for i, k in enumerate(TEXEL_LEVELS):
+        tex = _node(nt, "ShaderNodeTexImage", name if k == 0 else f"{name}_level{k}", (x, y - 300 * i))
+        tex.image, tex.interpolation = image, "Cubic"
+        if k == 0:
+            nt.links.new(coords, tex.inputs["Vector"])
+        else:
+            at = _node(nt, "ShaderNodeVectorMath", f"{name}_level{k}_coords", (x - 200, y - 300 * i))
+            at.operation = "MULTIPLY_ADD"
+            nt.links.new(coords, at.inputs[0])
+            at.inputs[1].default_value = (2.0 ** (k / 2),) * 3
+            at.inputs[2].default_value = (0.37 * k, 0.61 * k, 0.0)
+            nt.links.new(at.outputs["Vector"], tex.inputs["Vector"])
+        hat = _math(nt, f"{name}_w{k}_d", "ABSOLUTE", _math(nt, f"{name}_w{k}_s", "SUBTRACT", t, float(k)))
+        w = _math(nt, f"{name}_w{k}", "MAXIMUM", _math(nt, f"{name}_w{k}_h", "SUBTRACT", 1.0, hat), 0.0)
+        h = _math(nt, f"{name}_h{k}", "SUBTRACT", tex.outputs["Color"], 0.5)
+        wh = _math(nt, f"{name}_wh{k}", "MULTIPLY", w, h)
+        ww = _math(nt, f"{name}_ww{k}", "MULTIPLY", w, w)
+        num = wh if num is None else _math(nt, f"{name}_num{k}", "ADD", num, wh)
+        den = ww if den is None else _math(nt, f"{name}_den{k}", "ADD", den, ww)
+    norm = _math(nt, f"{name}_norm", "SQRT", _math(nt, f"{name}_den_min", "MAXIMUM", den, 1e-6))
+    return _math(nt, f"{name}_blend", "ADD", _math(nt, f"{name}_ratio", "DIVIDE", num, norm), 0.5)
+
+
 def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], pores=None) -> None:
     """The skin's maps on its Principled BSDF (material.py made the BSDF and its scattering): `images` by channel,
     UDIM tiled; the pores from the shared tile (pore_relief - `pores`, a skin's own tile before 2026-11-06, is not
@@ -480,27 +571,27 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     which = _node(nt, "ShaderNodeMath", "tile_index", (-1200, -700))
     which.operation = "FLOOR"
     links.new(tile.outputs["X"], which.inputs[0])
-    pore = _node(nt, "ShaderNodeTexImage", "pores", (-1000, -900))
-    pore.image, pore_mm = pore_relief()
-    pore.interpolation = "Cubic"
-    links.new(_tiled_coords(nt, "pore", uv, which, pore_mm, (-1200, -900)), pore.inputs["Vector"])
+    texel = _node(nt, "ShaderNodeAttribute", "texel", (-1600, -1000))  # add_texel's density (0 when missing)
+    texel.attribute_type, texel.attribute_name = "GEOMETRY", TEXEL
+    pore_image, pore_mm = pore_relief()
+    pore_height = _levels(nt, "pores", pore_image, _tiled_coords(nt, "pore", uv, which, pore_mm, (-1200, -900)),
+                          texel.outputs["Fac"], (-1000, -900))  # fmt: skip
     bump = _node(nt, "ShaderNodeBump", "pore_bump", (-250, -200))
     bump.inputs["Strength"].default_value = PORE_STRENGTH
     pore_factor, micro_factor = _region_relief(nt, uv, which)
     links.new(_math(nt, "pore_depth", "MULTIPLY", pore_factor, PORE_DISTANCE), bump.inputs["Distance"])
-    links.new(pore.outputs["Color"], bump.inputs["Height"])
+    links.new(pore_height, bump.inputs["Height"])
     links.new(fine.outputs["Normal"], bump.inputs["Normal"])
-    micro = _node(nt, "ShaderNodeTexImage", "micro", (-1000, -1200))
-    micro.image = micro_relief()
-    micro.interpolation = "Cubic"
-    links.new(_tiled_coords(nt, "micro", uv, which, MICRO_TILE_MM, (-1200, -1200)), micro.inputs["Vector"])
+    micro_height = _levels(nt, "micro", micro_relief(),
+                           _tiled_coords(nt, "micro", uv, which, MICRO_TILE_MM, (-1200, -2200)), texel.outputs["Fac"],
+                           (-1000, -2200))  # fmt: skip
     micro_bump = _node(nt, "ShaderNodeBump", "micro_bump", (-100, -200))
     micro_bump.inputs["Strength"].default_value = MICRO_STRENGTH
     links.new(_math(nt, "micro_depth", "MULTIPLY", micro_factor, MICRO_DISTANCE), micro_bump.inputs["Distance"])
-    links.new(micro.outputs["Color"], micro_bump.inputs["Height"])
+    links.new(micro_height, micro_bump.inputs["Height"])
     links.new(bump.outputs["Normal"], micro_bump.inputs["Normal"])
     links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
-    shine = _math(nt, "pore_shine", "MULTIPLY_ADD", pore.outputs["Color"], PORE_SHINE[1], PORE_SHINE[0])
+    shine = _math(nt, "pore_shine", "MULTIPLY_ADD", pore_height, PORE_SHINE[1], PORE_SHINE[0])
     links.new(_math(nt, "pore_specular", "MULTIPLY", spec.outputs["Value"], shine), bsdf.inputs["Specular IOR Level"])
     _nail_layer(nt, bsdf, uv, which)
     _lip_layer(nt, bsdf)
@@ -525,6 +616,10 @@ def refresh(mat: bpy.types.Material) -> None:
     nodes = mat.node_tree.nodes
     images = {c: nodes[NODE + c].image for c in CHANNELS}
     build_material(mat, images)
+    for obj in bpy.data.objects:  # the characters wearing it get the density the relief layers read (add_texel)
+        if obj.type == "MESH" and obj.juststage.kind == "HUMAN" and mat.name in obj.data.materials:
+            if TEXEL not in obj.data.attributes:
+                add_texel(obj)
 
 
 def set_gain(mat: bpy.types.Material, rgb: tuple[float, float, float]) -> None:
@@ -544,6 +639,7 @@ def apply(character: bpy.types.Object, skin: bpy.types.Material) -> bpy.types.Ma
     from . import skin_set_tone
 
     add_layout(character)
+    add_texel(character)
     old = character.juststage.skin_material
     mine = skin.copy()
     mine.name = f"JustStage Skin ({character.name})"

@@ -205,3 +205,35 @@ def test_the_lid_margin_is_wet_pink_tissue_on_a_mapped_skin(human, tmp_path):
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
     assert bsdf.inputs["Base Color"].links[0].from_node == nodes[maps.NODE + "margin_colour"]
     assert bsdf.inputs["Roughness"].links[0].from_node == nodes[maps.NODE + "margin_rough"]
+
+
+def test_the_relief_layers_keep_one_size_inside_a_tile(human, tmp_path):
+    """hm08's UVs are not even inside a tile: the head tile's neck and shoulders span ~1.6x the face's millimetres a UV
+    unit (measured 2026-11-06), so one tiling a tile gave them pores 1.6x the face's and a step at the torso's border.
+    Each corner carries its place's density (maps.add_texel), the relief layers cross-fade half-octave tilings by it."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    me = body.data
+    attr = me.attributes[maps.TEXEL]
+    assert (attr.domain, attr.data_type) == ("CORNER", "FLOAT")
+    texel = np.empty(len(me.loops), np.float32)
+    attr.data.foreach_get("value", texel)
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    head = np.floor(uv.reshape(-1, 2)[:, 0]) == 0
+    loop_vert = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_vert)
+    co = np.array([v.co for v in me.vertices])[loop_vert]
+    top, front = co[:, 2].max(), co[head, 1].min()
+    face = head & (co[:, 1] < front + 0.03) & (co[:, 2] > top - 0.22)  # the face's front, nose to brow
+    low = head & (co[:, 2] < top - 0.30)  # the head tile's neck base and shoulders
+    assert abs(np.median(texel[face])) < 0.5  # the tile's own tiling: the face it was measured on
+    assert np.median(texel[low]) > 0.9  # ~1.6x the face's mm a UV unit: 2 log2(1.6) = 1.36
+    nodes = body.juststage.skin_material.node_tree.nodes
+    for name in ("pores", "micro"):
+        for k in maps.TEXEL_LEVELS:
+            level = nodes[maps.NODE + (name if k == 0 else f"{name}_level{k}")]
+            assert level.image == nodes[maps.NODE + name].image
+        assert nodes[maps.NODE + f"{name}_texel_lo"].inputs[0].links[0].from_node == nodes[maps.NODE + "texel"]
+    assert nodes[maps.NODE + "texel"].attribute_name == maps.TEXEL
+    assert nodes[maps.NODE + "pore_bump"].inputs["Height"].links[0].from_node == nodes[maps.NODE + "pores_blend"]
