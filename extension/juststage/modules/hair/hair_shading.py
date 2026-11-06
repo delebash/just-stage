@@ -27,7 +27,11 @@ ETA = 1.55  # hair's refractive index
 F0 = ((ETA - 1) / (ETA + 1)) ** 2
 SHIFT = 0.035  # rad: Karis' cuticle tilt; R at -2 x, TT at +1 x, TRT at +4 x
 ROUGHNESS = 0.3  # the longitudinal roughness (Cycles' Principled Hair default)
-DIFFUSE = 0.6  # the multiple-scattered body's share
+#: calibrated against Cycles' Principled Hair on the gate's front view (the scalp's window, 2026-11-06): each term
+#: alone came out at about Cycles' whole (body 0.129, lobes 0.122 vs 0.121) - body x0.3, lobes x0.45 put the sum on it
+DIFFUSE = 0.4  # the multiple-scattered body's share
+GLOSSY = 1.0  # the lobes' share
+BODY_LIGHT_THROUGH = 0.5  # the share of the light the body gets in the strands' own shadow
 AMBIENT = 1.0  # the image light's ambient, x the world's mean radiance (WORLD_MEAN, set from the stage's world)
 ROOT_AO = 0.35  # the ambient at the root (the strands above shade it), rising to 1 at the tip
 NODE = "js_hair."
@@ -100,8 +104,20 @@ def build(nt, colour, roughness: float = ROUGHNESS, world_mean: float = 0.0):
     nt.links.new(P, ev1.inputs["Position"])
     nt.links.new(L, ev1.inputs["Normal"])
     info = nt.nodes.new("ShaderNodeLightInfo")
-    light = _vec(nt, "SCALE", info.outputs["Color"], scale=_math(nt, "MULTIPLY", ev1.outputs["Factor"], info.outputs["Power"]))
-    sin_i, sin_r = _vec(nt, "DOT_PRODUCT", L, T), _vec(nt, "DOT_PRODUCT", V, T)
+    # the light at the strand: its strength x its colour and power x its shadow (Light Evaluation's Mask - without it
+    # every strand was lit, brows under the brow ridge and hair under hair alike)
+    strength = _math(nt, "MULTIPLY", _math(nt, "MULTIPLY", ev1.outputs["Factor"], info.outputs["Power"]), ev1.outputs["Mask"])
+    shadow = nt.nodes.new("ShaderNodeShadowRaycast")  # the light's shadow at the strand (the head's, other hair's)
+    nt.links.new(P, shadow.inputs["Position"])
+    unshadowed = _vec(nt, "SCALE", info.outputs["Color"], scale=strength)
+    light = _vec(nt, "MULTIPLY", unshadowed, shadow.outputs["Color"])  # the lobes: the surface's, fully shadowed
+    # the body: multiple scattering carries light under the top strands - its shadow softened (hair isn't opaque:
+    # the raycast's full shadow put the scalp at half of Cycles')
+    soft = _vec(nt, "ADD", _vec(nt, "SCALE", shadow.outputs["Color"], scale=1.0 - BODY_LIGHT_THROUGH), (BODY_LIGHT_THROUGH,) * 3)
+    body_light = _vec(nt, "MULTIPLY", unshadowed, soft)
+    # clamped: a strand along the light or the view would put a dot product a hair past 1 and asin's NaN on screen
+    sin_i = _math(nt, "MAXIMUM", _math(nt, "MINIMUM", _vec(nt, "DOT_PRODUCT", L, T), 0.9999), -0.9999)
+    sin_r = _math(nt, "MAXIMUM", _math(nt, "MINIMUM", _vec(nt, "DOT_PRODUCT", V, T), 0.9999), -0.9999)
     th_i, th_r = _math(nt, "ARCSINE", sin_i), _math(nt, "ARCSINE", sin_r)
     th_h = _math(nt, "MULTIPLY", _math(nt, "ADD", th_i, th_r), 0.5)
     cos_d = _math(nt, "MAXIMUM", _math(nt, "COSINE", _math(nt, "MULTIPLY", _math(nt, "SUBTRACT", th_i, th_r), 0.5)), 0.05)
@@ -109,10 +125,13 @@ def build(nt, colour, roughness: float = ROUGHNESS, world_mean: float = 0.0):
     vp = _vec(nt, "NORMALIZE", _vec(nt, "SUBTRACT", V, _vec(nt, "SCALE", T, scale=sin_r)))
     cos_phi = _vec(nt, "DOT_PRODUCT", lp, vp)
     cos_half = _math(nt, "SQRT", _math(nt, "MAXIMUM", _math(nt, "MULTIPLY_ADD", cos_phi, 0.5, 0.5), 0.0))
-    b2 = roughness * roughness
-    m_r = _gauss(nt, th_h, -2 * SHIFT, b2)
-    m_tt = _gauss(nt, th_h, SHIFT, b2 / 2)
-    m_trt = _gauss(nt, th_h, 4 * SHIFT, 2 * b2)
+    # the lobes' longitudinal width as Cycles' Principled Hair maps its roughness (Chiang et al. 2016:
+    # v = (0.726 b + 0.812 b^2 + 3.7 b^20)^2, the deviation its root) - Karis' b^2 (0.09 rad at 0.3) made the R
+    # highlight 3x too narrow and too bright (the gate's front view: white hair beside Cycles' brown, 2026-11-06)
+    width = 0.726 * roughness + 0.812 * roughness**2 + 3.7 * roughness**20
+    m_r = _gauss(nt, th_h, -2 * SHIFT, width)
+    m_tt = _gauss(nt, th_h, SHIFT, width / 2)
+    m_trt = _gauss(nt, th_h, 4 * SHIFT, 2 * width)
     # R: 1/4 cos(phi/2) F(eta, sqrt(1/2 + 1/2 L.V))
     ldv = _vec(nt, "DOT_PRODUCT", L, V)
     f_r = _fresnel(nt, _math(nt, "SQRT", _math(nt, "MAXIMUM", _math(nt, "MULTIPLY_ADD", ldv, 0.5, 0.5), 0.0)))
@@ -134,13 +153,13 @@ def build(nt, colour, roughness: float = ROUGHNESS, world_mean: float = 0.0):
     r_term = _math(nt, "MULTIPLY", m_r, n_r)
     spec = _vec(nt, "ADD", spec, _vec(nt, "SCALE", (1.0, 1.0, 1.0), scale=r_term))
     fiber_cos = _math(nt, "SQRT", _math(nt, "MAXIMUM", _math(nt, "SUBTRACT", 1.0, _math(nt, "MULTIPLY", sin_i, sin_i)), 0.0))
-    glossy = _vec(nt, "MULTIPLY", light, _vec(nt, "SCALE", spec, scale=_math(nt, "MULTIPLY", fiber_cos, math.pi)))
+    glossy = _vec(nt, "MULTIPLY", light, _vec(nt, "SCALE", spec, scale=_math(nt, "MULTIPLY", fiber_cos, math.pi * GLOSSY)))
     acc = nt.nodes.new("ShaderNodeLightAccumulation")
     acc.name = NODE + "lights"
     nt.links.new(glossy, acc.inputs["Glossy Light"])
     acc.inputs["Glossy Color"].default_value = (1.0, 1.0, 1.0, 1.0)
     # the body: Kajiya-Kay's diffuse (sin of the angle to the strand) in the hair's colour
-    nt.links.new(_vec(nt, "SCALE", light, scale=_math(nt, "MULTIPLY", fiber_cos, DIFFUSE)), acc.inputs["Diffuse Light"])
+    nt.links.new(_vec(nt, "SCALE", body_light, scale=_math(nt, "MULTIPLY", fiber_cos, DIFFUSE)), acc.inputs["Diffuse Light"])
     nt.links.new(colour, acc.inputs["Diffuse Color"])
     # the image light: the world's mean radiance in the hair's colour, darker toward the roots
     info_h = nt.nodes.new("ShaderNodeHairInfo")
