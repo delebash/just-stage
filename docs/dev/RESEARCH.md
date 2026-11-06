@@ -180,6 +180,11 @@ Subjects: [1 · The machine](#1--the-machine) ·
   Factor, Mask, Direction, Distance), `ShaderNodeLightInfo` (Color, Power, Position), `ShaderNodeShadowRaycast`
   (LightIndex, Position, Softness -> Color), `ShaderNodeRaycast`. The Geometry node's Tangent output is the strand's
   tangent on curves (source `node_geometry`: `sd.curve_T`); Hair Info's "Tangent Normal" is the view-facing normal.
+  **Units, measured 2026-11-06** (scratchpad `lightacc_test.py`: two spheres under one area light, linear EXR): Light
+  Accumulation's output is the sum over lights of Light x Color, as radiance; with Diffuse Light = Light Evaluation's
+  Factor (Normal = the surface normal) x Light Info's Color x Power and Diffuse Color = the albedo, it equals a
+  Principled diffuse surface within 2% (0.385 / 0.313 / 0.242 vs 0.377 / 0.312 / 0.246) - Factor carries the cosine,
+  the falloff and the 1/pi, not the power. Its LightIndex and Weight inputs are hidden (implicit per light).
   Light Accumulation covers light objects only (the world needs its own term). So a Marschner-family hair model (R,
   TT, TRT lobes from L, V, T; Karis SIGGRAPH 2016 for Unreal, Tafuri 2019 for Frostbite; multiple scattering as
   Karis' wrapped term or dual scattering's density fallback) can be written in EEVEE nodes. Also: Blender 5.0 added a
