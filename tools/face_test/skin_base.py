@@ -54,6 +54,17 @@ BROAD_LUM, BROAD_HUE = 0.45, 0.15
 LOW_RANGE = 0.6  # 1.0 let a collar's edge and a fill's leftovers through as patches (composition 503's neck)
 LOW_FILL, LOW_FEATHER = 24.0, 16.0
 LOW_NEAR = 0.4  # the share of skin round a texel it needs: holes filled only well inside the skin (0.15 reached edges)
+#: HAIR OUT, CC5's way (docs/plans/2026-11-06-inputs-audit.md: CC5's skin colour carries no hair - lashes, brows and
+#: stubble are meshes): every scan has its own lashes and stray brow hairs round the eye and brow holes its skin mask
+#: leaves (scan_skin.py labels eyes and brows, not the lashes on the lids or the hairs beside the brows) - a band of
+#: HAIR_BAND texels (~5 mm) round every hole within EYE_ZONE of an eye's centre is left out of every layer; the holes
+#: are then filled with the skin beside them (hair.mirror_fill for the detail, a pull-push for the colour). Near the
+#: hairline (HAIRLINE texels, ~6 mm, outside the eye zone) stray strands are found and filled (hair.py, DullRazor).
+#: Stubble stays out (a stubble groom, not paint): a stubbled scan is left out of the beard, the clean scans fill it;
+#: a man keeps only the faint shaved tint CC5's diffuse has (`beard_shadow`, his stubbled scans' broad colour there).
+EYE_ZONE = 0.035  # m
+HAIR_BAND, HAIRLINE = 30, 36  # texels
+BEARD_SHADOW = 0.35  # a man's default
 
 
 def _module(name, path):
@@ -89,6 +100,69 @@ def regions(size=4096):
     beard, scalp = (np.where(covered, m, 0.0).astype(np.float16) for m in (beard, scalp))
     np.savez_compressed(cache, beard=beard, scalp=scalp)
     return beard, scalp
+
+
+def eye_zone(size=4096):
+    """Texels whose point on our head lies within EYE_ZONE of an eye's centre (lids, brows, the eyes' corners) - from
+    our head's own geometry, like `regions` (cached in scans/eye_zone.npz)."""
+    cache = DIR / "eye_zone.npz"
+    if cache.exists():
+        z = np.load(cache)["zone"]
+        if z.shape[0] == size:
+            return z
+    up = _module("up", "E:/Dev/3D/just-stage/extension/juststage/core/uv_projection.py")
+    E = np.load(DIR / "head_export.npz")
+    (pts,), covered = up.raster_uv(E["tri_uv"], [E["co"][E["tris"]].astype(np.float32)], size)
+    zone = np.zeros(pts.shape[:2], bool)
+    for eye in (E["eye_left"], E["eye_right"]):
+        zone |= np.linalg.norm(pts - np.asarray(eye, np.float32), axis=-1) < EYE_ZONE
+    zone &= covered
+    np.savez_compressed(cache, zone=zone)
+    return zone
+
+
+def _hair():
+    return _module("hair", Path(__file__).with_name("hair.py"))
+
+
+def _disc(r):
+    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
+
+
+def smooth_fill(img, have, where):
+    """Texels in `where` outside `have` filled from the skin round them, smoothly: a masked blur whose width grows with
+    the distance to the nearest skin (4 texels at the edge, doubling outward), the widths blended - no blocks and no
+    edge (a colour layer's holes)."""
+    out = img.astype(np.float32).copy()
+    todo = where & ~have
+    if not todo.any() or not have.any():
+        return out
+    dist = cv2.distanceTransform((~have).astype(np.uint8), cv2.DIST_L2, 5)
+    sigmas = [4.0 * 2**k for k in range(9)]  # 4 .. 1024 texels
+    t = np.clip(np.log2(np.maximum(dist, 4.0) / 4.0), 0, len(sigmas) - 1)
+    lo = np.floor(t).astype(int)
+    frac = (t - lo)[..., None]
+    acc = np.zeros_like(out)
+    for k, sigma in enumerate(sigmas):
+        sel = todo & ((lo == k) | (lo + 1 == k))
+        if not sel.any():
+            continue
+        f = masked_blur(img, have, sigma)
+        w = np.where((lo == k)[..., None], 1.0 - frac, frac)
+        acc[sel] += (w * f)[sel]
+    out[todo] = acc[todo]
+    return out
+
+
+def _inside(cover):
+    """The head's own area: its coverage and every hole it encloses (eyes, brows, nostrils, mouth) - the outside found
+    by a flood from the tile's border."""
+    outside = (~cover).astype(np.uint8)
+    h, w = outside.shape
+    pad = np.pad(outside, 1, constant_values=1)
+    mask = np.zeros((h + 4, w + 4), np.uint8)
+    cv2.floodFill(pad, mask, (0, 0), 2)
+    return pad[1:-1, 1:-1] != 2
 
 
 def _without_stubble(fine, keep):
@@ -155,7 +229,16 @@ def split(name):
     cover = cv2.imread(str(d / "bake_cover.png"), 0) > 127
     skin = cv2.resize(cv2.imread(str(d / "skin.png"), 0), (size, size), interpolation=cv2.INTER_LINEAR) > 127
     mask = cover  # what this scan reached; the head's whole layout is the union over scans
-    valid = cover & skin & (srgb.max(axis=2) > 0.05)
+    # hair out (CC5's way): the band round the eye and brow holes left out; stray strands by the hairline filled
+    zone = eye_zone(size)
+    holes = zone & ~(skin & cover)
+    band = (cv2.dilate(holes.astype(np.uint8), _disc(HAIR_BAND)) > 0) & zone & ~holes
+    hairline = (cv2.dilate((cover & ~skin).astype(np.uint8), _disc(HAIRLINE)) > 0) & skin & cover & ~zone
+    # the strands: by the hairline, and all over the eye zone - the lashes lie up to ~10 mm across the lids in a
+    # photo of open eyes, single strands beyond the band's dense roots
+    strands = _hair().mask(srgb, (hairline | zone) & skin & cover)
+    srgb = np.clip(_hair().fill(srgb, strands), 0.0, 1.0)
+    valid = cover & skin & ~band & (srgb.max(axis=2) > 0.05)
     # pulled in ~2 mm from its edges: the collar's and hairline's shadows sit just inside a skin mask (round 74's dark
     # squiggles low on the neck)
     valid = cv2.erode(valid.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
@@ -186,7 +269,7 @@ def split(name):
     extra = {"tone": np.median(lin[valid], axis=0).astype(np.float32)}  # its skin's own colour, linear
     if (d / "colour.png").exists() and (d / "normals.npy").exists():  # scan_skin.py's colour mask and normals
         colour = cv2.resize(cv2.imread(str(d / "colour.png"), 0), (size, size), interpolation=cv2.INTER_LINEAR) > 127
-        valid_colour = cover & colour & (srgb.max(axis=2) > 0.05)
+        valid_colour = cover & colour & ~band & (srgb.max(axis=2) > 0.05)
         valid_colour = cv2.erode(valid_colour.astype(np.uint8),
                                  cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE * 2 + 1,) * 2)) > 0
         normals = cv2.resize(np.load(d / "normals.npy").astype(np.float32), (size, size),
@@ -209,6 +292,7 @@ def split(name):
         print(f"{name}: broad layer - the fitted light's spread {lit:.3f} (log luminance), what stays {rest:.3f}")
     np.savez_compressed(d / "layers.npz", fine=fine.astype(np.float16), mid=mid.astype(np.float16), valid=valid,
                         **extra)
+    print(f"{name}: hair out - the eye and brow band {band.sum()} texels, {strands.sum()} texels of strands by the hairline")
     print(f"{name}: skin on {valid.mean() / mask.mean():.0%} of the texels the scan reached ({valid.mean():.1%} of the "
           f"tile); {count - 1} dark spots, "
           f"{int(small.any() and np.unique(labels[small]).size)} small ones taken out ({marks.sum()} texels); "
@@ -233,9 +317,11 @@ def _feathered(valid):
 RELIEF_HP, RELIEF_FEATHER = 40.0, 16.0
 
 
-def _relief(p, layers, shape):
+def _relief(p, layers, shape, keep=None, scans=None, inside=None):
     """A composed skin's mid-scale relief - folds, creases, lines - as tangent-space XY (H x W x 2) from its relief
-    scans (`relief_from`, default its colour scans), a weighted mean; None when no scan has one."""
+    scans (`relief_from`, default its colour scans), a weighted mean; None when no scan has one. A stubbled scan only
+    as far as `keep` (its stubble's lumps are hair); the holes inside the head (`inside`) filled with the relief
+    beside them (hair.mirror_fill)."""
     num, tot = np.zeros((*shape, 2), np.float32), np.zeros(shape, np.float32)
     for n, w in p.get("relief_from", p.get("broad_from", p["mid_from"])).items():
         f = DIR / n / "bake_normal.png"
@@ -247,11 +333,16 @@ def _relief(p, layers, shape):
         hp = xy - masked_blur(np.dstack([xy, np.zeros(shape, np.float32)]), valid, RELIEF_HP)[..., :2]
         v = valid.astype(np.float32)
         a = w * np.clip(cv2.GaussianBlur(v, (0, 0), RELIEF_FEATHER) * 2.0 - 1.0, 0.0, 1.0) * v
+        if keep is not None and scans is not None and scans[n]["stubble"]:
+            a = a * keep
         num += a[..., None] * hp
         tot += a
     if not tot.any():
         return None
-    return num / np.maximum(tot, 1e-6)[..., None] * np.clip(tot / 0.5, 0.0, 1.0)[..., None]
+    if inside is None:
+        return num / np.maximum(tot, 1e-6)[..., None] * np.clip(tot / 0.5, 0.0, 1.0)[..., None]
+    have = tot > 0.25
+    return _hair().mirror_fill(num / np.maximum(tot, 1e-6)[..., None], have, inside)
 
 
 def compose(seed, params=None):
@@ -275,8 +366,8 @@ def compose(seed, params=None):
     male = sex == "m"
     p = {"sex": sex, "fine_from": own_sex + others,
          "mid_from": dict(zip(mixed, (float(w) for w in rng.dirichlet(np.ones(k))), strict=True)),
-         "stubble": float(rng.uniform(0.0, 1.0)) if male else 0.0,
-         "scalp_stubble": float(rng.uniform(0.0, 1.0)) if male else 0.0,
+         "stubble": 0.0, "scalp_stubble": 0.0,  # stubble is a groom (CC5's Stubble mesh), not paint
+         "beard_shadow": BEARD_SHADOW if male else 0.0,
          "age": float(rng.uniform(0.7, 1.3)), "mottle": float(rng.uniform(0.6, 1.2)),
          "redness": float(rng.uniform(0.0, 0.06)), "freckles": float(rng.uniform(0.0, 1.0)),
          "moles": int(rng.integers(2, 12)), **(params or {})}
@@ -290,15 +381,24 @@ def compose(seed, params=None):
     fine, mid_fill, left = np.zeros((*shape, 3), np.float32), np.zeros((*shape, 3), np.float32), np.ones(shape, np.float32)
     for n in p["fine_from"]:
         a = left * _feathered(layers[n]["valid"])
+        if scans[n]["stubble"]:
+            a = a * keep  # out of the beard and scalp unless the character keeps stubble: a clean scan fills
         if not a.any():
             continue
         f = layers[n]["fine"].astype(np.float32)
-        if scans[n]["stubble"]:
+        if scans[n]["stubble"] and (p["stubble"] > 0 or p["scalp_stubble"] > 0):
             f = _without_stubble(f, keep)
         fine += a[..., None] * f
         mid_fill += a[..., None] * layers[n]["mid"].astype(np.float32)
         left -= a
-    cover = left < 0.5
+    # each texel's detail at full strength where the scans reached it, and the holes inside the head (eyes, brows, the
+    # bands left out round them) filled with the skin beside them - pores, not a smooth patch
+    got = 1.0 - left
+    have = got > 0.5
+    inside = _inside(got > 0.05)
+    fine = _hair().mirror_fill(fine / np.maximum(got, 1e-6)[..., None], have, inside)
+    mid_fill = _hair().mirror_fill(mid_fill / np.maximum(got, 1e-6)[..., None], have, inside)
+    cover = inside
     # mid: the chosen scans' weighted sum over sqrt(sum of squared weights) - for unrelated patterns that keeps one
     # scan's strength (a plain mean shrinks it); where none of them reached, the fine order's mid layer
     num, sq, total = np.zeros((*shape, 3), np.float32), np.zeros(shape, np.float32), np.zeros(shape, np.float32)
@@ -336,18 +436,31 @@ def compose(seed, params=None):
         # a composed skin with no painting over it: its colour above the pores is its 2-3 scans' own (the low
         # layers, a weighted mean - their lips and regional colour line up on our layout), the pores from one
         num_l, tot_l = np.zeros((*shape, 3), np.float32), np.zeros(shape, np.float32)
+        num_s, tot_s = np.zeros((*shape, 3), np.float32), np.zeros(shape, np.float32)  # stubbled scans' beard
         for n, w in p.get("broad_from", p["mid_from"]).items():
             if "valid_low" not in layers[n].files:
                 continue
             v = layers[n]["valid_low"].astype(np.float32)
             a = w * np.clip(cv2.GaussianBlur(v, (0, 0), LOW_FEATHER) * 2.0 - 1.0, 0.0, 1.0) * v
             if scans[n]["stubble"]:
-                a *= 1.0 - beard * (1.0 - p["stubble"])
+                num_s += (a * beard)[..., None] * layers[n]["low"].astype(np.float32)
+                tot_s += a * beard
+                a = a * keep
             num_l += a[..., None] * layers[n]["low"].astype(np.float32)
             tot_l += a
-        low = num_l / np.maximum(tot_l, 1e-6)[..., None] * np.clip(tot_l / 0.5, 0.0, 1.0)[..., None]
+        have_l = tot_l > 0.25
+        low = smooth_fill(num_l / np.maximum(tot_l, 1e-6)[..., None], have_l, inside)  # no edge where scans end
+        low[~inside] = 0.0
+        if p.get("beard_shadow", 0.0) > 0 and tot_s.any():
+            # CC5's faint shaved tint: the stubbled scans' beard darker than the clean colour there, brightness only,
+            # softened (~2 mm) - the stubble itself is a groom
+            stub = num_s / np.maximum(tot_s, 1e-6)[..., None]
+            luma = np.array([0.2126, 0.7152, 0.0722], np.float32)
+            dark = np.minimum((stub - low) @ luma, 0.0) * (tot_s > 0.25)
+            tint = cv2.GaussianBlur(dark.astype(np.float32), (0, 0), 12.0) * beard * p["beard_shadow"]
+            low += tint[..., None] * np.array([1.0, 1.0, 0.95], np.float32)
         ratio_log = p["age"] * fine + low + 0.5 * own
-        relief = _relief(p, layers, shape)
+        relief = _relief(p, layers, shape, keep, scans, inside)
         if relief is not None:
             p["relief_file"] = f"base_char{seed}_relief.npy"
             np.save(DIR / p["relief_file"], relief.astype(np.float16))

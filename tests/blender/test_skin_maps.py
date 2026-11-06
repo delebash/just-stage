@@ -51,10 +51,7 @@ def _mapped_skin(folder, melanin):
             colour = np.broadcast_to(fill.get(channel, (0.5,) * 3), (8, 8, 3))
             maps.write_png(folder / f"test.{channel}.{number}.png", colour)
         images[channel] = maps.tiled_image(folder, f"test.{channel}")
-    maps.write_png(folder / "pores.png", np.full((8, 8, 3), 0.5))
-    pores = bpy.data.images.load(str(folder / "pores.png"))
-    pores.pack()
-    maps.build_material(mat, images, pores)
+    maps.build_material(mat, images)  # the pores: the shared tile (maps.pore_relief)
     out = api.run("juststage.library.save", character=made.character, catalog="Skins", name="Test mapped",
                   licence="CC0-1.0", provenance="test", library=str(folder / "lib"))  # fmt: skip
     for obj in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
@@ -152,7 +149,8 @@ def test_the_relief_layers_keep_one_size_on_every_tile_and_the_microrelief_shade
     nodes = body.juststage.skin_material.node_tree.nodes
     coords = nodes[maps.NODE + "pores"].inputs["Vector"].links[0].from_node
     assert coords.inputs[0].links[0].from_node == nodes[maps.NODE + "uv"]  # the UDIM layer, not hm08's UVMap
-    for name, size in (("pore", maps.PORE_TILE_MM), ("micro", maps.MICRO_TILE_MM)):
+    assert nodes[maps.NODE + "pores"].image == maps.pore_relief()[0]  # every skin the one clean tile
+    for name, size in (("pore", maps.pore_relief()[1]), ("micro", maps.MICRO_TILE_MM)):
         for k, number in enumerate(maps.TILES):  # hm08's UVMap gave the thigh's pores six times the face's size
             assert _factor(nodes, name, k) == pytest.approx(maps.MM_PER_UV[number] / size)
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
@@ -167,12 +165,15 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
-    mouth = bsdf.inputs["Base Color"].links[0].from_node  # the mouth's lining over the nails' plate
+    margin = bsdf.inputs["Base Color"].links[0].from_node  # the lid margin's pink, last
+    assert margin == nodes[maps.NODE + "margin_colour"]
+    mouth = margin.inputs[0].links[0].from_node  # the mouth's lining over the nails' plate
     assert mouth == nodes[maps.NODE + "mouth_colour"]
     lips = next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node  # the lips' vermilion
     assert lips == nodes[maps.NODE + "lips_colour"]
     assert lips.inputs[0].links[0].from_node == nodes[maps.NODE + "nail_groove"]
-    rough = bsdf.inputs["Roughness"].links[0].from_node
+    rough = bsdf.inputs["Roughness"].links[0].from_node  # the margin's, over the mouth's, over the nails'
+    rough = next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node
     assert next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node == nodes[maps.NODE + "nail_rough"]
     assert bsdf.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
     coords = nodes[maps.NODE + "nail_coords"].image  # each nail's own coordinates, made once (make_nail_coords.py)
@@ -191,3 +192,16 @@ def test_the_mouths_lining_is_wet_mucosa_on_the_head_tile(human, tmp_path):
     mask.pixels.foreach_get(px)
     assert 0.002 < (px[0::4] > 0.5).mean() < 0.05  # a small part of the head tile
     assert nodes[maps.NODE + "mouth_on_head"].inputs[1].default_value == 0.0  # tile 1001 only
+
+
+def test_the_lid_margin_is_wet_pink_tissue_on_a_mapped_skin(human, tmp_path):
+    """Base v2's margin rows (`js_margin`) tint the skin pink, glossy and wet (maps._margin_layer) - over the colour
+    the other layers set, last."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.05), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    attr = nodes[maps.NODE + "margin_attr"]
+    assert attr.attribute_name == "js_margin" and "js_margin" in body.data.attributes
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    assert bsdf.inputs["Base Color"].links[0].from_node == nodes[maps.NODE + "margin_colour"]
+    assert bsdf.inputs["Roughness"].links[0].from_node == nodes[maps.NODE + "margin_rough"]

@@ -33,8 +33,8 @@ RENDERS = OUT / "renders"
 CHARACTER = "Average man"  # the library's man wears Daniel's skin (tools/build_library.py)
 SKIN_MAPS = ROOT / ".dev" / "skins" / "man_a"
 SKIN_STEM = "Daniel skin"
-PORES = ROOT / ".dev" / "facetest" / "pores_lps.png"
-PORE_TILE_MM = 56.0  # the shipped pore tile's size on the skin (modules/skin/maps.py: "the tile ~5.6 cm")
+PORES = ROOT / "extension" / "juststage" / "data" / "generated" / "skin" / "pores.png"  # the shared clean tile (maps.pore_relief)
+PORE_TILE_MM = json.loads(PORES.with_suffix(".json").read_text(encoding="utf-8"))["size_mm"]
 #: Unreal's Specular is F0 / 0.08; ours: IOR 1.4 (F0 0.0278) scaled by Specular IOR Level x 2, the level = cavity x 0.5
 UNREAL_SPECULAR_PER_CAVITY = ((1.4 - 1) / (1.4 + 1)) ** 2 / 0.08
 SCATTER = 0.5  # MetaHuman's preset scatter distance base (its MI): Unreal's profile does the scattering

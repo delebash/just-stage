@@ -35,7 +35,6 @@ paths = importlib.import_module("bl_ext.system.juststage.paths")
 
 ROOT = Path(__file__).resolve().parents[1]
 CHARS = ROOT / ".dev" / "facetest" / "chars"
-PORES = ROOT / ".dev" / "facetest" / "pores_lps.png"  # the Lee Perry-Smith scan's cheek tile (RESEARCH §10)
 OUT = ROOT / ".dev" / "skins"  # the baked tiles before they are packed
 NAMES = {"man_a": "Daniel", "amara": "Amara", "walter": "Walter", "mei": "Mei"}
 #: each character's melanin as the face test made it (face_character.py's FACETEST_MELANIN; the first man the clay's
@@ -419,9 +418,7 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
     mat = material.apply(body, skin, props.oiliness)
     record = mat.juststage
     record.map_melanin, record.map_eumelanin, record.map_blood = props.melanin, props.eumelanin, props.blood
-    pores = bpy.data.images.load(str(PORES), check_existing=False)
-    pores.pack()
-    maps.build_material(mat, {c: maps.tiled_image(out, s) for c, s in stems.items()}, pores)
+    maps.build_material(mat, {c: maps.tiled_image(out, s) for c, s in stems.items()})  # the shared clean pore tile
     maps.set_gain(mat, tuple(skin.linear_rgb(tables)))
     if old is not None:
         props.skin_material = mat

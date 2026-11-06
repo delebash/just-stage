@@ -96,7 +96,8 @@ def _stage():
     return scene, cam
 
 
-def build_ours(scene, skin: str = "", brows: str = "library", character: str = "", scalp: str = "library") -> dict:
+def build_ours(scene, skin: str = "", brows: str = "library", character: str = "", scalp: str = "library",
+               stubble: str = "generated") -> dict:
     """The library's man the app's way, with the hair library's scalp style and brows and the face's ARKit 52;
     `skin` (a library skin's .blend) put on him as the Content panel does."""
     api = importlib.import_module("bl_ext.system.juststage.api")
@@ -118,6 +119,10 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
     create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
     create.open_eyes(shown.character)  # as a dressed human (the library's characters predate EYE_OPEN)
     api.run("juststage.head.add_face_units", character=shown.character)
+    if stubble == "generated":  # HD Aaron wears CC5's Stubble mesh: ours its hairs (modules/hair/stubble.py)
+        body0 = next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of)
+        if body0.juststage.gender > 0.5:  # a man's
+            importlib.import_module("bl_ext.system.juststage.modules.hair.stubble").make(body0)
     if skin:
         api.run("juststage.library.add", path=skin, character=shown.character)
     objects = [o for o in scene.objects if shown.character in (o.juststage.character_id, o.juststage.part_of)]

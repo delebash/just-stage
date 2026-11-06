@@ -15,6 +15,8 @@ Images: Blender's UDIM tiled images (https://docs.blender.org/manual/en/5.3/mode
 
 from __future__ import annotations
 
+import json
+
 import bpy
 import numpy as np
 
@@ -33,7 +35,9 @@ HEIGHT_STRENGTH, HEIGHT_DISTANCE = 0.15, 0.0004  # the painting's own fine relie
 #: every tile. hm08's own `UVMap`, which carried the pores before, spans 1.1 m a unit on the face but 2.1 on the torso
 #: and 7.0 on the thigh - the pores were twice and six times their size there
 MM_PER_UV = {1001: 724.0, 1002: 851.0, 1003: 753.0, 1004: 1224.0, 1005: 48.0}
-PORE_TILE_MM = 56.0  # the pore tile's size on the skin (the Lee Perry-Smith cheek tile, as tuned on the face)
+#: the pore tile (pore_relief): Ten24's scanned cheek relief, its own size in its pores.json (2026-11-06; the Lee
+#: Perry-Smith cheek tile it replaced, 56 mm, carried his stubble's streaks - docs/plans/2026-11-06-inputs-audit.md)
+PORE_TOOL = ".dev/venv-rdf/Scripts/python -I tools/face_test/pore_tile.py"
 #: the pores' relief: full strength, 0.3 mm (the gate, 2026-11-05: 0.35 / 0.2 mm left a scanned skin's cheek at 0.39 of
 #: HD Aaron's pore band; 1.0 / 0.3 mm brought it to 0.99 against his 0.96 - his pores are relief, his colour alone 0.40)
 PORE_STRENGTH, PORE_DISTANCE = 1.0, 0.0003
@@ -78,6 +82,12 @@ MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
 #: the lips' vermilion over any skin - MPFB2's CC0 lips mask (`mpfb_lips.jpg`, hm08's own UVs) - as CC5's lip colour:
 #: scanned and painted skins carry their person's lips (HSR0040's pale, thinner than hm08's) or none; a vermilion keeps
 #: the skin's red and loses about a quarter of its green and a fifth of its blue
+#: the lid margin (base v2's appended rows, modules/body/base.py's `js_margin`: 1 on the margin and rim, 0.35 on the
+#: lash line): wet pink tissue - the skin's colour times MARGIN_TINT (so a darker skin's margin is darker: conjunctival
+#: melanosis), glossy and wet. The tint is the prototype's measured colour (0.45, 0.17, 0.15 over a light skin's
+#: ~0.60, 0.42, 0.35) as a ratio; the band it made, 28-50 px, was in HD Aaron's 26-63 (research-base-mesh §7) - to be
+#: measured again on clean skins (docs/plans/2026-11-06-inputs-audit.md)
+MARGIN_TINT, MARGIN_ROUGHNESS, MARGIN_COAT = (0.75, 0.42, 0.43), 0.18, 0.6
 LIP_TINT, LIP_STRENGTH = (1.0, 0.70, 0.75), 1.0  # at 0.74 / 0.79 still paler than HD Aaron's
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
@@ -144,6 +154,15 @@ def _node(nt, kind: str, name: str, location=(0, 0)):
     node.name = node.label = NODE + name
     node.location = location
     return node
+
+
+def pore_relief() -> tuple[bpy.types.Image, float]:
+    """The pore tile (PORE_TOOL) - one for every skin, loaded once and shared - and its size on the skin in mm."""
+    path = paths.generated("skin", "pores.png", tool=PORE_TOOL)
+    size_mm = float(json.loads(path.with_suffix(".json").read_text(encoding="utf-8"))["size_mm"])
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image, size_mm
 
 
 def micro_relief() -> bpy.types.Image:
@@ -295,6 +314,26 @@ def _lip_layer(nt, bsdf) -> None:
     nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
 
 
+def _margin_layer(nt, bsdf) -> None:
+    """The lid margin's wet pink (MARGIN_TINT, MARGIN_ROUGHNESS, MARGIN_COAT) by base v2's `js_margin` attribute (0
+    off the margin, and on characters without it)."""
+    from ..body import base
+
+    attr = _node(nt, "ShaderNodeAttribute", "margin_attr", (-1800, -2700))
+    attr.attribute_name = base.MARGIN_ATTR
+    share = attr.outputs["Fac"]
+    tint = _mix(nt, "margin_tint", "RGBA", share, (1.0, 1.0, 1.0), MARGIN_TINT)
+    tinted = _node(nt, "ShaderNodeVectorMath", "margin_colour", (-150, -2700))
+    tinted.operation = "MULTIPLY"
+    nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, tinted.inputs[0])
+    nt.links.new(tint, tinted.inputs[1])
+    nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
+    for socket, value, key in (("Roughness", MARGIN_ROUGHNESS, "rough"), ("Coat Weight", MARGIN_COAT, "coat")):
+        inp = bsdf.inputs[socket]
+        own = inp.links[0].from_socket if inp.is_linked else inp.default_value
+        nt.links.new(_mix(nt, f"margin_{key}", "FLOAT", share, own, value), inp)
+
+
 def face_regions() -> bpy.types.Image:
     """The face's regions on the head tile (REGIONS_TOOL), loaded once and shared."""
     path = paths.generated("skin", "face_regions.png", tool=REGIONS_TOOL)
@@ -371,9 +410,10 @@ def _tiled_coords(nt, name: str, uv, which, tile_mm: float, location):
     return scaled.outputs["Vector"]
 
 
-def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], pores: bpy.types.Image) -> None:
+def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], pores=None) -> None:
     """The skin's maps on its Principled BSDF (material.py made the BSDF and its scattering): `images` by channel,
-    UDIM tiled; `pores` a tiling height patch."""
+    UDIM tiled; the pores from the shared tile (pore_relief - `pores`, a skin's own tile before 2026-11-06, is not
+    used: every skin wears the clean one)."""
     from . import material
 
     nt = mat.node_tree
@@ -436,9 +476,9 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     which.operation = "FLOOR"
     links.new(tile.outputs["X"], which.inputs[0])
     pore = _node(nt, "ShaderNodeTexImage", "pores", (-1000, -900))
-    pore.image = pores
-    pore.image.colorspace_settings.name = "Non-Color"
-    links.new(_tiled_coords(nt, "pore", uv, which, PORE_TILE_MM, (-1200, -900)), pore.inputs["Vector"])
+    pore.image, pore_mm = pore_relief()
+    pore.interpolation = "Cubic"
+    links.new(_tiled_coords(nt, "pore", uv, which, pore_mm, (-1200, -900)), pore.inputs["Vector"])
     bump = _node(nt, "ShaderNodeBump", "pore_bump", (-250, -200))
     bump.inputs["Strength"].default_value = PORE_STRENGTH
     pore_factor, micro_factor = _region_relief(nt, uv, which)
@@ -470,6 +510,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     bsdf.inputs["Coat IOR"].default_value = COAT_IOR
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT
     bsdf.inputs["Sheen Roughness"].default_value = SHEEN_ROUGHNESS
+    _margin_layer(nt, bsdf)  # last: over the colour, roughness and coat the layers above set
     mat.juststage.has_maps = True
 
 
@@ -478,7 +519,7 @@ def refresh(mat: bpy.types.Material) -> None:
     today's settings, not the ones it was saved with."""
     nodes = mat.node_tree.nodes
     images = {c: nodes[NODE + c].image for c in CHANNELS}
-    build_material(mat, images, nodes[NODE + "pores"].image)
+    build_material(mat, images)
 
 
 def set_gain(mat: bpy.types.Material, rgb: tuple[float, float, float]) -> None:

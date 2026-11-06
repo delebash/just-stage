@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 JustStage contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""JustStage's stubble (modules/hair/stubble.py) - CC5's way: stubble is hair geometry (HD Aaron's `Stubble` mesh),
+never paint (docs/plans/2026-11-06-inputs-audit.md row 4)."""
+
+import importlib
+
+import bpy
+import numpy as np
+import pytest
+
+api = importlib.import_module("bl_ext.system.juststage.api")
+stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
+groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+
+
+@pytest.fixture
+def man():
+    made = api.run("juststage.body.create", name="Stubble test", gender=1.0)
+    api.run("juststage.head.add_parts", character=made.character)
+    body = bpy.data.objects[made.object]
+    yield made, body
+    for o in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
+        bpy.data.objects.remove(o)
+    bpy.data.objects.remove(body)
+
+
+def _world_points(obj):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    curves = obj.evaluated_get(depsgraph).data
+    pos = np.empty(len(curves.points) * 3, np.float32)
+    curves.attributes["position"].data.foreach_get("vector", pos)
+    pos = pos.reshape(len(curves.curves), -1, 3)
+    m = np.array(obj.matrix_world)
+    return pos @ m[:3, :3].T + m[:3, 3]
+
+
+def test_stubble_is_short_hair_on_the_beard_not_on_the_lips_or_nose(man):
+    made, body = man
+    obj = stubble.make(body)
+    assert obj in groom.of_part(body, "beard")
+    pts = _world_points(obj)
+    n = len(pts)
+    assert 4000 < n < 40000  # ~60 a cm2 over the beard's ~150-300 cm2
+    length = np.linalg.norm(np.diff(pts, axis=1), axis=2).sum(axis=1) * 1000
+    assert 0.8 < np.median(length) < 2.5  # mm: two or three days' growth
+    roots = pts[:, 0]
+    eyes = [eye_layers._eye_sphere(parts.parts_of(body)[p])[0] for p in ("eyeLeft", "eyeRight")]
+    mid = (eyes[0] + eyes[1]) / 2
+    rel = roots - mid
+    assert (rel[:, 2] < -0.025).all()  # all below the eyes' level by the cheekbones
+    lips = stubble.lip_points(body)
+    near_lips = np.linalg.norm(roots[:, None] - lips[None, ::20], axis=2).min(axis=1) < 0.0015
+    assert near_lips.mean() < 0.01  # none on the lips
+    # every root on the skin
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())
+    inv = np.array(body.matrix_world.inverted())
+    gaps = [tree.find_nearest(Vector(inv[:3, :3] @ r + inv[:3, 3]))[3] for r in roots[::50]]
+    assert max(gaps) < 0.0003
