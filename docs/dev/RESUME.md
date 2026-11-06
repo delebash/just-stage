@@ -45,8 +45,25 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   melanin 1.0 give a visible lash line at face distance (adopt). Amber iris overshot to yellow.
   FOUND: the occlusion film (eyeshell, rendered solid red: `proof_eyes/eevee_eye_ours_shellred.png`) does not fit the
   opened eye - a lens in the middle of the opening, strips under the upper lid and above the lower one uncovered, so
-  its lid-edge darkening lands inside the opening. Fix: make eye_layers' fit follow the opened lids (check what
-  `eye_layers.refit` reads after `body.set_slider` eye-height2), then re-test the white's L* against Aaron's ~50-60.
+  its lid-edge darkening lands inside the opening. FIXED in code: `eye_layers.refit` finds the lids again (test
+  `test_they_follow_the_lids_when_the_eyes_open`).
+- (4b) eyes on one character (Average man, Scan man A skin; scratchpad harness `eye_photo.py`, options per factor;
+  `.dev/gate/parts/proof_eyes/`, crops beside Aaron's eye view; measures: white L* inside the opening found by a red
+  film render, iris annulus Lab, a vertical L*a*b* profile under the iris). Each against Aaron:
+  white x0.71 (warm R x1.05) L* 67.5 vs 68.3 = EQUAL; a polar-unwrapped iris PHOTO (`.dev/downloads/other_samples/
+  commons_green_iris`, recoloured by its lightness to albedo 0.053/0.030/0.021, structure ^0.7) L* 24.6 C 14.8 vs
+  27.2 / 11.3, detail bands 1.9/3.5/4.2 vs 1.1/2.6/3.9 = EQUAL (its light collarette ring is this photo's; brown photos
+  are content); the iris' own specular 0 (the cornea shell glosses - at 0.5 a grey haze sat on the pupil); pupil 0.45
+  of the iris vs his 0.49 (a parameter; the procedural eye's PupilSize did nothing); the lid MARGIN: our lower lid's
+  edge stands up to 3.3 mm off the eyeball (a dark crevice, L* 21) - sealing the one vertex ring onto the eyeball left
+  a 4-8 px band (MakeHuman's lid has no margin geometry); the TEARLINE strip (ICT's ring, eyeEdge) shaded as wet pink
+  tissue (0.50/0.22/0.20, roughness 0.15, coat 0.6) gives a 32 px band L* 60-72 a* 12-18 vs his ~36 px L* 65-72 a*
+  10-19 = EQUAL. Thick lashes (radius 0.08 mm, 180 upper, melanin 1.0) make the lash line. Not done: caruncle (a
+  geometry mask at the inner corner barely shows), veins (invisible at face distance). Shape: MakeHuman's own sliders
+  (bag -1, eyefold concave -0.7 / up 0.6, height1 +0.6) open the eye (9.7 -> 10.7 mm at the iris, iris covered 12.8 ->
+  9.7 deg) - a per-character choice. Seen at face distance and NOT eye parts: our skin round the eyes reads rougher
+  and far paler and less red than his (lid L* 80 a* 5 vs 60 a* 19) - recheck the skin proof (1) there. NEXT: the same
+  eye settings on four library characters (own skins, no tuning), then adopt into code.
 
 ## Always
 

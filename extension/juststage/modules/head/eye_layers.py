@@ -10,7 +10,7 @@ Both are ICT-FaceKit's own strips (MIT, fetched by tools/fetch_data.py: its neut
 lacrimal fluid, topology and UVs kept), moved onto our eye across our lid opening (eyes.openings). One object per layer
 holds both eyes, named as MetaHuman's face names them: `eyeshell` (the occlusion) and `eyeEdge` (the tearline). Each
 vertex keeps its angles about its eye and its height off the eyeball, so a body change that moves or resizes the eyes
-refits them at once (`refit`); the lids' outline is found again by `add`.
+refits them at once (`refit`), the lids' outline found again.
 """
 
 from __future__ import annotations
@@ -284,6 +284,22 @@ def _eyes(character: bpy.types.Object) -> list[bpy.types.Object]:
     return [found[p] for p in ("eyeLeft", "eyeRight") if p in found]
 
 
+def _shapes(kind: str, found: list, skin: np.ndarray) -> tuple[list, dict, list]:
+    """One layer's strips over both eyes, from their openings `found` (in the eyes' order) and the body's points `skin`:
+    faces, the ATTRS columns per eye, and per eye the occlusion's UVs or the tearline's share from its rim."""
+    all_faces, cols, extra = [], {name: [] for name in ATTRS}, []
+    for k, o in enumerate(found):
+        faces, a, e, off, more = occlusion_shape(o) if kind == "occlusion" else tearline_shape(o, skin)
+        base = sum(len(c) for c in cols["js_az"])
+        all_faces += [[base + i for i in f] for f in faces]
+        cols["js_eye"].append(np.full(len(a), k))
+        cols["js_az"].append(a)
+        cols["js_el"].append(e)
+        cols["js_off"].append(off)
+        extra.append(more)
+    return all_faces, cols, extra
+
+
 def add(character: bpy.types.Object, openings: dict | None = None) -> dict[str, bpy.types.Object]:
     """Both layers on the character's eyes, replacing any it has; their shape from its lids as they are now."""
     from ...core.makehuman import BODY_VERTICES
@@ -301,20 +317,7 @@ def add(character: bpy.types.Object, openings: dict | None = None) -> dict[str, 
         bpy.data.objects.remove(old)
     made = {}
     for part, kind in LAYERS.items():
-        all_faces, cols, extra = [], {name: [] for name in ATTRS}, []
-        for k, eye in enumerate(eye_objs):
-            o = found[eye.name]
-            if kind == "occlusion":
-                faces, a, e, off, more = occlusion_shape(o)
-            else:
-                faces, a, e, off, more = tearline_shape(o, skin)
-            base = sum(len(c) for c in cols["js_az"])
-            all_faces += [[base + i for i in f] for f in faces]
-            cols["js_eye"].append(np.full(len(a), k))
-            cols["js_az"].append(a)
-            cols["js_el"].append(e)
-            cols["js_off"].append(off)
-            extra.append(more)
+        all_faces, cols, extra = _shapes(kind, [found[eye.name] for eye in eye_objs], skin)
         n = sum(len(c) for c in cols["js_az"])
         mesh = bpy.data.meshes.new(part)
         mesh.from_pydata(np.zeros((n, 3)).tolist(), [], all_faces)
@@ -350,11 +353,24 @@ def add(character: bpy.types.Object, openings: dict | None = None) -> dict[str, 
 
 
 def refit(character: bpy.types.Object) -> None:
-    """The layers onto the eyes where they are now (a body change moved or resized them)."""
+    """The layers onto the eyes where they are now and across the lids' opening as it is now (a body change moved or
+    resized the eyes, or opened or narrowed the lids - the dressed human's EYE_OPEN): the same strips, their angles
+    found again."""
+    from ...core.makehuman import BODY_VERTICES
+    from ..body import build
+    from . import eyes
+
     layers = layers_of(character)
     eye_objs = _eyes(character)
     if not layers or len(eye_objs) != 2:
         return
+    found = eyes.openings(character)
+    skin = build.shaped_coords(character)[:BODY_VERTICES].astype(np.float64)
     spheres = [_eye_sphere(eye) for eye in eye_objs]
-    for obj in layers.values():
+    for part, obj in layers.items():
+        _, cols, extra = _shapes(LAYERS[part], [found[eye.name] for eye in eye_objs], skin)
+        for name in ("js_az", "js_el", "js_off"):
+            obj.data.attributes[name].data.foreach_set("value", np.concatenate(cols[name]).astype(np.float32))
+        if LAYERS[part] == "tearline":
+            obj.data.attributes["share"].data.foreach_set("value", np.concatenate(extra).astype(np.float32))
         _place(obj.data, spheres)

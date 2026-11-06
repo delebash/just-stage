@@ -62,3 +62,24 @@ def test_they_follow_the_eyes_when_the_body_changes(human):
     eye_objs = [parts.parts_of(body)[p] for p in ("eyeLeft", "eyeRight")]
     gaps = _gap_to_eyeball(eye_layers.layers_of(body)["eyeshell"], eye_objs)
     assert np.allclose(gaps, eye_layers.OCCLUSION_LIFT, atol=2e-6)
+
+
+def test_they_follow_the_lids_when_the_eyes_open(human):
+    """A slider that changes the lids' opening (the dressed human's EYE_OPEN) moves the films to the new lids: the
+    occlusion spans the opening as it is now, not the one it was made on (the gate, 2026-11-05: made on the closed
+    library eye, it sat as a lens in the middle of the opened one, its lid-edge darkening inside the opening)."""
+    made, body = human
+    body_create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
+    body_create.open_eyes(made.character)
+    eye_objs = [parts.parts_of(body)[p] for p in ("eyeLeft", "eyeRight")]
+    found = eyes.openings(body)
+    shell = eye_layers.layers_of(body)["eyeshell"]
+    values = {}
+    for name in ("js_eye", "js_el"):
+        buf = np.zeros(len(shell.data.vertices), np.int32 if name == "js_eye" else np.float32)
+        shell.data.attributes[name].data.foreach_get("value", buf)
+        values[name] = buf
+    for k, eye in enumerate(eye_objs):
+        _, _, wanted, _, _ = eye_layers.occlusion_shape(found[eye.name])
+        assert np.allclose(values["js_el"][values["js_eye"] == k], wanted, atol=0.05), eye.name
+    assert np.allclose(_gap_to_eyeball(shell, eye_objs), eye_layers.OCCLUSION_LIFT, atol=2e-6)
