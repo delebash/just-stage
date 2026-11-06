@@ -299,7 +299,25 @@ Subjects: [1 · The machine](#1--the-machine) ·
   Artec Studio) [seen]; its Free download tab: "Under Creative Commons license v4, attribution to Artec 3D and a link
   back to our website is all you need to use this 3D model for free" - the link goes to
   creativecommons.org/licenses/by/4.0 (CC BY 4.0); credit "Body scan by Artec 3D"; one OBJ archive, 57.73 MB, a direct
-  CDN link (no account). SHIP with credit - the first bare athletic torso we can ship from.
+  CDN link (no account). SHIP with credit - the first bare athletic torso we can ship from. Downloaded 2026-11-05
+  (`.dev/downloads/artec_body_scan/`); its own `license.txt` says CC BY 3.0 Unported ("This 3D model by Artec Group inc.
+  ... is licensed under the Creative Commons Attribution 3.0 Unported License") - the file's grant; the page says v4.
+  **Digital Reality Lab samples** (the user's link, digitalrealitylab.com/sample-model, 2026-11-05 [page]): full body
+  A-pose (3.5 GB raw / 480 MB rig-ready, 16K), heads raw / clean / PBR (separate eyes, 16K PBR), facial expressions
+  (1.6 GB), hand, clothing, a rigged female; "The sample models are free for personal and commercial use with credit
+  mentioned on any social media" [page, found in Chrome]; "we do not allow resale or free distribution on other
+  websites" [WebFetch summary - unread in the page itself]; /legal and /faq hold no licence text. A form (name, email,
+  company, job, use) mails the link - the user's to fill. Shipping derived maps: UNREAD (whether a baked map in our
+  repo is "free distribution on other websites") - ask them in writing before anything ships.
+  **3D.sk free samples** (the user's link, static.3d.sk/photos/freeSample, read in Chrome 2026-11-05 [page]): Dale
+  Base Body Scan (a bodybuilder, A-pose, 57.89 MB), Adelle Sabelle Standing Clean Body Scan, Alison Clean A Pose Scan
+  (clothed), Bshara Henry Head Scan, Vinna Reed head premade texture, Lenny groom scan, photo sets (Darren in underwear,
+  poses, expressions). Their Content Commercial License Agreement (3d.sk/page/commercialterms [page]): "you may not use
+  the Content in products for resale, license or other distribution, unless the original Content has been
+  fundamentally modified ... and where the primary value ... is not recognizable as the Content nor is the Content
+  capable of being downloaded, extracted or accessed by a third party as a stand-alone file" - a relief map in our
+  open repo is a stand-alone file: LOCAL TEST only. The download link (`/photos/download?id=969125` for Dale) is
+  bot-protected (curl: 403) and a browser click saves to Chrome's download folder - the user downloads it. 3D.sk's ArtStation post "FREE 3D Scan | Retopo Hands & Premade Head Textures" (the user's link [page]): its only free item is Adelle Sabelle's cleaned raw body scan (the same sample); the hands and head textures it shows are paid products.
 - **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
   1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
      CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
