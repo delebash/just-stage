@@ -145,7 +145,11 @@ wrong like this"; "update the docs and fix all of this". Memory `audit-inputs-be
 - **NEXT (in order):** (1) hands and feet - flat beside HD Aaron's veins, tendons, knuckle creases (run 4's hand and
   foot views): extend `tools/body_scan.py` from the torso to tiles 1003 / 1004 from HSRD-100's HSR0042-Body-045
   (`.dev/downloads/hsrd100/`, bare but for trunks and cap, near A-pose, barefoot - arms ~20 deg out against our ~45:
-  per-limb rigid alignment before the wrap; mask the trunks and cap; hair out); (2) rebuild the library's hair and
+  per-limb rigid alignment before the wrap; mask the trunks and cap; hair out). Built: `body_scan.py` takes a SOURCE
+  (`hsr0042`); export done; legs place within 11-14 mm; arms failed twice (a turn at the shoulder: 8 cm off - our
+  A-pose bends the forearm 19 cm forward, the scan's hangs straight); a joint-by-joint pose search is the third try -
+  if the arms aren't within ~1 cm, switch to Anny (RESEARCH: NAVER's differentiable MakeHuman, torch is in venv-rdf)
+  instead of tuning further (the user, 2026-11-06: "should look for another method?"); (2) rebuild the library's hair and
   characters (brows' grey) and re-run the gate with hand, nails, foot, ear views; (3) the eye: lower margin still a
   glossy roll, the tear film's band; (4) torso definition, face shape (step 4), hair style; (5) the full suites once
   at the end (known failing: test_ai_jobs' sd-server, test_body's face count and BASE_VERSION).
