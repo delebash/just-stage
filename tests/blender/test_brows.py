@@ -47,7 +47,7 @@ def test_brows_are_single_hairs_flowing_from_head_to_tail(man):
     made, body = man
     made_strands, _radii, _melanin = brows.strands(body)
     groom = brows.make(body)
-    assert len(made_strands) == 2 * brows.COUNT  # both brows, one hair per follicle (no duplicated tufts)
+    assert len(made_strands) == 2 * (brows.COUNT + brows.FINE)  # both brows, coarse and fine hairs, one a follicle
     assert groom.parent == body and groom.data.surface == body and groom.juststage.part == "eyebrows"
     gap = np.linalg.norm(_evaluated(groom) - np.concatenate(made_strands), axis=1)
     assert gap.max() < 0.00005, gap.max()  # through rest space and back: where they were made

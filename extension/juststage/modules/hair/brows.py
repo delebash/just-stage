@@ -36,6 +36,11 @@ JITTER = 0.0002  # m: each root's own offset
 WIDEN = 1.25  # the band's half-height over the region roots' (their 85th percentile)
 TAIL_DENSITY = 0.35  # the tail's density as a share of the body's
 MELANIN, REDNESS, MELANIN_SPREAD = 0.92, 0.12, 0.05
+#: the brow's soft body under the coarse hairs (CC5's brows lay a soft base layer under their hair cards; MetaHuman's
+#: strand brows hold fine short hairs among the coarse ones): FINE hairs a brow, at FINE_LENGTH x the coarse ones'
+#: length, FINE_RADIUS thick, lighter - with the painted brows gone from the skins (2026-11-06) the 800 coarse hairs
+#: alone read thin beside HD Aaron's
+FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 1400, 0.5, 0.000022, 0.8
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
 
 
@@ -101,11 +106,12 @@ def strands(body: bpy.types.Object, seed: int = 11):
                          if (bins == b).sum() > 3 else 0.004 for b in range(8)])
         # roots spread evenly over the brow's band (MakeHuman's roots sit in tufts): s along it, denser in the body,
         # t across its height at that place
-        s_draw = rng.uniform(0.0, 1.0, COUNT * 3)
-        keep = rng.uniform(0.0, 1.0, len(s_draw)) < np.where(s_draw < 0.6, 1.0,
-                                                             1.0 - (1.0 - TAIL_DENSITY) * (s_draw - 0.6) / 0.4)
-        s_draw = s_draw[keep][:COUNT]
-        for s0 in s_draw:
+        s_all = rng.uniform(0.0, 1.0, (COUNT + FINE) * 3)
+        keep = rng.uniform(0.0, 1.0, len(s_all)) < np.where(s_all < 0.6, 1.0,
+                                                            1.0 - (1.0 - TAIL_DENSITY) * (s_all - 0.6) / 0.4)
+        s_all = s_all[keep][: COUNT + FINE]
+        for k_hair, s0 in enumerate(s_all):
+            fine = k_hair >= COUNT  # the soft body's hairs after the coarse ones
             b0 = min(int(s0 * 8), 7)
             t0 = rng.uniform(-1.0, 1.0)
             place = head + s0 * span * axis + (np.interp(s0, (np.arange(8) + 0.5) / 8, middle)
@@ -128,7 +134,7 @@ def strands(body: bpy.types.Object, seed: int = 11):
             sideways = np.cross(normal, flat)
             heading = np.cos(turn)[:, None] * flat + np.sin(turn)[:, None] * sideways
             d = np.cos(rise)[:, None] * heading + np.sin(rise)[:, None] * normal
-            length = 0.001 * np.interp(s, [0.0, 0.4, 1.0], LENGTH) * rng.uniform(0.8, 1.2)
+            length = 0.001 * np.interp(s, [0.0, 0.4, 1.0], LENGTH) * rng.uniform(0.8, 1.2) * (FINE_LENGTH if fine else 1.0)
             steps = np.vstack([np.zeros(3), d[:-1] * length / (POINTS - 1)])
             strand = root - 0.0001 * normal + np.cumsum(steps, axis=0)
             for i in range(1, POINTS):  # off the skin (a groom's collision pass)
@@ -137,8 +143,8 @@ def strands(body: bpy.types.Object, seed: int = 11):
                 if (q - near) @ n_near < 0.00008:
                     strand[i:] += to_world[:3, :3] @ (near + 0.00008 * n_near - q)
             found.append(strand)
-            radii.append(RADIUS * np.interp(t_points, [0.0, 1.0], [1.0, TIP]))
-            melanin.append(float(np.clip(MELANIN + rng.normal(0.0, MELANIN_SPREAD), 0.0, 1.0)))
+            radii.append((FINE_RADIUS if fine else RADIUS) * np.interp(t_points, [0.0, 1.0], [1.0, TIP]))
+            melanin.append(float(np.clip((FINE_MELANIN if fine else MELANIN) + rng.normal(0.0, MELANIN_SPREAD), 0.0, 1.0)))
     return found, radii, melanin
 
 
