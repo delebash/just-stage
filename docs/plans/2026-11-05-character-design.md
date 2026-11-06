@@ -43,7 +43,9 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
 - **Ours:** hm08's 19,158 vertices stay with their indices; new vertices are **appended** only where the measurements
   show topology can't follow real anatomy - today, **the lids** (lid ring p90 14.7 mm against real faces; one ring at the
   margin). Each further region (inner lips and mouth bag, nail beds, nostrils, ears at 4.4 mm) gets a loop only if its
-  own measurement says so; otherwise its gap is shape (base sculpt) or detail (HD maps), not topology.
+  own measurement says so; otherwise its gap is shape (base sculpt) or detail (HD maps), not topology. The lid work
+  includes the **recess**: Aaron's eyeball sits behind thick lids, ours bulges forward - the lids' thickness and the
+  eyeball's depth in the orbit set from the 20 real faces the scan route already fitted (pass 1).
 - **How an appended vertex lives** (the research's two conditions): born on an hm08 face, it stores barycentric weights
   on that face plus an **offset in the face's local frame** (tangent, bitangent, normal) - Blender's Surface Deform
   method [code], so it turns with the face in a blink; for every target and expression its position is recomputed from
