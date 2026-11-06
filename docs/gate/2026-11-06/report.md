@@ -83,3 +83,19 @@ man, Heavy woman, Muscular man) looked at beside Aaron, each gap found one facto
 | Lashes spiky | rise 12 deg median, none past 60 | not changed - the longest middle lashes seen end-on (open: a measure of his) |
 
 Run 9 (`.dev/gate/parts/2026-11-06i`): every fix above but the relief debris; run 10 with it.
+
+### Run 11 (`.dev/gate/parts/2026-11-06k`): the limbs from HSR0042-Body-045 through the Anny fit - looked at, not fixed
+
+Rendered 12:40; looked at 2026-11-06 ~15:10 (app work paused for the deep read; findings only).
+
+| View | Seen beside Aaron | Numbers (`numbers.json`, ours / his) |
+|---|---|---|
+| hand | ours flat - no veins, tendons or knuckle creases (his: all three); the donor scan's hands are smooth | L 70.1 / 58.5, fine 1.449 / 1.183 |
+| nails | a plain white plate with a hard white free edge and a white notch at one corner; bumpy skin round the fingertip; his: a pink plate in a nail groove with a cuticle | L 66.4 / 53.0, fine 0.951 / 1.059 |
+| foot, toenails | flat, no tendons; toenails white plates (his: pink, recessed) | foot L 64.7 / 49.8; toenails cover 0.314 / 0.821 |
+| full, hand (background) | dark speckled patches on the thighs ending in a visible line above the knees - the donor's leg hair baked into the relief and colour | full L 51.6 / 41.6 |
+
+The "fine" number is higher for ours on the hand and foot while ours reads flatter: it does not capture the mid-scale
+form (veins, tendons, creases); which texels raise ours (the thigh speckles, the pores) was not checked. Open, for the
+plan: a donor with detailed hands and feet, the leg hair out of the donor, the nails' look and the fingertip bumps, a
+mid-scale measure for the gate.

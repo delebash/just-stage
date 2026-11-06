@@ -107,13 +107,19 @@ re-measured on clean inputs (RESEARCH "Painted hair in our inputs"; the active j
 
 The user stopped app work to fix how I work: every doc read in full by job, the real gaps researched, one plan doc
 (the final best method per part) worked from, RESEARCH made an index. **Read first:** TASKS "THE DEEP READ, THEN ONE
-PLAN" (the approved rec, verbatim) and `.dev/audit/2026-11-06/CHECKLIST.md`. **State:** ten readers launched ~13:00
-(G1-G8 every doc by topic, G9 / G10 second reads of skin+body and eyes+lids+lashes+brows+hair), reports to
-`.dev/audit/2026-11-06/G<n>.md`. **Next:** check each report's coverage proof and tick the checklist; build the
-coverage table (job -> methods, evidence, decisions, code follows?); re-read every cited source passage of each job's
-final method myself; read each job's code modules whole; then gaps -> plan -> RESEARCH index. TASKS' reshaping waits
-for the user. App work paused except run 11's check (`.dev/gate/parts/2026-11-06k`: hands, nails, feet from the
-HSR0042 / Anny fit - not yet looked at).
+PLAN" (the approved rec, verbatim) and `.dev/audit/2026-11-06/CHECKLIST.md`. **State:** the ten reads (G1-G10, 2,936
+findings) are done, checked and ticked; regrouped by job into `.dev/audit/2026-11-06/jobs/J01-J24.md` + `CROSS.md`
+(the cross-cutting sections). Ten synthesizers (~15:00) turn the jobs into drafts - per job: candidates, the user's
+decisions verbatim, contradictions, the code read whole, one recommended method, gaps - in
+`.dev/audit/2026-11-06/synth/S1-S10.md` (S1 J04 skin colour; S2 J05+J07 relief, shading; S3 J06+J03+J02 body, fit,
+shape; S4 J08 eyes; S5 J09-J11+J13+J14 lids, lashes, brows, facial and body hair; S6 J12+J20 scalp hair, live view;
+S7 J01+J15-J17 base, mouth, nails, ears; S8 J18+J19+J24 rigs, animation; S9 J21+J22 gate, licences; S10 J23
+architecture). Drafts, not decisions. **Next:** check each draft; re-read the cited source passages of each job's
+recommended method myself; the gaps researched through the search-mistakes list; then the plan doc, the RESEARCH index;
+the questions for the user in one list. TASKS' reshaping waits for the user. App work paused. Run 11
+(`.dev/gate/parts/2026-11-06k`, the HSR0042 / Anny limbs) looked at ~15:10: hands and feet still flat (the donor's
+hands are smooth), its leg hair speckles the thighs, nails white plates - `docs/gate/2026-11-06/report.md` "Run 11";
+for the plan.
 
 ## Previous job (2026-11-06 morning) — THE INPUTS FIRST: every input of the character audited against CC5's way, fixed, then re-measured
 
