@@ -121,6 +121,18 @@ wrong like this"; "update the docs and fix all of this". Memory `audit-inputs-be
   `tests/blender/test_base_v2.py` (4 green). Open in step 1: the upper lid's recess (measure ours by the scans'
   method first), the library migration with groom re-binding, the margin's tint in the skin material, the gate's band
   - on clean inputs.
+- **Done 2026-11-06 (fix order 1-2 of the audit, each committed):** hair out of the skins (`tools/face_test/hair.py`:
+  DullRazor strands + mirror fill; `skin_base.py`: the eye/brow band, strands in the eye zone and by the hairline,
+  stubble found per texel, stubbled scans out of the beard, a faint shaved tint, holes filled with skin, smooth colour
+  fill); the clean pore tile (Ten24's cheek relief, `pore_tile.py`, shared by every skin via `maps.pore_relief`); a
+  stubble groom (`hair/stubble.py`, the library's "JustStage stubble", the gate's man wears it); the margin's tint in
+  the skin (`maps._margin_layer`); the photo iris in code (`tools/make_iris.py`, `eyes.shade`); migrations
+  (`juststage/migrations/`: v1 -> v2 on load and library add, grooms put back, our lashes re-made); defaults and the
+  library's characters on the scan skins; the gate's man = Average man (Scan man A). The upper lid's move dropped
+  (measured the scans' way: already real). RUNNING: `tools/rebuild_scan_skins.py` (six skins), `build_library.py hair`.
+  NEXT: `build_library.py characters` (backup in `.dev/backup/library_2026-11-06/`), then the gate (EEVEE, 21 views)
+  on clean inputs, each proof with its inputs table; then audit rows 10 (body skin), 13 (teeth maps), 11 (subsurface
+  and transmission maps), 3 (a brow base layer), 1 (lashes at distance: measure on/off first).
 
 ## Active job 0 (before the inputs audit) — the whole character redesigned, base mesh first
 
