@@ -324,9 +324,18 @@ Subjects: [1 · The machine](#1--the-machine) ·
   (MakeHuman's ethnic keys moving up to 0.19 m: p90 0.11-0.12 each; `gnm.identity` 0.11; keys of a few mm: 0.002);
   Basis only, modifiers off: p99 0.011. Every scan skin carried the face test character's face as shading. Fixed:
   `build_skins._bake` bakes normals on the Basis with modifiers off. A bare shape-keyed grid reproduces it (p99 0.43);
-  a Subsurf modifier hides it (re-evaluated frames). Open: `scan_bake.py`'s selected-to-active bake onto the same
-  shape-keyed mesh carries the same frame error under its 40-texel high-pass (mid-scale residue round the nose, lips,
-  eyes).
+  a Subsurf modifier hides it (re-evaluated frames). `scan_bake.py` is not affected: it bakes onto the fitted head
+  built as a plain mesh (no shape keys).
+- **Data in an image's alpha, the live view, and other gate findings** (*measured, 2026-11-06*, gate runs 7-8,
+  scratchpad `factors.py` with its `show-<node>` mode - a node's value rendered as emission): a region map with a data
+  channel in its alpha (`face_regions.png` RGBA, the image's alpha mode Channel Packed) read right through
+  `image.pixels` (R 0.125 on the neck) but the live view's pore depth there came out 2x and more - R, G, B divided by
+  an alpha of 0; a separate greyscale map fixed it (`face_share.png`). Rule: no data in alpha for the live view. Also
+  measured: the skin's scattering halved changes neither side of the face (our shadow side L* 50.7 either way against
+  HD Aaron's 36.4 - his face's form, not our material); our upper lashes rise 12 deg median root to tip (p90 22, none
+  past 60 - the "spikes" at the eye view are the longest middle lashes seen end-on); Cycles' and the live view's
+  tearline (a Fresnel mix of transparent and glossy) drew a dark outline round the opening on a dark stage (hidden:
+  gone) - an additive film keeps the eye seen through it.
 - **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's

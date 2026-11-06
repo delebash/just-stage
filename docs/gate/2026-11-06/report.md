@@ -66,5 +66,20 @@ man, Heavy woman, Muscular man) looked at beside Aaron, each gap found one facto
 | A swollen glossy lower rim with a kink under the iris | the lower lash line up to 5.2 mm off the eyeball (the next row 0.8 mm) - the contact key held only a minimum | the lash line capped at base v2's 2.6 mm, its move carried into two rings of skin (`parts.eyelid_contact`) |
 | Lashes in spiky clumps, no upper margin seen; lower lashes invisible; a dark grey outline round the opening; a flat white | - | next: one factor at a time (lashes remade on the opened lids, the tearline hidden) |
 
-Run 7 (`.dev/gate/parts/2026-11-06g`): the rebuilt skins (border blend, flat-faded relief holes), the stubble, on the
-five characters.
+### Runs 7-8 and what each changed (`.dev/gate/parts/2026-11-06g`, `-06h`, `factors/`)
+
+| Found | Measured | Changed |
+|---|---|---|
+| Stubble down the throat to the collarbones, reading white | roots below the jaw from big neck triangles across the region's edge | a neckline 15.5 cm below the eyes under the chin rising toward the jaw's angle, roots kept by their own weight; a quarter grey (`stubble.py`) |
+| A line across the dark men's chests at the head tile's border | the head tile's neck took the cheek's roughness (0.48 vs 0.59) and the face's coat; the mottle stopped at the tile | the region map's neck is body skin, the coat and mottle fade by the face's share (`make_face_regions.py`, `maps.py`) |
+| Run 8: a coarse patch with a jagged edge on the neck | colour, coat, mottle, roughness, density off: stays; relief off: gone; the pore depth as emission: 2x+ on the neck - the share packed in the map's alpha divided R, G, B | the share in its own map (`face_share.png`) |
+| Dark grey outline round the eye's opening | the tearline hidden: gone | an additive tear film (`eye_layers.py`) |
+| The nails' and mouth's coat never applied | the base coat linked after them | linked before (`maps.py`) |
+| Lips matte orange | L* a* b* 58.6 / 23.4 / 23.5 vs his 56.4 / 30.4 / 15.1 | tint from the lips' ratio, smoother, coated |
+| A flat white | - | the sclera's veins (rec 12, `tools/make_sclera.py`) |
+| Gashes on the Average woman | flat normal: gone - her relief's rings and arcs at the scans' holes (>0.3, folds <0.25) | each scan's relief dropped where steeper than 0.3 (`hair.relief_debris`) |
+| Our hair twice as light as his | L* 42 vs 22 at the face view | the gate's man wears his colour (melanin 0.93) |
+| Our shadow side lighter (50.7 vs 36.4) | the scattering halved: unchanged | not the material - his face's form (face shape, open) |
+| Lashes spiky | rise 12 deg median, none past 60 | not changed - the longest middle lashes seen end-on (open: a measure of his) |
+
+Run 9 (`.dev/gate/parts/2026-11-06i`): every fix above but the relief debris; run 10 with it.
