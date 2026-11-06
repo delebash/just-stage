@@ -237,3 +237,35 @@ def test_the_relief_layers_keep_one_size_inside_a_tile(human, tmp_path):
         assert nodes[maps.NODE + f"{name}_texel_lo"].inputs[0].links[0].from_node == nodes[maps.NODE + "texel"]
     assert nodes[maps.NODE + "texel"].attribute_name == maps.TEXEL
     assert nodes[maps.NODE + "pore_bump"].inputs["Height"].links[0].from_node == nodes[maps.NODE + "pores_blend"]
+
+
+def test_the_neck_on_the_head_tile_is_body_skin(human, tmp_path):
+    """The head tile reaches down the neck to the chest: its neck took the cheek's roughness (0.48 against the body's
+    0.59) and the face's clear coat, the body's mottle stopping at the tile's border - a glossy band ending in a line
+    across the chest on dark skin (the clean-input gate, 2026-11-06). The region map makes the neck body skin, and its
+    face share (alpha) fades the coat and the mottle across the neck."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    image = maps.face_regions()
+    w, h = image.size
+    px = np.empty(w * h * 4, np.float32)
+    image.pixels.foreach_get(px)
+    px = px.reshape(h, w, 4)
+    me = body.data
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    loop_vert = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_vert)
+    co = np.array([v.co for v in me.vertices])[loop_vert]
+    head = uv[:, 0] < 1.0
+    top = co[:, 2].max()
+    sample = px[(uv[:, 1] * h).astype(int).clip(0, h - 1), (uv[:, 0] * w).astype(int).clip(0, w - 1)]
+    neck = head & (co[:, 2] < top - 0.30)
+    cheek = head & (co[:, 2] > top - 0.17) & (co[:, 2] < top - 0.12) & (co[:, 1] < co[head, 1].min() + 0.05)
+    assert np.median(sample[neck, 1]) == pytest.approx(material.ROUGHNESS, abs=0.02)
+    assert np.median(sample[neck, 3]) < 0.1 and np.median(sample[cheek, 3]) > 0.9
+    nodes = body.juststage.skin_material.node_tree.nodes
+    share = nodes[maps.NODE + "body_share"]
+    for name in ("coat", "mottle_on_body"):
+        assert nodes[maps.NODE + name].inputs["Factor"].links[0].from_node == share

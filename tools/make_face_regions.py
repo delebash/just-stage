@@ -13,7 +13,7 @@ the forehead to 0.98 and the cheek past his to 1.68.
 Regions by place on the default human (it faces -Y; from the pupils, the front teeth and the face's front): the
 forehead above the brows, the nose, the chin, round the eyes; elsewhere the cheek's values. Softened over the mesh's
 neighbours. Writes `extension/juststage/data/generated/skin/face_regions.png`: 8-bit RGB, 2048², R the relief factor /
-RELIEF_SCALE, G the roughness, B the microrelief factor / RELIEF_SCALE."""
+RELIEF_SCALE, G the roughness, B the microrelief factor / RELIEF_SCALE, A the face's share (0 on the neck)."""
 
 from __future__ import annotations
 
@@ -25,6 +25,7 @@ import numpy as np
 api = importlib.import_module("bl_ext.system.juststage.api")
 paths = importlib.import_module("bl_ext.system.juststage.paths")
 maps = importlib.import_module("bl_ext.system.juststage.modules.skin.maps")
+material = importlib.import_module("bl_ext.system.juststage.modules.skin.material")
 build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
 parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
 
@@ -36,6 +37,12 @@ RELIEF_SCALE = 8.0  # R = factor / RELIEF_SCALE
 #: microrelief): its pore tile at x5 read craggy at the face's distance, HD Aaron's forehead clean there (2026-11-05)
 REGIONS = {"forehead": (2.0, 5.0, 0.36), "nose": (2.0, 3.0, 0.35), "chin": (1.5, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
            "cheek": (1.0, 1.0, 0.48)}  # fmt: skip
+#: the head tile's neck, down to the chest, is body skin (2026-11-06: as "cheek" it took the face's roughness and the
+#: face's coat - a glossy band ending in a line across the chest on dark skin): the body tiles' values, and a face
+#: share of 0 in the map's alpha (1 elsewhere), softened like the rest - modules/skin/maps.py fades the clear coat and
+#: the body's mottle by it
+NECK_BELOW = 0.065  # m below the mouth: the chin's underside and down
+SOFTEN = 4  # passes over the mesh's neighbours
 
 
 def main() -> None:
@@ -57,10 +64,12 @@ def main() -> None:
     region[front & (np.abs(x) < 0.03) & (z < mouth_z - 0.016) & (z > mouth_z - 0.06)] = "chin"
     near_eye = np.min(np.linalg.norm(co[:, None, :] - pupils[None, :, :], axis=2), axis=1) < 0.017
     region[front & near_eye] = "eyes"
-    values = np.array([REGIONS[r] for r in region], np.float32)
+    region[z < mouth_z - NECK_BELOW] = "neck"
+    table = {**{k: (*v, 1.0) for k, v in REGIONS.items()}, "neck": (1.0, 1.0, material.ROUGHNESS, 0.0)}
+    values = np.array([table[r] for r in region], np.float32)
     me = body.data
     edges = np.array([e.vertices for e in me.edges])
-    for _ in range(4):  # softened over the neighbours
+    for _ in range(SOFTEN):  # softened over the neighbours
         acc, cnt = values.copy(), np.ones(len(values), np.float32)
         np.add.at(acc, edges[:, 0], values[edges[:, 1]])
         np.add.at(acc, edges[:, 1], values[edges[:, 0]])
@@ -68,9 +77,10 @@ def main() -> None:
         np.add.at(cnt, edges[:, 1], 1)
         values = acc / cnt[:, None]
     uv_layer = me.uv_layers[maps.UV].data
-    image = np.zeros((SIZE, SIZE, 3), np.float32)
+    image = np.zeros((SIZE, SIZE, 4), np.float32)
     image[..., 0], image[..., 2] = (REGIONS["cheek"][k] / RELIEF_SCALE for k in (0, 1))
     image[..., 1] = REGIONS["cheek"][2]
+    image[..., 3] = 1.0
     for p in me.polygons:
         uvs = np.array([[uv_layer[i].uv.x - (HEAD_TILE - 1001), uv_layer[i].uv.y] for i in p.loop_indices])
         if not ((uvs >= 0) & (uvs <= 1)).all():
@@ -94,9 +104,10 @@ def main() -> None:
             image[rows, cols, 0] = v[:, 0] / RELIEF_SCALE
             image[rows, cols, 2] = v[:, 1] / RELIEF_SCALE
             image[rows, cols, 1] = v[:, 2]
+            image[rows, cols, 3] = v[:, 3]
     out = paths.GENERATED / "skin" / "face_regions.png"
     maps.write_png(out, image)
-    counts = {r: int((region == r).sum()) for r in REGIONS}
+    counts = {r: int((region == r).sum()) for r in table}
     print(f"wrote {out}: vertices by region {counts}")
 
 

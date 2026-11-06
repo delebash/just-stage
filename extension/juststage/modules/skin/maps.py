@@ -190,7 +190,7 @@ def write_png(path, rgb: np.ndarray, depth: str = "8") -> None:
     import OpenImageIO as oiio
 
     h, w = rgb.shape[:2]
-    spec = oiio.ImageSpec(w, h, 3, oiio.UINT8 if depth == "8" else oiio.UINT16)
+    spec = oiio.ImageSpec(w, h, rgb.shape[2], oiio.UINT8 if depth == "8" else oiio.UINT16)  # RGB, or RGBA packed
     out = oiio.ImageOutput.create(str(path))
     out.open(str(path), spec)
     out.write_image(np.ascontiguousarray(np.clip(rgb[::-1], 0.0, 1.0), dtype=np.float32))
@@ -403,6 +403,7 @@ def face_regions() -> bpy.types.Image:
     path = paths.generated("skin", "face_regions.png", tool=REGIONS_TOOL)
     image = bpy.data.images.load(str(path), check_existing=True)
     image.colorspace_settings.name = "Non-Color"
+    image.alpha_mode = "CHANNEL_PACKED"  # A the face's share, data like R, G, B
     return image
 
 
@@ -539,12 +540,21 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     body = _node(nt, "ShaderNodeMath", "body", (-1000, 420))
     body.operation, body.inputs[1].default_value = "GREATER_THAN", 0.999
     links.new(tile.outputs["X"], body.inputs[0])
+    # the body's share: 1 on the body's tiles, and on the head tile 1 less the region map's face share (its neck is
+    # body skin - make_face_regions: the coat and the mottle fade across it, no line at the tile's border)
+    regions = _node(nt, "ShaderNodeTexImage", "face_regions", (-1600, -2700))
+    regions.image, regions.interpolation, regions.extension = face_regions(), "Linear", "EXTEND"
+    links.new(uv.outputs["UV"], regions.inputs["Vector"])
+    share = _node(nt, "ShaderNodeMath", "body_share", (-800, 420))
+    share.operation = "MAXIMUM"
+    links.new(body.outputs["Value"], share.inputs[0])
+    links.new(_math(nt, "face_share_less", "SUBTRACT", 1.0, regions.outputs["Alpha"]), share.inputs[1])
     swing = _node(nt, "ShaderNodeMapRange", "mottle_swing", (-1000, 600))
     swing.inputs["To Min"].default_value, swing.inputs["To Max"].default_value = 1.0 - MOTTLE / 2, 1.0 + MOTTLE / 2
     links.new(noise.outputs["Fac"], swing.inputs["Value"])
     on_body = _node(nt, "ShaderNodeMix", "mottle_on_body", (-800, 600))
     on_body.data_type = "FLOAT"
-    links.new(body.outputs["Value"], on_body.inputs["Factor"])
+    links.new(share.outputs["Value"], on_body.inputs["Factor"])
     next(i for i in on_body.inputs if i.identifier == "A_Float").default_value = 1.0
     links.new(swing.outputs["Result"], next(i for i in on_body.inputs if i.identifier == "B_Float"))
     mottle = _node(nt, "ShaderNodeVectorMath", "mottle", (-600, 300))
@@ -598,7 +608,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     _mouth_layer(nt, bsdf, uv, which)
     coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
     coat.data_type = "FLOAT"
-    links.new(body.outputs["Value"], coat.inputs["Factor"])
+    links.new(share.outputs["Value"], coat.inputs["Factor"])
     next(i for i in coat.inputs if i.identifier == "A_Float").default_value = COAT_WEIGHT
     next(i for i in coat.inputs if i.identifier == "B_Float").default_value = BODY_COAT_WEIGHT
     links.new(next(o for o in coat.outputs if o.identifier == "Result_Float"), bsdf.inputs["Coat Weight"])
