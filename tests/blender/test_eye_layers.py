@@ -83,3 +83,17 @@ def test_they_follow_the_lids_when_the_eyes_open(human):
         _, _, wanted, _, _ = eye_layers.occlusion_shape(found[eye.name])
         assert np.allclose(values["js_el"][values["js_eye"] == k], wanted, atol=0.05), eye.name
     assert np.allclose(_gap_to_eyeball(shell, eye_objs), eye_layers.OCCLUSION_LIFT, atol=2e-6)
+
+
+def test_the_tear_film_adds_its_gloss_over_the_eye(human):
+    """The tearline's film shows the eye through it and adds the wet gloss on top: as a mix by Fresnel it put the
+    reflection of the dark stage in the eyeball's place at grazing angles - a dark grey outline round the opening (the
+    clean-input gate's eye view, 2026-11-06; HD Aaron's a light wet line)."""
+    _made, body = human
+    tear = eye_layers.layers_of(body)["eyeEdge"]
+    nt = tear.data.materials[0].node_tree
+    out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
+    top = out.inputs["Surface"].links[0].from_node
+    assert top.type == "ADD_SHADER"
+    kinds = {lk.from_node.type for s in top.inputs for lk in s.links}
+    assert kinds == {"BSDF_TRANSPARENT", "BSDF_GLOSSY"}

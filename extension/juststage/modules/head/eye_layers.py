@@ -263,11 +263,14 @@ def _tearline_material(name: str) -> bpy.types.Material:
     nt.links.new(fade.outputs["Result"], wet.inputs[1])
     gloss = nt.nodes.new("ShaderNodeBsdfGlossy")
     gloss.inputs["Roughness"].default_value = TEAR_ROUGHNESS
-    mix = nt.nodes.new("ShaderNodeMixShader")
-    nt.links.new(wet.outputs["Value"], mix.inputs["Fac"])
-    nt.links.new(nt.nodes.new("ShaderNodeBsdfTransparent").outputs["BSDF"], mix.inputs[1])
-    nt.links.new(gloss.outputs["BSDF"], mix.inputs[2])
-    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    nt.links.new(wet.outputs["Value"], gloss.inputs["Color"])  # the reflection's strength: water's Fresnel, faded in
+    # the film adds its gloss over the eye seen through it: as a mix by Fresnel it put the dark stage's reflection in
+    # the eyeball's place at grazing angles - a dark grey outline round the opening (the clean-input gate, 2026-11-06,
+    # gone with the film hidden; HD Aaron's a light wet line)
+    add = nt.nodes.new("ShaderNodeAddShader")
+    nt.links.new(nt.nodes.new("ShaderNodeBsdfTransparent").outputs["BSDF"], add.inputs[0])
+    nt.links.new(gloss.outputs["BSDF"], add.inputs[1])
+    nt.links.new(add.outputs["Shader"], out.inputs["Surface"])
     mat.surface_render_method = "BLENDED"
     return mat
 
