@@ -138,9 +138,13 @@ wrong like this"; "update the docs and fix all of this". Memory `audit-inputs-be
   0.015 mm (cheek bands = Aaron's); stubble against Aaron's; the design's lash settings and the caruncle applied (never
   were); fine brow hairs; the EEVEE hair model (rec 1) calibrated to Cycles (scalp 0.112 vs 0.121); body tiles take the
   head tile's border colour (seams); the margin's wet pink at the rim only; the dressed human's eyes opened (no bags -
-  the catch light was under the upper lid). Run 4 (`.dev/gate/parts/2026-11-06d`, 21 views) RUNNING. NEXT: its sheets,
-  the face and eye views again with the new eye shape, then the multi-character run (Average woman, Older man, Heavy
-  woman, Muscular man: face, eye, cheek, torso) - THE ONE PRIORITY's step 7.
+  the catch light was under the upper lid). Runs 4-6 (report "Runs 4-6"): the head normals' false shading (Cycles'
+  bake vs shape keys - fixed), the seam's relief (UV density - per-place tilings), the border blend, flat-faded relief
+  holes, stubble and brows as Aaron's, the lower lash line capped at 2.6 mm. Run 7 (`-06g`, five characters) RUNNING.
+  NEXT: run 7's sheets; the eye's lashes (spiky clumps - remade on the opened lids?), the dark tearline outline, the
+  flat white (one factor at a time, scratchpad `factors.py`); rebuild the library's hair (brows, stubble); then
+  sheen, torso definition, face shape, hair style - and the full suites at the end (known failing: test_ai_jobs'
+  sd-server, test_body's face count and BASE_VERSION - seen 2026-11-06 when a file path ran the whole suite).
 
 ## Active job 0 (before the inputs audit) — the whole character redesigned, base mesh first
 
