@@ -96,6 +96,9 @@ def stage_world(scene) -> bpy.types.World:
     nt.links.new(lit.outputs["Background"], mix.inputs[1])
     nt.links.new(stage.outputs["Background"], mix.inputs[2])
     nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    from ..modules.hair import hair_shading
+
+    hair_shading.sync_world(scene)  # the live view's hair: its image-light term from this world
     return world
 
 

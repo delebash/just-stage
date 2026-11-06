@@ -79,12 +79,13 @@ def _eevee_stand_in(nodes, links, melanin, redness, roughness: float):
         sigma = op("MULTIPLY_ADD", pheo, p, op("MULTIPLY", eu, e))
         value = op("EXPONENT", op("MULTIPLY", op("SQRT", sigma), -s))
         links.new(op("MAXIMUM", value, LIVE_FLOOR), colour.inputs[channel])
-    bsdf = nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf.inputs["Roughness"].default_value = 0.4
-    links.new(colour.outputs["Color"], bsdf.inputs["Base Color"])
+    from . import hair_shading  # the hair model (rec 1): its lobes per light, the body, the image light
+
+    nt = colour.id_data
+    shader = hair_shading.build(nt, colour.outputs["Color"], world_mean=hair_shading.world_mean(bpy.context.scene))
     output = nodes.new("ShaderNodeOutputMaterial")
     output.target = "EEVEE"
-    links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+    links.new(shader, output.inputs["Surface"])
 
 
 def hair_material(name: str) -> bpy.types.Material:

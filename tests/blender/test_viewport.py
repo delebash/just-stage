@@ -86,13 +86,15 @@ def test_skin_and_cornea_carry_their_eevee_settings(human):
         bpy.data.materials.remove(cornea)
 
 
-def test_hair_keeps_principled_hair_for_cycles_and_gets_an_eevee_stand_in():
+def test_hair_keeps_principled_hair_for_cycles_and_gets_the_eevee_hair_model():
     mat = groom.hair_material("live view hair")
     try:
         outputs = {n.target: n for n in mat.node_tree.nodes if n.type == "OUTPUT_MATERIAL"}
         assert set(outputs) == {"ALL", "EEVEE"}
         assert outputs["ALL"].inputs["Surface"].links[0].from_node.type == "BSDF_HAIR_PRINCIPLED"
-        assert outputs["EEVEE"].inputs["Surface"].links[0].from_node.type == "BSDF_PRINCIPLED"
+        live = outputs["EEVEE"].inputs["Surface"].links[0].from_node  # the hair model (rec 1, hair_shading.py)
+        assert live.type == "ADD_SHADER"
+        assert any(n.bl_idname == "ShaderNodeLightAccumulation" for n in mat.node_tree.nodes)  # its lobes per light
     finally:
         bpy.data.materials.remove(mat)
 
