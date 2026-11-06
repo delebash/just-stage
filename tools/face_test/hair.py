@@ -96,17 +96,20 @@ def clean(colour: np.ndarray, valid: np.ndarray | None = None) -> tuple[np.ndarr
     return fill(colour, found), found.astype(np.uint8)
 
 
-def mirror_fill(layer: np.ndarray, have: np.ndarray, where: np.ndarray) -> np.ndarray:
+def mirror_fill(layer: np.ndarray, have: np.ndarray, where: np.ndarray, neutral: float | None = None,
+                depth: tuple[float, float] = (24.0, 24.0)) -> np.ndarray:  # fmt: skip
     """A detail layer's holes (`where`, outside `have`) filled with the skin beside them, mirrored across the hole's
     edge - each hole texel takes the texel as far outside the edge as it is inside (reflection padding), so pores and
     fine lines carry on into it at their own size instead of a blur's smooth patch (the brows' and lash bands' holes:
-    every scan has hair there). Where the mirror lands in another hole, the edge's own texel is taken."""
+    every scan has hair there). Where the mirror lands in another hole, the edge's own texel is taken - or, with
+    `neutral` (a relief's 0: flat), the fill fades to `neutral` from `depth[0]` texels into the hole over `depth[1]` and
+    is `neutral` where the mirror fails: a wide hole's edge texel streaked across it made wedges of constant tilt."""
     out = layer.astype(np.float32).copy()
     todo = where & ~have
     if not todo.any() or not have.any():
         return out
     src = np.where(have, 0, 1).astype(np.uint8)
-    _dist, labels = cv2.distanceTransformWithLabels(src, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+    dist, labels = cv2.distanceTransformWithLabels(src, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
     edge = np.argwhere(src == 0)  # label k is the k-th zero texel in raster order (OpenCV's numbering)
     ys, xs = np.nonzero(todo)
     q = edge[labels[ys, xs] - 1]
@@ -116,5 +119,10 @@ def mirror_fill(layer: np.ndarray, have: np.ndarray, where: np.ndarray) -> np.nd
     ok = np.zeros(len(ys), bool)
     ok[inside] = have[my[inside], mx[inside]]
     sy, sx = np.where(ok, my, q[:, 0]), np.where(ok, mx, q[:, 1])
-    out[ys, xs] = layer[sy, sx]
+    if neutral is None:
+        out[ys, xs] = layer[sy, sx]
+        return out
+    fade = np.clip(1.0 - (dist[ys, xs] - depth[0]) / depth[1], 0.0, 1.0) * ok
+    fade = fade.reshape(-1, *([1] * (layer.ndim - 2)))
+    out[ys, xs] = neutral + fade * (layer[sy, sx] - neutral)
     return out

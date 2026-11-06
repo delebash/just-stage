@@ -398,7 +398,7 @@ def _relief(p, layers, shape, keep=None, scans=None, inside=None):
     if inside is None:
         return num / np.maximum(tot, 1e-6)[..., None] * np.clip(tot / 0.5, 0.0, 1.0)[..., None]
     have = tot > 0.25
-    return _hair().mirror_fill(num / np.maximum(tot, 1e-6)[..., None], have, inside)
+    return _hair().mirror_fill(num / np.maximum(tot, 1e-6)[..., None], have, inside, neutral=0.0)  # flat past reach
 
 
 def compose(seed, params=None):

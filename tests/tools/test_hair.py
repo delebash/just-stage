@@ -101,3 +101,24 @@ def test_the_heads_inside_holds_its_enclosed_holes():
     cover[40:60, 40:60] = False  # an eye
     inside = skin_base._inside(cover)
     assert inside[50, 50] and inside[20, 20] and not inside[5, 5]
+
+
+def test_a_wide_hole_in_a_relief_fades_to_flat_not_streaks():
+    """A relief (tangent XY, 0 = flat) with a hole wider than the skin round it: the mirror can't reach, and the old
+    fallback (the edge's own texel) streaked the scan's edge across the hole - wedges of constant tilt on the face
+    (the gate, 2026-11-06). With `neutral`, the fill carries the skin's detail in from the edge and fades to it."""
+    rng = np.random.default_rng(3)
+    size = 256
+    relief = (0.15 * rng.standard_normal((size, size, 2))).astype(np.float32)
+    relief[:, :, :] = cv2.GaussianBlur(relief, (0, 0), 1.0)
+    relief[:, 100:104] = 0.6  # the scan's edge: a strong rim just outside the hole
+    have = np.zeros((size, size), bool)
+    have[:, :104] = True  # skin on the left only; the hole is 152 texels wide
+    where = ~have
+    filled = hair.mirror_fill(relief, have, where, neutral=0.0, depth=(24, 24))
+    deep = filled[:, 104 + 60 :]
+    assert np.abs(deep).max() == 0.0  # flat deep in the hole, no streak
+    near = filled[:, 104 : 104 + 20]
+    assert np.abs(near).mean() > 0.03  # the skin's detail carried in near the edge
+    old = hair.mirror_fill(relief, have, where)
+    assert np.abs(old[:, 104 + 60 :]).mean() > 0.1  # the old fill streaked the edge (kept for colour)

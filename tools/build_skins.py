@@ -87,8 +87,9 @@ def _bake_uv(body, number: int = 1001) -> None:
         other.active_render = other.name == "bake"
 
 
-def _bake(body, kind: str, build, size: int = 4096) -> np.ndarray:
-    """One bake into a fresh float image through a temporary material made by `build(nodes, links, out)`."""
+def _bake(body, kind: str, build, size: int = 4096, rest: bool = False) -> np.ndarray:
+    """One bake into a fresh float image through a temporary material made by `build(nodes, links, out)`; `rest`
+    (always for NORMAL): on the Basis, modifiers off."""
     mat = bpy.data.materials.new("bake")
     nt = mat.node_tree
     nt.nodes.clear()
@@ -108,7 +109,7 @@ def _bake(body, kind: str, build, size: int = 4096) -> np.ndarray:
     # (measured 2026-11-06: p50 0.10 / p90 0.31 tilt from a plain BSDF; RESEARCH "The head tile's false shading")
     shape = (body.show_only_shape_key, body.active_shape_key_index)
     shown = [m.show_render for m in body.modifiers]
-    if kind == "NORMAL":
+    if kind == "NORMAL" or rest:
         body.show_only_shape_key, body.active_shape_key_index = True, 0
         for m in body.modifiers:
             m.show_render = False
@@ -338,6 +339,163 @@ def _border_colour(body, head_srgb: np.ndarray) -> np.ndarray | None:
     return np.median(colour, axis=0) if len(colour) > 50 else None
 
 
+#: the border blend (_border_blend): each side of a tile border moves its colour to the two sides' mean within this
+#: 3D distance (m), the mean taken from colours low-passed over BORDER_LOW (m); worked at BORDER_RES texels a tile
+BORDER_WIDTH, BORDER_LOW, BORDER_RES, BORDER_SPREAD = 0.05, 0.01, 512, 0.015
+BORDER_TILES = (1001, 1002, 1003, 1004)  # the nails' tile has its own colour
+
+
+def _read_png(path: Path) -> np.ndarray:
+    """A PNG's values as stored (no colour transform), rows bottom first as Blender's pixels (maps.write_png's
+    reverse)."""
+    import OpenImageIO as oiio
+
+    image = oiio.ImageInput.open(str(path))
+    px = image.read_image(format=oiio.FLOAT)
+    image.close()
+    return np.ascontiguousarray(px[::-1, :, :3])
+
+
+def _resize(a: np.ndarray, h: int, w: int) -> np.ndarray:
+    """Bilinear resize of an H x W x C array (texel centres kept)."""
+    ys = np.clip((np.arange(h) + 0.5) * a.shape[0] / h - 0.5, 0, a.shape[0] - 1)
+    xs = np.clip((np.arange(w) + 0.5) * a.shape[1] / w - 0.5, 0, a.shape[1] - 1)
+    y0, x0 = np.floor(ys).astype(int), np.floor(xs).astype(int)
+    y1, x1 = np.minimum(y0 + 1, a.shape[0] - 1), np.minimum(x0 + 1, a.shape[1] - 1)
+    fy, fx = (ys - y0)[:, None, None], (xs - x0)[None, :, None]
+    top = a[y0][:, x0] * (1 - fx) + a[y0][:, x1] * fx
+    bottom = a[y1][:, x0] * (1 - fx) + a[y1][:, x1] * fx
+    return top * (1 - fy) + bottom * fy
+
+
+def _masked_blur(a: np.ndarray, mask: np.ndarray, sigma: float) -> np.ndarray:
+    """A Gaussian blur of `a` inside `mask` only (normalised convolution: the island's edge doesn't take in the empty
+    background), separable."""
+    r = int(3 * sigma) + 1
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    k /= k.sum()
+
+    def conv(x):
+        x = np.apply_along_axis(lambda v: np.convolve(v, k, mode="same"), 0, x)
+        return np.apply_along_axis(lambda v: np.convolve(v, k, mode="same"), 1, x)
+
+    m = mask.astype(np.float64)
+    num = np.stack([conv(a[..., c] * m) for c in range(a.shape[2])], axis=-1)
+    den = conv(m)[..., None]
+    return np.where(den > 1e-6, num / np.maximum(den, 1e-6), a)
+
+
+def _positions():
+    """A bake material whose emission is the surface's position (+10 m: all positive)."""
+
+    def build(nodes, links, out):
+        geo = nodes.new("ShaderNodeNewGeometry")
+        add = nodes.new("ShaderNodeVectorMath")
+        add.operation, add.inputs[1].default_value = "ADD", (10.0, 10.0, 10.0)
+        links.new(geo.outputs["Position"], add.inputs[0])
+        emit = nodes.new("ShaderNodeEmission")
+        links.new(add.outputs["Vector"], emit.inputs["Color"])
+        links.new(emit.outputs["Emission"], out.inputs["Surface"])
+
+    return build
+
+
+def _border_samples(body) -> list[dict]:
+    """Points along every edge where two of BORDER_TILES meet: their rest position and each side's (tile, uv)."""
+    me = body.data
+    uv = np.empty(len(me.loops) * 2, np.float64)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    co = np.empty(len(me.vertices) * 3, np.float64)
+    (me.shape_keys.reference_key.data if me.shape_keys else me.vertices).foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    sides: dict = {}
+    for p in me.polygons:
+        tile = 1001 + int(np.floor(uv[list(p.loop_indices), 0].mean()))
+        if tile not in BORDER_TILES:
+            continue
+        corner = {me.loops[li].vertex_index: uv[li] for li in p.loop_indices}
+        for a, b in p.edge_keys:
+            sides.setdefault((a, b), []).append((tile, corner[a], corner[b]))
+    samples = []
+    for (a, b), side in sides.items():
+        if len(side) != 2 or side[0][0] == side[1][0]:
+            continue
+        for t in (0.125, 0.375, 0.625, 0.875):
+            samples.append({"co": co[a] * (1 - t) + co[b] * t,
+                            "sides": [(tile, ua * (1 - t) + ub * t) for tile, ua, ub in side]})  # fmt: skip
+    return samples
+
+
+def _border_blend(body, out: Path, stems: dict) -> None:
+    """The design's piece 4 (seam-continuous textures: "colour matched across each tile border by sampling the 3D
+    neighbour across the seam ... a border blend in the skin builder"): along every border of the head, torso, arm and
+    leg tiles, both sides' colours (low-passed over BORDER_LOW) are sampled where they meet; each side's texels within
+    BORDER_WIDTH (3D, rest shape) are scaled toward the two sides' mean there, fully at the border, smoothly to none -
+    their own detail kept. The clean-input gate showed the step across the chest and patches on the shoulders."""
+    samples = _border_samples(body)
+    if not samples:
+        return
+    res = BORDER_RES
+    tiles = {}
+    for number in BORDER_TILES:
+        path = out / f"{stems['base_color']}.{number}.png"
+        if not path.is_file():
+            continue
+        full = _decode(_read_png(path))
+        small = _resize(full, res, res)
+        _bake_uv(body, number)
+        pos = _bake(body, "EMIT", _positions(), res, rest=True) - 10.0
+        valid = np.abs(pos).sum(-1) < 25.0
+        valid &= small.sum(-1) > 1e-4
+        texel_mm = 0.0
+        if valid.any():  # the low-pass's width in texels: BORDER_LOW over this tile's texel size
+            texel_mm = maps.MM_PER_UV[number] / res
+        low = _masked_blur(small, valid, max(BORDER_LOW * 1000.0 / max(texel_mm, 1e-6), 1.0))
+        tiles[number] = {"path": path, "full": full, "pos": pos, "valid": valid, "low": low}
+    _bake_uv(body, 1001)
+
+    def colour(number, uv):
+        low = tiles[number]["low"]
+        x = min(max(int((uv[0] - (number - 1001)) * res), 0), res - 1)
+        y = min(max(int(uv[1] * res), 0), res - 1)
+        return low[y, x]
+
+    per_tile: dict = {n: ([], []) for n in BORDER_TILES}
+    for s in samples:
+        (ta, ua), (tb, ub) = s["sides"]
+        if ta not in tiles or tb not in tiles:
+            continue
+        ca, cb = colour(ta, ua), colour(tb, ub)
+        mean = (ca + cb) / 2.0
+        for tile, own in ((ta, ca), (tb, cb)):
+            per_tile[tile][0].append(s["co"])
+            per_tile[tile][1].append(mean / np.maximum(own, 1e-4))
+    for number, t in tiles.items():
+        points, ratios = per_tile[number]
+        if not points:
+            continue
+        points, ratios = np.array(points), np.array(ratios)
+        idx = np.flatnonzero(t["valid"].ravel())
+        pos = t["pos"].reshape(-1, 3)[idx]
+        field = np.ones((res * res, 3))
+        for start in range(0, len(idx), 2048):
+            chunk = pos[start : start + 2048]
+            d = np.linalg.norm(chunk[:, None, :] - points[None, :, :], axis=2)
+            near = d.min(axis=1)
+            g = np.exp(-0.5 * (d / BORDER_SPREAD) ** 2)
+            r = (g @ ratios) / np.maximum(g.sum(axis=1), 1e-12)[:, None]
+            s = np.clip(1.0 - near / BORDER_WIDTH, 0.0, 1.0)
+            fade = s * s * (3.0 - 2.0 * s)
+            field[idx[start : start + 2048]] = 1.0 + fade[:, None] * (r - 1.0)
+        field = field.reshape(res, res, 3)
+        h, w = t["full"].shape[:2]
+        blended = t["full"] * _resize(field, h, w)
+        maps.write_png(t["path"], _encode(blended))
+        moved = np.abs(field[t["valid"]] - 1.0).max() if t["valid"].any() else 0.0
+        print(f"border blend {number}: {len(points)} border points, up to {moved:.3f} moved")
+
+
 def _module_scan_list():
     """tools/face_test/scan_list.py (its scans and their credits)."""
     spec = importlib.util.spec_from_file_location("scan_list", str(ROOT / "tools" / "face_test" / "scan_list.py"))
@@ -482,6 +640,7 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
         corner = border
     man = composed is not None and params.get("sex") == "m"  # one man's torso: men's skins only (design piece 8)
     _body_tiles(body, out, stems, corner, props, tables, _body_scan() if man else None)
+    _border_blend(body, out, stems)
     print(f"{name}: normal baked to tangent space")
     for layer in body.data.uv_layers:
         layer.active_render = layer.name == "UVMap"

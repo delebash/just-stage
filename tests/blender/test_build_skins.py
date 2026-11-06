@@ -59,3 +59,48 @@ def test_a_normal_bake_ignores_the_shape_keys(modifier):
     finally:
         scene.render.engine = engine
         bpy.data.objects.remove(grid)
+
+
+def test_the_border_blend_meets_both_tiles_colours_at_their_border(tmp_path):
+    """The design's piece 4: two tiles' colours meet without a step at their border (the gate's chest seam), and a
+    place 5 cm or more from a border keeps its own colour."""
+    maps = build_skins.maps
+    nx, ny = 40, 10  # a 0.4 x 0.1 m strip: its left half on tile 1001, its right half on 1002
+    co = [(0.4 * i / nx, 0.1 * j / ny, 0.0) for j in range(ny + 1) for i in range(nx + 1)]
+    faces = [(j * (nx + 1) + i, j * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i)
+             for j in range(ny) for i in range(nx)]  # fmt: skip
+    me = bpy.data.meshes.new("strip")
+    me.from_pydata(co, [], faces)
+    uv = []
+    for f in faces:
+        right = np.mean([co[v][0] for v in f]) > 0.2
+        for v in f:
+            x, y, _z = co[v]
+            u = (x - 0.2) / 0.2 if right else x / 0.2
+            uv.append((0.25 + 0.5 * u + (1.0 if right else 0.0), 0.25 + 0.5 * y / 0.1))
+    me.uv_layers.new(name=maps.UV).data.foreach_set("uv", np.array(uv, np.float32).ravel())
+    strip = bpy.data.objects.new("strip", me)
+    bpy.context.scene.collection.objects.link(strip)
+    stems = {"base_color": "t.base_color"}
+    for number, value in ((1001, 0.6), (1002, 0.4)):
+        maps.write_png(tmp_path / f"t.base_color.{number}.png", np.full((256, 256, 3), value, np.float32))
+    scene = bpy.context.scene
+    engine = scene.render.engine
+    scene.render.engine = "CYCLES"
+    scene.cycles.device, scene.cycles.samples = "CPU", 1
+    try:
+        for o in bpy.context.selected_objects:
+            o.select_set(False)
+        bpy.context.view_layer.objects.active = strip
+        strip.select_set(True)
+        build_skins._border_blend(strip, tmp_path, stems)
+        left = build_skins._read_png(tmp_path / "t.base_color.1001.png")[128, :, 0]
+        right = build_skins._read_png(tmp_path / "t.base_color.1002.png")[128, :, 0]
+        at_border = left[int(0.745 * 256)], right[int(0.255 * 256)]
+        assert abs(at_border[0] - at_border[1]) < 0.02  # was 0.6 against 0.4
+        assert 0.4 < at_border[0] < 0.6
+        assert left[int(0.3 * 256)] == pytest.approx(0.6, abs=0.01)  # 18 cm away: its own
+        assert right[int(0.7 * 256)] == pytest.approx(0.4, abs=0.01)
+    finally:
+        scene.render.engine = engine
+        bpy.data.objects.remove(strip)
