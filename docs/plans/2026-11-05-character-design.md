@@ -30,20 +30,176 @@ nothing; each risky choice proved by a small measured test before adoption.
   (photo), pupil and the lower-lid wet margin equal by measure on one character and holding on five; the Artec scan
   carries real torso definition (form band 3.12 vs ours 2.27, Aaron 4.34).
 
-## The pieces (each: CC5's way, MetaHuman's way, ours, the best, its standard, its attack)
+## The design, piece by piece
 
-1. Base mesh and anatomy - awaiting `2026-11-05-research-base-mesh-2.md` (topology transfer, topology best practice,
-   other bases, UV seams).
-2. Parts (eyes, eye layers incl. caruncle, teeth, gums, tongue, lashes, brows).
-3. UV layout and texel density - awaiting the same file (seams).
-4. Shape spaces and sliders; character mixing - awaiting `2026-11-05-research-mixing-hair.md`.
-5. HD detail (definition, sculpt-level) - spec §1.4.
-6. Face rig, expressions, wrinkles - awaiting `2026-11-05-research-face-animation.md`.
-7. Body rig and correctives - awaiting the same.
-8. Skin (master texture set, layers, scans, micro detail, tone).
-9. Hair (scalp, facial, body; strands, cards; shading) - awaiting the mixing-hair file.
-10. Materials and the two renderers (EEVEE live, Cycles film).
-11. Live-view budget (8 GB card), LODs, export.
+Each piece: what CC5 does, what MetaHuman does, our choice, the standard it follows (or NOT STANDARD), and the attack.
+Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-research-*`, the spec.
+
+### 1 · Base mesh: hm08 kept whole, anatomy appended where the measurements show a gap
+
+- **CC5:** one artist-made base (17,683 polygons at SubD 0) with modelled lid flaps, lid ledge, lip crease; HD levels
+  by subdivision. **MetaHuman:** one template topology every head must match ("the MetaHuman Template mesh in terms of
+  topology" [page]); 24,000-vertex head at LOD0; separate `eyeshell`, `eyeEdge`, `cartilage`, `saliva` meshes.
+- **Ours:** hm08's 19,158 vertices stay with their indices; new vertices are **appended** only where the measurements
+  show topology can't follow real anatomy - today, **the lids** (lid ring p90 14.7 mm against real faces; one ring at the
+  margin). Each further region (inner lips and mouth bag, nail beds, nostrils, ears at 4.4 mm) gets a loop only if its
+  own measurement says so; otherwise its gap is shape (base sculpt) or detail (HD maps), not topology.
+- **How an appended vertex lives** (the research's two conditions): born on an hm08 face, it stores barycentric weights
+  on that face plus an **offset in the face's local frame** (tangent, bitangent, normal) - Blender's Surface Deform
+  method [code], so it turns with the face in a blink; for every target and expression its position is recomputed from
+  the deformed face (baked into the target files, which grow by the appended indices); UVs and rig weights come from
+  the face's barycentrics. **Closing expressions** (blink, lips together) get an authored contact correction on the new
+  loops (the margin snapped to the opposite lid and relaxed - OmniFaceRig's step is the published reference [page]).
+- **The loops themselves** are placed by measurement against references on disk, never copied: Blender Studio's CC0
+  realistic head (2-3 margin loops, inner-corner pocket), Blender Studio's "Einar" (CC-BY; lid drivers, eyelid
+  displacement), Ben Morgan's head base (caruncles, eye and mouth bags; "Creative Commons", $6.49), CharMorph's Antonia
+  (36,030 v, CC-BY 3.0), HD Aaron (CC5; reference only); Reallusion's and Epic's placement rules (margin rims on the
+  lid's outer and inner edges; "each cardinal loop serves its feature only") [page].
+- **Standard:** Maya's "Bake Topology To Targets" is the industry's tool for exactly this (change the base, push into
+  every target) [page]; Surface Deform's face-frame offset is Blender's own; MakeHuman's target format holds the result.
+  **NOT STANDARD (approved 2026-11-05 "if you cant find any other way"):** appending to MakeHuman's base and extending
+  its data - no better way found: switching topology (Blender's CC0 base, MakeHuman's proxy) loses exactly at the lids,
+  where hm08 has no surface to transfer sliders from, and Blender's head is coarser at level 0 (3,242 v) than hm08's
+  head (4,986).
+- **Attack:** (a) appended vertices break MakeHuman-format tools - we are their only reader; exports carry the final
+  mesh; `baseVersion` 2 with a vertex map (spec §1.1). (b) The margin intersects the eyeball on extreme eye sliders -
+  the eye clearance step (a shape key per refit) and a test over every eye slider's range. (c) The new loops' UVs are
+  slivers - they get relaxed UV space inside their region. (d) A new region need appears later - the same mechanism adds
+  it, `baseVersion` bumps, nothing earlier breaks. **Escalation:** if the appended lid fails its measured check (margin
+  band against Aaron's ~36 px; blink without gap or clip), the head alone moves to a new topology built to the measured
+  references (option C), the body staying hm08.
+
+### 2 · Subdivision and HD detail
+
+- **CC5:** HD morphs act at SubD 1-2 (70,732 / 282,928 polygons); per-level normal and displacement maps.
+  **MetaHuman:** detail in normal maps; wrinkles in animated maps.
+- **Ours (spec R4, §1.4, approved N3):** level 0 for sliders and rig; levels 1-2 by Multires; HD sliders = displacement
+  maps authored at level 2, faded by their slider. Edge creases on the appended margin loops keep its two rims crisp
+  under subdivision (Blender's edge crease, read by Catmull-Clark).
+- **Attack:** texture memory per active HD slider on the 8 GB card - baking on release keeps one map live (spec).
+
+### 3 · Parts
+
+- **Eyes:** GNM's eyeball and cornea (Apache-2.0); our photo-iris shader (polar unwrap; pupil 0.45 of the iris by
+  default, a slider; iris specular 0 - the cornea glosses) with an iris library from Wikimedia Commons (CC BY / CC0,
+  every colour); the white x0.71 with a warm tint (measured equal). **Eye layers:** the occlusion film (ICT, MIT) refit
+  to the lids' opening on every change (fixed 2026-11-05); the tearline returns to a thin tear meniscus (CC5's and
+  MetaHuman's role) once the margin is real geometry; the margin's pink, wet look moves to the skin (a margin region on
+  the new loops' UVs), the caruncle likewise (the appended pocket plus a wet pink region) - MetaHuman's `cartilage`
+  role. **Teeth, gums, tongue:** GNM's geometry and its 80 teeth components (Apache-2.0); shape variety from Poseidon3D's
+  dental scans (CC BY 4.0) wrapped on; colour from MIO's photos (CC BY 4.0). **Lashes and brows:** our strand
+  generators (lashes at 180 upper, 0.08 mm radius, melanin 1.0 - measured to make a lash line).
+- **Attack:** the eye's measured results came from a test shader - they become the eye module's own code with its own
+  tests; the iris photo shows one photo's structure on every character until the library has several per colour.
+
+### 4 · UV layout and seams
+
+- **CC5:** UDIM 1001-1006 (head, body, arm, leg, nails, eyelash); head and neck in one UV "for enhanced scan head and
+  animated blend-map" [page]. **MetaHuman:** head and body separate meshes; neck seams handled by normal fading.
+- **Ours:** hm08's UDIM layout kept (CC5's tile assignment); appended loops get space inside their islands. The chest
+  seam (measured: colour, plus unpadded island edges) is fixed where textures are made: every map is generated
+  **seam-continuous** - padding past island edges and colour matched across each tile border by sampling the 3D
+  neighbour across the seam (the bake's margin, and a border blend in the skin builder).
+- **Attack:** moving the seam line alone wouldn't fix it - CC5 has body seams too; continuity is a texture-generation
+  rule, tested by rendering every tile border at the gate's views.
+
+### 5 · Shape spaces, sliders and mixing
+
+- **CC5:** thousands of morph sliders (general, HD, mixer); ActorMIXER mixes **only its Mixer Sliders** - "leaves the
+  HD sliders and General morph sliders influences unchanged" [page]; parts head shape, eyes, nose, mouth, chin, ears,
+  forehead, torso, arms, legs, body ratio; a wheel of 3+ targets per part; skins swapped. **MetaHuman:** blend up to 3
+  presets per region or locally, features / proportions / both, a strength; Head Sculpt finds the closest combination
+  in its scan database; skin picked from a list [page].
+- **Ours (spec §1.2-1.4):** shape spaces on the level-0 base, extended to the appended vertices by the face-frame rule:
+  `makehuman` (1,258 CC0), `mhr` (Meta, 7,110 body scans, Apache-2.0), `gnm` (Google, 253 head components incl. eyes
+  and teeth, Apache-2.0), `scans` (every person our scan route wraps - HSRD heads, Artec's body, the user's finds),
+  `user` (sculpts saved as sliders). **Mixing:** a library of identities (scan identities and saved characters); soft,
+  overlapping region masks (CC5's part list); per region up to N identities with weights (CC5's wheel), a features /
+  proportions mode and a strength (MetaHuman's); ordinary sliders stay outside the mix (CC5's rule); skins blend per
+  detail layer.
+- **NOT STANDARD:** the mixer (no public standard; CC5 and MetaHuman are closed). Patents to check before it is built:
+  Disney US8922553 (region PCA, to 2033), Soul Machines US11354844 (narrow claim) [page] - our design is a weighted
+  blend of whole identities per mask, not region PCA; the claims to be read in full before building (not legal advice).
+- **Attack:** a slider set is only as good as the mesh under it - hence piece 1 first; mixing many identities blurs
+  features - the strength control and few identities per region.
+
+### 6 · Face rig, expressions, wrinkles
+
+- **CC5:** 262 expression morph sliders + 128 corrective combination sliders; per-character fixes in the Facial
+  Profile Editor; wrinkle sets as preset libraries per actor (`HD Aaron 2K.rlWrinkle` - five maps per set, three sets)
+  [page, measured]. **MetaHuman:** DNA rig (713 joints, 669 shapes at LOD0) solved in Epic's cloud; wrinkles chosen from
+  153 scanned characters (3 animated normal variants each) [measured].
+- **Ours (spec §2, approved):** the DNA rig evaluated by OpenRigLogic (MIT), MetaHuman's control names; ARKit 52 always
+  present. **Expression shapes:** candidates scored, not picked - MakeHuman's Faceunits 01 (CC0, on hm08), FACSHuman's 133
+  FACS action units (LGPL-3.0, on hm08 - no transfer), Meta's 72 artist FACS shapes (Apache-2.0), ICT (MIT), GNM's
+  expression space (Apache-2.0); each shape measured against real expression scans (D3DFACS, test only) and HD Aaron's;
+  the best per shape wins; all extended to the appended loops with the contact step. **Wrinkles:** RigLogic's animated
+  maps (3 colour + 3 normal variants, MetaHuman's model); their weights from mesh tension (Raman et al., MIT code);
+  their content generated per character by the published orientation-bin method (Weiss et al. EG 2024, CC-BY paper -
+  our code) because no open scanned wrinkle library exists.
+- **Attack:** no source ranks the expression sets - so the score decides; FACSHuman's LGPL is a label (data in a GPL
+  app); generated wrinkles may read synthetic - the gate's smile and brow views judge them against Aaron's set.
+
+### 7 · Body rig and correctives
+
+- **CC5:** UE-style skeleton, corrective expressions; **MetaHuman:** RBF and twist-swing correctives in the body DNA.
+- **Ours (spec §3):** UE5 skeleton by its own names, placed from MakeHuman's joint cubes; correctives in the body DNA's
+  RBF layer; **their shapes from SOMA-X's learned corrective model** (Apache-2.0; ~80,000 MHR poses; one model for every
+  body it supports, Anny's MakeHuman topology among them [page]) mapped onto hm08 through Anny's SOMA correspondence and
+  baked into RBF targets. Measured against plain skinning and HD Aaron at the shoulders, elbows, hips, knees.
+- **Attack:** correctives independent of body shape (MHR's and SOMA-X's own statement) may under-correct heavy or very
+  muscular bodies - measured on four body types before adoption.
+
+### 8 · Skin
+
+- **CC5:** SkinGen layer stack (skin base, normal effects - muscle, sinew, fat crease, veins - details, blemishes,
+  acquired, body hair, nails); micro-normal licensed from Texturing.XYZ; Digital Human Shader [page].
+  **MetaHuman:** texture synthesis from 153 scanned characters, region masks, micro detail [measured].
+- **Ours (proven parts kept):** one master UDIM texture set (spec §3.1 channels); colour from the scan route's composed
+  people (the likeness rule - never one scan's face); relief from the scans' geometry baked to normal maps (face proved
+  equal on six characters); pores and microrelief as tiled layers by region; tone from the skin-optics model (melanin,
+  blood); regions for margin, caruncle, mouth lining, lips, nails; body definition as HD maps from bare-body scans
+  (Artec's carries real definition); every map seam-continuous (piece 4). Re-run on the new base (old UVs unchanged, so
+  everything proven carries over).
+- **Attack:** body variety needs more bare-body scans (the user's search: women, heavier, older, darker skin); until then
+  the HD definition map comes from one man - a strength slider, not a default on everyone.
+
+### 9 · Hair
+
+- **CC5:** cards with its Smart Hair shader; **MetaHuman:** strand grooms in Unreal; Indiana Jones ships strands at 60
+  fps (~2 ms) with self-shadowing baked per hair point and random-subset LODs [page, SIGGRAPH 2025].
+- **Ours:** strands are the master (Blender's hair nodes, our generators, MakeHuman's CC0 styles, Blender's demo styles
+  CC BY-SA); **film:** Cycles' Principled Hair (Chiang) with measured melanin (black ~0.999, brown ~0.81, blonde ~0.12
+  [calc]); **live view:** strands with (1) the hair shader work already half built, (2) self-shadowing baked per hair
+  point (the published fix; EEVEE's hair is 1.4-2.3x off Cycles under image light), (3) a minimum strand width with
+  matching transparency (EEVEE draws sub-pixel strands at zero width [code]), (4) random-subset LODs; cards baked from
+  strands for far views and export (Strands2Cards' published method, our code - its repo has no licence).
+- **Attack:** scalp hair is not yet proved against CC5 - the proof (step 3) runs on this pipeline; frame time on the
+  2070 Super unmeasured - measured at the gate.
+
+### 10 · Materials and the two renderers
+
+- Principled BSDF / Principled Hair (OpenPBR-mapped, spec §3.2). **Live view = film render's detail:** measured -
+  our skin's calibrated scattering keeps 113-117% of Cycles' fine bands in EEVEE. Cycles is the film render and the
+  oracle (AGENTS.md); neither CC5 nor MetaHuman ships a path tracer.
+
+### 11 · Live-view budget, LODs, export
+
+- Spec §3.1: 2K working textures per tile, 4K on request, 8K for film and bakes; the gate measures VRAM. Level 1 in the
+  live view, level 2 for film; hair LODs (piece 9); DNA LODs 0-3 first. Export per spec (USD package, FBX + sidecar,
+  glTF/VRM), HD detail baked to per-level normal and displacement maps.
+
+## Build order (after the user's approval of this design)
+
+1. **The base mesh's lids** - the appended margin and caruncle, the face-frame transfer, the contact step; checked
+   against Aaron's margin band and through a blink. If it fails: escalate (piece 1).
+2. **The audit's remaining regions** (inner lips / mouth bag, nail beds, nostrils, ears) measured the same way; loops only
+   where measured.
+3. **Expressions and the face rig** on the final base (the scored sets, wrinkles).
+4. **Sliders:** `mhr`, `gnm`, `scans` wrapped onto the base; the mixer (after the patent read).
+5. **Textures** re-run on the base, seam-continuous; eyes into code; body HD maps.
+6. **Hair** live view (piece 9) and its proof.
+7. **Body correctives** (SOMA-X) and the multi-character gate in EEVEE and Cycles.
 
 ## Research files audited (2026-11-05)
 
