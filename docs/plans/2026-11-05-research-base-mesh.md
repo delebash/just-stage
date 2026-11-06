@@ -87,3 +87,12 @@ no scan shows - the three scans with closed, clean eye surfaces (lps, scan02, rp
 nose's p90 likewise by the nostrils' insides; the NICP's stiffness and scan holes add to all. Next: the same on the
 visible surface only (vertices seen from the gate's front and three-quarter cameras), and on level 0 with sliders only
 (the honest "can the sliders reach this face" number).
+
+**Second pass - the visible surface only** (vertices seen from the gate's front and both three-quarter cameras,
+ray-tested against the head; median over the 20 scans, p50 / p90 mm): nose 0.91 / 2.42, mouth 0.99 / 1.91, cheeks
+0.85 / 2.07, forehead 0.75 / 2.28, ears 1.63 / 4.43; the eye region split by distance from the eye's centre - within
+15.5 mm (against the eyeball) 0.91 / 2.32, **the lid ring 15.5-24 mm (lids, margin, fold) 0.96 / 14.66**. Even with the
+fit free to move every vertex, a tenth of the visible lid ring stays more than 14 mm off real lids; elsewhere hm08
+follows real faces within ~2 mm (ears 4.4). **The lids are where hm08's topology can't take a real face's shape** -
+the measured case for lid anatomy in the base. (Three scans with clean, simple eye surfaces - lps, scan02, rp_carla -
+fit the whole eye region within ~2 mm p90; the HSRD scans with open, real lids 9-10 mm.)
