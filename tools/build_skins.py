@@ -245,9 +245,30 @@ def _blur(mask: np.ndarray, px: int) -> np.ndarray:
     return mask
 
 
-def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tables) -> None:
+BODY_SCAN_SIZE = 2048
+
+
+def _body_scan() -> dict | None:
+    """The torso's detail from a bare-body scan (tools/body_scan.py: Artec's, CC BY 3.0) - its colour ratio around 1
+    and its relief, rows bottom first as Blender's pixels; None when not made."""
+    folder = paths.GENERATED / "skin"
+    if not (folder / "body_1002_relief.png").exists():
+        return None
+    import OpenImageIO as oiio
+
+    def read(name):
+        buf = oiio.ImageBuf(str(folder / name))
+        return np.asarray(buf.get_pixels(oiio.FLOAT), np.float32)[::-1, :, :3]
+
+    colour = read("body_1002_colour.png") * 2.0
+    return {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3, "relief": read("body_1002_relief.png")}
+
+
+def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tables, scan: dict | None = None) -> None:
     """Tiles 1002-1005: the plain body skin with its coloured regions (areolae, nails, genitals) by the tone model,
-    the nails shinier; the other channels flat."""
+    the nails shinier; the other channels flat. `scan` (_body_scan, a man's skin): the torso's colour detail and
+    relief from a bare-body scan on 1002 - CC5's body maps carry real skin and definition (inputs audit row 10); its
+    own areolas there in place of MakeHuman's mask."""
     own = np.array(skin_optics.Skin(props.melanin, props.eumelanin, props.blood).linear_rgb(tables))
     ratio = {}
     for region, (factor, added, blood) in REGIONS.items():
@@ -256,11 +277,16 @@ def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tabl
     base = _decode(body_srgb)
     for number in maps.TILES[1:]:
         _bake_uv(body, number)
-        masks = _bake(body, "EMIT", _masks_of(), BODY_SIZE)
+        with_scan = scan is not None and number == 1002
+        masks = _bake(body, "EMIT", _masks_of(), BODY_SCAN_SIZE if with_scan else BODY_SIZE)
         colour = np.broadcast_to(base, masks.shape).copy()
         for k, region in enumerate(("areolae", "nails", "genitals")):
             m = _blur(np.clip(masks[..., k], 0.0, 1.0), MASK_BLUR)[..., None]
+            if with_scan and region == "areolae":
+                m = m * (1.0 - scan["cover"][..., None])  # the scan's own areolas there
             colour *= 1.0 + m * (ratio[region] - 1.0)
+        if with_scan:
+            colour *= scan["ratio"]
         maps.write_png(out / f"{stems['base_color']}.{number}.png", _encode(colour))
         nails = _blur(np.clip(masks[..., 1], 0.0, 1.0), MASK_BLUR)
         rough = FLAT["roughness"] + nails * (NAIL_ROUGHNESS - FLAT["roughness"])
@@ -268,7 +294,7 @@ def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tabl
         for channel in ("cavity", "height"):
             flat = np.broadcast_to(np.full(3, FLAT[channel], np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
             maps.write_png(out / f"{stems[channel]}.{number}.png", flat, "8")
-        normal = np.broadcast_to((0.5, 0.5, 1.0), (FLAT_SIZE, FLAT_SIZE, 3))
+        normal = scan["relief"] if with_scan else np.broadcast_to((0.5, 0.5, 1.0), (FLAT_SIZE, FLAT_SIZE, 3))
         maps.write_png(out / f"{stems['normal']}.{number}.png", normal, "16")
     _bake_uv(body, 1001)
 
@@ -408,7 +434,8 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
     else:
         baked = np.broadcast_to(np.array((0.5, 0.5, 1.0), np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
     maps.write_png(out / f"{stems['normal']}.1001.png", baked, "16")
-    _body_tiles(body, out, stems, corner, props, tables)
+    man = composed is not None and params.get("sex") == "m"  # one man's torso: men's skins only (design piece 8)
+    _body_tiles(body, out, stems, corner, props, tables, _body_scan() if man else None)
     print(f"{name}: normal baked to tangent space")
     for layer in body.data.uv_layers:
         layer.active_render = layer.name == "UVMap"
