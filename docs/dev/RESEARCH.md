@@ -2624,3 +2624,32 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   plane (2.99 mm) and 0.0326 in front of the pupil's - before the MHCLO fit scales the part to our head; the fitted
   eye's depth is unmeasured. The `eye_exteriors` shell covers the whole ball (to 178 deg from the axis), so the
   "cornea" material also glosses the white.
+- **Blender Lab's MCP, read in its source** (*code read, 2026-11-06*, `projects.blender.org/lab/blender_mcp` `main`
+  `dbbf836` = tag v1.0.3's code; `.dev/audit/2026-11-06/research/R4.md` Q1, the exec and CORS lines re-read by me): the
+  Blender add-on runs any Python a request of type "execute" carries (`addon/blender_mcp_addon/mcp_to_blender_server.py`
+  L245-253, `exec(code, namespace)` inside a `WeakSandboxForLLM`; L322-332) - no token, no allow-list; every tool, named
+  ones too, works by sending Python. **26 tools, not 21** (L1709 above): two run Python - `execute_blender_code` and
+  `execute_blender_code_for_cli` (its own background Blender). `blmcp --transport http`: stateless Streamable HTTP on `/`,
+  `enable_dns_rebinding_protection=False` (L86), CORS `allow_origins=["*"]` (L97). FastMCP 1.x's token auth is constructor
+  arguments `blmcp` doesn't pass; no documented per-call hook. No release on MCP SDK 2.x (`mcp[cli]>=1.2.0,<2`; PRs #43,
+  #47 open). The add-on opens its socket only with Allow Online Access on (`__init__.py` L34-38, "a grey area"; issue #45
+  open). So "the Python tool off" in the permission table (`standards/commands-and-api.md` L105) can't close the door by
+  hiding the tool - the plan's Q-APP-3.
+- **Allow Online Access and localhost** (*doc read + measured, 2026-11-06*, R4 Q2): off blocks nothing - the manual:
+  "Blender cannot prevent third-party add-ons from violating this rule"; a loopback socket round trip worked in 5.3 with
+  it off; the extension guidelines' "`localhost` is fine" stands.
+- **Live Link** (*doc read*, R4 Q3): Unreal 5.8's "Live Link Plugin Development" names a source plugin
+  (`ULiveLinkSourceFactory` + `ILiveLinkSource`) - "the recommended approach for anyone that already has there own
+  streaming protocol" - or Message Bus (the sender links Unreal's core libraries; Epic's Maya / MotionBuilder way). No
+  Epic page names VMC.
+- **VRM add-on on 5.3** (*measured*, R4 Q4): 4.10.4 (2026-11-04) declares `blender_version_max = "5.3.0"`, exclusive
+  (`blender_ext.py` L2643): 5.3 refuses it ("This Blender version (5.3.0) must be less than the maximum version (5.3.0)").
+  The range in R08 L492 / R09 L250 is 4.2.0 up to, not including, 5.3.0.
+- **GPU frame time** (*source read*, R4 Q6): `--profile-gpu` writes `profile.json` (Trace Event Format) with real GPU
+  timestamps on the OpenGL backend only (`gl_debug.cc`, `glQueryCounter(GL_TIMESTAMP)`); on Vulkan / Metal CPU time
+  only. 5.3's default here is Vulkan (measured) - so `--gpu-backend opengl --profile-gpu`. `wm.redraw_timer` is wall
+  clock; `--debug-gpu` adds labels only.
+- **Installers** (*build code read*, R4 Q5): Blender - CPack WiX `.msi` + zip (signtool via Azure), a hardened-runtime
+  DMG notarised (`notarytool`) and stapled, `.tar.xz` + Snap / Steam / Store; Bforartists - Inno Setup `.exe` + zip,
+  DMG / zip, `.tar.xz` / AppImage / `.deb`. Labels: WiX 7's binaries carry a maintenance fee at US$10,000+ revenue;
+  Inno Setup asks commercial users to buy ("not strictly required"); Velopack MIT.
