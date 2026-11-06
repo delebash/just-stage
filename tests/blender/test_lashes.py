@@ -84,3 +84,23 @@ def test_lashes_follow_another_characters_lids(woman, tmp_path):
         assert near.max() < 0.02, near.max()
     finally:
         _remove(other)
+
+
+def test_upper_lashes_fan_without_spikes_or_tight_clumps(woman):
+    """The clean-input gate's eye view (2026-11-06): our upper lashes read as spiky clumps with a few standing straight up
+    - HD Aaron's a fringe of single lashes curving up and out. Few rise past 60 degrees root to tip, and a clump's tips
+    stay most of their roots' spacing apart."""
+    made, body = woman
+    importlib.import_module("bl_ext.system.juststage.modules.body.body_create").open_eyes(made.character)
+    found, _radii, _melanin, _missed = lashes.strands(body, eyes.openings(body))
+    per_eye = lashes.UPPER["count"] + lashes.LOWER["count"]
+    upper = [s for k, s in enumerate(found) if k % per_eye < lashes.UPPER["count"]]
+    d = np.array([s[-1] - s[0] for s in upper])
+    rise = np.degrees(np.arcsin(d[:, 2] / np.linalg.norm(d, axis=1)))
+    assert (rise > 60).mean() < 0.03, (rise > 60).mean()
+    roots = np.array([s[0] for s in upper])
+    tips = np.array([s[-1] for s in upper])
+    gaps_root = np.linalg.norm(np.diff(roots, axis=0), axis=1)
+    gaps_tip = np.linalg.norm(np.diff(tips, axis=0), axis=1)
+    keep = gaps_root < 0.002  # neighbours along one lid
+    assert np.median(gaps_tip[keep]) > 0.75 * np.median(gaps_root[keep]), (np.median(gaps_tip[keep]), np.median(gaps_root[keep]))

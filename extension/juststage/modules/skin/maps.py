@@ -411,7 +411,15 @@ def face_regions() -> bpy.types.Image:
     path = paths.generated("skin", "face_regions.png", tool=REGIONS_TOOL)
     image = bpy.data.images.load(str(path), check_existing=True)
     image.colorspace_settings.name = "Non-Color"
-    image.alpha_mode = "CHANNEL_PACKED"  # A the face's share, data like R, G, B
+    return image
+
+
+def face_share() -> bpy.types.Image:
+    """The face's share on the head tile (REGIONS_TOOL; 0 on its neck, which is body skin), loaded once and shared - a
+    map of its own: packed in the region map's alpha, the live view divided the region map's R, G, B by it."""
+    path = paths.generated("skin", "face_share.png", tool=REGIONS_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
     return image
 
 
@@ -550,13 +558,15 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(tile.outputs["X"], body.inputs[0])
     # the body's share: 1 on the body's tiles, and on the head tile 1 less the region map's face share (its neck is
     # body skin - make_face_regions: the coat and the mottle fade across it, no line at the tile's border)
-    regions = _node(nt, "ShaderNodeTexImage", "face_regions", (-1600, -2700))
-    regions.image, regions.interpolation, regions.extension = face_regions(), "Linear", "EXTEND"
-    links.new(uv.outputs["UV"], regions.inputs["Vector"])
+    faces = _node(nt, "ShaderNodeTexImage", "face_share", (-1600, -3000))
+    faces.image, faces.interpolation, faces.extension = face_share(), "Linear", "EXTEND"
+    links.new(uv.outputs["UV"], faces.inputs["Vector"])
+    for old in [lk for lk in nt.links if lk.from_node.name == NODE + "face_regions" and lk.from_socket.name == "Alpha"]:
+        nt.links.remove(old)  # a skin built while the share was the region map's alpha
     share = _node(nt, "ShaderNodeMath", "body_share", (-800, 420))
     share.operation = "MAXIMUM"
     links.new(body.outputs["Value"], share.inputs[0])
-    links.new(_math(nt, "face_share_less", "SUBTRACT", 1.0, regions.outputs["Alpha"]), share.inputs[1])
+    links.new(_math(nt, "face_share_less", "SUBTRACT", 1.0, faces.outputs["Color"]), share.inputs[1])
     swing = _node(nt, "ShaderNodeMapRange", "mottle_swing", (-1000, 600))
     swing.inputs["To Min"].default_value, swing.inputs["To Max"].default_value = 1.0 - MOTTLE / 2, 1.0 + MOTTLE / 2
     links.new(noise.outputs["Fac"], swing.inputs["Value"])

@@ -267,8 +267,18 @@ def test_the_neck_on_the_head_tile_is_body_skin(human, tmp_path):
     neck = head & (co[:, 2] < top - 0.30)
     cheek = head & (co[:, 2] > top - 0.17) & (co[:, 2] < top - 0.12) & (co[:, 1] < co[head, 1].min() + 0.05)
     assert np.median(sample[neck, 1]) == pytest.approx(material.ROUGHNESS, abs=0.02)
-    assert np.median(sample[neck, 3]) < 0.1 and np.median(sample[cheek, 3]) > 0.9
+    # the face's share in a map of its own: packed in the region map's alpha, the live view divided R, G, B by it -
+    # the neck's relief at 2x and more (gate run 8: a coarse patch with a jagged edge on the neck)
+    shares = maps.face_share()
+    sw, sh = shares.size
+    spx = np.empty(sw * sh * 4, np.float32)
+    shares.pixels.foreach_get(spx)
+    spx = spx.reshape(sh, sw, 4)
+    at = spx[(uv[:, 1] * sh).astype(int).clip(0, sh - 1), (uv[:, 0] * sw).astype(int).clip(0, sw - 1), 0]
+    assert np.median(at[neck]) < 0.1 and np.median(at[cheek]) > 0.9
     nodes = body.juststage.skin_material.node_tree.nodes
+    assert not nodes[maps.NODE + "face_regions"].outputs["Alpha"].is_linked
+    assert np.allclose(px[..., 3], 1.0)  # no alpha in the region map
     share = nodes[maps.NODE + "body_share"]
     for name in ("coat", "mottle_on_body"):
         assert nodes[maps.NODE + name].inputs["Factor"].links[0].from_node == share

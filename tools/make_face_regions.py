@@ -13,7 +13,8 @@ the forehead to 0.98 and the cheek past his to 1.68.
 Regions by place on the default human (it faces -Y; from the pupils, the front teeth and the face's front): the
 forehead above the brows, the nose, the chin, round the eyes; elsewhere the cheek's values. Softened over the mesh's
 neighbours. Writes `extension/juststage/data/generated/skin/face_regions.png`: 8-bit RGB, 2048², R the relief factor /
-RELIEF_SCALE, G the roughness, B the microrelief factor / RELIEF_SCALE, A the face's share (0 on the neck)."""
+RELIEF_SCALE, G the roughness, B the microrelief factor / RELIEF_SCALE; and `face_share.png`, the face's share (0 on the
+neck)."""
 
 from __future__ import annotations
 
@@ -39,7 +40,7 @@ REGIONS = {"forehead": (2.0, 5.0, 0.36), "nose": (2.0, 3.0, 0.35), "chin": (1.5,
            "cheek": (1.0, 1.0, 0.48)}  # fmt: skip
 #: the head tile's neck, down to the chest, is body skin (2026-11-06: as "cheek" it took the face's roughness and the
 #: face's coat - a glossy band ending in a line across the chest on dark skin): the body tiles' values, and a face
-#: share of 0 in the map's alpha (1 elsewhere), softened like the rest - modules/skin/maps.py fades the clear coat and
+#: share of 0 (1 elsewhere, `face_share.png`), softened like the rest - modules/skin/maps.py fades the clear coat and
 #: the body's mottle by it
 NECK_BELOW = 0.065  # m below the mouth: the chin's underside and down
 SOFTEN = 4  # passes over the mesh's neighbours
@@ -106,7 +107,9 @@ def main() -> None:
             image[rows, cols, 1] = v[:, 2]
             image[rows, cols, 3] = v[:, 3]
     out = paths.GENERATED / "skin" / "face_regions.png"
-    maps.write_png(out, image)
+    maps.write_png(out, image[..., :3])
+    # the face's share in a map of its own (packed in the region map's alpha, the live view divided R, G, B by it)
+    maps.write_png(out.with_name("face_share.png"), np.repeat(image[..., 3:4], 3, axis=2))
     counts = {r: int((region == r).sum()) for r in table}
     print(f"wrote {out}: vertices by region {counts}")
 
