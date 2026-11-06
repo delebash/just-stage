@@ -36,7 +36,13 @@ Regions: eye (lid margin, caruncle, lacrimal, lid fold), mouth (inner lips, mout
 nose (nostrils, alar crease), ears, neck, hands (knuckles, nail beds, palm creases), feet (toes, nail beds, soles),
 torso (navel, nipples, clavicles), joints (shoulder, elbow, wrist, knee - deformation loops), face deformation
 (jawOpen, smile, blink - the gate's expressions on each mesh).
-Output: a gap list per region - missing loops, missing volume, deformation faults - each measured (loop count, band
+**Slider resolution** (the user, 2026-11-05: "if you have sliders that maninupulate certain areas like fine control if you
+dont have the mesh designed correctly, enough triangles enough sub div enough whatever the sliders wont work correctly"):
+a slider moves only the level-0 vertices that exist, so per region measure how much real shape the level-0 cage can
+express - the residual of real faces and bodies fitted onto it (the HSRD heads already fitted by the scan route; the
+Artec body; GNM's and MHR's wraps - spec §1.2's recorded errors), p50 / p90 mm per region. High residual = too few or
+badly placed loops there, whatever sliders sit on top.
+Output: a gap list per region - missing loops, missing volume, too little resolution, deformation faults - each measured (loop count, band
 width in px at the gate's views, the expression's shape), in `2026-11-05-research-base-mesh.md`. Also researched in this
 phase: CC5's Actor Mixer and MetaHuman's blending (what they mix, on what data), and MetaHuman's face loops as reference.
 **Check:** every region has a verdict (enough / gap) with its render.
