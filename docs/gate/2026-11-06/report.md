@@ -22,4 +22,20 @@ first on inputs checked against CC5's way (`../../plans/2026-11-06-inputs-audit.
 
 ## Results
 
-(filled after the run)
+### Run 1 (EEVEE, 21 views, `.dev/gate/parts/2026-11-06/`, sheets ours | Aaron in `sheets/`)
+
+With the paint gone, what the paint had hidden shows - each found by looking at the sheets beside Aaron, then
+measured where a measure exists:
+
+| Part | Seen against Aaron | Measured | Done |
+|---|---|---|---|
+| Face skin relief | ours an orange peel everywhere (the new pore tile at the old tile's 0.3 mm) | upper cheek fine / pore / fold 0.82 / 1.74 / 1.31 vs 0.51 / 1.15 / 0.89 | pore depth 0.15 mm, microrelief 0.015 mm -> 0.63 / 1.135 / 0.884 (`maps.py`; scratchpad `pore_tune.py`) |
+| Stubble | ours scattered black straight hairs up to the cheekbones, a hard line on the jaw; his short, dense, curved, grey and dark, lip / chin / jaw only | - | region from the mouth (lip, chin, jaw, cheeks below the mouth), 100 a cm2, 1 mm, curved, a third grey (`stubble.py`) |
+| Lid margin | ours a swollen glossy pink lower rim; his a thin wet line | - | tint (0.86, 0.62, 0.62), roughness 0.25, coat 0.35 (`maps.py`) |
+| Round the eyes | dark rings under the brows and eyes (the scans' makeup and socket shade) | - | the composer holds darkening there to 12% and its grey to the skin's hue (`skin_base.py` EYE_DARK) |
+| Torso | a horizontal colour seam at the head tile's border; patches at the shoulders; the scanned definition faint beside his sculpted physique | - | the head's colour fades to the tone above the border (`skin_base.py` neck_fade); the torso detail fades 4 cm inside its island (`body_scan.py`) |
+| Lashes | sparse at face distance; his a dense dark line | on / off: to measure | - |
+| Face shape | puffy lids, small eyes, broad flat nose (MakeHuman's average) | - | shape: step 4 (sliders) / a character's choice |
+| Scalp hair | flat, greasy-looking strands; his styled cards | - | step 6 (hair live view) |
+
+### Run 2 (after the fixes above): running
