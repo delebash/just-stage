@@ -530,7 +530,6 @@ def compose(seed, params=None):
     else:
         ratio_log = p["age"] * fine + p["mottle"] * mid + p.get("broad", 1.0) * broad + own
     ratio_log[..., 0] += p["redness"] * noise(shape, rng, 24.0)  # patchy redness
-    ratio_log *= neck_fade(shape[0])[..., None]  # the plain tone at the body's border: no seam
     # freckles (small, many) and moles (few, larger, darker brown), placed by its seed
     spots = np.zeros(shape, np.float32)
     for count, radius, depth in ((int(4000 * p["freckles"]), 2.5, 0.10), (p["moles"], 6.0, 0.45)):

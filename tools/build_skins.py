@@ -299,6 +299,33 @@ def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tabl
     _bake_uv(body, 1001)
 
 
+def _border_colour(body, head_srgb: np.ndarray) -> np.ndarray | None:
+    """The head tile's own colour along its border with the body's tiles (the mean over the head tile's polygons that
+    share an edge with another tile's, sRGB) - the body tiles take it, so the two meet without a step (the design's
+    piece 4: seam-continuous; the clean-input gate showed a colour seam across the chest and patches at the shoulders)."""
+    me = body.data
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    tiles = np.array([1001 + int(np.floor(uv[list(p.loop_indices), 0].mean())) for p in me.polygons])
+    owner: dict = {}
+    for p in me.polygons:
+        for key in p.edge_keys:
+            owner.setdefault(key, set()).add(int(tiles[p.index]))
+    h, w = head_srgb.shape[:2]
+    mask = np.zeros((h, w), bool)
+    for p in me.polygons:
+        if tiles[p.index] != 1001 or not any(len(owner[k]) > 1 for k in p.edge_keys):
+            continue
+        for li in p.loop_indices:  # the border polygons' corners (rows bottom first, as Blender's pixels)
+            u, v = uv[li]
+            x, y = min(int(u * w), w - 1), min(int(v * h), h - 1)
+            mask[max(y - 3, 0) : y + 4, max(x - 3, 0) : x + 4] = True
+    colour = head_srgb[mask]
+    colour = colour[colour.max(axis=1) > 0.02]
+    return np.median(colour, axis=0) if len(colour) > 50 else None
+
+
 def _module_scan_list():
     """tools/face_test/scan_list.py (its scans and their credits)."""
     spec = importlib.util.spec_from_file_location("scan_list", str(ROOT / "tools" / "face_test" / "scan_list.py"))
@@ -434,6 +461,13 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
     else:
         baked = np.broadcast_to(np.array((0.5, 0.5, 1.0), np.float32), (FLAT_SIZE, FLAT_SIZE, 3))
     maps.write_png(out / f"{stems['normal']}.1001.png", baked, "16")
+    head_image = bpy.data.images.load(str(out / f"{stems['base_color']}.1001.png"), check_existing=False)
+    head_image.colorspace_settings.name = "Non-Color"  # as stored (sRGB-encoded), like `corner`
+    head = _pixels(head_image)[..., :3]
+    border = _border_colour(body, head)
+    if border is not None:
+        print(f"{name}: the body's colour from the head tile's border {np.round(border, 3)} (was {np.round(corner, 3)})")
+        corner = border
     man = composed is not None and params.get("sex") == "m"  # one man's torso: men's skins only (design piece 8)
     _body_tiles(body, out, stems, corner, props, tables, _body_scan() if man else None)
     print(f"{name}: normal baked to tangent space")
