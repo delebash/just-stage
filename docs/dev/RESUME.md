@@ -116,6 +116,7 @@ approved only if no better way is found.
   vertices) models a thick upper-lid margin and a lower-lid ledge (`.dev/gate/parts/audit/sheet_eye.png`,
   `sheet_mouth.png` - his wireframe didn't render yet); CC5 base 17,683 polygons at SubD 0; MetaHuman head LOD0 24,000
   vertices, 669 blend shapes, 713 joints; hm08 14,766 faces, head tile 4,986 vertices.
+- **2026-11-05 late: the design is written and attacked in seven passes** - `docs/plans/2026-11-05-character-design.md` (base: hm08 kept + appended lid anatomy with face-frame transfer and a contact step; the lids measured as the one topology gap; parts, seam-continuous textures, sliders + mixer, scored expression sets, tension-driven wrinkles, SOMA-X correctives, hair live-view techniques; build order) and three audited research files (`2026-11-05-research-base-mesh-2.md`, `-face-animation.md`, `-mixing-hair.md`). WAITING for the user's approval of the design before build step 1.
 - **Next:** the design document (`docs/plans/2026-11-05-character-design.md`): per piece CC5's way, MetaHuman's way,
   ours, the best, its standard, its attack; research only the verified gaps (rule 0 coverage map first); the audit
   sheets (eye, mouth, nose, ears, hands, feet, torso, joints, expressions) for ours / Aaron / Blender's CC0 / MetaHuman.
