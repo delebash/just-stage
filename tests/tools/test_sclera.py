@@ -42,7 +42,7 @@ def test_veins_cover_the_white_lightly_more_at_the_corners():
 
 def test_deep_vessels_are_bluer_and_superficial_ones_redder():
     m = make_sclera.veins(seed=1)
-    dark = m.min(axis=2) < 0.9
+    dark = m.min(axis=2) < 0.95  # deep vessels are faint (x0.91 at their darkest)
     red = dark & (m[..., 0] > m[..., 2] + 0.05)
     blue = dark & (m[..., 2] > m[..., 0] + 0.02)
     assert red.sum() > 0 and blue.sum() > 0

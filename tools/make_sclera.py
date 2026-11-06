@@ -28,7 +28,9 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "extension" / "juststage" / "data" / "generated" / "eyes"
 W, H = 4096, 1024
-R0, R1 = 1.0, 3.0  # limbus radii: the map's top and bottom rows
+#: limbus radii of the eye's UV radius (it runs with the projected 3D radius): the map's top and bottom rows - the
+#: white seen in an opened eye reaches ~1.7 (2026-11-06: at R1 3 with a fade over 0.7 every visible vessel was faint)
+R0, R1 = 1.0, 2.0
 LIMBUS_MM = 5.9  # the limbus's radius (an adult's ~11.8 mm visible iris)
 STEP_MM = 0.12
 #: superficial vessels: trunks, root width range (mm), wander per step (deg), branch chance per step, tint
@@ -64,7 +66,7 @@ def _grow(rng, canvas, n, width, wander, branch, seed_weight) -> None:
             dt_mm, dr_mm = STEP_MM * np.sin(heading), STEP_MM * np.cos(heading)
             r2 = r + dr_mm / LIMBUS_MM
             theta2 = theta + dt_mm / (r * LIMBUS_MM)
-            near = np.clip((r2 - R0 - 0.1) / 0.6, 0.0, 1.0)  # narrowing over the last ~4 mm before the limbus
+            near = np.clip((r2 - R0 - 0.03) / 0.25, 0.0, 1.0)  # narrowing over the last ~1.5 mm before the limbus
             shown = w * (0.2 + 0.8 * near)
             if shown < MIN_WIDTH or r2 < R0 + 0.03 or r2 > R1 + 0.05:
                 break
@@ -98,7 +100,7 @@ def veins(seed: int = 1) -> np.ndarray:
     m *= 1.0 - super_a[..., None] * (1.0 - np.array(SUPER_TINT, np.float32))
     theta = (np.arange(W) + 0.5) / W * 2 * np.pi
     r = radius_of_rows()
-    pink = (np.abs(np.cos(theta))[None, :] ** 2) * np.clip((r[:, None] - 1.3) / 1.2, 0.0, 1.0)
+    pink = (np.abs(np.cos(theta))[None, :] ** 2) * np.clip((r[:, None] - 1.3) / 0.6, 0.0, 1.0)
     m *= 1.0 - pink[..., None] * (1.0 - np.array(CORNER_PINK, np.float32))
     return np.clip(m, 0.0, 1.0)
 
