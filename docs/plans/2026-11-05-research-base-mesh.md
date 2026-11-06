@@ -149,3 +149,10 @@ window can reach the cheek). So the upper lid is ~2 mm too thin on ours (the bul
 upper lid); the lower lid's relation is already real-like on ours (Aaron's lower lid stands in front - unlike the real
 median). **Design consequence:** the recess is the upper lid's front brought ~2 mm forward in the base shape (not the
 eyeball pushed back, which would break the lower lid's relation) - part of build step 1.
+
+**CORRECTION (2026-11-06, measured): the upper lid needs no move.** The -1.0 mm above was measured by a different
+method (the most forward skin within 3.5 mm of the eyeball) from the real scans' (the most forward point 4-10 mm
+above the eye's centre in a 3 mm column, against the apex within 3 mm). Measured the scans' way on base v2 (scratchpad
+`recess_scanway.py`, the default man and woman with their eyes opened): **man upper -2.89 / -2.81 mm, woman -2.27 /
+-2.18 mm against the real median -2.86** (range -0.3 to -6.4); lower +3.31 / +1.42 (man), +0.76 / +0.89 (woman)
+against +3.16 (noisy, +0.3 to +11). The design's "upper lid ~2 mm forward" compared two methods; it is dropped.

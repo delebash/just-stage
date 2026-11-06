@@ -69,3 +69,27 @@ images (face regions, mouth, nails - UV-based), the scan skins (HeadTile bakes),
 5. Migration: a v1 library character loads as v2 with its grooms attached and its sliders unchanged.
 6. The gate's eye view: the lower-lid band in HD Aaron's range (the prototype's measure); the upper lid's front ~2.9 mm
    ahead of the cornea.
+
+**2026-11-06:** the upper lid's move is dropped - measured the scans' way ours is already -2.9 mm (man) / -2.2 mm (woman) against the real -2.86 (research-base-mesh §7, correction).
+
+## As built (2026-11-06; commits 939aa35, c6ab159) - where it differs from the plan above
+
+- **No base OBJ.** Base v2 is hm08 plus a record (`data/generated/base/v2.json`, `tools/make_base_v2.py`): the cut's
+  vertex pairs, each appended vertex's birth (edge ends + a third face vertex, `makehuman.Appended`) and offset, the
+  ring's moves, the rows, the topology's hash. `modules/body/base.py` `upgrade` applies it to any hm08 character - a new
+  one after its UDIM layout (so the new faces take their old faces' place in every skin's maps: the layout is per hm08
+  loop) and a saved one in migration - one way. The hash refuses a Blender whose subdivide makes another topology.
+- **The ring** is found on the default human with its eyes opened (EYE_OPEN): 36 + 36 edges, 128 vertices appended, 70
+  rows (58 full, 12 corner rows with only a lash line or a rim, one vertex per eye left as is). On MakeHuman's own
+  nearly closed lids it ran into the corners' folds (50 + 52 edges, 62 clean rows).
+- **The contact key** (`head/parts.py` `eyelid_contact`): rim 0.25 mm, the lash line at least 1.0 mm (38 of the 68 eye
+  targets pressed it up to 0.3 mm into the eyeball - the clearance key moves only outward-facing skin), the margin
+  midway; the eye group has 68 targets, not 66.
+- **The openings** move by up to 1.5 deg at the upper lid's middle (the margin lies on the eyeball now) - test 4 at 2 deg.
+- **Test 2** as built: a move of everything carries the appended vertices exactly; a real target moves them no further
+  than 1.5x their faces' move + 0.5 mm (the plan's "where Blender's subdivide puts them" compares a frame-carried
+  offset with a linear one - they differ by design when the face turns).
+- **The margin's tint** is in the skin material (`skin/maps.py` `_margin_layer`, a ratio to the skin's colour) instead
+  of the prototype's scratch nodes.
+- **The upper lid's move: dropped** (above). **Open:** the library migration with groom re-binding; test 6 (the gate's
+  band on clean skins).
