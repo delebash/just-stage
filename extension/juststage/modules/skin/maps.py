@@ -104,7 +104,11 @@ MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
 #: 2026-11-06, the clean-input gate: at (0.75, 0.42, 0.43) / 0.18 / coat 0.6 the lower lid read as a swollen glossy
 #: pink rim beside HD Aaron's thin wet line - softer
 MARGIN_TINT, MARGIN_ROUGHNESS, MARGIN_COAT = (0.86, 0.62, 0.62), 0.25, 0.35
-LIP_TINT, LIP_STRENGTH = (1.0, 0.70, 0.75), 1.0  # at 0.74 / 0.79 still paler than HD Aaron's
+LIP_TINT, LIP_STRENGTH = (1.0, 0.56, 0.90), 1.0  # at 0.74 / 0.79 still paler than HD Aaron's
+#: 2026-11-06, the clean-input gate's lips view: ours matte orange (L* a* b* 58.6 / 23.4 / 23.5), HD Aaron's redder and
+#: less yellow (56.4 / 30.4 / 15.1) and his lower lip shining - the tint from the two lips' linear ratio (0.70 / 0.75 x
+#: 0.80 / 1.22), the vermilion smoother and lightly coated
+LIP_ROUGHNESS, LIP_COAT = 0.33, 0.3
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
 #: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
@@ -362,7 +366,8 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
 
 
 def _lip_layer(nt, bsdf) -> None:
-    """The lips' vermilion: the colour scaled toward LIP_TINT by MPFB2's lips mask, read through hm08's own UVs."""
+    """The lips' vermilion: the colour scaled toward LIP_TINT by MPFB2's lips mask, read through hm08's own UVs; smoother
+    and lightly coated (LIP_ROUGHNESS, LIP_COAT)."""
     uvmap = _node(nt, "ShaderNodeUVMap", "lips_uv", (-1800, -2400))
     uvmap.uv_map = "UVMap"
     mask = _node(nt, "ShaderNodeTexImage", "lips_mask", (-1600, -2400))
@@ -376,6 +381,9 @@ def _lip_layer(nt, bsdf) -> None:
     nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, tinted.inputs[0])
     nt.links.new(tint, tinted.inputs[1])
     nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
+    for name, value, key in (("Roughness", LIP_ROUGHNESS, "rough"), ("Coat Weight", LIP_COAT, "coat")):
+        own = bsdf.inputs[name].links[0].from_socket if bsdf.inputs[name].is_linked else bsdf.inputs[name].default_value
+        nt.links.new(_mix(nt, f"lips_{key}", "FLOAT", share, own, value), bsdf.inputs[name])
 
 
 def _margin_layer(nt, bsdf) -> None:
@@ -603,15 +611,16 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
     shine = _math(nt, "pore_shine", "MULTIPLY_ADD", pore_height, PORE_SHINE[1], PORE_SHINE[0])
     links.new(_math(nt, "pore_specular", "MULTIPLY", spec.outputs["Value"], shine), bsdf.inputs["Specular IOR Level"])
-    _nail_layer(nt, bsdf, uv, which)
-    _lip_layer(nt, bsdf)
-    _mouth_layer(nt, bsdf, uv, which)
+    # the base coat first, the wet layers over it (linked after them, it replaced the nails' and the mouth's coat)
     coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
     coat.data_type = "FLOAT"
     links.new(share.outputs["Value"], coat.inputs["Factor"])
     next(i for i in coat.inputs if i.identifier == "A_Float").default_value = COAT_WEIGHT
     next(i for i in coat.inputs if i.identifier == "B_Float").default_value = BODY_COAT_WEIGHT
     links.new(next(o for o in coat.outputs if o.identifier == "Result_Float"), bsdf.inputs["Coat Weight"])
+    _nail_layer(nt, bsdf, uv, which)
+    _lip_layer(nt, bsdf)
+    _mouth_layer(nt, bsdf, uv, which)
     bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS
     bsdf.inputs["Coat IOR"].default_value = COAT_IOR
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT

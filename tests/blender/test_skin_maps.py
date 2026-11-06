@@ -172,8 +172,11 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     lips = next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node  # the lips' vermilion
     assert lips == nodes[maps.NODE + "lips_colour"]
     assert lips.inputs[0].links[0].from_node == nodes[maps.NODE + "nail_groove"]
-    rough = bsdf.inputs["Roughness"].links[0].from_node  # the margin's, over the mouth's, over the nails'
+    rough = bsdf.inputs["Roughness"].links[0].from_node  # the margin's, over the mouth's, the lips', the nails'
     rough = next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node
+    assert rough == nodes[maps.NODE + "mouth_rough"]
+    rough = next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node
+    assert rough == nodes[maps.NODE + "lips_rough"]
     assert next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node == nodes[maps.NODE + "nail_rough"]
     assert bsdf.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
     coords = nodes[maps.NODE + "nail_coords"].image  # each nail's own coordinates, made once (make_nail_coords.py)
@@ -269,3 +272,30 @@ def test_the_neck_on_the_head_tile_is_body_skin(human, tmp_path):
     share = nodes[maps.NODE + "body_share"]
     for name in ("coat", "mottle_on_body"):
         assert nodes[maps.NODE + name].inputs["Factor"].links[0].from_node == share
+
+
+def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
+    """The nails', the mouth's and the lips' coat reach the BSDF (the base coat was linked after the nails' and the
+    mouth's, replacing both - found 2026-11-06); the lips are smoother and coated (HD Aaron's lower lip shines, ours was
+    matte orange: a* 23 / b* 24 against his 30 / 15 at the gate's lips view)."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    bsdf = material.principled(body.juststage.skin_material)
+
+    def chain(socket_name):
+        names, sock = [], bsdf.inputs[socket_name]
+        while sock.is_linked:
+            node = sock.links[0].from_node
+            names.append(node.name.removeprefix(maps.NODE))
+            sock = next((i for i in node.inputs if i.identifier in ("A_Float", "A_Color") and i.is_linked), None)
+            if sock is None:
+                break
+        return names
+
+    coat = chain("Coat Weight")
+    for name in ("nail_coat", "mouth_coat", "lips_coat", "coat"):
+        assert name in coat, coat
+    assert "lips_rough" in chain("Roughness")
+    tint = maps.LIP_TINT
+    assert tint[1] < tint[2]  # redder, less yellow: blue kept above green
