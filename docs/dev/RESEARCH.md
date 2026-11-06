@@ -320,6 +320,14 @@ Subjects: [1 · The machine](#1--the-machine) ·
   capable of being downloaded, extracted or accessed by a third party as a stand-alone file" - a relief map in our
   open repo is a stand-alone file: LOCAL TEST only. The download link (`/photos/download?id=969125` for Dale) is
   bot-protected (curl: 403) and a browser click saves to Chrome's download folder - the user downloads it. 3D.sk's ArtStation post "FREE 3D Scan | Retopo Hands & Premade Head Textures" (the user's link [page]): its only free item is Adelle Sabelle's cleaned raw body scan (the same sample); the hands and head textures it shows are paid products.
+  **CGTrader free characters** (the user's 16 links, 2026-11-05; four read in Chrome [page]): "Matt" and "Amber Free
+  High-Poly" (Martinthedark-, rigged game characters; FBX / BLEND / Unity / Unreal), "Realistic Male Full Body Sculpt"
+  (daniartist, 171 reviews), "Head Parts Anatomy" (Avanar) - each "License (no AI) ... Free for personal and commercial
+  use"; CGTrader's terms (§21A, read 2026-11-04, `../plans/2026-11-04-research-licences-redo.md`): "strictly limited to
+  Incorporated Product", in software "prevent the end user from gaining access to the Product" - LOCAL REFERENCE only,
+  never shipped; downloads need the user's CGTrader login. Most useful as references: the full-body sculpt (body
+  definition), Head Parts Anatomy (lid and mouth anatomy); the stylised or game ones (knight, centaur, bunny girl, monkey
+  king, cool girl, Asian girl PBR) add nothing for realism (titles; pages unread).
 - **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
   1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
      CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
