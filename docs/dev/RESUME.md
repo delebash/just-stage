@@ -134,17 +134,21 @@ wrong like this"; "update the docs and fix all of this". Memory `audit-inputs-be
   teeth and gums shaded from the MIO photo (row 13); lashes rooted on base v2's lash line; the library's hair and
   characters rebuilt on base v2 (backup `.dev/backup/library_2026-11-06/`).
 
-- **Gate runs 1-4 on clean inputs (2026-11-06, `docs/gate/2026-11-06/report.md`):** pore depth 0.15 mm / microrelief
-  0.015 mm (cheek bands = Aaron's); stubble against Aaron's; the design's lash settings and the caruncle applied (never
-  were); fine brow hairs; the EEVEE hair model (rec 1) calibrated to Cycles (scalp 0.112 vs 0.121); body tiles take the
-  head tile's border colour (seams); the margin's wet pink at the rim only; the dressed human's eyes opened (no bags -
-  the catch light was under the upper lid). Runs 4-6 (report "Runs 4-6"): the head normals' false shading (Cycles'
-  bake vs shape keys - fixed), the seam's relief (UV density - per-place tilings), the border blend, flat-faded relief
-  holes, stubble and brows as Aaron's, the lower lash line capped at 2.6 mm. Run 7 (`-06g`, five characters) RUNNING.
-  NEXT: run 7's sheets; the eye's lashes (spiky clumps - remade on the opened lids?), the dark tearline outline, the
-  flat white (one factor at a time, scratchpad `factors.py`); rebuild the library's hair (brows, stubble); then
-  sheen, torso definition, face shape, hair style - and the full suites at the end (known failing: test_ai_jobs'
-  sd-server, test_body's face count and BASE_VERSION - seen 2026-11-06 when a file path ran the whole suite).
+- **Gate runs 1-10 on clean inputs (2026-11-06, `docs/gate/2026-11-06/report.md` - every finding, its measure and its
+  fix, run by run; scratchpad `factors.py` renders one factor at a time, `show-<node>` a node's value as emission).**
+  Fixed and committed: the head normals' false shading (Cycles' bake vs shape keys); the relief's size by UV density;
+  the 3D border blend; relief holes flat; relief debris dropped; the neck is body skin (region map + `face_share.png` -
+  never data in alpha); stubble as Aaron's (neckline, fine, dense, flowing); brows (grey only where a character greys);
+  the lid margin capped at 2.6 mm; sclera veins (rec 12) where the white shows; an additive tear film; lips; the
+  wet layers' coat; no pores on nails; the gate man's hair colour. Run 10 (`.dev/gate/parts/2026-11-06j`): face, front,
+  neck, torso clean on all five characters.
+- **NEXT (in order):** (1) hands and feet - flat beside HD Aaron's veins, tendons, knuckle creases (run 4's hand and
+  foot views): extend `tools/body_scan.py` from the torso to tiles 1003 / 1004 from HSRD-100's HSR0042-Body-045
+  (`.dev/downloads/hsrd100/`, bare but for trunks and cap, near A-pose, barefoot - arms ~20 deg out against our ~45:
+  per-limb rigid alignment before the wrap; mask the trunks and cap; hair out); (2) rebuild the library's hair and
+  characters (brows' grey) and re-run the gate with hand, nails, foot, ear views; (3) the eye: lower margin still a
+  glossy roll, the tear film's band; (4) torso definition, face shape (step 4), hair style; (5) the full suites once
+  at the end (known failing: test_ai_jobs' sd-server, test_body's face count and BASE_VERSION).
 
 ## Active job 0 (before the inputs audit) — the whole character redesigned, base mesh first
 
