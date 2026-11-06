@@ -330,7 +330,9 @@ Subjects: [1 · The machine](#1--the-machine) ·
   scratchpad `factors.py` with its `show-<node>` mode - a node's value rendered as emission): a region map with a data
   channel in its alpha (`face_regions.png` RGBA, the image's alpha mode Channel Packed) read right through
   `image.pixels` (R 0.125 on the neck) but the live view's pore depth there came out 2x and more - R, G, B divided by
-  an alpha of 0; a separate greyscale map fixed it (`face_share.png`). Rule: no data in alpha for the live view. Also
+  an alpha of 0; a separate greyscale map fixed it (`face_share.png`). The skin builder's read of the same map
+  (`image.pixels` of an 8-bit RGBA PNG) divided too: the head tile's neck roughness came out up to 1.0 (255) - the
+  dark characters' neck patch in gate run 9. Rule: no data in alpha, anywhere. Also
   measured: the skin's scattering halved changes neither side of the face (our shadow side L* 50.7 either way against
   HD Aaron's 36.4 - his face's form, not our material); our upper lashes rise 12 deg median root to tip (p90 22, none
   past 60 - the "spikes" at the eye view are the longest middle lashes seen end-on); the live view's tearline (a
