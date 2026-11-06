@@ -59,6 +59,9 @@ TRUNK = ("pelvis", "neck", "head")
 #: each joint's swing in the pose search (degrees each way): shoulder / elbow / wrist, hip / knee / ankle
 SWING = {"arm": (70.0, 45.0, 30.0), "leg": (35.0, 35.0, 20.0)}
 FLOOR = 0.006  # m: the scan's points below this (its floor sheet) are left out of the pose search
+#: the fit's gap (m) up to which a texel takes the scan's detail fully, and past which none (limbs: hands, forearms and
+#: feet lie within 3-10 mm after the wrap; upper arms, thighs and shins 9-16 mm, p90 30-56 - 2026-11-06)
+FIT_GAP = (0.006, 0.012)
 #: a fabric texel (the swim trunks, black): darker than this and greyer than this saturation
 FABRIC_VALUE, FABRIC_SATURATION = 0.10, 0.25
 
@@ -336,10 +339,29 @@ def bake(src: str = "artec") -> None:
     sm.materials.append(smat)
     scan = bpy.data.objects.new("scan", sm)
     scene.collection.objects.link(scan)
+    # each of our vertices' gap to the scan after the wrap: the post step takes the scan's detail only where it is small
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    scan_tree = BVHTree.FromPolygons(svp.tolist(), s["faces"].tolist())
+    gap = np.array([(Vector(p) - scan_tree.find_nearest(Vector(p))[0]).length if scan_tree.find_nearest(Vector(p))[0]
+                    is not None else 1.0 for p in co], np.float32)  # fmt: skip
+    me.attributes.new("fitgap", "FLOAT", "POINT").data.foreach_set("value", gap)
     mat = bpy.data.materials.new("bake")
     node = mat.node_tree.nodes.new("ShaderNodeTexImage")
     mat.node_tree.nodes.active = node
     me.materials.append(mat)
+    gap_mat = bpy.data.materials.new("gap")
+    gnt = gap_mat.node_tree
+    gnt.nodes.clear()
+    g_out = gnt.nodes.new("ShaderNodeOutputMaterial")
+    g_attr = gnt.nodes.new("ShaderNodeAttribute")
+    g_attr.attribute_name = "fitgap"
+    g_emit = gnt.nodes.new("ShaderNodeEmission")
+    gnt.links.new(g_attr.outputs["Fac"], g_emit.inputs["Color"])
+    gnt.links.new(g_emit.outputs["Emission"], g_out.inputs["Surface"])
+    g_node = gnt.nodes.new("ShaderNodeTexImage")
+    gnt.nodes.active = g_node
     for number in spec["tiles"]:
         flat = tuv.reshape(-1, 2).copy()
         flat[:, 0] -= number
@@ -360,6 +382,19 @@ def bake(src: str = "artec") -> None:
             px = np.array(img.pixels[:], np.float32).reshape(SIZE, SIZE, 4)[::-1, :, :3]
             np.save(work / f"bake_{kind.lower()}_{1001 + number}.npy", px)
             print(f"BAKED {kind} {1001 + number}")
+        if spec["fit"] == "limbs":  # the fit's gap on this tile (our own surface's attribute, emitted)
+            img = bpy.data.images.new("GAP", SIZE, SIZE, alpha=False, float_buffer=True)
+            img.colorspace_settings.name = "Non-Color"
+            g_node.image = img
+            me.materials[0] = gap_mat
+            bpy.ops.object.select_all(action="DESELECT")
+            ours.select_set(True)
+            bpy.context.view_layer.objects.active = ours
+            bpy.ops.object.bake(type="EMIT", margin=16, use_clear=True, uv_layer="Tile")
+            px = np.array(img.pixels[:], np.float32).reshape(SIZE, SIZE, 4)[::-1, :, 0]
+            np.save(work / f"bake_fitgap_{1001 + number}.npy", px)
+            me.materials[0] = mat
+            print(f"BAKED GAP {1001 + number}")
 
 
 def _mm_per_uv(tile_number: int) -> float:
@@ -401,6 +436,12 @@ def post(src: str = "artec") -> None:
         baked = cv2.erode(baked.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
         px_per_mm = SIZE / _mm_per_uv(name)
         w = baked.astype(np.float32)
+        gap_path = work / f"bake_fitgap_{name}.npy"
+        if gap_path.exists():  # where our wrapped surface lies off the scan, its detail would land displaced: faded out
+            gap = np.load(gap_path).astype(np.float32)
+            close = 1.0 - np.clip((gap - FIT_GAP[0]) / (FIT_GAP[1] - FIT_GAP[0]), 0.0, 1.0)
+            w = w * close * close * (3 - 2 * close)
+            baked = baked & (close > 0.0)
 
         def mblur(img, sigma, w=w):
             num = cv2.GaussianBlur(img * w[..., None], (0, 0), sigma)

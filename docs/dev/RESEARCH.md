@@ -338,6 +338,16 @@ Subjects: [1 · The machine](#1--the-machine) ·
   past 60 - the "spikes" at the eye view are the longest middle lashes seen end-on); the live view's tearline (a
   Fresnel mix of transparent and glossy) drew a dark outline round the opening on a dark stage (hidden: gone; Cycles
   not checked) - an additive film keeps the eye seen through it.
+- **Limbs from a bare-body scan - fitting our body's pose** (*measured, 2026-11-06*, `tools/body_scan.py hsr0042`,
+  HSRD-100's HSR0042-Body-045: bare but for trunks and cap, barefoot, near A-pose, 500k vertices, a floor sheet under
+  the feet): our default A-pose bends the forearm 19 cm forward (elbow y -0.016 to wrist y -0.207) where the scan's
+  arm hangs straight; a turn at the shoulder alone left the arms 8 cm off; a joint-by-joint two-angle search (each
+  segment weighed the same - the hand's 1,577 vertices had outweighed the upper arm's 172; each joint's swing limited -
+  the floor sheet had drawn the feet 73 deg round) then Amberg's non-rigid ICP: hands 3 / 8 mm (p50 / p90), forearms
+  5-6 / 12-17, feet 9-10 / 17-19, upper arms 13-16 / 39-42, thighs 9-12 / 35-56, shins 14-15 / 30. The bake takes the
+  scan's detail only where the wrapped surface lies within 6-12 mm (the fit's gap baked per tile). Next for the rest:
+  Anny (`pip install anny`, Apache-2.0 code, CC0 MakeHuman data; `Anny(rig="makehuman", topology="makehuman")`, 163
+  bones, pose as a 4x4 per bone, phenotype in [0, 1]; its README names no scan fitting - ours by gradient descent).
 - **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
