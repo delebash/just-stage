@@ -68,9 +68,12 @@ re-run the proofs on clean inputs, each proof's log opening with its inputs tabl
 | 9 | FIXED: Ten24's scanned cheek relief, seamless (`pore_tile.py`), shared by every skin (`maps.pore_relief`) |
 | 10, 15 | OPEN: the body's own colour and relief (Artec's bare torso through the face's scan route) |
 | 11 | HANDLED physically: Cycles' random-walk scattering carries light through thin parts; EEVEE reads the thickness from its shadow maps (`material.py`: ears and nostrils glow) - a map only if the gate's ear view shows a gap |
-| 12 | OPEN: region masks beyond the face's (forehead, cheek) |
+| 12 | PART: the region map's neck (the head tile below the chin) is body skin - its roughness and a face share (alpha) that fades the clear coat and the body's mottle (`make_face_regions.py`, `maps.py`); CC5's other masks (cavity, specular, AO by region) still open |
 | 13 | FIXED (first pass): teeth and gums shaded as the MIO photo shows them (`part_materials.py`); real arches (Poseidon3D) still open |
 | 14 | FIXED: the photo iris in code (`tools/make_iris.py`, `eyes.shade`) |
 | 16 | step 3 (expressions) |
 | 17 | with 1 |
 | 18 | FIXED: stubble on the gate's man |
+| 19 (new) | FIXED: the head normal carried the face test character's face as shading - Cycles' Normal bake keeps its frames on the Basis while the shading follows the shape keys (`build_skins._bake` on the Basis; RESEARCH "The head tile's false shading") |
+| 20 (new) | FIXED: pores 1.6x their size on the head tile's neck and shoulders - hm08's UV density inside a tile (`maps.add_texel`, `_levels`) |
+| 7, 8 (again) | the tile borders blended in 3D (`build_skins._border_blend`); the relief's wide holes fade to flat (`hair.mirror_fill(neutral=0)`); small rings and lines remain in Scan woman A's relief (gate run 7) - open |
