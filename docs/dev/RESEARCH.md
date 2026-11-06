@@ -2594,3 +2594,33 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   2026-10-29): [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md).
 - WebFetch reads up to 100,000 characters a call and caches 15 minutes; 20 subagents can run at once by
   default (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`), with no total limit — *agent, 2026-10-29* (the same docs).
+
+## 14 · Facts found during the deep read (2026-11-06; appended here so cited line numbers stay valid - each moves to its topic when this file becomes the index)
+
+- **HSRD-100's licence, read at its source** (*page read, 2026-11-06*: the Hugging Face API
+  `huggingface.co/api/datasets/digitalrealitylab/HSRD-100` and the card's `README.md`, last modified 2025-09-18):
+  `cardData.license` "cc-by-4.0"; the card's "## License": "This dataset is licensed under Creative Commons
+  Attribution 4.0 International (CC BY 4.0)", "Commercial use allowed", "Modification allowed", "Distribution allowed",
+  "Attribution required", "No additional restrictions"; "Consent: All participants provided informed consent for data
+  collection" (consent for collection - personality rights are not licensed: the likeness rule stands). Each pose's
+  `pose_meta.json` says `"license": "Commercial"` with `"price_commercial": "70"`, `"price_personal": "35"` - the
+  maker's store listing of the same scan, not the grant on the files we downloaded from the dataset; the dataset's
+  grant is CC BY 4.0 (ATTRIBUTION.md's row stands). Queries: none - two direct reads.
+- **Anny ships a fitter for registered meshes and MPFB2's rigs** (*code read, 2026-11-06*, `.dev/venv-rdf` anny
+  0.6.2): `anny_inverter.py` L35-44 `AnnyInverter` - "Estimate Anny parameters fitting a target mesh", pose "via
+  joint-wise rigid registration", phenotype "via finite-difference Jacobian optimization", input `[batch_size, V, 3]`
+  (vertices already in Anny's topology - i.e. after our wrap); `keypoints.py` (keypoint regressors);
+  `models/model_data.py` L223-231 its rigs are MPFB2's files - `"makehuman": ("rig.default.json",
+  "weights.default.json")` (163 bones), `"game_engine": ("rig.game_engine.json", "weights.game_engine.json")` (53
+  bones, root `Root`) - joints by MPFB2's `CUBE` strategy (`models/full_model.py` L243-255). So `Anny(rig="game_engine",
+  topology="makehuman")` is our mesh with the MPFB2 base of the spec's skeleton (`character-data-model.md` §2: "placed
+  from the joint cubes (MPFB2's `CUBE` strategy)", weights "from MPFB2's `weights.game_engine.json`"). Earlier line
+  L352 ("Its README names no scan fitting") is true of the README only. The package also holds `anthropometry.py`,
+  `shape_distribution.py`, `face_segmentation.py` (not read).
+- **GNM's wrap onto hm08: max error 29.19 mm** (*file, 2026-11-06*, `data/generated/gnm/REPORT.json`; S3) beside the
+  mean 0.87 / p95 2.17 mm recorded above; transfer distance mean 4.49 / max 72.9 mm.
+- **GNM's eye part as stored** (*measured, 2026-11-06*, `extension/juststage/data/generated/gnm/parts/eyeLeft.obj`,
+  hm08's decimetre units): sclera sphere radius 0.141 (14.1 mm), the cornea's apex 0.0299 in front of the iris's mean
+  plane (2.99 mm) and 0.0326 in front of the pupil's - before the MHCLO fit scales the part to our head; the fitted
+  eye's depth is unmeasured. The `eye_exteriors` shell covers the whole ball (to 178 deg from the axis), so the
+  "cornea" material also glosses the white.
