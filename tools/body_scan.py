@@ -36,6 +36,7 @@ TILE = 1  # 1002, the torso
 SIZE = 2048
 RELIEF_HP_MM = 40.0  # the relief kept below this scale (the fit's leftover above it)
 COLOUR_HP_MM = 60.0  # the colour's detail around 1: its regional tone above this is the character's
+EDGE_FADE = 96.0  # texels (~4 cm) to full strength from the scan's and the tile island's edges
 
 
 def export() -> None:
@@ -227,7 +228,11 @@ def post() -> None:
     # relief: the tangent xy over its own wide blur (the fit's leftover out), faded at the island's edge
     xy = nrm[..., :2] * 2 - 1
     hp = (xy - mblur(xy, RELIEF_HP_MM * px_per_mm / 2.0)) * w[..., None]
-    edge = np.clip(cv2.distanceTransform(baked.astype(np.uint8), cv2.DIST_L2, 5) / 24.0, 0, 1)
+    # faded out well inside the scan's reach and the tile's own island (its border with the arms' and head's tiles):
+    # no step where the detail ends (the gate's torso view showed patches at the shoulders)
+    edge = np.clip(np.minimum(cv2.distanceTransform(baked.astype(np.uint8), cv2.DIST_L2, 5),
+                              cv2.distanceTransform(cover, cv2.DIST_L2, 5)) / EDGE_FADE, 0, 1)  # fmt: skip
+    edge = edge * edge * (3 - 2 * edge)
     hp *= edge[..., None]
     z = np.sqrt(np.clip(1 - (hp**2).sum(-1), 0, 1))
     relief = np.dstack([hp * 0.5 + 0.5, z])

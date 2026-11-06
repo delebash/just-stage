@@ -26,10 +26,14 @@ import numpy as np
 from . import lashes
 
 NAME = "JustStage stubble"
-DENSITY = 60.0  # hairs a cm2
-LENGTH = 1.5  # mm
-RADIUS, TIP = 0.00006, 0.75  # m at the root (beard hair ~0.12 mm across); a cut hair's blunt end
-RISE = 35.0  # degrees off the skin at the root
+#: 2026-11-06, against HD Aaron's Stubble at the gate's mouth and cheek views: denser, shorter, finer, curved, a third
+#: of the hairs grey (the first pass - 60 a cm2, 1.5 mm, straight black - read as scattered black lines over the cheeks)
+DENSITY = 100.0  # hairs a cm2
+LENGTH = 1.0  # mm
+RADIUS, TIP = 0.00004, 0.7  # m at the root; a cut hair's blunt end
+RISE = 45.0  # degrees off the skin at the root
+CURL = 35.0  # degrees the hair turns along its length (each its own way)
+GREY_SHARE, GREY_MELANIN = 0.33, 0.25
 GROWTH = np.array([0.0, 0.5, -1.0])  # down and back (-Y is the face's front)
 FLARE = 0.25  # the cheeks' outward share
 SPREAD = 20.0  # degrees
@@ -44,12 +48,18 @@ def _smooth(x, lo, hi):
     return t * t * (3 - 2 * t)
 
 
-def beard_weight(rel: np.ndarray) -> np.ndarray:
-    """The beard's soft region at points relative to the eyes' midpoint (m, the character's axes) - skin_base.regions'
-    formula."""
+def beard_weight(rel: np.ndarray, mouth: np.ndarray | None = None) -> np.ndarray:
+    """The beard's soft region at points relative to the eyes' midpoint (m, the character's axes): skin_base.regions'
+    formula, and - with the mouth's centre (relative too) - stubble's own: the upper lip up to the nose, the chin, the
+    jaw and the cheeks below the mouth's level, down the throat (HD Aaron's: his cheeks above are clean)."""
     x, y, z = rel[:, 0], rel[:, 1], rel[:, 2]
     front = 1.0 - _smooth(y, 0.06, 0.09)
-    return front * _smooth(-z, 0.035, 0.050) * (1.0 - _smooth(-z, 0.19, 0.22)) * (1.0 - _smooth(np.abs(x), 0.07, 0.09))
+    w = front * _smooth(-z, 0.035, 0.050) * (1.0 - _smooth(-z, 0.15, 0.18)) * (1.0 - _smooth(np.abs(x), 0.07, 0.09))
+    if mouth is not None:
+        side = _smooth(np.abs(x - mouth[0]), 0.018, 0.035)  # 0 over the lip, 1 out on the cheeks
+        top = mouth[2] + 0.017 * (1.0 - side) - 0.004 * side  # the moustache's top, the cheeks' at the mouth's level
+        w = w * (1.0 - _smooth(z - top, -0.004, 0.006))
+    return w
 
 
 def _lips_per_vertex(body: bpy.types.Object) -> np.ndarray:
@@ -103,10 +113,10 @@ def strands(body: bpy.types.Object, seed: int = 5, density: float = DENSITY, len
 
         raise CommandError(f"{body.name} has no eyes to measure the beard from; run juststage.head.add_parts first")
     mid = np.mean([eye_layers._eye_sphere(found[p])[0] for p in ("eyeLeft", "eyeRight")], axis=0)
-    weight = beard_weight(co - mid)
     lips = _lips_per_vertex(body)
-    weight *= 1.0 - np.clip((lips - 0.2) / 0.3, 0.0, 1.0)
     lp = co[(lips > LIPS_AT)]
+    weight = beard_weight(co - mid, (lp.mean(axis=0) - mid) if len(lp) else None)
+    weight *= 1.0 - np.clip((lips - 0.2) / 0.3, 0.0, 1.0)
     if len(lp):
         top = lp[:, 2].max()
         nose = (np.abs(co[:, 0] - mid[0]) < 0.022) & (co[:, 2] > top + 0.013)
@@ -146,12 +156,16 @@ def strands(body: bpy.types.Object, seed: int = 5, density: float = DENSITY, len
     flat = np.cos(turn) * flat + np.sin(turn) * np.cross(n, flat)
     t = np.linspace(0.0, 1.0, POINTS)
     rise = np.radians(RISE) * (1.0 - 0.5 * t)  # lying to half its rise at the tip
-    lengths = 0.001 * length_mm * rng.uniform(0.7, 1.3, len(roots))
-    d = np.cos(rise)[None, :, None] * flat[:, None, :] + np.sin(rise)[None, :, None] * n[:, None, :]
+    lengths = 0.001 * length_mm * rng.uniform(0.6, 1.4, len(roots))
+    curl = np.radians(rng.normal(0.0, CURL, len(roots)))[:, None] * t[None, :]  # each its own way along it
+    side_dir = np.cross(n, flat)
+    heading = np.cos(curl)[..., None] * flat[:, None, :] + np.sin(curl)[..., None] * side_dir[:, None, :]
+    d = np.cos(rise)[None, :, None] * heading + np.sin(rise)[None, :, None] * n[:, None, :]
     steps = np.concatenate([np.zeros((len(roots), 1, 3)), d[:, :-1] * (lengths / (POINTS - 1))[:, None, None]], axis=1)
     found_strands = roots[:, None, :] - 0.00005 * n[:, None, :] + np.cumsum(steps, axis=1)
     radii = [RADIUS * np.interp(t, [0.0, 1.0], [1.0, TIP])] * len(roots)
-    melanin = list(np.clip(MELANIN + rng.normal(0.0, MELANIN_SPREAD, len(roots)), 0.0, 1.0))
+    grey = rng.uniform(size=len(roots)) < GREY_SHARE
+    melanin = list(np.clip(np.where(grey, GREY_MELANIN, MELANIN) + rng.normal(0.0, MELANIN_SPREAD, len(roots)), 0.0, 1.0))
     return list(found_strands), radii, melanin
 
 

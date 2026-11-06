@@ -69,6 +69,14 @@ STUBBLE_RATIO, STUBBLE_AREA = 1.35, 18.0
 EYE_ZONE = 0.035  # m
 HAIR_BAND, HAIRLINE = 30, 36  # texels
 BEARD_SHADOW = 0.35  # a man's default
+#: round the eyes the scans' colour carries makeup (liner, mascara, shadow) and the sockets' baked shade - CC5's skin
+#: has neither (makeup is its own layer): in the eye zone the colour's darkening is kept to EYE_DARK (log brightness,
+#: ~12% - real skin's darker lids and circles) and its grey (makeup's) to skin's own hue, softly
+EYE_DARK = 0.12
+#: the seam with the body (the design's piece 4: seam-continuous): the head tile's colour detail fades to the plain tone
+#: over the neck's last NECK_FADE metres above the UDIM head tile's border (tools/make_udim.py HEAD_Z, 1.28 m on the
+#: default body) - the body tiles carry the tone (and their own detail), so the two meet without a step
+HEAD_BORDER_Z, NECK_FADE = 1.28, 0.05
 
 
 def _module(name, path):
@@ -123,6 +131,21 @@ def eye_zone(size=4096):
     zone &= covered
     np.savez_compressed(cache, zone=zone)
     return zone
+
+
+def neck_fade(size=4096):
+    """1 on the head, falling to 0 at the head tile's border low on the neck (cached in scans/neck_fade.npz)."""
+    cache = DIR / "neck_fade.npz"
+    if cache.exists():
+        z = np.load(cache)["fade"]
+        if z.shape[0] == size:
+            return z
+    up = _module("up", "E:/Dev/3D/just-stage/extension/juststage/core/uv_projection.py")
+    E = np.load(DIR / "head_export.npz")
+    (pts,), _covered = up.raster_uv(E["tri_uv"], [E["co"][E["tris"]].astype(np.float32)], size)
+    fade = _smooth(pts[..., 2], HEAD_BORDER_Z, HEAD_BORDER_Z + NECK_FADE).astype(np.float32)
+    np.savez_compressed(cache, fade=fade)
+    return fade
 
 
 def _hair():
@@ -484,6 +507,13 @@ def compose(seed, params=None):
         have_l = tot_l > 0.25
         low = smooth_fill(num_l / np.maximum(tot_l, 1e-6)[..., None], have_l, inside)  # no edge where scans end
         low[~inside] = 0.0
+        # no makeup or baked socket shade round the eyes: darkening there held to EYE_DARK, its hue to the skin's
+        zone_w = cv2.GaussianBlur(eye_zone(shape[0]).astype(np.float32), (0, 0), 24.0)
+        luma = np.array([0.2126, 0.7152, 0.0722], np.float32)
+        lum_l = low @ luma
+        lift = np.maximum(-EYE_DARK - lum_l, 0.0) * zone_w
+        hue_l = low - lum_l[..., None]
+        low = low + lift[..., None] - hue_l * (zone_w * np.clip((-lum_l - EYE_DARK) / EYE_DARK, 0.0, 1.0))[..., None]
         if p.get("beard_shadow", 0.0) > 0 and tot_s.any():
             # CC5's faint shaved tint: the stubbled scans' beard darker than the clean colour there, brightness only,
             # softened (~2 mm) - the stubble itself is a groom
@@ -500,6 +530,7 @@ def compose(seed, params=None):
     else:
         ratio_log = p["age"] * fine + p["mottle"] * mid + p.get("broad", 1.0) * broad + own
     ratio_log[..., 0] += p["redness"] * noise(shape, rng, 24.0)  # patchy redness
+    ratio_log *= neck_fade(shape[0])[..., None]  # the plain tone at the body's border: no seam
     # freckles (small, many) and moles (few, larger, darker brown), placed by its seed
     spots = np.zeros(shape, np.float32)
     for count, radius, depth in ((int(4000 * p["freckles"]), 2.5, 0.10), (p["moles"], 6.0, 0.45)):

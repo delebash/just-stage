@@ -40,7 +40,9 @@ MM_PER_UV = {1001: 724.0, 1002: 851.0, 1003: 753.0, 1004: 1224.0, 1005: 48.0}
 PORE_TOOL = ".dev/venv-rdf/Scripts/python -I tools/face_test/pore_tile.py"
 #: the pores' relief: full strength, 0.3 mm (the gate, 2026-11-05: 0.35 / 0.2 mm left a scanned skin's cheek at 0.39 of
 #: HD Aaron's pore band; 1.0 / 0.3 mm brought it to 0.99 against his 0.96 - his pores are relief, his colour alone 0.40)
-PORE_STRENGTH, PORE_DISTANCE = 1.0, 0.0003
+#: 2026-11-06, the clean skins with Ten24's tile: 0.15 mm brings the cheek's pore / fold bands to HD Aaron's (1.135 /
+#: 0.884 vs 1.154 / 0.894; at 0.3 mm 1.74 / 1.31 - an orange peel); the gate's cheek view, scratchpad pore_tune.py
+PORE_STRENGTH, PORE_DISTANCE = 1.0, 0.00015
 #: per-pore shine: the specular scaled by PORE_SHINE[0] + PORE_SHINE[1] x the pore tile's height (darker in the pits)
 PORE_SHINE = (0.4, 0.6)
 #: the face's regions (tools/make_face_regions.py): the relief's depth scaled by region on the head tile - a forehead
@@ -53,7 +55,8 @@ REGION_RELIEF_SCALE = 8.0  # the map's R x this = the factor (make_face_regions.
 #: 0.45, ours 0.23 without it, 0.42 with it at 0.03 mm)
 MICRO_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_microrelief.py"
 MICRO_TILE_MM = 10.0
-MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.000035
+#: 2026-11-06: 0.015 mm (from 0.035) - the cheek's finest band 0.63 vs HD Aaron's 0.51 (0.035: 0.80)
+MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.000015
 #: the nails (rec 14, the realism brief §6.14: "a layered nail shader on tile 1005"): each nail's own coordinates
 #: (`tools/make_nail_coords.py`: along it 0 at the cuticle to 1 at the free edge, across it -1 to 1, its digit); the
 #: plate drawn inside them with a curved cuticle edge and rounded sides (the tile's polygons are coarse), over a bed
@@ -87,7 +90,9 @@ MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
 #: melanosis), glossy and wet. The tint is the prototype's measured colour (0.45, 0.17, 0.15 over a light skin's
 #: ~0.60, 0.42, 0.35) as a ratio; the band it made, 28-50 px, was in HD Aaron's 26-63 (research-base-mesh §7) - to be
 #: measured again on clean skins (docs/plans/2026-11-06-inputs-audit.md)
-MARGIN_TINT, MARGIN_ROUGHNESS, MARGIN_COAT = (0.75, 0.42, 0.43), 0.18, 0.6
+#: 2026-11-06, the clean-input gate: at (0.75, 0.42, 0.43) / 0.18 / coat 0.6 the lower lid read as a swollen glossy
+#: pink rim beside HD Aaron's thin wet line - softer
+MARGIN_TINT, MARGIN_ROUGHNESS, MARGIN_COAT = (0.86, 0.62, 0.62), 0.25, 0.35
 LIP_TINT, LIP_STRENGTH = (1.0, 0.70, 0.75), 1.0  # at 0.74 / 0.79 still paler than HD Aaron's
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
