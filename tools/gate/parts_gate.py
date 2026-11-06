@@ -38,6 +38,10 @@ CC5_BLEND = {"eevee": CC5_DIR / "aaron_hair_eevee.blend", "cycles": CC5_DIR / "a
 #: the library's Average man in the Scan man A skin (2026-11-06: Daniel's skin is a face-test AI painting with painted
 #: lashes - docs/plans/2026-11-06-inputs-audit.md); recs 11, 8 for the scalp and brows; stubble as hair (build_ours)
 OURS = {"character": "Average man", "scalp": "JustStage short combed", "brows": "JustStage brows"}
+#: our man's scalp hair as dark as HD Aaron's (2026-11-06: the library style's brown 0.82 with a fifth grey measured
+#: L* 42 at the face view against his 22) - his hair's colour, so the hair's shading and structure are what differ;
+#: through the app's own juststage.hair.set_colour, the gate's man only (character="" )
+SCALP_COLOUR = {"melanin": 0.93, "redness": 0.2}
 LENS = 85.0  # quality-gate.md §3
 SENSOR = 36.0
 SIZE = 2048
@@ -112,6 +116,10 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
     else:
         api.run("juststage.library.add", path=str(root / "Hair" / "Scalp" / f"{OURS['scalp']}.blend"),
                 character=shown.character)
+    if not character:
+        for o in list(scene.objects):
+            if o.juststage.part_of == shown.character and o.juststage.part == "scalp":
+                api.run("juststage.hair.set_colour", groom=o.name, **SCALP_COLOUR)
     if brows == "generated":  # JustStage's own (modules/hair/brows.py, rec 8)
         importlib.import_module("bl_ext.system.juststage.modules.hair.brows").make(
             next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of))
