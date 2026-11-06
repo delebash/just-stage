@@ -118,9 +118,11 @@ architecture). Drafts, not decisions. All ten in and checked by ~16:45 - what I 
 changed: `.dev/audit/2026-11-06/synth/VERIFY.md` (read it). Step 2 from ~16:55: four research agents (R1 skin and body
 sources and methods, R2 patents and licences, R3 eye / lid / hair / mouth data, R4 app plumbing) ->
 `.dev/audit/2026-11-06/research/R1-R4.md`; HSRD-100's licence read by me (CC BY 4.0, RESEARCH §14). New facts go to
-RESEARCH's §14 at the end (so the drafts' line citations stay valid until the index step). **Next:** check R1-R4
-(query logs, marks); write the plan (`docs/plans/2026-11-06-the-plan.md`, the character design upgraded - the design
-doc kept as the approved record); the RESEARCH index; the questions for the user in one list. TASKS' reshaping waits for the user. App work paused. Run 11
+RESEARCH's §14 at the end (so the drafts' line citations stay valid until the index step). R1-R4 in and checked (~18:20,
+VERIFY.md); every finding in RESEARCH §14. **The plan is written: `docs/plans/2026-11-06-the-plan.md`** (the character
+design upgraded; the design doc kept as the approved record) - §19 is the user's 61 decisions with recs, shown
+~18:30. **Next:** wait for the user's word on §19 (record it verbatim in TASKS); meanwhile step 4 - RESEARCH as an
+index by topic (nothing deleted, every line checked; the plan's RESEARCH line citations updated with it). TASKS' reshaping waits for the user. App work paused. Run 11
 (`.dev/gate/parts/2026-11-06k`, the HSR0042 / Anny limbs) looked at ~15:10: hands and feet still flat (the donor's
 hands are smooth), its leg hair speckles the thighs, nails white plates - `docs/gate/2026-11-06/report.md` "Run 11";
 for the plan.
