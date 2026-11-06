@@ -138,3 +138,14 @@ differently from the lid (hm08's own lid ring has the same mismatch; `parts.eye_
 **Design change:** the contact step runs on every refit, not only for closing expressions - the rim re-placed on the
 eyeball at 0.25 mm and the margin's middle eased between (a refit shape key beside the clearance key), tested over all
 66 eye targets in the production code.
+
+**The eye's recess, measured** (scratchpad `recess.py`; cornea's front against each lid's front at the lash line - the
+most forward skin within 3.5 mm of the eyeball in a 3 mm column through the eye's centre; minus = the cornea behind the
+lid's front): ours upper -1.0 / lower +0.7 mm (the new lid changes neither); HD Aaron upper -2.3 to -2.7 / lower -1.4
+to -1.9; Blender's head lower +1.6. **Real people** (the scan route's placed scans, a vertical profile through each eye:
+the most forward scan point 4-10 mm above and 5-10 mm below against the apex within 3 mm of the centre; 18 HSRD eyes):
+**upper -2.86 mm, lower +3.16 mm (median)**; upper -0.3 to -6.4 mm on every scan but two, lower noisy (+0.3 to +11 - the
+window can reach the cheek). So the upper lid is ~2 mm too thin on ours (the bulge Aaron's look lacks; he matches the real
+upper lid); the lower lid's relation is already real-like on ours (Aaron's lower lid stands in front - unlike the real
+median). **Design consequence:** the recess is the upper lid's front brought ~2 mm forward in the base shape (not the
+eyeball pushed back, which would break the lower lid's relation) - part of build step 1.
