@@ -25,6 +25,8 @@ into the user's JustStage library by `tools/build_skins.py` / `tools/build_libra
 | NIST skin reflectance (100 people) | opendata.nist.gov, doi:10.18434/M38597 | Cooksey, Allen & Tsai (NIST, 2017) | public domain |
 | OpenRigLogic (DNA and RigLogic, built into a wheel) | github.com/EpicGames/OpenRigLogic @ ea253d5 | Epic Games | MIT |
 
+| The skin's pore tile (`data/generated/skin/pores.png`, `tools/face_test/pore_tile.py`: the upper cheek's relief from Level_01_Normal, 33 mm) | ten24.info/sample-scan (Ten24 sample scan, OBJ package; the page as downloaded: `.dev/downloads/ten24_sample/sample-scan-page-2026-11-04.html`) | Ten24 Media | "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used." - credited here |
+
 ## Library skins and characters (built by our tools from these)
 
 The four mapped skins (Daniel, Amara, Walter, Mei) and the library characters wearing them mix layers from these
@@ -42,7 +44,7 @@ scans of real people (Sketchfab, "CC Attribution" - CC BY 4.0 - unless noted), u
 | FREE DOWNLOAD: Attractive African woman 236 | f2c29b6947f34237a0bfdc777120ef28 | deep3dstudio | CC BY 4.0 |
 | FREE DOWNLOAD Athletic African man walking 223 | f9a8e3b108f04e998815593f78f163b1 | deep3dstudio | CC BY 4.0 |
 | Carla Rigged 001 | acf520f450d14dd799f98a6fede3edf5 | Renderpeople | CC BY 4.0 |
-| Infinite, 3D Head Scan (pore tile) | three.js `examples/models/gltf/LeePerrySmith/` | Lee Perry-Smith ("based on a work at www.triplegangers.com") | CC BY 3.0 |
+| Infinite, 3D Head Scan (scan colour of man A; its cheek was the pore tile until 2026-11-06 - replaced, it carried his stubble) | three.js `examples/models/gltf/LeePerrySmith/` | Lee Perry-Smith ("based on a work at www.triplegangers.com") | CC BY 3.0 |
 
 Painted faces: FLUX 3 Image Klein / FLUX.2 klein 4B (Black Forest Labs), run locally; the outputs are ours, the models'
 licences (FLUX Kommunity licence / Apache-2.0) are labels.
