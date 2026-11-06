@@ -2653,3 +2653,56 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   DMG notarised (`notarytool`) and stapled, `.tar.xz` + Snap / Steam / Store; Bforartists - Inno Setup `.exe` + zip,
   DMG / zip, `.tar.xz` / AppImage / `.deb`. Labels: WiX 7's binaries carry a maintenance fee at US$10,000+ revenue;
   Inno Setup asks commercial users to buy ("not strictly required"); Velopack MIT.
+- **Patents near what we ship or plan - claims read at Google Patents** (*page read, 2026-11-06*; the agent's R2 Q1,
+  the claims below re-read by me from each page's raw HTML; **not legal advice**):
+  - **US 2024/0346733 A1** (Disney, "Graph simulation for facial micro features with dynamic animation", pending in
+    the US; R2: granted AU2024202285B2 and GB2633151B, to 2044 - those claims unread). Claim 1: "sampling, from a
+    three-dimensional (3D) representation of a facial structure, a plurality of nodes, wherein each node ... represents
+    a pore ...; generating one or more edges connecting a node ... to one or more different nodes ..., wherein each edge
+    ... represents a candidate wrinkle ...; generating ... a graph ...; calculating, for each edge ..., an edge weight
+    ...; and generating a wrinkle graph". Our `tools/make_microrelief.py` (shipped tile): nodes by Poisson disk on a
+    flat 2D tile, not sampled from a 3D face; the furrows are the walls of the nodes' Voronoi cells; pores sit on wall
+    junctions, not at the nodes - it lacks claim 1's first element as written. Its docstring describes it as Weiss et
+    al.'s method ("pores are a graph's nodes") - to reword to what it does.
+  - **US 12,651,397 B2** (Disney, "Graph simulation for facial micro features via pre-computed displacement texture
+    maps" - the EG 2024 orientation-bin method; R2: granted, to 2044-04-06). Claim 1: a wrinkle graph of pores and
+    wrinkles on a 3D face; wrinkles "assign[ed] ... to one of a plurality of bins" by a wrinkle characteristic;
+    "pre-computed displacement texture maps" per bin; "a per-frame displacement texture map"; "modifying an animation
+    frame". The design's "wrinkle content generated per character by the published orientation-bin method" (design
+    L145-147) reads onto it - that route is out. The paper's CC BY licence grants no patent rights (CC BY 4.0 §2(b)(2)).
+  - **US 12,062,140 B2** (Microsoft; inventors Baltrusaitis, Hewitt, Wood, Raman - the authors of the tension paper our
+    design cites; to 2043). Claim 1: a tension map per vertex, compressed / expanded wrinkle textures "formed by
+    aggregating maps of the first face with different expressions using the tension map", applied "according to the
+    tension map", rendered. Claim 17 (no render step): "computing a weighted combination of the maps to produce a
+    compressed wrinkle texture, wherein the weights ... are negative weights from the tension map" (and expanded from
+    positive), "storing" them. Design rule: tension may set the DNA's animated-map weights offline; never build
+    wrinkle textures as tension-weighted combinations of expression maps. Raman's MIT add-on carries no patent grant.
+    US 12,555,324 (same family, to 2042) and US 8,217,955 (per-pixel stress shader perturbing normals, to 2030): R2.
+  - **US 9,269,185 B2** (Sony, "System and method for procedural CG eye meniscus", active, expires 2033-08-24). Claim
+    16: "A meniscus plug-in ... comprising: an input module to receive a computer-generated model; an analysis module to
+    automatically determine at least one feature of the module in which a liquid component may exhibit a meniscus; and a
+    meniscus module to procedurally modify the model or procedurally add to the model to cause a meniscus to appear."
+    Our tearline (ICT's ring placed to the lids' opening found automatically, `head/eye_layers.py`) reads close to it.
+    Design-around to weigh: the tearline as a fixed part bound to base v2's known margin rows (an MHCLO-style binding, as
+    the teeth) - no automatic search for where a meniscus forms. A question for the user (and counsel if wanted).
+  - **US 9,336,622** (Sony): claims only a gaze rig with a fixed visual-axis offset of 2-15 deg (R2) - our lid
+    darkening is outside; a future look-at rig avoids that offset until 2034.
+  - **US 8,922,553 B1** (to 2033-08-28) needs a solve across per-region linear models with continuity constraints;
+    **US 11,354,844 B2** (to 2039-10-25) needs masks from muscle action units + "demographic prediction modifications"
+    + a modified eyeball / cornea / teeth / tongue / skull asset together (R2) - the approved mixer (a weighted blend of
+    whole identities per mask) holds none of the first and not all of the second's elements as R2 reads them.
+- **Licences read at their sources** (*page read, 2026-11-06*, R2 Q2-Q5): CC BY 4.0 credit: creator, notices, a link,
+  a change notice, the licence URI, "in any reasonable manner" (a linked credits page is CC's own example); CC BY 3.0:
+  the licence URI with every copy, the title, a credit "at least as prominent" as others; BY-SA -> GPLv3 is one-way, BY-SA
+  4.0 only, "must specify version 3 of the GPL", source form provided, for content "melded with code". REUSE 3.3: every
+  `LicenseRef-*` needs `LICENSES/LicenseRef-<id>.txt` (`LicenseRef-cited-data` has none); Ten24's grant needs its own id
+  with the text verbatim. Blender 5.3 manifest: `license` and `copyright` take several entries; **extensions.blender.org's
+  Terms (1.2): assets inside an extension "must be licensed as Public Domain (CC0)"** - our extension (CC BY, Apache,
+  MIT, Ten24 data) can't be listed there; self-hosting a third-party repository is the documented route. Blender's
+  "Hair Styles" demo: "CC-BY-SA", no version. SONICOM: no licence file (the paper says MIT, the page "for research
+  purposes") - stays REFERENCE. Yakimov 2024 nails: CC0 (figshare API). Curly-Cue: the guides-to-full Python step MIT,
+  the switchback generator GPL-3.0-or-later. Artec "Top of hand": "Creative Commons license v4", credit "Top of hand by
+  Artec 3D" (the archive's `license.txt` unread). Blender Studio's Human Base Meshes: CC0 (page, README, 25 asset
+  records) - but the .blend also carries "The Rain Rig is released under the Creative Commons Attribution 4.0 license"
+  and two stylized meshes are "Based on" the CC BY Rain and Snow rigs. Epic's "Send to Unreal" add-on is MIT and ships
+  no Unreal plugin; Reallusion's Unreal Auto Setup licence unread.
