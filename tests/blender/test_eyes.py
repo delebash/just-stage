@@ -84,3 +84,13 @@ def test_the_eye_colour_presets_and_custom_colours(eye):
     again = next(o for o in bpy.data.objects if o.juststage.part_of == character and o.juststage.part == "eyeLeft")
     for nodes in _iris_nodes(again):
         assert tuple(nodes[eyes.NODE + "iris"].outputs[0].default_value)[:3] == pytest.approx((0.2, 0.1, 0.05))
+
+
+def test_the_white_has_veins(eye):
+    """Rec 12: the sclera's veins (tools/make_sclera.py), a polar map by the iris's angle and radius - HD Aaron's eye
+    view shows fine red vessels on a warm white, ours was flat (the clean-input gate, 2026-11-06)."""
+    for nodes in _iris_nodes(eye):
+        veins = nodes[eyes.NODE + "sclera"]
+        assert veins.image.name.startswith("sclera") and veins.extension == "EXTEND"
+        white = nodes[eyes.NODE + "white_veined"]
+        assert {lk.from_node for s in white.inputs for lk in s.links} >= {veins}

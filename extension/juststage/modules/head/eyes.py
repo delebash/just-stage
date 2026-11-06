@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import collections
 
+import json
+
 import bpy
 import numpy as np
 
@@ -216,6 +218,20 @@ def _iris_image():
     return image
 
 
+#: the sclera's veins (rec 12, tools/make_sclera.py): a polar map of colour multipliers on the white - columns the
+#: angle, rows R0 to R1 limbus radii from the eye's centre
+SCLERA_TOOL = ".dev/venv-rdf/Scripts/python -I tools/make_sclera.py"
+
+
+def _sclera_image():
+    from ... import paths
+
+    path = paths.generated("eyes", "sclera.png", tool=SCLERA_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image, json.loads(path.with_suffix(".json").read_text(encoding="utf-8"))
+
+
 def _photo_tree(mat, uv_name: str, limbus_uv: float) -> None:
     """One eye material as the photo iris, the pupil and the white by the radius on the eye's UVs (the same tree on
     the iris, pupil and white materials - each keeps its name: the gaze and the face test find the iris by them)."""
@@ -291,7 +307,25 @@ def _photo_tree(mat, uv_name: str, limbus_uv: float) -> None:
     white.operation = "MULTIPLY"
     nt.links.new(rgb("white", WHITE), white.inputs[0])
     white.inputs[1].default_value = WHITE_GAIN
-    col = mix(ramp(d, limbus_uv * (1 - LIMBUS / 2), limbus_uv * (1 + LIMBUS)), col, white.outputs["Vector"])
+    sclera_image, polar = _sclera_image()
+    rows = nt.nodes.new("ShaderNodeMapRange")  # the radius in limbus radii -> the map's rows (R0 at its top)
+    rows.clamp = True
+    nt.links.new(d, rows.inputs["Value"])
+    rows.inputs["From Min"].default_value = limbus_uv * polar["r0"]
+    rows.inputs["From Max"].default_value = limbus_uv * polar["r1"]
+    rows.inputs["To Min"].default_value, rows.inputs["To Max"].default_value = 1.0, 0.0
+    at = nt.nodes.new("ShaderNodeCombineXYZ")
+    nt.links.new(angle, at.inputs["X"])
+    nt.links.new(rows.outputs["Result"], at.inputs["Y"])
+    veins = nt.nodes.new("ShaderNodeTexImage")
+    veins.name = NODE + "sclera"
+    veins.image, veins.extension, veins.interpolation = sclera_image, "EXTEND", "Cubic"
+    nt.links.new(at.outputs[0], veins.inputs["Vector"])
+    veined = nt.nodes.new("ShaderNodeVectorMath")
+    veined.name, veined.operation = NODE + "white_veined", "MULTIPLY"
+    nt.links.new(white.outputs["Vector"], veined.inputs[0])
+    nt.links.new(veins.outputs["Color"], veined.inputs[1])
+    col = mix(ramp(d, limbus_uv * (1 - LIMBUS / 2), limbus_uv * (1 + LIMBUS)), col, veined.outputs["Vector"])
     bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
     nt.links.new(col, bsdf.inputs["Base Color"])
     bsdf.inputs["Roughness"].default_value = EYE_ROUGHNESS
