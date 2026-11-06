@@ -48,9 +48,13 @@ def main(steps: set[str]) -> None:
             run([str(VENV), "-I", "tools/face_test/skin_base.py", "compose", str(seed), json.dumps(p)])
     if "build" in steps:
         for seed, name in SKINS.items():
-            run([sys.executable, "tools/dev.py", "blender", "-b", "--python", "tools/build_skins.py", "--",
-                 "--composed", str(seed), "man_a", "-", name])  # fmt: skip
+            if ONLY and seed not in ONLY:
+                continue
+            run([sys.executable, "tools/dev.py", "blender", "-b", "--python-exit-code", "1", "--python",
+                 "tools/build_skins.py", "--", "--composed", str(seed), "man_a", "-", name])  # fmt: skip
 
+
+ONLY = {int(a) for a in sys.argv[1:] if a.isdigit()}  # seeds to build (all when none named)
 
 if __name__ == "__main__":
-    main(set(sys.argv[1:]) or {"split", "compose", "build"})
+    main({a for a in sys.argv[1:] if not a.isdigit()} or {"split", "compose", "build"})
