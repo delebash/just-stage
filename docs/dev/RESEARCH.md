@@ -313,6 +313,20 @@ Subjects: [1 · The machine](#1--the-machine) ·
   placement read the two bodies' difference as relief. The eye's recess measured the scans' way on base v2: upper
   -2.9 mm (man) / -2.2 mm (woman) against the real -2.86 - no move needed. Found unapplied in code while fixing: the
   design's lash settings (180 upper, 0.08 mm, melanin 1.0), the caruncle (proof 4c), the photo iris (harness only).
+- **The head tile's false shading - Cycles' Normal bake and shape keys** (*measured, 2026-11-06*, scratchpad
+  `factors.py`, `bake_probe.py`, `keys_probe.py`; test `tests/blender/test_build_skins.py`): the gate's face (run 5)
+  showed a brown lower face with a hard edge on one cheek and dark sockets. One factor at a time on the face view: a flat
+  colour map - unchanged; a flat normal map - gone (the face clean, the sockets far lighter). The scan skins' head
+  normal (`build_skins.py`: the composed relief moved from the face test's `HeadTile` frames to the UDIM layer's by a
+  Normal bake on man_a's `round.blend`) held low-frequency tilt (after a 40-texel blur p50 0.13 / p90 0.31) the
+  composed relief does not (p50 0.00). A plain BSDF, no normal map, baked the same tilt: Cycles' tangent frames stay on
+  the Basis while the shading normal follows the shape keys - each key that reshapes the face adds it in proportion
+  (MakeHuman's ethnic keys moving up to 0.19 m: p90 0.11-0.12 each; `gnm.identity` 0.11; keys of a few mm: 0.002);
+  Basis only, modifiers off: p99 0.011. Every scan skin carried the face test character's face as shading. Fixed:
+  `build_skins._bake` bakes normals on the Basis with modifiers off. A bare shape-keyed grid reproduces it (p99 0.43);
+  a Subsurf modifier hides it (re-evaluated frames). Open: `scan_bake.py`'s selected-to-active bake onto the same
+  shape-keyed mesh carries the same frame error under its 40-texel high-pass (mid-scale residue round the nose, lips,
+  eyes).
 - **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's

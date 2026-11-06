@@ -103,10 +103,22 @@ def _bake(body, kind: str, build, size: int = 4096) -> np.ndarray:
     saved = list(slots)
     slots.clear()
     slots.append(mat)
+    # A Normal bake on the Basis, modifiers off: Cycles' tangent frames stay on the Basis while the shading normal
+    # follows the shape keys, so with the face test's keys on it baked their normal change into every head tile
+    # (measured 2026-11-06: p50 0.10 / p90 0.31 tilt from a plain BSDF; RESEARCH "The head tile's false shading")
+    shape = (body.show_only_shape_key, body.active_shape_key_index)
+    shown = [m.show_render for m in body.modifiers]
+    if kind == "NORMAL":
+        body.show_only_shape_key, body.active_shape_key_index = True, 0
+        for m in body.modifiers:
+            m.show_render = False
     try:
         bpy.ops.object.bake(type=kind, normal_space="TANGENT", margin=MARGIN, margin_type="EXTEND", use_clear=True)
         return _pixels(target)[..., :3].copy()
     finally:
+        body.show_only_shape_key, body.active_shape_key_index = shape
+        for m, show in zip(body.modifiers, shown, strict=True):
+            m.show_render = show
         slots.clear()
         for m in saved:
             slots.append(m)
