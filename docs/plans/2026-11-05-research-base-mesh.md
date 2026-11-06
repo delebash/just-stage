@@ -127,3 +127,14 @@ three columns) 28-50 px, a* 9-14, L* 65-75, against HD Aaron's 26-63 px, a* 12-1
 (`eevee_eye_ours_v2.png`). Still open in step 1: the recess (his eyeball sits behind thick lids), no clipping over the
 eye sliders' range, the blink (MakeHuman's blink shape - step 3), and the production code (face-frame data, tests,
 `baseVersion` 2, library migration, groom re-binding).
+
+**The eye sliders' sweep** (scratchpad `lid_clip.py`, geometry only): all 66 eye targets loaded as shape keys before the
+cut (so Blender carries them onto the new vertices), each at 1.0 alone, the eyes refit (`parts.refit`); the eyeball rim
+(0.25 mm at neutral): **20 targets clip it into the eyeball** - push1-in -1.58 mm, push2-in -1.18, scale-decr -0.94,
+trans-out -0.76, corner2-up -0.75, height3-decr -0.45, height2-decr -0.30, height1-decr -0.21, corner1-up -0.20,
+trans-down -0.16; **4 lift it off** - push1-out 3.0 mm, scale-incr 1.9; the rest stay within 0.25-1.5 mm. Cause: the rim
+follows the lid skin while the eyeball is refit from MakeHuman's helpers - they part when a slider moves the eye
+differently from the lid (hm08's own lid ring has the same mismatch; `parts.eye_clearance` only pushes lid skin out).
+**Design change:** the contact step runs on every refit, not only for closing expressions - the rim re-placed on the
+eyeball at 0.25 mm and the margin's middle eased between (a refit shape key beside the clearance key), tested over all
+66 eye targets in the production code.

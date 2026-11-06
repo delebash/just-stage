@@ -50,7 +50,10 @@ Sources: the three research files of 2026-11-05 (audited above), `2026-10-29-res
   on that face plus an **offset in the face's local frame** (tangent, bitangent, normal) - Blender's Surface Deform
   method [code], so it turns with the face in a blink; for every target and expression its position is recomputed from
   the deformed face (baked into the target files, which grow by the appended indices); UVs and rig weights come from
-  the face's barycentrics. **Closing expressions** (blink, lips together) get an authored contact correction on the new
+  the face's barycentrics. **The contact step runs on every refit** (each slider change and expression - the eye-slider sweep, research §7,
+  found 20 of 66 targets clipping the rim into the eyeball and 4 lifting it off): the rim re-placed on the eyeball at
+  0.25 mm, the margin's middle eased between, a refit shape key beside the clearance key; **closing expressions** (blink,
+  lips together) also get an authored contact correction on the new
   loops (the margin snapped to the opposite lid and relaxed - OmniFaceRig's step is the published reference [page]).
 - **The loops themselves** are placed by measurement against references on disk, never copied: Blender Studio's CC0
   realistic head (2-3 margin loops, inner-corner pocket), Blender Studio's "Einar" (CC-BY; lid drivers, eyelid
