@@ -31,10 +31,15 @@ CONVERGE = 14.0  # degrees: the upper rows down, the lower up
 SPREAD = 7.0  # degrees of each hair's own randomness
 RISE = 18.0  # degrees off the skin at the root, lying down to ~0 at the tip
 LENGTH = (5.0, 8.0, 6.0)  # mm at the head, the body and the tail; each +- 20%
-RADIUS, TIP = 0.000045, 0.15  # m at the root (brow hairs are coarse: ~0.09 mm across); the tip's share
+RADIUS, TIP = 0.000035, 0.15  # m at the root (~0.07 mm across: 0.09 read as a brush beside HD Aaron's); the tip's share
 JITTER = 0.0002  # m: each root's own offset
 WIDEN = 1.25  # the band's half-height over the region roots' (their 85th percentile)
 TAIL_DENSITY = 0.35  # the tail's density as a share of the body's
+#: 2026-11-06, the clean-input gate's eye view: ours a black bar with a brush of upright hairs at its head, each hair
+#: straight; HD Aaron's dark grey with about a quarter white, sparser at the head, each hair arching toward the tail
+HEAD_DENSITY, HEAD_TO = 0.45, 0.2  # the head's density as a share of the body's, rising to it by HEAD_TO
+BEND = 30.0  # degrees a hair standing square to the brow's line turns toward the tail along its length (x sin)
+GREY_SHARE, GREY_MELANIN = 0.22, 0.05  # the coarse hairs that are white
 MELANIN, REDNESS, MELANIN_SPREAD = 0.92, 0.12, 0.05
 #: the brow's soft body under the coarse hairs (CC5's brows lay a soft base layer under their hair cards; MetaHuman's
 #: strand brows hold fine short hairs among the coarse ones): FINE hairs a brow, at FINE_LENGTH x the coarse ones'
@@ -107,8 +112,9 @@ def strands(body: bpy.types.Object, seed: int = 11):
         # roots spread evenly over the brow's band (MakeHuman's roots sit in tufts): s along it, denser in the body,
         # t across its height at that place
         s_all = rng.uniform(0.0, 1.0, (COUNT + FINE) * 3)
-        keep = rng.uniform(0.0, 1.0, len(s_all)) < np.where(s_all < 0.6, 1.0,
-                                                            1.0 - (1.0 - TAIL_DENSITY) * (s_all - 0.6) / 0.4)
+        density = np.where(s_all < 0.6, 1.0, 1.0 - (1.0 - TAIL_DENSITY) * (s_all - 0.6) / 0.4)
+        density *= np.interp(s_all, [0.0, HEAD_TO], [HEAD_DENSITY, 1.0])
+        keep = rng.uniform(0.0, 1.0, len(s_all)) < density
         s_all = s_all[keep][: COUNT + FINE]
         for k_hair, s0 in enumerate(s_all):
             fine = k_hair >= COUNT  # the soft body's hairs after the coarse ones
@@ -130,8 +136,9 @@ def strands(body: bpy.types.Object, seed: int = 11):
             flat = np.cos(a) * u + np.sin(a) * v
             curl = np.radians(rng.normal(0.0, 8.0))
             rise = np.radians(RISE) * (1.0 - t_points) ** 1.5
-            turn = curl * t_points
             sideways = np.cross(normal, flat)
+            toward_tail = 1.0 if sideways @ u > 0 else -1.0  # turning by +angle moves the heading toward the tail
+            turn = (curl + toward_tail * np.radians(BEND) * max(np.sin(a), 0.0)) * t_points  # never past the line
             heading = np.cos(turn)[:, None] * flat + np.sin(turn)[:, None] * sideways
             d = np.cos(rise)[:, None] * heading + np.sin(rise)[:, None] * normal
             length = 0.001 * np.interp(s, [0.0, 0.4, 1.0], LENGTH) * rng.uniform(0.8, 1.2) * (FINE_LENGTH if fine else 1.0)
@@ -144,7 +151,8 @@ def strands(body: bpy.types.Object, seed: int = 11):
                     strand[i:] += to_world[:3, :3] @ (near + 0.00008 * n_near - q)
             found.append(strand)
             radii.append((FINE_RADIUS if fine else RADIUS) * np.interp(t_points, [0.0, 1.0], [1.0, TIP]))
-            melanin.append(float(np.clip((FINE_MELANIN if fine else MELANIN) + rng.normal(0.0, MELANIN_SPREAD), 0.0, 1.0)))
+            own = FINE_MELANIN if fine else (GREY_MELANIN if rng.uniform() < GREY_SHARE else MELANIN)
+            melanin.append(float(np.clip(own + rng.normal(0.0, MELANIN_SPREAD), 0.0, 1.0)))
     return found, radii, melanin
 
 

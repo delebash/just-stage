@@ -82,3 +82,35 @@ def test_brows_follow_another_characters_face(man, tmp_path):
         assert np.median(d) < 0.0003 and d.max() < 0.001, (np.median(d), d.max())
     finally:
         _remove(other)
+
+
+def test_brows_have_hd_aarons_grey_hairs_soft_head_and_arched_hairs(man):
+    """The clean-input gate's eye view (2026-11-06): our brows a black bar with a brush of upright hairs at the head;
+    HD Aaron's dark grey with about a quarter white, sparser at the head, each hair arching toward the tail."""
+    _made, body = man
+    found, radii, melanin = brows.strands(body)
+    melanin = np.array(melanin)
+    coarse = np.arange(len(found)) % (brows.COUNT + brows.FINE) < brows.COUNT
+    white = melanin[coarse] < 0.2
+    assert 0.1 < white.mean() < 0.35  # white hairs among the coarse ones
+    roots = np.array([s[0] for s in found])
+    for side in (-1.0, 1.0):
+        mine = roots[np.sign(roots[:, 0]) == side]
+        lateral = np.abs(mine[:, 0])
+        lo, hi = lateral.min(), lateral.max()
+        head = (lateral < lo + 0.15 * (hi - lo)).sum()
+        body_ = ((lateral > lo + 0.3 * (hi - lo)) & (lateral < lo + 0.45 * (hi - lo))).sum()
+        assert head < 0.85 * body_  # the head sparser than the body (the same width of brow)
+    # each hair arches: its tip's heading turned toward the tail against its root's - most where it stands up (the head)
+    turned, at_head = [], []
+    for s in found:
+        first, last = s[1] - s[0], s[-1] - s[-2]
+        side = np.sign(s[0][0])
+        turned.append(side * (last[0] / np.linalg.norm(last) - first[0] / np.linalg.norm(first)))
+        mine = roots[np.sign(roots[:, 0]) == side]
+        lo, hi = np.abs(mine[:, 0]).min(), np.abs(mine[:, 0]).max()
+        at_head.append(abs(s[0][0]) < lo + 0.15 * (hi - lo))
+    turned, at_head = np.array(turned), np.array(at_head)
+    assert np.mean(turned[at_head]) > 0.15  # outward (toward the tail) by the tip
+    assert np.mean(turned) > 0.0  # never away from it
+    assert max(r[0] for r in radii) <= 0.00004  # finer than 0.08 mm at the root
