@@ -291,6 +291,23 @@ Subjects: [1 · The machine](#1--the-machine) ·
   lower-lid wet margin and caruncle, the lid band (28-50 px), every face-distance comparison with Aaron (he wears his
   Stubble mesh, ours none). **Stand:** iris, white and pupil (measured inside the opening), the geometry (lid
   anatomy, slider sweep, recess), the gate's tooling, the live view's calibration (113-117% of Cycles).
+- **Clean skins and the first clean-input gate** (*measured, 2026-11-06*, `../gate/2026-11-06/report.md`,
+  `../plans/2026-11-06-inputs-audit.md`): hair comes out of scan photos by region, not by strands alone - DullRazor's
+  line closings (Lee et al. 1997) catch single strands and stray hairs but neither the dense lash band round an eye
+  nor stubble (dots) and they also catch fine creases; so a ~5 mm band round the eye and brow holes is dropped, strands
+  are found in the eye zone and by the hairline, stubble is found per texel (dark-mark density >1.35x the scan's own
+  clean face) - the scan list's by-eye stubble tags were wrong (HSR0040's upper lip; LPS's whole beard 911k texels),
+  and holes are filled with mirrored real skin, the colour by a smooth multi-width fill. Women's scans carry eye makeup
+  (liner, mascara, shadow): darkening round the eyes held to 12%. The pore tile: Ten24's sample scan (its page: "Feel
+  free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a
+  credit") - its Level_01 relief normals on a clean upper cheek, 33 mm, Moisan-tiled; the LPS tile it replaces carried
+  his beard's streaks (his whole lower face is stubble, `lambertian.jpg`); LPS's forehead has no hair but deep
+  wrinkles and scan streaks. With the new tile the pore depth that matches HD Aaron's upper cheek is 0.15 mm
+  (bands 1.135 / 0.884 vs 1.154 / 0.894; 0.3 mm gave 1.74 / 1.31), the microrelief 0.015 mm (fine 0.63 vs 0.51). The
+  torso: Artec's scan wrapped (our torso onto it, NICP, p50 2.2 / p90 4.6 mm) then baked - the prototype's rigid
+  placement read the two bodies' difference as relief. The eye's recess measured the scans' way on base v2: upper
+  -2.9 mm (man) / -2.2 mm (woman) against the real -2.86 - no move needed. Found unapplied in code while fixing: the
+  design's lash settings (180 upper, 0.08 mm, melanin 1.0), the caruncle (proof 4c), the photo iris (harness only).
 - **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
 - **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
   MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
