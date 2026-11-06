@@ -57,3 +57,20 @@ that fails any skin with hair or shading baked in; (b) facial hair as geometry t
 (c) the body skin (10, 15); (d) the parts' maps (13, 14); (e) subsurface, transmission and region masks (11, 12). Then
 re-run the proofs on clean inputs, each proof's log opening with its inputs table (memory
 `audit-inputs-before-measuring`).
+
+## Status (2026-11-06, as fixed - each in its commit)
+
+| # | Status |
+|---|---|
+| 1 | Lashes stay strands (design piece 9); their reading at face distance is MEASURED at the gate (on / off) before the coverage width or cards |
+| 2, 4, 5-8 | FIXED in the scan composer (`tools/face_test/skin_base.py` with `hair.py`): the lash and brow band out, strands found and filled, stubble found per texel and left out, holes filled with real skin (mirror fill) and smooth colour (no patch edges); the AI-painted skins (Daniel, Mei, Amara, Walter) no longer defaults or the library characters' skins - files kept |
+| 4 (hair) | FIXED: `hair/stubble.py` - stubble as hair; the gate's man wears it as Aaron wears CC5's |
+| 9 | FIXED: Ten24's scanned cheek relief, seamless (`pore_tile.py`), shared by every skin (`maps.pore_relief`) |
+| 10, 15 | OPEN: the body's own colour and relief (Artec's bare torso through the face's scan route) |
+| 11 | HANDLED physically: Cycles' random-walk scattering carries light through thin parts; EEVEE reads the thickness from its shadow maps (`material.py`: ears and nostrils glow) - a map only if the gate's ear view shows a gap |
+| 12 | OPEN: region masks beyond the face's (forehead, cheek) |
+| 13 | FIXED (first pass): teeth and gums shaded as the MIO photo shows them (`part_materials.py`); real arches (Poseidon3D) still open |
+| 14 | FIXED: the photo iris in code (`tools/make_iris.py`, `eyes.shade`) |
+| 16 | step 3 (expressions) |
+| 17 | with 1 |
+| 18 | FIXED: stubble on the gate's man |
