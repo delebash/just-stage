@@ -261,6 +261,39 @@ Subjects: [1 · The machine](#1--the-machine) ·
   plain baked inputs - `Basecolor Baked`, `Normal Baked`, `SRMF Baked` (specular / roughness / metal / fuzz packed),
   `Scatter Baked` - plus `Micro Skin Details` (tiling micro normal and cavity, `T_SkinMicro3_N` / `_CAV`) with
   `Micro MaskA-D` strengths; subsurface profile `SSP_skin_unified`. For the gate: our maps on the baked variant.
+- **The eye part by part against HD Aaron** (*measured, 2026-11-05*, proof step 4, `.dev/gate/parts/proof_eyes/`,
+  RESUME (4b)): a cut-out iris photo, unwrapped to polar coordinates and sampled on our eye's linear iris UVs (pupil
+  edge to 4% past the limbus), measures equal to his iris (L* 24.6 / C 14.8 vs 27.2 / 11.3) with more detail; the
+  iris surface itself must not be specular (0.5 at roughness 0.4 laid a grey haze over the pupil - the cornea shell
+  carries the gloss, the real iris sits in index-matched fluid). Source on disk: `Green_iris.jpg` (Wikimedia Commons,
+  Lizapopova143, 2019-07-15, 5,315 x 3,838) - its file page [page, read 2026-11-05]: "This file is licensed under the
+  Creative Commons Attribution 4.0 International license." MakeHuman's lid has no margin geometry: its lower lid's
+  edge stands up to 3.3 mm off the eyeball (a dark crevice in the render); moving that one vertex ring onto the eyeball
+  leaves a 4-8 px band against his ~36 px. ICT's tearline strip shaded as wet pink tissue gives the band on the
+  Average man (32 px, the same colour) but on four other library characters it outlines the whole opening, upper lid
+  included - a drawn pink ring (his upper margin hides under the lashes).
+- **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
+  MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
+  torso; the same horizontal chest seam and arm bands show on Average and Muscular man (a texture-tile defect, not
+  diagnosed yet). Bare torsos we hold: of HSRD-100's 13 downloaded poses only HSR0042-Body-045 (swim trunks; an
+  average-build older man) - the rest wear shirts, dresses, hoodies (their `pose_meta.json`); the plan's "HSRD-100
+  bodies ... mostly bare" was wrong. deep3dstudio's "Athletic African man walking 223" (CC BY, 8K tangent normal map)
+  wears a tank top - bare arms show real definition; Ten24's sample wears a sweater. Web (queries, standard mode): "best
+  way to add realistic muscle definition to a 3D character body skin normal map 2026" - listings and texture packs:
+  the industry way is sculpted detail baked to normal + cavity maps (MetaHuman custom bodies, VRChat muscle packs);
+  "free 3D scan shirtless male body full body photogrammetry download" - Ten24 (clothed), 3D Scan Store (paid; its
+  terms bar character makers - licences-redo file); "textured 3D human body scan dataset minimal clothing underwear
+  high resolution" - 3D.sk underwear scans (RenderHub listing: no commercial use), 3DBodyTex (close-fitting clothing,
+  terms unread), CAPE / BUFF (textured raw scans on request, terms unread); "sketchfab shirtless man full body scan
+  downloadable CC attribution" - Scanlab "human man scan *mbody" and "cdkc/cdbc a pose reference male scan" (licences
+  and clothing unread), Heges app scan (CC BY, raw STL); "is there anything better than MakeHuman for realistic body
+  shape and muscle detail open source 2026" - aggregator pages only (MakeHuman + sculpting; Ara 3D Gen, MIT, unread).
+  **Triplegangers' free samples** (the user's link, triplegangers.com/blog/technology/free-scan-samples, read in Chrome
+  2026-11-05 [page]): a face, a full body and a hand; the body an athletic man in underwear, BACS pose, mesh with clear
+  pectoral and abdominal definition [seen]; "All free samples below are licensed under a Creative Commons
+  Attribution-NonCommercial-NoDerivatives 4.0 International License" ... "You may not use the material for commercial
+  purposes. If you remix, transform, or build upon the material, you may not distribute the modified material";
+  download after registering (Google Drive, .7z). LOCAL TEST only - never shipped, nothing derived from it ships.
 - **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
   1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
      CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green

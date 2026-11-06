@@ -62,8 +62,25 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   geometry mask at the inner corner barely shows), veins (invisible at face distance). Shape: MakeHuman's own sliders
   (bag -1, eyefold concave -0.7 / up 0.6, height1 +0.6) open the eye (9.7 -> 10.7 mm at the iris, iris covered 12.8 ->
   9.7 deg) - a per-character choice. Seen at face distance and NOT eye parts: our skin round the eyes reads rougher
-  and far paler and less red than his (lid L* 80 a* 5 vs 60 a* 19) - recheck the skin proof (1) there. NEXT: the same
-  eye settings on four library characters (own skins, no tuning), then adopt into code.
+  and far paler and less red than his (lid L* 80 a* 5 vs 60 a* 19) - recheck the skin proof (1) there.
+- (4c) the same settings on four library characters (own skins, no tuning; `proof_eyes/*multiphotolashocctearpink*`):
+  iris, white, pupil hold; the pink tearline strip DISPROVED as made - it outlines the whole opening (a drawn pink ring,
+  worst on dark skin). Pink on the lower lid's part only, fading at the corners, the upper part the clear tear film
+  (`*multi2*lowonly*`, five characters): a wet waterline on all five, no ring; darkened by the character's own melanin
+  (x(1 - 0.7 min(m/0.25, 1)) toward 0.20/0.08/0.06 - conjunctival melanosis; `*multi3*`). The strip's inner end as the
+  caruncle: hidden under the corner skin (failed). The caruncle as the corner skin painted wet pink (0.45/0.18/0.16,
+  geometry mask past the inner corner, scratchpad `lid_margin_mask.py mode=caruncle`): shows, as on Aaron. Seen: our
+  default opening shows white below the iris (scleral show - a stare), Aaron's lower lid meets the iris: shape, per
+  character. Final run of every piece on five characters: `*final*`. EYES: equal by measure at face distance on one
+  character, the pieces hold on five; at close-up still below (flat white without veins or soft shading; the photo is a
+  hazel eye recoloured - a light collarette ring; brown photos are content). Adoption into code waits for the user's go
+  (the list in the session report, 2026-11-05).
+- (2) body, started (`.dev/gate/parts/proof_body/`; RESEARCH "Body relief and muscle definition"): MakeHuman's muscle
+  gives bulk, not definition (Muscular man vs Aaron); a texture-tile seam across the chest and arms on two characters
+  (to diagnose); no bare athletic torso among our downloads (HSRD bodies clothed but HSR0042-Body-045; deep3dstudio's
+  athletic man in a tank top; Ten24 in a sweater). Triplegangers' free full-body sample (the user's link): athletic, in
+  underwear, CC BY-NC-ND - a LOCAL test source only, behind a registration the user must do. NEXT: with that sample,
+  bake its relief onto our body and measure the torso against Aaron; meanwhile diagnose the seam.
 
 ## Always
 
