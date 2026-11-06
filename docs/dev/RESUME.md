@@ -79,8 +79,19 @@ part: proved / not proved / disproved. Proof log (`.dev/gate/parts/proof1/`, ban
   gives bulk, not definition (Muscular man vs Aaron); a texture-tile seam across the chest and arms on two characters
   (to diagnose); no bare athletic torso among our downloads (HSRD bodies clothed but HSR0042-Body-045; deep3dstudio's
   athletic man in a tank top; Ten24 in a sweater). Triplegangers' free full-body sample (the user's link): athletic, in
-  underwear, CC BY-NC-ND - a LOCAL test source only, behind a registration the user must do. NEXT: with that sample,
-  bake its relief onto our body and measure the torso against Aaron; meanwhile diagnose the seam.
+  underwear, CC BY-NC-ND - a LOCAL test source only, behind a registration the user must do.
+- (2b) the user's links, the user: "i want you to download all these ones i am giving you yes downloade dthem":
+  Artec 3D "Body scan" DOWNLOADED (`.dev/downloads/artec_body_scan/`, 60.5 MB; its `license.txt`: CC BY 3.0 Unported,
+  "Body scan by Artec 3D"; 765k triangles, 8K colour, no normal map; a lean athletic man, arms raised). Triplegangers
+  needs the user's registration; Digital Reality Lab's form (name, email, company, use) mails the link to the user.
+  Measured (scratchpad `scan_torso2.py`, the torso framed as Aaron's; bands fine/pore/fold/form at 1024 px, form =
+  12-48 px = the muscles): ours 0.31/0.18/0.38/2.27, Muscular man 2.00/0.88/0.53/2.76, the Artec scan as scanned
+  0.27/0.40/0.71/3.12, Aaron 0.86/0.67/1.23/4.34 - the scan carries real definition (72% of Aaron's form band; his
+  is a sculpted glossier physique), its fine/pore come from our layers. The chest SEAM (`proof_body/*nonormal*`,
+  `*flatcolour*`): COLOUR - the head tile's painted colour ends at the upper chest against the torso tile's, plus
+  a dark line from the colour map's unpadded island edge; normals cut: no change. NEXT: fit the Artec torso to our
+  body and bake its relief into our UVs (the face route on the torso), apply to two body types, measure; the seam
+  fix (pad the islands, blend the head tile into the torso tile at the border).
 
 ## Always
 

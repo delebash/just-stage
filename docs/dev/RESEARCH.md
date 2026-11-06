@@ -294,6 +294,12 @@ Subjects: [1 · The machine](#1--the-machine) ·
   Attribution-NonCommercial-NoDerivatives 4.0 International License" ... "You may not use the material for commercial
   purposes. If you remix, transform, or build upon the material, you may not distribute the modified material";
   download after registering (Google Drive, .7z). LOCAL TEST only - never shipped, nothing derived from it ships.
+  **Artec 3D "Body scan"** (the user's link, artec3d.com/3d-models/body-scan, read in Chrome 2026-11-05 [page]): a
+  young athletic man in shorts, bare torso, arms raised in a muscle flex (scanned with Artec Leo, 10 min, processed in
+  Artec Studio) [seen]; its Free download tab: "Under Creative Commons license v4, attribution to Artec 3D and a link
+  back to our website is all you need to use this 3D model for free" - the link goes to
+  creativecommons.org/licenses/by/4.0 (CC BY 4.0); credit "Body scan by Artec 3D"; one OBJ archive, 57.73 MB, a direct
+  CDN link (no account). SHIP with credit - the first bare athletic torso we can ship from.
 - **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
   1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
      CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
