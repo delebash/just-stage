@@ -67,6 +67,32 @@ def clump(strands: list, start: int) -> None:
             strands[g + i] = strand + (centre - strand) * t * CLUMP_PULL
 
 
+#: on base v2, how far into the lid (degrees about the eye) the lashes' rows reach from the lash line
+LASH_ROWS = 1.2
+
+
+def _lash_line(body: bpy.types.Object, o, side: float):
+    """Base v2's lash line on one lid of one eye (modules/body/base.py's rows): (azimuths, elevations) about the eye,
+    sorted - None on hm08 itself."""
+    from ..body import base, build
+    from ..head.eyes import angles
+
+    if body.juststage.base_version < base.VERSION:
+        return None
+    rows = base.rows()
+    lash = rows[rows[:, 0] >= 0, 0]
+    m = np.array(body.matrix_world)
+    pts = build.shaped_coords(body)[lash] @ m[:3, :3].T + m[:3, 3]
+    pts = pts[np.linalg.norm(pts - o.centre, axis=1) < o.radius + 0.008]  # this eye's
+    az, el, _d = angles(pts, o.centre)
+    mid = np.interp(az, o.centres, (o.upper + o.lower) / 2)
+    keep = el > mid if side > 0 else el < mid
+    if keep.sum() < 4:
+        return None
+    order = np.argsort(az[keep])
+    return az[keep][order], el[keep][order]
+
+
 def strands(body: bpy.types.Object, openings: dict, seed: int = 7):
     """Both eyes' lashes on the body's current shape, in world space: (strands, radii, melanin per strand, roots that
     found no lid)."""
@@ -100,6 +126,9 @@ def strands(body: bpy.types.Object, openings: dict, seed: int = 7):
             f = np.sort(rng.uniform(0.06, 0.97, n))  # the share of the way from the inner corner to the outer
             az = o.inner + f * (o.outer - o.inner)
             el = np.interp(az, o.centres, o.upper if side > 0 else o.lower) + side * rng.uniform(*spec["band"], n)
+            line = _lash_line(body, o, side)
+            if line is not None:  # base v2: the lashes grow from its lash line (the margin's front edge), in rows
+                el = np.interp(az, *line) + side * rng.uniform(0.0, LASH_ROWS, n)
             for k in range(n):
                 # from in front onto the lid; this close to its edge a ray can slip past the margin - then a little
                 # further onto the lid, up to 3 deg
