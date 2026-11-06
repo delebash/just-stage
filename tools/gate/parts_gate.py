@@ -41,7 +41,10 @@ OURS = {"character": "Average man", "scalp": "JustStage short combed", "brows": 
 #: our man's scalp hair as dark as HD Aaron's (2026-11-06: the library style's brown 0.82 with a fifth grey measured
 #: L* 42 at the face view against his 22) - his hair's colour, so the hair's shading and structure are what differ;
 #: through the app's own juststage.hair.set_colour, the gate's man only (character="" )
-SCALP_COLOUR = {"melanin": 0.93, "redness": 0.2}
+SCALP_COLOUR = {"melanin": 0.96, "redness": 0.6}
+#: and his little grey (the style's fifth grey strands made it L* 41; a twentieth: 28 at melanin 0.93) - the scalp
+#: groom's "Strand colour" modifier input (Blender 5.3: mod.properties.inputs.<identifier>.value)
+SCALP_GREY = 0.05
 LENS = 85.0  # quality-gate.md §3
 SENSOR = 36.0
 SIZE = 2048
@@ -120,6 +123,11 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
         for o in list(scene.objects):
             if o.juststage.part_of == shown.character and o.juststage.part == "scalp":
                 api.run("juststage.hair.set_colour", groom=o.name, **SCALP_COLOUR)
+                mod = o.modifiers.get("Strand colour")
+                if mod is not None:
+                    ident = next(i.identifier for i in mod.node_group.interface.items_tree
+                                 if getattr(i, "in_out", "") == "INPUT" and i.name == "Grey Share")
+                    getattr(mod.properties.inputs, ident).value = SCALP_GREY
     if brows == "generated":  # JustStage's own (modules/hair/brows.py, rec 8)
         importlib.import_module("bl_ext.system.juststage.modules.hair.brows").make(
             next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of))
