@@ -3,6 +3,8 @@
 **Read the section for your subject before researching anything.** An agent's brief carries that
 section and the line *"don't re-derive these; re-check one only if the source it cites changed after
 its date"*. New facts land here in the same change; a research doc with no entry here is not done.
+A fact about a part of the character goes into §14.N - the plan's §N (the index below); nothing is appended at
+the end any more.
 
 How an entry reads: one fact per bullet, then *how it was checked and when*, then where the proof is.
 A fact that turns out wrong is **rewritten**, ending "(was: … until <date>)" — never left standing
@@ -24,7 +26,30 @@ Subjects: [1 · The machine](#1--the-machine) ·
 [10 · Fit: the web kit's engines, JustDirect, one app or two](#10--fit-the-web-kits-engines-justdirect-one-app-or-two) ·
 [11 · PhotoCraft, the setup we looked at](#11--photocraft-the-setup-we-looked-at) ·
 [12 · The name](#12--the-name) ·
-[13 · Working method: models and sessions](#13--working-method-models-and-sessions)
+[13 · Working method: models and sessions](#13--working-method-models-and-sessions) ·
+[14 · The character, part by part](#14--the-character-part-by-part)
+
+**The index - the plan's sections and their facts** (14.N = the plan's §N; the plan is the method, this
+file the proof):
+
+| Plan § | Topic | Facts here | Detail docs |
+|---|---|---|---|
+| §1 | The bar: CC5's HD Aaron, MetaHuman as a reference | [14.1](#141--the-bar-cc5s-hd-aaron-metahuman-as-a-reference) | `2026-11-04-realism.md` §6c; `2026-11-04-realism-review-brief.md` §1 |
+| §2 | The gate: views, measures, runs | [14.2](#142--the-gate-views-measures-runs) | `../standards/quality-gate.md`; `../gate/2026-11-05/report.md`, `../gate/2026-11-06/report.md` |
+| §3 | Assets, sources, licences, patents | [14.3](#143--assets-sources-licences-patents) | `2026-11-04-research-gaps.md`; `-research-licences-redo.md`; `-research-other-sites.md` |
+| §4 | Base mesh, topology, UVs | [14.4](#144--base-mesh-topology-uvs) | `2026-11-05-research-base-mesh.md`, `-base-mesh-2.md`; `2026-11-05-character-design.md` |
+| §5 | Mouth, nails, ears | [14.5](#145--mouth-nails-ears) | `2026-10-30-research-hair-eyes-teeth.md`; `2026-11-05-character-design.md` |
+| §6 | Shape spaces, sliders, mixing | [14.6](#146--shape-spaces-sliders-mixing) | `2026-10-29-research-05-bases*.md`; `2026-11-05-research-mixing-hair.md` |
+| §7 | Face rig, expressions, body rig, capture | [14.7](#147--face-rig-expressions-body-rig-capture) | `2026-11-05-research-face-animation.md`; `2026-10-31-audit-face-edits.md` |
+| §8 | Skin colour: scans, the scan route, delighting, hair out, the AI painting route (retired) | [14.8](#148--skin-colour-scans-the-scan-route-delighting-hair-out-the-ai-painting-route-retired) | `2026-11-02-research-texture-source.md`; `2026-11-02-scan-skin-base.md`; `2026-10-30-research-ai-*` |
+| §9 | Skin relief: mid-scale, pores, microrelief, regions | [14.9](#149--skin-relief-mid-scale-pores-microrelief-regions) | `2026-10-30-research-skin-detail-shading.md`; `2026-11-04-realism.md` §5 |
+| §10 | Skin shading: scattering, specular, roughness, the tone model | [14.10](#1410--skin-shading-scattering-specular-roughness-the-tone-model) | `2026-10-30-research-skin-detail-shading.md` |
+| §11 | Body skin and fitting a scan | [14.11](#1411--body-skin-and-fitting-a-scan) | `2026-11-04-realism-review-fable.md` F7; `2026-11-06-inputs-audit.md` |
+| §12 | Eyes | [14.12](#1412--eyes) | `2026-10-31-audit-eyes.md`; `2026-11-04-app-eyes.md` |
+| §13 | Lids, lashes, brows, facial and body hair | [14.13](#1413--lids-lashes-brows-facial-and-body-hair) | `2026-11-04-app-lashes.md`; `2026-11-05-lid-anatomy-build.md` |
+| §14 | Scalp hair | [14.14](#1414--scalp-hair) | `2026-11-05-research-mixing-hair.md`; `2026-10-30-research-hair-eyes-teeth.md` |
+| §15 | The live view against the film | [14.15](#1415--the-live-view-against-the-film) | `2026-11-04-research-eevee-live-view.md`; `2026-11-03-live-view.md` |
+| §16 | The app | §6, §7, §8, §10 | `../standards/`; `2026-10-29-research-06a*`, `-08-standards*` |
 
 ## 1 · The machine
 
@@ -53,58 +78,6 @@ Subjects: [1 · The machine](#1--the-machine) ·
 - **Blender 5.3 opens a saved Rendered view as Solid; Material Preview survives** — a copy saved with every 3D view on
   Rendered read back Solid (saved from the GUI and from a background run alike); Material Preview in an EEVEE scene read
   back Material Preview. The Material Output's Target is `ALL` / `EEVEE` / `CYCLES` — *measured, 2026-11-03*.
-- **CC5's and MetaHuman Creator's screens** (read 2026-11-03, searches "Character Creator 5 user interface overview
-  Content Manager Modify panel Scene Manager layout manual", "MetaHuman Creator Unreal Engine 5.7 user interface panels
-  …", "Character Creator 5 camera navigation mouse controls …"): CC5's manual (Main Menu > Window) - preset layouts:
-  Standard (Ctrl+2: the Content Manager and all toolbars), Fine Tuning (Ctrl+5: the Modify panel on the right), others
-  stacking Modify and Content Manager on the left or leaving only the camera view; the Content Manager applies
-  templates; Scene Manager (F5) lists every object; Modify (F6). CC5's Camera Toolbar page: pan, Orbit (C), a view
-  list Front / Right / Top / Left / Bottom / Back / Face / All. CC5's mouse bindings were not found for 5 (a CC4 forum
-  post: Alt + right mouse orbits) - a gap in these searches. Epic's "Navigating MetaHuman Creator in Unreal Engine"
-  (page read): a toolbox column on the left - Presets, Import, Head and Body, Materials, Hair and Clothing, Export,
-  Assembly - each opening a tool palette with the tool's properties below; the viewport's own toolbar: Preview Material
-  (Topology / Skin / Clay), Environment Lighting (Studio, Red Lantern, Moonlight, Tungsten, custom), Camera framing
-  (Face, Body, Far, Hands, Feet; 35 / 50 / 100 mm), LOD0-7, Rendering Quality (Medium / High / Epic), View Mode; an
-  Animation Bar once rigged; Preview Scene Details hiding grooms and clothing; panels rearrangeable.
-- **CC5's window, from the user's own screenshots** (2026-11-03, CC5 trial, 14 pictures in the user's
-  `Pictures/Screenshots 1/cc5`): menus File, Edit, Create, Character, Modify, Mesh, Render, View, Window, Plugins,
-  Script, Help; View: Pan X, Zoom Z, Orbit C, Home, Center, Camera View; Window: Workspace, Tool Bar, Bone Manager F3,
-  Content Manager F4, Scene Manager F5, Modify F6, Visual Settings F7, Facial Profile Editor F8, Animation Player F9,
-  Packager Ctrl+F4, Cloth Layer Settings; Render: Preview F10, Render Video, Render Image, AI Image / Video Render;
-  Create: Create Character, AccuRIG, Generate Head from Photo, Wrap into CC5 HD Actor, Transformer, bakes, Morph Slider
-  Editor, Head & Body Morph Sliders, Prop, Accessory, Cloth/Hair/Acc, Animation, Light, AI Mesh; Plugins: Auto Setup,
-  Headshot 3, Smart Search, Omniverse, ActorMIXER. Two toolbar rows (file, transform and camera tools, quality "High",
-  light toggle, Animation Player, Turntable; Conform, Modify, Morph, Transform, Create Character, ActorMixer, AI Studio,
-  AI Mesh, online content search) and a Headshot row. LEFT: the Content panel (green title) - category icons in two
-  rows, Template / Custom tabs, a breadcrumb (All > Actor > Character), Item / Pack, search, sort, a thumbnail grid,
-  a folder tree, Apply / Save / Overwrite; vertical side tabs Content, Scene, AI Mesh Generator, Visual. CENTRE: the
-  viewport (blue-grey gradient, "SubD 1" label), the Animation Player bar under it. RIGHT: the Modify panel (green
-  title), six icon tabs - Attribute (name, type, eye element, contact, corrective expressions, auto-blink, SubD
-  viewport / render, load CC3+ / CC5 HD neutral bases, ActorMixer, convert to game base), Motion (edit pose, import
-  animation, edit facial, HIK T-pose, facial profile editor), Morph (a checkbox tree Actor > Body: Full Body,
-  Shoulder, Arm, Hand, Chest, Back, Waist, Hip, Glute, Leg, Foot, Pose Corrective, Base Morph; Head: Full Head, Skull,
-  Forehead, Brow, Eye, Ear, Cheek, Nose, Mouth, Jaw, Chin; a search box, the sliders beside the tree, Bake / Reset),
-  SkinGen (Skin / Makeup / Outfits), Material (a mesh / material / shader-type table, texture settings), Expression
-  Wrinkles (a head map of regions); a side tab Cloth Layer Settings. Look: near-black greys, lime-green titles and
-  highlights.
-- **MakeHuman's MHM names for the macro sliders** (`makehuman/data/modifiers/modeling_modifiers.json`, MakeHuman's
-  repo, read 2026-11-03): `macrodetails/Gender`, `/Age`, `/African`, `/Asian`, `/Caucasian`;
-  `macrodetails-universal/Muscle`, `/Weight`; `macrodetails-height/Height`; `macrodetails-proportions/BodyProportions`;
-  `breast/BreastSize`, `/BreastFirmness` - the ids `juststage:sliderIds` carries (character-data-model §0, §1.3).
-- **Blender 5.3's USD exporter** (`bpy.ops.wm.usd_export`, listed 2026-11-03): `root_prim_path`, `selected_objects_only`,
-  `export_shapekeys`, `export_armatures`, `export_hair`, `export_materials`, `generate_materialx_network`,
-  `generate_preview_surface`, `export_textures_mode`, `relative_paths`, `export_custom_properties`,
-  `custom_properties_namespace`, `convert_orientation`, … ; `bpy.types.USDHook` is there for our attributes.
-- **Cycles' hair colour from melanin** (source read 2026-11-03: `intern/cycles/kernel/svm/closure.h`,
-  `kernel/closure/bsdf_util.h` on GitHub's mirror): concentration m = −ln(max(1 − melanin, 0.0001)); eumelanin
-  m·(1 − redness), pheomelanin m·redness; σ = eu·(0.506, 0.841, 1.653) + pheo·(0.343, 0.733, 1.924); a colour's σ is
-  (ln colour / s(β))² with s(β) = ((((0.245β + 5.574)β − 10.73)β + 2.532)β − 0.215)β + 5.969 (β the radial roughness) -
-  so the colour a melanin gives is exp(−√σ · s(β)), what EEVEE's Principled BSDF stand-in for Principled Hair needs.
-- **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over
-  (pores, stubble, redness); every part's output is Target `ALL` with nothing on Thickness, the cornea has no raytraced
-  refraction, `scene.eevee.use_raytracing` is off and the lashes draw as 1-px `STRAND` curves — the EEVEE tuning of
-  RESEARCH skin (`../plans/2026-10-30-research-skin-detail-shading.md:349-358, 495-500`) and hair
-  (`../plans/2026-10-30-research-hair-eyes-teeth.md:111-122`) was never built — *measured, 2026-11-03*.
 - **Applying an asset from Blender's Asset Browser** (Blender 5.3's own Pose Library, read 2026-11-04 at
   `5.3/scripts/addons_core/pose_library/`): a keymap item on "Asset Browser Main" (FILE_BROWSER), LEFTMOUSE
   DOUBLE_CLICK, runs an operator that reads `context.asset` (an `AssetRepresentation`: `name`, `id_type`,
@@ -119,342 +92,11 @@ Subjects: [1 · The machine](#1--the-machine) ·
   step does) emptied JustStage's hair and skin files. `write(..., fake_user=True)` keeps them. An append
   (`libraries.load`, linked or not) clears fake users, so the flag can't be seen that way, only by opening the file.
   *Measured, 2026-11-04.*
-- **MakeHuman's pack lashes** (`basic_lashes_upper`, attached to our Average woman): 99 strands for both eyes, radius
-  0.05 mm (median; max 0.1 mm), standing 8-9 mm in front of the eyes. At 256 px over 7 cm (0.28 mm a pixel) EEVEE's
-  true-width strips are a third of a pixel and vanish; at 1024 px a few strands show at the outer corner.
-  *Measured, 2026-11-04.*
-- **Hair colour, EEVEE stand-in against Cycles** (`Hair to shoulder` on the Average woman, the three-quarter
-  thumbnail view, 64 samples): the mean hair colour in sRGB for melanin / redness 0.5 / 0.25 was 87,63,46 in EEVEE
-  against 101,71,51 in Cycles; for 0.65 / 0.2, 70,53,45 against 82,59,48; for 0.75 / 0.2, 61,49,44 against 71,54,47.
-  EEVEE is ~10-15% darker with the same hue. Cycles turns 0.5 / 0.25 auburn on a sparse style (light through it).
-  *Measured, 2026-11-04.*
-- **Grooms between characters** (Blender 5.3's Deform Curves on Surface; measured 2026-11-04):
-  - The node moves each curve rigidly from its root's triangle in the surface's rest position (the base mesh before
-    shape keys) to the same UV point on the evaluated surface. A strand's points don't change the move, so it can be
-    measured on a probe shape and inverted exactly.
-  - Its turn isn't the plain triangle frame (first edge, normal): that frame missed by up to 1.9 mm at a lash tip.
-  - With each character's base mesh lifted by its own `feet_on_ground` amount (0.817743 m at the default macros,
-    0.820291 at height 1, 0.819702 for a tall muscular man), grooms landed off by the difference: MakeHuman's pack
-    roots, median on the skin, were hedgehog 0.84 mm and pack lashes 1.88 mm on a tall character (0.07 / 0.31 on the
-    default). With one lift for every base mesh: 0.08 / 0.28.
-- **EEVEE's eye white and the lids' shadow** (Blender 5.3, a close eye, one 120 W area light 0.6 m wide, measured
-  2026-11-04):
-  - The lid stands about a millimetre off the eyeball. The light's `shadow_maximum_resolution` defaults to 1 mm.
-  - At 0.1 mm without `use_shadow_jitter` the white stays flat. Jittered, the upper lid's shadow shows.
-  - Render time was the same at every limit: 0.56 s for a close eye at 512 px and 64 samples, 0.44 s for a full body
-    at 1280 x 720.
-  - In 5.3 the setting is `shadow_maximum_resolution`; `shadow_resolution_scale` no longer exists.
-  - The viewport jitters only with `scene.eevee.use_shadow_jitter_viewport`.
-- **Skin lightness by melanin** (`core/skin_optics.py`, eumelanin 0.6, blood 0.016; CIE L* of the albedo):
-  - melanin 0.003 gives L* 75.6, 0.01 gives 69.0, 0.03 gives 54.7;
-  - melanin 0.06 gives 41.0, 0.1 gives 30.8, 0.13 gives 26.3;
-  - melanin 0.25 gives 17.6, 0.5 gives 10.9.
 
-  The library's eight tones solve L* 74 down to 25 in steps of 7: melanin 0.00457, 0.01239, 0.02164, 0.03288,
-  0.04705, 0.06597, 0.09366, 0.14102. *Computed, 2026-11-04.*
-- **CC5's default character, seen** (the user's three screenshots of HD Aaron in CC5's live view, 2026-11-04; kept out
-  of the repo): SubD 1; scanned skin maps - pores, redness on the nose and cheeks, stubble, eye bags, neck creases; wet
-  eyes with a pink caruncle and lower lid rim and a shadow under the upper lid; a dark blue-grey stage, a strong key
-  with soft image light. Against it ours was one flat skin colour, no brows, faceted outlines, a bright flat eye white.
-  The gaps and the recs: `docs/plans/2026-11-04-realism.md`.
-- **The face test's colour maps** (`.dev/facetest/chars/<name>/face_albedo.png`, measured 2026-11-04): all four
-  people's maps share one brightness (median ~0.54 / 0.31 / 0.22 linear) - `test_face_project.py` scales every map to
-  the skin model's luminance at melanin 0.012, then a per-channel gain normalised to luminance 1, and makes a dark
-  person dark through the scene's exposure (Amara -2.59 EV). A skin taken from them needs its own brightness.
-- **The body's UDIM layout** (`tools/make_udim.py` on the default human, hm08's own islands packed per region by
-  Blender's packer, measured 2026-11-04): 1001 head and neck 4,934 polygons (everything above 1.28 m), 1002 torso
-  1,146, 1003 arms and hands 5,743, 1004 legs and feet 1,310, 1005 nails 245 (MPFB2's CC0 nail masks). hm08 is all
-  quads (73,944 loops, 18,486 polygons with the helpers).
-- **MPFB2's region masks** (CC0, `src/mpfb/data/textures/mpfb_*.jpg` at 6ff1eb35, 2048², hm08's UVs): aureolae,
-  crotch, ears, eyelids, face, fingernails, genitals, inside-mouth, lips, toenails - crisp white shapes. Its v2
-  procedural skin (`entities/nodemodel/v2`, GPL-3 code) builds on its own services and would need MPFB2 installed and
-  run; a trial run in an isolated Blender was refused by Claude Code's permission check as code from outside.
-- **The stage's light, trials** (Cycles, the library's Average woman, 2026-11-04): three area lights (key 300 W, fill
-  100 W, rim 120 W) under AgX base contrast read flat and pale; Poly Haven's Studio Small 09 as the fill at 0.5 flattened
-  it again; at 0.25, no fill light, AgX "Medium High Contrast" and -0.3 EV the face had shape. AgX's looks in 5.3
-  include "AgX - Medium High Contrast" (set and rendered).
-- **EEVEE 5.3 can shade per light in nodes** (a research agent's finding 2026-11-04 - manual rst, PR #161429 merged
-  2026-09-02, task #139341, PR #164595; verified on our 5.3 beta by listing the nodes, measured): `ShaderNodeLightAccumulation`
-  (inputs LightIndex, Diffuse Light / Color, Glossy Light / Color, Transmission Light / Color, Weight - its input tree
-  evaluated once per scene light and summed), `ShaderNodeLightEvaluation` (LightIndex, Position, Normal, Roughness ->
-  Factor, Mask, Direction, Distance), `ShaderNodeLightInfo` (Color, Power, Position), `ShaderNodeShadowRaycast`
-  (LightIndex, Position, Softness -> Color), `ShaderNodeRaycast`. The Geometry node's Tangent output is the strand's
-  tangent on curves (source `node_geometry`: `sd.curve_T`); Hair Info's "Tangent Normal" is the view-facing normal.
-  **Units, measured 2026-11-06** (scratchpad `lightacc_test.py`: two spheres under one area light, linear EXR): Light
-  Accumulation's output is the sum over lights of Light x Color, as radiance; with Diffuse Light = Light Evaluation's
-  Factor (Normal = the surface normal) x Light Info's Color x Power and Diffuse Color = the albedo, it equals a
-  Principled diffuse surface within 2% (0.385 / 0.313 / 0.242 vs 0.377 / 0.312 / 0.246) - Factor carries the cosine,
-  the falloff and the 1/pi, not the power. Its LightIndex and Weight inputs are hidden (implicit per light).
-  Light Accumulation covers light objects only (the world needs its own term). So a Marschner-family hair model (R,
-  TT, TRT lobes from L, V, T; Karis SIGGRAPH 2016 for Unreal, Tafuri 2019 for Frostbite; multiple scattering as
-  Karis' wrapped term or dual scattering's density fallback) can be written in EEVEE nodes. Also: Blender 5.0 added a
-  Cylinder curve shape (STRAND / STRIP / CYLINDER in 5.3); EEVEE's Principled Hair falls back to a diffuse closure of
-  its Color socket; WIP PR #164595 (an EEVEE hair closure, one Kajiya-Kay lobe) "not expected to land in its current
-  state". Chiang's colour mapping is "a precomputed fit of absorption coefficients to scattered hair color" (pbrt) -
-  the colour after multiple scattering, so near-black as a single-bounce colour; per fibre for brown hair (melanin 0.65,
-  redness 0.2): A (0.016, 0.004, 0.000), R 0.075 white, TT (0.34, 0.17, 0.03), TRT (0.009, 0.003, 0.000) (computed from
-  Cycles' absorption).
-- **Skin variety methods not yet in our files** (the same agent, 2026-11-04): chromophore-space mixing - each scan
-  layer inverted per texel to melanin and blood maps by our own skin model, characters made by shifting them, a
-  residual kept (Donner et al. 2008; Aliaga, Hery & Xia 2022 arXiv 2201.10695; Aliaga et al. EGSR 2023; no code
-  found); age and person variety from per-region multiscale detail statistics (Golovinskiy et al. SIGGRAPH 2006, page
-  read: "adjusting the apparent age of faces"); parametric freckles as a point process on UV (Schneider, Egger &
-  Vetter FG 2018, snippet); skin-optics ageing (Iglesias-Guitian et al. EG 2015, no wrinkles); WildCap (CVPR 2026, GPL-3,
-  weights' data licence not stated, nvdiffrast non-commercial, Linux) and DoRA (non-commercial); AvatarTex (3DV 2026, a
-  FLUX UV LoRA, snippet). Body sites (PMC11084701, 53 Korean women, rankings only): elbows then knees darkest and most
-  melanin and erythema; forearm redness rises with age.
-- **CC5's SkinGen, its inventory** (reallusion.com/character-creator/skingen.html, page read 2026-11-04, the user's
-  link): a layer stack ("dynamic skin effects layer stack", per-layer sliders, 4 blend modes - normal, multiply, overlay,
-  soft-light; free version capped at 15 layers; "up to 4K real-time editing for each body material"). Skin elements
-  90 free / 270 premium / 360: skin base 42; normal effects (muscle, sinew, fat crease, vascular, skin noise, skin
-  details) 86; skin details (decal, coloration, capillary, roughness) 61; blemish (acne, freckle, mole, suntan) 38;
-  acquired (liquid, scale, scar, tattoo) 39; body hair and scalp (scalp, beard, body hair) 55; nails 29 + nail presets
-  10. Makeup elements 79 / 281 / 360. "SkinGen is embedded with MicroSkin textures licensed from TexturingXYZ"; "powered
-  by Adobe Substance Technology". The digital-human page (page read): "Authentic Human Skin" (skin, hair and nail
-  materials from 3D scans, adjustable by age), "Intricate Wrinkles" (high-res scans, a real-time wrinkle shader), the
-  Digital Human Shader (SSS, micro normal) for skin, eyes, teeth, hair; HD Ultimate Morphs 172; "40+ scanned assets".
-- **Texturing.XYZ's licence** (2026-11-04): not reached - searches "Texturing.XYZ license terms redistribution AI
-  training open source" and "texturing.xyz EULA 'license' personal indie studio redistribute textures" returned other
-  vendors' terms (no raw redistribution, embedding in finished media only, AI training by separate permission:
-  aiTextured, Cubebrush, a Gumroad seller, CGTrader's 2026-05-15 change); `texturing.xyz/pages/licenses` 404;
-  `texturing.xyz/policies/terms-of-service` covers the shop, not the textures. A gap: only Texturing.XYZ can say.
-  **READ 2026-11-04 (the redo):** the licence is `texturing.xyz/pages/terms-of-service` ("Terms & conditions /
-  Licensing", updated 2026-08-29): §7 bars releasing Materials "or derivative products under an Open Source License"
-  and any use "with artificial intelligence, machine-learning ... systems or software" without written authorisation -
-  a user's own purchase, imported, is the only route (`../plans/2026-11-04-research-licences-redo.md`, with every
-  other licence the CC-only filter had cut: Pexels, Unsplash, Pixabay, BlenderKit, Superhive, Fab, CGTrader,
-  Sketchfab Store, HumanScanRepository, Renderpeople, Triplegangers, Ten24's commercial-use sample scan).
-- **The gate's first run (2026-11-04, measured; `../plans/2026-11-04-realism.md` §6a):** EEVEE 5.3's world light on a
-  plain 18% grey sphere's lit side is 17-19% weaker than Cycles' (key 1.006, rim 0.84-0.91); on the face, lit skin
-  agrees across EEVEE, Cycles and Unreal (MetaHuman's baked skin material on our maps), shadows part (EEVEE's jaw shadow
-  15% darker and 28% harsher than Cycles'). Unreal 5.8 facts: commandlets can't spawn actors; `-ExecutePythonScript`
-  quits the editor after the script; `name.1001.png` / `name_1001.png` import as a UDIM virtual texture; UV0 is the
-  first UV layer.
-- **EEVEE 5.3 against Cycles on the gate's face, one setting at a time (2026-11-04, measured):** `indirect_light_intensity`
-  1.2 brings the world light on a grey sphere from 0.836 to 1.002 of Cycles' and the jaw shadow from 0.855 to 0.947;
-  the skin's subsurface radius x1.5 cuts the shadow-detail error from 0.103 to 0.075; `trace_max_roughness` 0.75,
-  full-resolution tracing, finer Fast GI and 128 samples change nothing; dropping sheen or coat makes the match worse.
-  **Corrected the same evening:** the sphere's five brightness bands (dark to lit), EEVEE over Cycles under the image
-  light alone: 1.262, 1.294, 1.224, 0.973, 0.836 - EEVEE's world light is flat, not weak; x1.2 gives 1.524 ... 1.002
-  (the dark side ~50% too bright), so x1.2 is dropped. EEVEE's world sun extraction is on at Blender's defaults
-  (`world.sun_threshold` 10, `sun_angle` 0.0092 rad, `use_sun_shadow` on, `probe_resolution` 1024) and Studio Small
-  09 peaks at 541 (135 after our 0.25 strength), so its softbox cores become one sharp sun - the next one-factor sweep.
-  **Later the same night (measured, the realism doc §6a):** under the full stage the sphere matches Cycles exactly, so
-  the sweep was dropped; the jaw's 15% darkness is EEVEE's shading of the 1.5 m key light at grazing angles (~60%; a
-  0.5 m key gives 0.950; no EEVEE shadow setting closes it) plus off-screen bounce (~40%). A light-probe volume
-  (`LightProbeVolume`: `capture_indirect` on and `capture_world` off by default; `bpy.ops.object.lightprobe_cache_bake`
-  works headless, 3.5-6.7 s) - coarse with the world captured helps a little, fine (24 x 20 x 36) darkens the world.
-  Skin scattering x2 keeps lit detail within 3% of Cycles and cuts shadow harshness 1.28 -> 1.16.
-- **MetaHuman's character API in Unreal 5.8's Python** (listed headless 2026-11-04, `.dev/gate/out/mh_api.log`): 242
-  `MetaHuman*` names, among them `MetaHumanCharacterFactoryNew` (a character asset), `MetaHumanCharacterEditorSubsystem`
-  (`try_add_object_to_edit`, `commit_skin_settings` / `commit_face_state` / `commit_eyes_settings` /
-  `commit_makeup_settings`, `request_texture_sources`, `assemble_for_preview`, `build_meta_human`,
-  `spawn_meta_human_actor`, `import_from_template`, `conform_to_target_meshes`), `MetaHumanCharacterExportBlueprintLibrary`
-  (`export_dcc`, `export_dna`, `export_materials`). So the gate's preset benchmark can be scripted; whether texture
-  requests need Epic's cloud (and a login) is not yet known.
-  Answered 2026-11-04 (the API's own docstrings, `.dev/gate/out/mh_doc.log`): `commit_skin_settings` synthesizes
-  preview textures locally and "will also discard any high resolution textures"; `request_texture_sources` is
-  "Request high resolution textures" (Epic's cloud, `desired_texture_sources_resolutions`); `build_meta_human` stops
-  at "Character is not rigged" without the cloud auto-rig. A face DNA does ship:
-  `Engine/Plugins/MetaHuman/MetaHumanCoreTechLib/Content/ArchetypeDNA/SKM_Face.dna` (not tried with
-  `import_from_face_dna`). The MetaHuman benchmark was then dropped - CC5 is the standard (TASKS).
-- **MetaHuman's skin materials, read from the installed plugin** (Unreal 5.8, `Engine/Plugins/MetaHuman/
-  MetaHumanCharacter/Content/Lookdev_UHM/Skin/Materials/`, 2026-11-04, names read from the `.uasset` files; nothing
-  copied): presets use `MI_skin_unified_MH_preset_Baked` on parent `M_skin_unified` with region masks
-  `T_region_face_A-D` / `T_region_body_A-D` (hundreds of per-region basecolor / normal / fuzz parameters, animated
-  wrinkle maps cm1-3 / wm1-3, "a fake peachfuzz effect adjustable through regions"); `M_skin_unified_baked` takes
-  plain baked inputs - `Basecolor Baked`, `Normal Baked`, `SRMF Baked` (specular / roughness / metal / fuzz packed),
-  `Scatter Baked` - plus `Micro Skin Details` (tiling micro normal and cavity, `T_SkinMicro3_N` / `_CAV`) with
-  `Micro MaskA-D` strengths; subsurface profile `SSP_skin_unified`. For the gate: our maps on the baked variant.
-- **The eye part by part against HD Aaron** (*measured, 2026-11-05*, proof step 4, `.dev/gate/parts/proof_eyes/`,
-  RESUME (4b)): a cut-out iris photo, unwrapped to polar coordinates and sampled on our eye's linear iris UVs (pupil
-  edge to 4% past the limbus), measures equal to his iris (L* 24.6 / C 14.8 vs 27.2 / 11.3) with more detail; the
-  iris surface itself must not be specular (0.5 at roughness 0.4 laid a grey haze over the pupil - the cornea shell
-  carries the gloss, the real iris sits in index-matched fluid). Source on disk: `Green_iris.jpg` (Wikimedia Commons,
-  Lizapopova143, 2019-07-15, 5,315 x 3,838) - its file page [page, read 2026-11-05]: "This file is licensed under the
-  Creative Commons Attribution 4.0 International license." MakeHuman's lid has no margin geometry: its lower lid's
-  edge stands up to 3.3 mm off the eyeball (a dark crevice in the render); moving that one vertex ring onto the eyeball
-  leaves a 4-8 px band against his ~36 px. ICT's tearline strip shaded as wet pink tissue gives the band on the
-  Average man (32 px, the same colour) but on four other library characters it outlines the whole opening, upper lid
-  included - a drawn pink ring (his upper margin hides under the lashes).
-- **The live view's fine detail against the film render** (*measured, 2026-11-05*, rec 1; `.dev/gate/parts/proof_eevee/`, bands fine/pore/fold on the gate's cheek view): HD Aaron (CC Blender Tools' material) in EEVEE keeps 58% / 64% / 70% of his Cycles detail; one factor at a time: skin scattering off 0.609 fine (+36%), film filter 0.75 px +7%, anisotropic 16x and 256 samples no change, cubic textures lower - EEVEE's screen-space scattering blurs his normal-map detail. **Our skin with its live-view calibration (`skin/material.py` EEVEE_SCATTER 2.0) is not affected:** Cycles 0.484 / 1.297 / 1.055 against EEVEE 0.546 / 1.512 / 1.169 (113-117%); scattering x1.0 and x0.5 sharpen further (0.715, 0.849 fine). The live view matches the film render on our content; the earlier 80-87% was Aaron's uncalibrated material.
-- **Anny (NAVER), read 2026-11-05** (github.com/naver/anny README [page], the user's link): "a free, open-source, differentiable human body mesh model" in PyTorch, infants to elders, "based on the tremendous work of the MakeHuman community"; licences: code Apache-2.0, `data/mpfb2` and `data/faceunits01` CC0 1.0, `data/soma` Apache-2.0, `smplx` non-commercial; topologies `anny` (default, triangulated, unattached vertices removed), `anny-quads`, `anny-full`, **`makehuman` ("unedited quad MakeHuman mesh")**, `smplx`, `smpl`, `soma`; rig 104 bones by default, 163 with `rig="makehuman"`; phenotype parameters in [0, 1], local changes in [-1, 1], facial actions from MakeHuman's Face Units (CC0). The README names no scan / keypoint / image fitting and doesn't say how ages are calibrated. Use for us: a differentiable copy of our base (if `makehuman` matches hm08's vertex order - to check) to fit our body's shape and pose to any scan by gradient descent (the Artec body fit that failed rigidly); the SOMA bridge for MHR shapes and SOMA-X correctives.
-- **Painted hair in our inputs - the measurements on them are void** (*checked 2026-11-06*, after the user: "why are
-  our lashes paintedt on cc5 lashes and beards are not painted on"). **CC5 paints no hair** (HD Aaron's files on disk,
-  `.dev/gate/cc5_aaron_blender/hd_aaron.fbm/`, `aron_with_hair.fbm/`): lashes a mesh (`Std_Eyelash` colour and
-  opacity - cards), brows a mesh (`Brows_Base`, `Brows_Color`, `Brows_Hair`), stubble a mesh (`Beard_Transparency`);
-  his head colour map `Std_Skin_Head_Diffuse.jpg` has no lashes and no brows, only a faint grey shaved tint on the jaw
-  and lip under the stubble mesh. **Ours:** Daniel's head colour (`.dev/skins/man_a/Daniel skin.base_color.1001.png`,
-  from the face test's AI-painted face, rounds 74-101 - `tools/build_skins.py`) has the lashes painted along both lids
-  and stray brow hairs; Scan man A's (HSRD scan photos) his stubble; Scan man A's normal map (the scan's geometry
-  baked) shows lumpy rows at the hairline and the beard's edge [seen, to confirm per region]; the pore tile on every
-  character (`.dev/facetest/pores_lps.png`, the Lee Perry-Smith scan's cheek) shows seams at its quarter lines and
-  elongated streaks like stubble [seen, to confirm against the scan]. Our strand lashes and brows (`hair/lashes.py`,
-  `brows.py`) are there but 0.1 mm thick and sub-pixel at face distance in EEVEE (no minimum width) - the painted
-  ones are what shows. No step ever removed hair from a skin; nothing approved painting it. **Void until re-measured on
-  clean inputs:** the face-skin proof (cheek pore band "equal on six characters"), the brows and lashes judgments, the
-  lower-lid wet margin and caruncle, the lid band (28-50 px), every face-distance comparison with Aaron (he wears his
-  Stubble mesh, ours none). **Stand:** iris, white and pupil (measured inside the opening), the geometry (lid
-  anatomy, slider sweep, recess), the gate's tooling, the live view's calibration (111-117% of Cycles: L280's ratios are 113 / 117 / 111% - was: "113-117%" until 2026-11-07).
-- **Clean skins and the first clean-input gate** (*measured, 2026-11-06*, `../gate/2026-11-06/report.md`,
-  `../plans/2026-11-06-inputs-audit.md`): hair comes out of scan photos by region, not by strands alone - DullRazor's
-  line closings (Lee et al. 1997) catch single strands and stray hairs but neither the dense lash band round an eye
-  nor stubble (dots) and they also catch fine creases; so a ~5 mm band round the eye and brow holes is dropped, strands
-  are found in the eye zone and by the hairline, stubble is found per texel (dark-mark density >1.35x the scan's own
-  clean face) - the scan list's by-eye stubble tags were wrong (HSR0040's upper lip; LPS's whole beard 911k texels),
-  and holes are filled with mirrored real skin, the colour by a smooth multi-width fill. Women's scans carry eye makeup
-  (liner, mascara, shadow): darkening round the eyes held to 12%. The pore tile: Ten24's sample scan (its page: "Feel
-  free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a
-  credit") - its Level_01 relief normals on a clean upper cheek, 33 mm, Moisan-tiled; the LPS tile it replaces carried
-  his beard's streaks (his whole lower face is stubble, `lambertian.jpg`); LPS's forehead has no hair but deep
-  wrinkles and scan streaks. With the new tile the pore depth that matches HD Aaron's upper cheek is 0.15 mm
-  (bands 1.135 / 0.884 vs 1.154 / 0.894; 0.3 mm gave 1.74 / 1.31), the microrelief 0.015 mm (fine 0.63 vs 0.51). The
-  torso: Artec's scan wrapped (our torso onto it, NICP, p50 2.2 / p90 4.6 mm) then baked - the prototype's rigid
-  placement read the two bodies' difference as relief. The eye's recess measured the scans' way on base v2: upper
-  -2.9 mm (man) / -2.2 mm (woman) against the real -2.86 - no move needed. Found unapplied in code while fixing: the
-  design's lash settings (180 upper, 0.08 mm, melanin 1.0), the caruncle (proof 4c), the photo iris (harness only).
-- **The head tile's false shading - Cycles' Normal bake and shape keys** (*measured, 2026-11-06*, scratchpad
-  `factors.py`, `bake_probe.py`, `keys_probe.py`; test `tests/blender/test_build_skins.py`): the gate's face (run 5)
-  showed a brown lower face with a hard edge on one cheek and dark sockets. One factor at a time on the face view: a flat
-  colour map - unchanged; a flat normal map - gone (the face clean, the sockets far lighter). The scan skins' head
-  normal (`build_skins.py`: the composed relief moved from the face test's `HeadTile` frames to the UDIM layer's by a
-  Normal bake on man_a's `round.blend`) held low-frequency tilt (after a 40-texel blur p50 0.13 / p90 0.31) the
-  composed relief does not (p50 0.00). A plain BSDF, no normal map, baked the same tilt: Cycles' tangent frames stay on
-  the Basis while the shading normal follows the shape keys - each key that reshapes the face adds it in proportion
-  (MakeHuman's ethnic keys moving up to 0.19 m: p90 0.11-0.12 each; `gnm.identity` 0.11; keys of a few mm: 0.002);
-  Basis only, modifiers off: p99 0.011. Every scan skin carried the face test character's face as shading. Fixed:
-  `build_skins._bake` bakes normals on the Basis with modifiers off. A bare shape-keyed grid reproduces it (p99 0.43);
-  a Subsurf modifier hides it (re-evaluated frames). `scan_bake.py` is not affected: it bakes onto the fitted head
-  built as a plain mesh (no shape keys).
-- **Data in an image's alpha, the live view, and other gate findings** (*measured, 2026-11-06*, gate runs 7-8,
-  scratchpad `factors.py` with its `show-<node>` mode - a node's value rendered as emission): a region map with a data
-  channel in its alpha (`face_regions.png` RGBA, the image's alpha mode Channel Packed) read right through
-  `image.pixels` (R 0.125 on the neck) but the live view's pore depth there came out 2x and more - R, G, B divided by
-  an alpha of 0; a separate greyscale map fixed it (`face_share.png`). The skin builder's read of the same map
-  (`image.pixels` of an 8-bit RGBA PNG) divided too: the head tile's neck roughness came out up to 1.0 (255) - the
-  dark characters' neck patch in gate run 9. Rule: no data in alpha, anywhere. Also
-  measured: the skin's scattering halved changes neither side of the face (our shadow side L* 50.7 either way against
-  HD Aaron's 36.4 - his face's form, not our material); our upper lashes rise 12 deg median root to tip (p90 22, none
-  past 60 - the "spikes" at the eye view are the longest middle lashes seen end-on); the live view's tearline (a
-  Fresnel mix of transparent and glossy) drew a dark outline round the opening on a dark stage (hidden: gone; Cycles
-  not checked) - an additive film keeps the eye seen through it.
-- **Limbs from a bare-body scan - fitting our body's pose** (*measured, 2026-11-06*, `tools/body_scan.py hsr0042`,
-  HSRD-100's HSR0042-Body-045: bare but for trunks and cap, barefoot, near A-pose, 500k vertices, a floor sheet under
-  the feet): our default A-pose bends the forearm 19 cm forward (elbow y -0.016 to wrist y -0.207) where the scan's
-  arm hangs straight; a turn at the shoulder alone left the arms 8 cm off; a joint-by-joint two-angle search (each
-  segment weighed the same - the hand's 1,577 vertices had outweighed the upper arm's 172; each joint's swing limited -
-  the floor sheet had drawn the feet 73 deg round) then Amberg's non-rigid ICP: hands 3 / 8 mm (p50 / p90), forearms
-  5-6 / 12-17, feet 9-10 / 17-19, upper arms 13-16 / 39-42, thighs 9-12 / 35-56, shins 14-15 / 30. The bake takes the
-  scan's detail only where the wrapped surface lies within 6-12 mm (the fit's gap baked per tile). **Then Anny**
-  (`pip install anny` 0.6.2 into venv-rdf, Apache-2.0 code, CC0 MakeHuman data): `Anny(rig="makehuman",
-  topology="makehuman")` is the unedited quad mesh - 19,158 vertices, 13,742 quads, hm08's order (head within 6 mm
-  index for index after a rigid fit; its default `anny` topology is the triangulated, trimmed one - not used); 163
-  bones; phenotype gender, age, muscle, weight, height, proportions. Its README names no scan fitting: ours by gradient
-  descent (bones' turns, the phenotype, a placement; a robust two-way nearest-point loss, 400 Adam steps, GPU) then
-  the wrap: upper arms 3 / 7-8 mm, forearms 2-3 / 7-8, hands 2-3 / 6-8, thighs 3-4 / 9, shins 6-8 / 20-22, feet 5 / 13-16
-  - every segment better. (The fit ended at gender 0.08 - male, right for this man: Anny's gender runs 0 male, 1 female (`anny/models/model_data.py` `gender=["male", "female"]`, anchors 0..1 in `phenotype.py`), the reverse of MakeHuman's 1 = male; `fit_anny` starts it at logit 4.0 commented "a man" (`tools/body_scan.py` L234) - 0.98, female in Anny - and its loss has no phenotype term, so that is an inverted start value, not a prior (was: "a shape-space quirk" until 2026-11-07); only the surface matters
-  here.) Anny is a fitting tool in the scan pipeline only: the shipped mesh stays hm08 + base v2.
-  Queries (2026-11-06, after the user asked whether Anny was researched against MakeHuman): "best way to fit a
-  parametric human body model to a 3D body scan 2026" - older SCAPE / SMPL pipelines (joint-anchored fitting,
-  BODYFITR, learned registration to SMPL+D), no 2026 consensus [snippets]; "Anny body model NAVER fit to 3D scan
-  accuracy compared SMPL-X MHR" - the Anny paper (arXiv 2511.03589) via summaries: ~2.4 mm mean point-to-mesh error on
-  adult scans (3DBodyTex), 2.0 vs SMPL-X 3.2 mm on children's, SMPL-X better on high-BMI skin folds, no MHR comparison
-  [snippets - to read at the source before a plan rests on them]; "how do studios wrap a 3D scan to a base mesh
-  topology R3DS Wrap alternative open source" - R3DS Wrap, Wrap for Blender ($49), TopoWrap: corresponding points,
-  then a non-rigid fit, then clean-up; no open tool found [snippets]. Verdict: Anny + non-rigid ICP is the open form
-  of the studio method on our own topology; MHR via SOMA-X (Apache-2.0) is the one to try if heavy bodies' folds
-  come out wrong.
-- **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
-- **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
-  MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
-  torso; the same horizontal chest seam and arm bands show on Average and Muscular man (a texture-tile defect, not
-  diagnosed yet). Bare torsos we hold: of HSRD-100's 13 downloaded poses only HSR0042-Body-045 (swim trunks; an
-  average-build older man) - the rest wear shirts, dresses, hoodies (their `pose_meta.json`); the plan's "HSRD-100
-  bodies ... mostly bare" was wrong. deep3dstudio's "Athletic African man walking 223" (CC BY, 8K tangent normal map)
-  wears a tank top - bare arms show real definition; Ten24's sample wears a sweater. Web (queries, standard mode): "best
-  way to add realistic muscle definition to a 3D character body skin normal map 2026" - listings and texture packs:
-  the industry way is sculpted detail baked to normal + cavity maps (MetaHuman custom bodies, VRChat muscle packs);
-  "free 3D scan shirtless male body full body photogrammetry download" - Ten24 (clothed), 3D Scan Store (paid; its
-  terms bar character makers - licences-redo file); "textured 3D human body scan dataset minimal clothing underwear
-  high resolution" - 3D.sk underwear scans (RenderHub listing: no commercial use), 3DBodyTex (close-fitting clothing,
-  terms unread), CAPE / BUFF (textured raw scans on request, terms unread); "sketchfab shirtless man full body scan
-  downloadable CC attribution" - Scanlab "human man scan *mbody" and "cdkc/cdbc a pose reference male scan" (licences
-  and clothing unread), Heges app scan (CC BY, raw STL); "is there anything better than MakeHuman for realistic body
-  shape and muscle detail open source 2026" - aggregator pages only (MakeHuman + sculpting; Ara 3D Gen, MIT, unread).
-  **Triplegangers' free samples** (the user's link, triplegangers.com/blog/technology/free-scan-samples, read in Chrome
-  2026-11-05 [page]): a face, a full body and a hand; the body an athletic man in underwear, BACS pose, mesh with clear
-  pectoral and abdominal definition [seen]; "All free samples below are licensed under a Creative Commons
-  Attribution-NonCommercial-NoDerivatives 4.0 International License" ... "You may not use the material for commercial
-  purposes. If you remix, transform, or build upon the material, you may not distribute the modified material";
-  download after registering (Google Drive, .7z). LOCAL TEST only - never shipped, nothing derived from it ships.
-  **Artec 3D "Body scan"** (the user's link, artec3d.com/3d-models/body-scan, read in Chrome 2026-11-05 [page]): a
-  young athletic man in shorts, bare torso, arms raised in a muscle flex (scanned with Artec Leo, 10 min, processed in
-  Artec Studio) [seen]; its Free download tab: "Under Creative Commons license v4, attribution to Artec 3D and a link
-  back to our website is all you need to use this 3D model for free" - the link goes to
-  creativecommons.org/licenses/by/4.0 (CC BY 4.0); credit "Body scan by Artec 3D"; one OBJ archive, 57.73 MB, a direct
-  CDN link (no account). SHIP with credit - the first bare athletic torso we can ship from. Downloaded 2026-11-05
-  (`.dev/downloads/artec_body_scan/`); its own `license.txt` says CC BY 3.0 Unported ("This 3D model by Artec Group inc.
-  ... is licensed under the Creative Commons Attribution 3.0 Unported License") - the file's grant; the page says v4.
-  **Digital Reality Lab samples** (the user's link, digitalrealitylab.com/sample-model, 2026-11-05 [page]): full body
-  A-pose (3.5 GB raw / 480 MB rig-ready, 16K), heads raw / clean / PBR (separate eyes, 16K PBR), facial expressions
-  (1.6 GB), hand, clothing, a rigged female; "The sample models are free for personal and commercial use with credit
-  mentioned on any social media" [page, found in Chrome]; "we do not allow resale or free distribution on other
-  websites" [WebFetch summary - unread in the page itself]; /legal and /faq hold no licence text. A form (name, email,
-  company, job, use) mails the link - the user's to fill. Shipping derived maps: UNREAD (whether a baked map in our
-  repo is "free distribution on other websites") - ask them in writing before anything ships.
-  **3D.sk free samples** (the user's link, static.3d.sk/photos/freeSample, read in Chrome 2026-11-05 [page]): Dale
-  Base Body Scan (a bodybuilder, A-pose, 57.89 MB), Adelle Sabelle Standing Clean Body Scan, Alison Clean A Pose Scan
-  (clothed), Bshara Henry Head Scan, Vinna Reed head premade texture, Lenny groom scan, photo sets (Darren in underwear,
-  poses, expressions). Their Content Commercial License Agreement (3d.sk/page/commercialterms [page]): "you may not use
-  the Content in products for resale, license or other distribution, unless the original Content has been
-  fundamentally modified ... and where the primary value ... is not recognizable as the Content nor is the Content
-  capable of being downloaded, extracted or accessed by a third party as a stand-alone file" - a relief map in our
-  open repo is a stand-alone file: LOCAL TEST only. The download link (`/photos/download?id=969125` for Dale) is
-  bot-protected (curl: 403) and a browser click saves to Chrome's download folder - the user downloads it. 3D.sk's ArtStation post "FREE 3D Scan | Retopo Hands & Premade Head Textures" (the user's link [page]): its only free item is Adelle Sabelle's cleaned raw body scan (the same sample); the hands and head textures it shows are paid products.
-  **CGTrader free characters** (the user's 16 links, 2026-11-05; four read in Chrome [page]): "Matt" and "Amber Free
-  High-Poly" (Martinthedark-, rigged game characters; FBX / BLEND / Unity / Unreal), "Realistic Male Full Body Sculpt"
-  (daniartist, 171 reviews), "Head Parts Anatomy" (Avanar) - each "License (no AI) ... Free for personal and commercial
-  use"; CGTrader's terms (§21A, read 2026-11-04, `../plans/2026-11-04-research-licences-redo.md`): "strictly limited to
-  Incorporated Product", in software "prevent the end user from gaining access to the Product" - LOCAL REFERENCE only,
-  never shipped; downloads need the user's CGTrader login. Most useful as references: the full-body sculpt (body
-  definition), Head Parts Anatomy (lid and mouth anatomy); the stylised or game ones (knight, centaur, bunny girl, monkey
-  king, cool girl, Asian girl PBR) add nothing for realism (titles; pages unread).
-- **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
-  1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
-     CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
-     groups by camera), a Korean study, a 1984 Psychonomic paper - methods; no numbers on the pages reached.
-  2. "realistic iris colors for 3D eye shader presets blue green hazel" - product pages (Daz Macro Eyes presets, an
-     Unreal eye pack, Blender's Eye Designer: 12 colour sets) without values; a paper on blue as stroma scattering and
-     hazel as melanin over it.
-  3. "Edwards 2012 'quantitative measures of iris color' CIELAB ..." - the same paper's design; PMC6456006 (a South
-     Asian GWAS, 2019) reports only GWAS statistics, its camera set-up (D55, f/19, ISO 200).
-  4. "'Digital quantification of human eye color' Liu 2010 ..." - PLoS Genetics 2010: hue and saturation from photos,
-     the categories overlapping; values not reached.
-  5. "'Iris pigmentation as a quantitative trait' Edwards 2016 ..." and "iris color physics melanin stroma Rayleigh
-     scattering model ..." - the 2016 paper and qualitative physics only.
-  A gap in the search, not "none exist": the papers hold the numbers; their full texts weren't reached (an ARRO copy
-  failed its certificate). MPFB2's own eye default is a saturated blue (0.18, 0.49, 0.91; `eye_settings.default.json`).
-- **The live view's hair against the film's** (the library's "Hair to shoulder" on the Average woman, Standard view,
-  measured 2026-11-04). First, a mask of what the hair changes (it took in the skin the hair shadows) showed Cycles
-  1.17x EEVEE - misleading. Then the VISIBLE hair only (the hair as white emission, the rest held out): Cycles'
-  Principled Hair (0.15, 0.087, 0.056) against EEVEE's stand-in (0.068, 0.05, 0.044), grey; Cycles rendering the
-  stand-in's own BSDF just as dark (0.058, 0.043, 0.038) - so the gap is the stand-in's model, not EEVEE; EEVEE's
-  ray tracing / Fast GI change little; the hair's self-shadow matters in both. The cause: the stand-in used Chiang's
-  colour formula exp(-f(beta) sqrt(sigma)) as a plain surface colour - near-black for brown hair (0.016, 0.005,
-  0.001), the strand's colour inside a multiple-scattering model, not a surface albedo. Fitted on a grid (melanin
-  0.2-0.97 x redness 0.1-1; EEVEE's response linear in the colour, slope 1.62 everywhere): the matching colour is
-  exp(-k sqrt(sigma)) with k ~3.75 (vs 5.89) within ~5%, near-black hair floored ~0.008. Built: the stand-in at k =
-  0.637 f(beta) with that floor - under the stage's light EEVEE (0.154, 0.091, 0.055) against Cycles (0.15, 0.087,
-  0.056). Under the image light alone EEVEE is still 2.3 / 1.8 / 1.4x darker: its ambient light on hair falls short of
-  Cycles' scattering - open (the shading model, not the colour).
-- **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
-  runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
-  (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065
-  `py3dna_13_5_2`, C3861); PyPI's `swig` 4.3.1 still defines it (`SWIG_QUOTE_STRING`). The C++ libraries and benchmarks
-  compiled under 4.5.1.
-- **EEVEE and the occlusion film** (2026-11-04): ICT's sheet sits a median 0.57 mm off our eyeball (16 of 152 vertices
-  up to 0.2 mm under it, by the cornea); EEVEE draws it (seen as flat red) as a blended surface, but at the face test's
-  strengths (tuned in Cycles, where the lids cast real shadows) its darkening barely shows.
+
+*measured, 2026-10-29* — the face test (`tools/face_test/`):
+- Blender 5.x worlds light through their Background node; `World.color` changes nothing in a render — the first clay
+  views were nearly black. A white Background at strength 1 gives the even light the clay views need.
 
 ## 2 · CC5 and its plugins
 
@@ -538,6 +180,41 @@ Second pass done 2026-10-29: [`../plans/2026-10-29-research-02-cc5-pass2.md`](..
 - Still open: Reddit refused search and fetch, Polycount 403 (not worked around); CC5's Python version (3.8 per
   Reallusion's iClone 8 docs vs 3.10 per a third party); prices for Iray, FashionGen and SkinGen Premium; the 5.2
   build number; the native files' structure (the EULA forbids reverse engineering); no link between Z-Weave and CC.
+
+- **CC5's and MetaHuman Creator's screens** (read 2026-11-03, searches "Character Creator 5 user interface overview
+  Content Manager Modify panel Scene Manager layout manual", "MetaHuman Creator Unreal Engine 5.7 user interface panels
+  …", "Character Creator 5 camera navigation mouse controls …"): CC5's manual (Main Menu > Window) - preset layouts:
+  Standard (Ctrl+2: the Content Manager and all toolbars), Fine Tuning (Ctrl+5: the Modify panel on the right), others
+  stacking Modify and Content Manager on the left or leaving only the camera view; the Content Manager applies
+  templates; Scene Manager (F5) lists every object; Modify (F6). CC5's Camera Toolbar page: pan, Orbit (C), a view
+  list Front / Right / Top / Left / Bottom / Back / Face / All. CC5's mouse bindings were not found for 5 (a CC4 forum
+  post: Alt + right mouse orbits) - a gap in these searches. Epic's "Navigating MetaHuman Creator in Unreal Engine"
+  (page read): a toolbox column on the left - Presets, Import, Head and Body, Materials, Hair and Clothing, Export,
+  Assembly - each opening a tool palette with the tool's properties below; the viewport's own toolbar: Preview Material
+  (Topology / Skin / Clay), Environment Lighting (Studio, Red Lantern, Moonlight, Tungsten, custom), Camera framing
+  (Face, Body, Far, Hands, Feet; 35 / 50 / 100 mm), LOD0-7, Rendering Quality (Medium / High / Epic), View Mode; an
+  Animation Bar once rigged; Preview Scene Details hiding grooms and clothing; panels rearrangeable.
+- **CC5's window, from the user's own screenshots** (2026-11-03, CC5 trial, 14 pictures in the user's
+  `Pictures/Screenshots 1/cc5`): menus File, Edit, Create, Character, Modify, Mesh, Render, View, Window, Plugins,
+  Script, Help; View: Pan X, Zoom Z, Orbit C, Home, Center, Camera View; Window: Workspace, Tool Bar, Bone Manager F3,
+  Content Manager F4, Scene Manager F5, Modify F6, Visual Settings F7, Facial Profile Editor F8, Animation Player F9,
+  Packager Ctrl+F4, Cloth Layer Settings; Render: Preview F10, Render Video, Render Image, AI Image / Video Render;
+  Create: Create Character, AccuRIG, Generate Head from Photo, Wrap into CC5 HD Actor, Transformer, bakes, Morph Slider
+  Editor, Head & Body Morph Sliders, Prop, Accessory, Cloth/Hair/Acc, Animation, Light, AI Mesh; Plugins: Auto Setup,
+  Headshot 3, Smart Search, Omniverse, ActorMIXER. Two toolbar rows (file, transform and camera tools, quality "High",
+  light toggle, Animation Player, Turntable; Conform, Modify, Morph, Transform, Create Character, ActorMixer, AI Studio,
+  AI Mesh, online content search) and a Headshot row. LEFT: the Content panel (green title) - category icons in two
+  rows, Template / Custom tabs, a breadcrumb (All > Actor > Character), Item / Pack, search, sort, a thumbnail grid,
+  a folder tree, Apply / Save / Overwrite; vertical side tabs Content, Scene, AI Mesh Generator, Visual. CENTRE: the
+  viewport (blue-grey gradient, "SubD 1" label), the Animation Player bar under it. RIGHT: the Modify panel (green
+  title), six icon tabs - Attribute (name, type, eye element, contact, corrective expressions, auto-blink, SubD
+  viewport / render, load CC3+ / CC5 HD neutral bases, ActorMixer, convert to game base), Motion (edit pose, import
+  animation, edit facial, HIK T-pose, facial profile editor), Morph (a checkbox tree Actor > Body: Full Body,
+  Shoulder, Arm, Hand, Chest, Back, Waist, Hip, Glute, Leg, Foot, Pose Corrective, Base Morph; Head: Full Head, Skull,
+  Forehead, Brow, Eye, Ear, Cheek, Nose, Mouth, Jaw, Chin; a search box, the sliders beside the tree, Bake / Reset),
+  SkinGen (Skin / Makeup / Outfits), Material (a mesh / material / shader-type table, texture settings), Expression
+  Wrinkles (a head map of regions); a side tab Cloth Layer Settings. Look: near-black greys, lime-green titles and
+  highlights.
 
 ## 3 · iClone 8 and its plugins
 
@@ -886,31 +563,6 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   MPFB2's head span references measured on `base.obj`: x 5399–11998 (14.8 cm), y 791–881 (23.3 cm), z 962–5320
   (19.2 cm), as its MHCLO example uses them. Installing GNM's own package from GitHub was refused by Claude Code's
   permission check ("Code from External"), so no GNM code is run.
-- Skin colour from chromophores (R5's physically based melanin and haemoglobin layers), read 2026-10-29: Donner &
-  Jensen, "A Spectral BSSRDF for Shading Human Skin", EGSR 2006 (the PDF from graphics.ucsd.edu, §3.3–§3.5): eumelanin
-  σa = 6.6×10¹⁰·λ^−3.33 mm⁻¹ (eq. 3), pheomelanin 2.9×10¹⁴·λ^−4.75 (eq. 4), baseline 0.0244 + 8.53·e^−(λ−154)/66.2 (eq. 5),
-  epidermis Cm(βm·em + (1−βm)·pm) + (1−Cm)·baseline (eq. 6), dermis Ch(γ·oxy + (1−γ)·deoxy) + (1−Ch)·baseline with
-  γ = 0.75 (eq. 7), σs' = 14.74·λ^−0.22 + 2.2×10¹¹·λ^−4 (eq. 8, halved in the dermis), epidermis 0.25 mm, n = 1.4;
-  parameter ranges Ch 0.001–0.1, Cm 0–0.5, βm 0–1 (Table 1). Haemoglobin: Prahl's molar extinction (OMLC, 1998,
-  250–1000 nm). Colour: CIE 1931 2° and D65 (files.cie.co.at/Publications-datasets/). Calibration data: NIST's
-  "Reference Data Set of Human Skin Reflectance" (Cooksey, Allen & Tsai 2017, doi:10.18434/M38597, public domain): 100
-  people, R1–R3 and their average, 250–2500 nm. With Kubelka–Munk for both layers the measured spectra are fitted best
-  at an epidermal backscatter of 0.22 × KM's 0.75σs': mean RMS 0.0098, worst 0.020 over 400–700 nm (plain KM 0.039;
-  an absorbing-only epidermis over-darkens dark skin). Fitted melanin 0.56–5.1% (median 1.0%), blood 0.7–6.3% (median
-  1.6%) — the NIST set leans light to medium. The Monk Skin Tone Scale (CC BY 4.0) was looked at as a tone target; its
-  page is a script app and no source gave values that could be checked, so it isn't used.
-- MetaHuman's face names on disk (`F:\Epic\UE_5.8\Engine\Plugins\MetaHuman\MetaHumanCoreTechLib\Content\ArchetypeDNA\SKM_Face.dna`,
-  11.2 MB, byte scan 2026-10-29, for the spec's item 10): 373 distinct `FACIAL_[CLR]_*` joint names, among them
-  `FACIAL_C_FacialRoot`, `FACIAL_C_Jaw`, `FACIAL_L_Eye`/`FACIAL_R_Eye`, `FACIAL_C_TeethUpper`, `FACIAL_C_TeethLower`,
-  `FACIAL_C_Tongue1`–`4`; mesh names `head`, `teeth`, `saliva`, `eyeLeft`, `eyeRight`, `eyeshell`, `eyelashes`,
-  `eyeEdge`, `cartilage` (each `<name>_lod0_mesh` at LOD0).
-- Reallusion's spine mapping (`soupday/cc_blender_tools` `rigify_mapping_data.py`, read 2026-10-29): Rigify `spine` ↔
-  `CC_Base_Hip`, `spine.001` ↔ `CC_Base_Waist`, `spine.002` ↔ `CC_Base_Spine01`, `spine.003` ↔ `CC_Base_Spine02`,
-  `spine.004` ↔ `CC_Base_NeckTwist01`, `spine.005` ↔ `CC_Base_NeckTwist02`, `spine.006` ↔ `CC_Base_Head`; its
-  `GAME_BASE_BONE_MAPPING` puts `spine.001`–`.003` on UE4's `spine_01`–`spine_03` (UE4 has three spine bones) and splits
-  `spine.004`/`.005` 50/50 onto `neck_01`; Rigify's `chest` control sits on `ORG-spine.002` (= `CC_Base_Spine01`). So
-  by humanoid role CC's `Waist` is spine, `Spine01` chest, `Spine02` upper chest — UE5 `spine_01`, `spine_03`,
-  `spine_05` (the review's first fix had used the UE4 table).
 - Rigging and motion services (the user: "did you look at apps like meshy https://www.meshy.ai/features/ai-animation-generator
   could that be useful https://mesh2motion.org/ https://www.mixamo.com/#/"), read 2026-10-29:
   - **Mesh2Motion** (`Mesh2Motion/mesh2motion-app`, 3,622 stars, pushed 2026-10-26; desktop app
@@ -933,131 +585,6 @@ MPFB2's source (`makehumancommunity/mpfb2`, master, GitHub tree API and raw file
   models included, and no sharing of "`.fbx` files of 3D models created with Human Generator" (license FAQ). $68
   personal / $128 commercial, lifetime, one user; the trial has "limited functionality and content" and watermarked
   4K textures (pricing page). Stays out as paid; its body can't be shipped or used as a base; its GPL code is readable.
-
-*measured, 2026-10-29* — hair for step 1.6, on Blender 5.3 beta and MPFB2 `6ff1eb35`:
-- **MakeHuman's hair-editor pack** ([haireditor.html](https://static.makehumancommunity.org/assets/assetpacks/haireditor.html),
-  *page read*): "This pack contains two blend files ("hair.blend" and "fur.blend"), both by Tomáš Klecer"; the packs
-  page's functional section: "The assets are shared under CC0" ([assetpacks.html](https://static.makehumancommunity.org/assets/assetpacks.html)).
-  `files2.makehumancommunity.org/functional/haireditor.zip` (mirror `files.`): 18,251,712 bytes, Last-Modified
-  2026-10-24, SHA-256 `e47ade8e…cbe72`; `hair.blend` 27,310,677 bytes (`8566a128…f080`), `fur.blend` 19,207,241.
-  MPFB2 tells an old pack from the current one by `hair.blend`'s size (`is_hair_pack_outdated`).
-- **What `hair.blend` holds** (listed in Blender 5.3): 28 objects. MPFB2's lists (`haireditorpanel/properties/*.json`)
-  name 16: scalp `short_hedgehog` (42,504 curves), `hair_to_shoulder`, `short_crown`, `short_cap`, `short_ponnytail`,
-  `back_pigtail` (+ a `_brace` hair-tie mesh), `tail_base`, `empty_hair` (0 curves, the template for grooming by hand);
-  eyebrows `wild_eyebrow`, `wild_thick_eyebrow`; facial `wild_thick_beard`, `wild_thick_moustache`, `wild_beard`,
-  `wild_moustache`; other `basic_lashes_upper`, `basic_lashes_lower`. Not listed: `straight_hair_to_shoulder`,
-  `hedgehog`, `basic_short_hair` and `*_cards` meshes. `fur.blend`'s 15 (`fur_assets.json`): full body, hands, forearms,
-  arms, chest, back, neck, belly, thighs, lower legs, feet, mane, face, head, inner arms. Every style is a Curves object
-  (`surface` empty, `surface_uv_map` "UVMap", a `surface_uv_coordinate` attribute) whose modifiers are the pack's own
-  copies of Blender's hair node groups — Surface Deform (one Deform Curves on Surface node) first, then Set Hair Curve
-  Profile, Curl, Hair Curves Noise, Frizz, Roll, Clump, and Duplicate, Braid or Attach Hair Curves to Surface in some;
-  materials are "Hair shader EEVEE" groups on Principled BSDF. No text blocks, no drivers.
-- **How MPFB2 attaches a style** (`apply_hair_operator.py`, `haireditorservices.attach_curves_to_basemesh`): load the
-  object (and `<style>_brace`), set the Curves `surface` to the body, parent to it with an identity inverse ("The asset
-  was groomed on a character standing at the origin"), and first add Blender's empty hair (`ensure_hair_setup`: "or the
-  hair asset wont behave correctly"). Without the body's rest position Surface Deform reports "Evaluated surface
-  missing attribute: "rest_position"" and leaves the strands where they were groomed; `Object.add_rest_position_attribute`
-  turns it on.
-- **The floor:** MPFB2's `create_human(feet_on_ground=True)` lifts the mesh by its lowest body vertex (index < 13,380,
-  shape keys mixed) and applies it — 0.8177 m at the default macros. hm08's `base.obj` is centred on the origin, so a
-  body left there sits 0.8 m below the styles. Lifted, with rest position on: roots to the skin median 0.1–1.4 mm, 95th
-  percentile 0.3–3.8 mm (the beards highest), worst 5.6 mm, over the 15 styles with strands; the same after age 0 (a baby). `tail_base` alone stayed at
-  5.5 mm median / 16.6 mm p95 until its Attach Hair Curves to Surface modifier's empty `Surface` input was set to the
-  body: 0.3 / 0.8 mm. Blender 5.3's Principled Hair BSDF defaults: Chiang model, Melanin 0.8, Melanin Redness 1.0.
-- **Scalp masks tried and dropped** (a procedural groom: Generate Hair Curves inside a mask): MakeHuman's hair helper
-  (`helper-hair`, 428 vertices, y 0.201–0.85 m in MakeHuman's axes — it runs to the shoulders for long hair — a median
-  15 mm, p90 39 mm, above the skin) and MPFB2's `uv_layers/scalp_solid.json.gz` (its MakeUp "scalp" focus region: 520
-  faces, 567 vertices) both reach the forehead: rays along the skin's normals into the helper reach the front midline
-  9 mm below the eye's centre, `scalp_solid` from 23 mm above it; the pack's own `short_hedgehog` hairline is 56 mm
-  above it (front midline, measured on the attached style).
-*web, 2026-10-29* — the eye shells (step 1.5: occlusion and tearline), public docs only:
-- **CC5** ([Eye Occlusion](https://manual.reallusion.com/Character-Creator-5/Content/ENU/5.0/15_Digital_Human_Shader/Eyes/Digital-Human-Eye-Occlusion-Shader.htm),
-  *page read*): "The topmost mesh layer for the realistic eyes is the Eye Occlusion, which simulate the shadow cast from
-  the eyelids to prevent over-exposure on the eyeballs"; its settings pages are Blur, Shadow 1, Shadow 2 and Vertex
-  Offset (not read). [Tear Line](https://manual.reallusion.com/Character-Creator-5/Content/ENU/5.0/15_Digital_Human_Shader/Eyes/Digital-Human-Tearline-Shader.htm)
-  (*page read*): the layer under the occlusion, to "simulate the moisture and the tear reflectivity on the eyeballs and
-  the tear ducts"; CC5 changed its UVs because CC4's normal-map tiling was "unevenly distributed". CC4's
-  [Tear Line settings](https://manual.reallusion.com/Character-Creator-4/Content/ENU/4.0/15_Digital_Human_Shader/Eyes/Digital-Human-Tearline-Tearline.htm)
-  (*page read*): Depth Offset ("adjust the depth of the entire Tear Line mesh"), Detail Amount, Detail Scale U and V (a
-  tiling normal detail), Edge Fadeout, Roughness; the sub-section "can be used to offset the Eye Occlusion mesh in
-  order to snuggly fit the eyeballs". [New Eye Elements](https://manual.reallusion.com/character-creator-4/Content/ENU/4.0/15_Digital_Human_Shader/Eyes/New-Eye-Elements.htm)
-  (*page read*): both "will be changed along with the movement of eye sockets when morphing and performing facial
-  animations"; they can be deleted and recreated in CC.
-- **MetaHuman:** the face's meshes `eyeshell` and `eyeEdge` (names above); Epic's material set has `EyeShell` and
-  `LacrimalFluid` slots (MetaHumanCharacter API, *search snippet only*). A forum user with a custom template mesh
-  reports the eyeshell and edge clipping into the eyeball ([forum](https://forums.unrealengine.com/t/eyeshell-and-edge-not-aligning-to-eyeball-with-custom-template-mesh/2764072),
-  *search snippet only*).
-- Not found: how either vendor shapes the shells (widths, offsets, how they are generated); no Blender-specific
-  method. Both are real-time fixes — a shadow and a wet line the rasteriser misses at that scale.
-- Lead for the face rig (step 7), contents not yet read: MakeHuman's functional packs also list "Faceunits 01: ARKit
-  style face units" and "Visemes 01/02" (Microsoft and Meta/Oculus style), CC0.
-- **The gaps search (2026-11-04, the session "just-stage asset search", `../plans/2026-11-04-research-gaps.md`; its
-  query logs checked - no licence filter; three slips logged in its §0):**
-  - Older people of colour at 16K exist, all paid (IMPORT, none SHIP): 3D.sk raw heads - Black men 62-66 (six),
-    Black women 62, 63, 70; Arab people 61-72 (five, two women); Indian 61-62 (four) - ages read per scan page (3D.sk's
-    age filter undercounts); HumanScanRepository HSR0274 Hispanic F 67, HSR0172 African M 63 (EUR 35 a pose, model
-    releases stated, a custom SHIP licence invited); Triplegangers Bertha Horan Hispanic F 76 ($49.99; SHIP "with
-    written consent"). No scan labelled Southeast Asian, Indigenous or Pacific Islander anywhere searched.
-  - Photos for calibration and patches: Pexels 8265216 (elderly Indonesian man, 4000 x 6000, sharp pores), 14684597;
-    nappy.co (CC0) is closing "in the next few months". **Fetched 2026-11-05** (the asset search session, by hand
-    from nappy's own search pages; `.dev/downloads/nappy_2026-11-05/`, 27 photos, 67 MB, `SOURCES.md` with each
-    page URL, uploader, pixels, what it shows and the search terms): nappy.co/license re-read that day - "All photos
-    posted on Nappy are licensed under the Creative Commons Zero (CC0) license"; DON'T "Resell our photos without
-    significant modification", "Repost our photos on other stock websites"; AI and model releases not mentioned.
-    Best for colour: Nigeria Art Market x3 (6720 x 4480, an older man's face and hands), MetaLab's hands (6720 x
-    4480, a grey-bearded man), the walker (7000 x 4836, older feet and hand), "Grandpa" x11 (2560 x 1707), an older
-    Latina woman (2048 px). Black-and-white close-ups (four) give relief and wrinkles, not colour. Two files
-    uploaded by the account `pixabay` are REFERENCE until nappy's CC0 over Pixabay-origin photos is read.
-  - Sclera: no shippable sharp macro; keep procedural veins (rec 12) - Bérard et al.'s published recipe is in patent
-    US10217265 (Disney / ETH, listed active to 2036); calibration numbers (CCLRU redness by region,
-    vessel 18.8 um, melanosis 92.5% in Black people, pinguecula 73% over 60) in its §2.
-  - Renderpeople "Fabienne & Percy 001" (mother and child, `.dev/downloads/scans/rp_fabienne/`; Sketchfab uid
-    8c9bfd4fb8a444b3a42a4fc31935a2fb, uploaded by the studio's own account `renderpeople` 2020-05-12, "CC
-    Attribution" by/4.0, tags incl. "kids", "child", "noai" [API, read 2026-11-05]): **both people used like any CC
-    BY scan** - credited in `ATTRIBUTION.md`, inputs to our own maps, the likeness rule (never one scan's face
-    shipped) as for every scan, no AI training on Renderpeople uploads (the "noai" tag, also on Carla and Mei [API];
-    Sketchfab: "the tag may not be enforceable outside of the Sketchfab platform" for CC models - we follow it
-    anyway). CC BY 4.0 §2(b)(1) leaves personality rights unlicensed for anyone [page]. (The user, 2026-11-05: "go" -
-    replaces "the child is never used"; TASKS "FABIENNE & PERCY: THE CHILD USED LIKE ANY CC BY SCAN".)
-    **Measured 2026-11-05** (Blender, the 200k FBX's UVs on the 8K diffuse, per-island texel density = sqrt(UV px² /
-    surface mm²)): one merged mesh, one uniform density - the child's face 3.98 texels/mm, his neck and ear 4.0, his
-    hand 3.98, the mother's face 3.99 (0.25 mm a texel; his face island ~900 px across). Below our face tile (6.0) and
-    Ten24's face (7.6-11): pores (0.1-0.3 mm) sit at or under one texel, so it is **not a pore source**; it is a
-    source for a child's skin colour and its variation across the face (a medium-brown, school-age boy - the age my
-    estimate from the render, not stated), and for head and face proportions (his body is posed, legs wrapped round
-    her, so limb lengths only in part). The 2026-11-02 windows ("only shoes and hair") missed his face, ears, neck
-    and hand - they are in the atlas (upper right). The texture has lighting baked in, so delighting first, as for
-    every scan.
-  - **The two patents' claims, read 2026-11-05 (not legal advice; the claims as Google Patents prints them [page],
-    the user's go "your rec all"):** US10217265B2 "Methods and systems of generating a parametric eye model" (ETH
-    Zurich, Disney; Active, expiry 2036-10-26): 21 claims, three independent (1 method, 9 system, 16 stored
-    instructions), each requiring ALL of - eye data "from an eye model database"; an eyeball model built by
-    "iteratively establishing correspondences among the plurality of eyes" (rigid alignment, fitting by "identifying a
-    limbus ... in one or more input images", non-rigid deformation, update); an iris model by "sampling a plurality of
-    patches from the plurality of eyes and merging the plurality of patches into a high-resolution synthesized
-    texture ... constrained by the iris control map". The veins ("grown from seed points in directions and by amounts
-    controlled by one or more vein recipes") are claimed only as additions to that (claims 2, 10, 17).
-    US10217275B2 "Methods and systems of performing eye reconstruction using a parametric model" (same family, Active,
-    expires 2036-11-09): 11 claims, three independent (1, 6, 11), each requiring input "a three-dimensional face scan
-    ... from a multi-view scanner", an eyeball model fitted to it, an iris control map from "a proxy iris centered on a
-    pupil ... texture information ... from at least one of the one or more input images", and "rendering the vein
-    network onto a sclera backplate determined from the one or more images". **Our design rule:** our procedural
-    veins (rec 12) never form part of a method that fits an eyeball model over an eye database or to a scan AND
-    synthesises the iris from patches or a control map taken from images; scan import (HSRD, the 3D.sk heads) keeps
-    our own eyes, never one reconstructed from the scan's eye pixels. Veins grown from seeds by our own rules,
-    deeper = bluer and blurrier, are then outside every claim's full set of elements. Query: WebSearch
-    `patent "vein network" sclera "seed points" "vein recipes" Disney ETH continuation` (found the sibling); claims
-    extracted from the two pages' `itemprop="claims"` sections.
-  - Nails: no texture pack; keep the layered shader (rec 14); plate transmittance per wavelength, melanonychia by
-    ancestry and age, lunula visibility by finger, ridges 85% over 60 - its §3; a CC0 hand-and-nail set of 250 people
-    aged 18-95 (Yakimov 2024, figshare).
-  - Children: measured skin (cheek pores x14 from 3-7 y to 19-23 y; furrow depth; melanin rising to adolescence) and
-    eye numbers (the eyeball and iris must not scale with the head); CC5 has no child base or child skin; **Anny**
-    (NAVER, Apache-2.0 code, CC0 data) calibrates MPFB2's age targets to WHO growth standards - better than our
-    four-anchor blend; FaceBase's per-age head norms tables are open.
-  - Better than ours: TAU "Procedural Human Hair" brows (CC BY-SA; compare before rec 8); Thunk3D ear scans on
-    Sketchfab (CC BY, geometry). Corrects `2026-10-30-research-hair-eyes-teeth.md` §7: Cem Yuksel's grooms are
-    "for your personal or research projects".
 
 ## 6 · Routes: engine and editor layers, languages
 
@@ -1474,6 +1001,31 @@ Research License, per S10).
   licences unread (FLUX 3 Image Klein and Fibo 2.0 — gated; USC-HairSalon; Teeth3DS); FFHQ-UV's and ATLAS's labels
   conflict; no VRAM measured on 8 GB; MetaHuman's wrinkle-map count and lash type unclear; ~50 facts snippet-only.
 
+
+*agent, 2026-10-30* — every JustStage function surveyed for what is new since 2026-10-29, plus Blender 5.0–5.3 (notes,
+tables ranked by quality, training buckets, apps and how they work, every search logged:
+[`../plans/2026-10-30-research-all-functions.md`](../plans/2026-10-30-research-all-functions.md); facts to re-check
+before the rec list):
+- Motion: NVIDIA's stack on SOMA (the body layer in §5) — GEM-X (video → body, hands, world-space motion; NVIDIA Open
+  Model License), Kimodo (text and keyframes → motion, 282M parameters, 700 h of mocap; its card says "ready for
+  commercial use"; under 3 GB with the text encoder on the CPU), MotionBricks (real-time motion from keyframes), SOMA
+  Retargeter — each ported to C++/GGML by `localai-org` (Apache-2.0). Any-skeleton motion: UniMate (code MIT, weights
+  CC-BY-NC-4.0), MoCapAnything V2, TopX (paper only).
+- Rigging: SkinTokens still the best released; Armature, a new free AI rigging app (under $100k revenue) exporting USD;
+  Rigel3D and AniGen (generate a mesh already rigged) — papers without code.
+- Clothing: NGL-Prompter — sewing patterns from one image with a stock vision-language model and GarmentCode, no
+  fine-tuning (code not found).
+- Image to 3D: Pixal3D (MIT), SUPRA-Tex (MIT, relightable textures); Meshy T2's repo has no licence; Hunyuan3D 3.x
+  looks API-only.
+- Faces: no released model makes a full ARKit-52 set for any head; the training-free route is transferring the shapes
+  from a CC0/MIT template (MPFB2 Faceunits, ICT-FaceKit); NFR has MIT code, its weights' licence unstated.
+- Blender: 5.2 experimental XPBD cloth and hair dynamics; 5.3 EEVEE Material Lighting nodes, Gaussian splats,
+  world-space animation copy/paste, Vulkan the default.
+- LoRA on 8 GB (trainers' documented minimums): a vision-language model up to ~11B by QLoRA (Unsloth); FLUX.2 klein-4B
+  borderline at ~8 GB in int8; Z-Image (10–12 GB) and Qwen-Image (24 GB) don't fit; no trainer documents LoRA for 3D or
+  motion models.
+- Not verified: AccuRIG, Cascadeur and Mixamo internals; GEM-X's VRAM; MetaHuman 5.8's notes; nothing run here.
+
 ## 8 · Standards
 
 Round one done 2026-10-29: [`../plans/2026-10-29-research-08-standards.md`](../plans/2026-10-29-research-08-standards.md)
@@ -1826,6 +1378,36 @@ other things"), from docs.omniverse.nvidia.com, page read:
   templates (character transfer page); its retargeting extension works "only … on a Human rig" (retargeting page).
   PhysX is BSD-3-Clause (GitHub API, push 2026-10-27).
 
+- **Blender 5.3's USD exporter** (`bpy.ops.wm.usd_export`, listed 2026-11-03): `root_prim_path`, `selected_objects_only`,
+  `export_shapekeys`, `export_armatures`, `export_hair`, `export_materials`, `generate_materialx_network`,
+  `generate_preview_surface`, `export_textures_mode`, `relative_paths`, `export_custom_properties`,
+  `custom_properties_namespace`, `convert_orientation`, … ; `bpy.types.USDHook` is there for our attributes.
+- **Blender Lab's MCP, read in its source** (*code read, 2026-11-06*, `projects.blender.org/lab/blender_mcp` `main`
+  `dbbf836` = tag v1.0.3's code; `.dev/audit/2026-11-06/research/R4.md` Q1, the exec and CORS lines re-read by me): the
+  Blender add-on runs any Python a request of type "execute" carries (`addon/blender_mcp_addon/mcp_to_blender_server.py`
+  L245-253, `exec(code, namespace)` inside a `WeakSandboxForLLM`; L322-332) - no token, no allow-list; every tool, named
+  ones too, works by sending Python. **26 tools, not 21** (L1709 above): two run Python - `execute_blender_code` and
+  `execute_blender_code_for_cli` (its own background Blender). `blmcp --transport http`: stateless Streamable HTTP on `/`,
+  `enable_dns_rebinding_protection=False` (L86), CORS `allow_origins=["*"]` (L97). FastMCP 1.x's token auth is constructor
+  arguments `blmcp` doesn't pass; no documented per-call hook. No release on MCP SDK 2.x (`mcp[cli]>=1.2.0,<2`; PRs #43,
+  #47 open). The add-on opens its socket only with Allow Online Access on (`__init__.py` L34-38, "a grey area"; issue #45
+  open). So "the Python tool off" in the permission table (`standards/commands-and-api.md` L105) can't close the door by
+  hiding the tool - the plan's Q-APP-3.
+- **Allow Online Access and localhost** (*doc read + measured, 2026-11-06*, R4 Q2): off blocks nothing - the manual:
+  "Blender cannot prevent third-party add-ons from violating this rule"; a loopback socket round trip worked in 5.3 with
+  it off; the extension guidelines' "`localhost` is fine" stands.
+- **Live Link** (*doc read*, R4 Q3): Unreal 5.8's "Live Link Plugin Development" names a source plugin
+  (`ULiveLinkSourceFactory` + `ILiveLinkSource`) - "the recommended approach for anyone that already has there own
+  streaming protocol" - or Message Bus (the sender links Unreal's core libraries; Epic's Maya / MotionBuilder way). No
+  Epic page names VMC.
+- **VRM add-on on 5.3** (*measured*, R4 Q4): 4.10.4 (2026-11-04) declares `blender_version_max = "5.3.0"`, exclusive
+  (`blender_ext.py` L2643): 5.3 refuses it ("This Blender version (5.3.0) must be less than the maximum version (5.3.0)").
+  The range in R08 L492 / R09 L250 is 4.2.0 up to, not including, 5.3.0.
+- **Installers** (*build code read*, R4 Q5): Blender - CPack WiX `.msi` + zip (signtool via Azure), a hardened-runtime
+  DMG notarised (`notarytool`) and stapled, `.tar.xz` + Snap / Steam / Store; Bforartists - Inno Setup `.exe` + zip,
+  DMG / zip, `.tar.xz` / AppImage / `.deb`. Labels: WiX 7's binaries carry a maintenance fee at US$10,000+ revenue;
+  Inno Setup asks commercial users to buy ("not strictly required"); Velopack MIT.
+
 ## 9 · Legal
 
 Not researched yet. Trademarks — never "Character Creator", "iClone" or "Reallusion" in our names; the
@@ -1963,6 +1545,424 @@ blender"; "we originally had the kit server code in python"):
 - The image-job route lost the caller's seed (same prompt, seeds 1 and 2 → byte-identical PNGs, sha256
   `344af58836bb…`): `runner/sdcpp.js` `imageJobBody` read only the preset's `params.seed ?? 42`. Fixed in `b41154a7`
   ("the caller's own seed wins over the preset's"); the route takes no `request.params`.
+
+## 11 · PhotoCraft, the setup we looked at
+
+*web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
+summary:
+
+- An image editor written in Rust: a Cargo workspace of 24 crates, egui/eframe on wgpu, the same code
+  built to WebAssembly for the browser; dual-licensed MIT or Apache-2.0; early alpha.
+- Its own words: a "clean-room reimplementation of Adobe Photoshop", "implemented from public specs and
+  observed behaviour only"; `AGENTS.md`: "Never copy their code, shaders, profiles or assets."
+- No orchestrator: `AGENTS.md` and `docs/` are read first, golden rules apply, "Every change comes with
+  tests", and a parity scorecard has a floor that is raised and never lowered.
+- Everything is a command: each has an id, label, menu path, shortcut, params doc, `enabled` and `run`,
+  and is dispatched by id from the UI, the CLI, a JSON control channel and an MCP server.
+- Plugins: "sandboxed WebAssembly plug-ins" — no further design detail.
+- Parallel agents each use their own build directory and edit only files they own; a new command goes
+  in a new `<area>_cmds.rs` module.
+- It forbids webview UIs: "Never add Tauri (or any webview/JS UI framework)".
+- Its file format adds new fields with `#[serde(default)]` so older files still load.
+
+*web, 2026-10-29* — storytold's repos, read by this session through GitHub's API (`orgs/storytold/repos`), as
+evidence for the from-scratch route (TASKS):
+
+- About twenty "Craft" apps, every one "written by scratch in pure Rust" or "an open-source, clean-room
+  reimplementation of" a named app, Apache-2.0 on GitHub, nearly all created between 2026-09-30 and 2026-10-14 and
+  all pushed 2026-10-29: PhotoCraft (74,735 stars), PdfCraft (18,591), FilmCraft (16,827, a non-linear video
+  editor), WordCraft (16,557), LightCraft (15,041), VectorCraft (10,981), EffectCraft (8,139, motion graphics and
+  compositing), CADCraft (7,167, AutoCAD-style), GridCraft (6,784), DesignCraft (4,922), DeckCraft (4,406),
+  SoundCraft (3,888, a Pro Tools-style app), FigCraft (3,804), AniCraft (61, 2D animation).
+- Shared parts: `craft-libs`, `craft-ai-integrations` (an AI layer with egui widgets), `craft-fonts`,
+  `craft-i18n`, a launcher, and their own forks of `egui` and `winit`.
+- None of them is a real-time 3D character, scene or animation app; ArtCraft's 3D stage is Three.js (§10).
+
+## 12 · The name
+
+*web, 2026-10-29* — search-engine checks, npm (`registry.npmjs.org/<name>`) and GitHub's repository
+search (was: "no trademark search (USPTO, EUIPO) done yet" until 2026-10-29 — the USPTO search is the
+next entry):
+
+- `just-stage`: no product named JustStage; npm free; 22 GitHub repos carry the name. "Stage" is a
+  real-time 3D rendering and collaboration platform on Unreal Engine 5 by Trapdoor Creative
+  (blog.cadsoftwaredirect.com/?p=9009).
+- `just-animate`: taken on npm (an MIT JS animation library, last pushed 2019) and a WordPress plugin;
+  23 GitHub repos.
+- `just-character-animation`: no product; npm free; 0 GitHub repos.
+- `just-actor` npm free, 3 repos · `just-troupe` npm free, 0 repos ("Troupe" is a JetBlue trip-planning
+  app) · `just-scene` npm free, 9 · `just-figure` npm free, 12 · `just-puppet` npm free, 5 ·
+  `just-motion` taken on npm, 20 repos, plus the `just_motion` Flutter library · `just-act` npm free,
+  219 repos.
+- JustCast is an active podcast hosting service (podnews.net/directory/company/justcast).
+- Galatea is Inkitt's "Galatea: Books & Audiobooks" app, about 256K App Store reviews
+  (apps.apple.com/app/id1380362212); Sinew turned up no 3D product.
+
+*web, 2026-10-29* — USPTO's trademark search (tmsearch.uspto.gov), queried through the site's own search
+service from this session, every class, live and dead; the query was proven first on a known mark (ICLONE:
+4 records). A database check, not legal clearance:
+
+- No US application or registration, live or dead, for JUSTSTAGE, JUST STAGE or JUST-STAGE, and none
+  starting JUSTSTAG. The only marks holding both words: STAGE IS JUST A NUMBER (live; classes 18, 21, 25,
+  35) and THE WORLD IS A STAGE...JUST PRESS PLAY (dead; class 42).
+- Nearest spellings (fuzzy match): JUSTSTONE (live, class 9 — MP3 players and recorders; serial 99444663),
+  JUSTSTAND (live, classes 41 and 44; Ergotron), JUSTSTART (dead, class 9).
+- Live STAGE marks whose goods name 3D, animation, avatar, virtual-production, rendering or character
+  software, in classes 9 or 42, all lead with a strong word: UNREAL STAGE (Epic Games; one registration in
+  class 9, one in 42), NUKE STAGE (Foundry; 9 and 42), E-STAGE (Materialise; 9, 40, 42), POLYMOTION STAGE
+  (Mark Roberts Motion Control; 41, 42), SET STAGE (Set Point; 41, 42).
+- EUIPO not searched: its search sites refuse scripted requests, the Chrome extension wasn't connected, and
+  the user then dropped the trademark check — "dont worry about trademark research" (TASKS, 2026-10-29).
+
+The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md).
+
+## 13 · Working method: models and sessions
+
+- Fable 5.1 costs $10 / $50 per million input / output tokens, Opus 5.5 $4 / $20; Fable 5.1 is
+  Anthropic's "most capable widely released model, for the most demanding reasoning and long-horizon
+  agentic work" — *record, 2026-10-29* (the claude-api skill's model table, cached 2026-10-06).
+- Prompt caches are per model, so switching a session's model re-reads its context uncached — *record,
+  2026-10-29* (the same skill).
+- CLAUDE.md files at and above the working directory load at launch; one in a subdirectory loads when
+  Claude reads or edits a file there — *record* (the web kit's register §6, *web, 2026-10-09*).
+- **The WebSearch cap** — *web, 2026-10-29* (code.claude.com/docs/en/tools-reference.md, "Session search limit";
+  env-vars.md), on Claude Code 2.1.312 here (*measured*): "An interactive terminal session has a limit of 200
+  WebSearch calls. Searches from the main conversation and from subagents … count against the same limit."
+  It refills at about 100 calls an hour (v2.1.290+; `CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR` sets the rate);
+  `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises it with no upper bound but can't turn it off (v2.1.212+);
+  a new conversation or `/clear` resets the count, unless work that can still spawn subagents survives the
+  clear; with `-p` and the Agent SDK it counts per turn. At the cap, searches return a notice to carry on
+  with what was gathered. Round one's 8 agents ran it out (each notes file says so).
+- The cap is raised: `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` = "2000" in the user settings' `env`
+  (`F:\ClaudeCode\config\settings.json`), on the user's word 2026-10-29 (TASKS). It took effect in the running
+  session without a restart: a fresh shell saw the variable and WebSearch answered again — *measured,
+  2026-10-29*. So the second pass runs as 8 agents in one session (was: one session per area, until
+  2026-10-29): [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md).
+- WebFetch reads up to 100,000 characters a call and caches 15 minutes; 20 subagents can run at once by
+  default (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`), with no total limit — *agent, 2026-10-29* (the same docs).
+
+## 14 · The character, part by part
+
+Subsection 14.N holds the facts behind the plan's section N (`../plans/2026-11-06-the-plan.md`); within one,
+entries stand in the order they were found. Moved here 2026-11-07 from §1, §5, §10 and the deep read's list
+(nothing deleted; a provenance line is copied above each bullet that left its group).
+
+### 14.1 · The bar: CC5's HD Aaron, MetaHuman as a reference
+
+- **CC5's default character, seen** (the user's three screenshots of HD Aaron in CC5's live view, 2026-11-04; kept out
+  of the repo): SubD 1; scanned skin maps - pores, redness on the nose and cheeks, stubble, eye bags, neck creases; wet
+  eyes with a pink caruncle and lower lid rim and a shadow under the upper lid; a dark blue-grey stage, a strong key
+  with soft image light. Against it ours was one flat skin colour, no brows, faceted outlines, a bright flat eye white.
+  The gaps and the recs: `docs/plans/2026-11-04-realism.md`.
+- **MetaHuman's character API in Unreal 5.8's Python** (listed headless 2026-11-04, `.dev/gate/out/mh_api.log`): 242
+  `MetaHuman*` names, among them `MetaHumanCharacterFactoryNew` (a character asset), `MetaHumanCharacterEditorSubsystem`
+  (`try_add_object_to_edit`, `commit_skin_settings` / `commit_face_state` / `commit_eyes_settings` /
+  `commit_makeup_settings`, `request_texture_sources`, `assemble_for_preview`, `build_meta_human`,
+  `spawn_meta_human_actor`, `import_from_template`, `conform_to_target_meshes`), `MetaHumanCharacterExportBlueprintLibrary`
+  (`export_dcc`, `export_dna`, `export_materials`). So the gate's preset benchmark can be scripted; whether texture
+  requests need Epic's cloud (and a login) is not yet known.
+  Answered 2026-11-04 (the API's own docstrings, `.dev/gate/out/mh_doc.log`): `commit_skin_settings` synthesizes
+  preview textures locally and "will also discard any high resolution textures"; `request_texture_sources` is
+  "Request high resolution textures" (Epic's cloud, `desired_texture_sources_resolutions`); `build_meta_human` stops
+  at "Character is not rigged" without the cloud auto-rig. A face DNA does ship:
+  `Engine/Plugins/MetaHuman/MetaHumanCoreTechLib/Content/ArchetypeDNA/SKM_Face.dna` (not tried with
+  `import_from_face_dna`). The MetaHuman benchmark was then dropped - CC5 is the standard (TASKS).
+- **CC5's side of the gate, its limits** (*measured, 2026-11-04 / 05*; moved here from RESUME.md 2026-11-07):
+  memory `cc5-control` (first call `check_cc5_connection`; `exec_python` off; the trial's dialogs are
+  the user's to click). Limits measured: captures are 600 x 600 whatever is asked; the trial logo covers 27-73% of
+  the width and 44-55% of the height - parts are framed above or below it; FBX / OBJ / ABC exports are counted (30 in
+  the trial; 2 used: 10:41 mine, 12:06 the user's). HD Aaron's export (CC5's Blender Pipeline plugin, "Export FBX",
+  Selected Models, SubD 1, every box off) and its CC Blender Tools import: `.dev/gate/cc5_aaron_blender/`
+  (`aaron_cctools_eevee.blend`, `aaron_cctools_cycles.blend`). Hair on disk for the gate: `Classic Slick Back.rlHair`,
+  `Stubble.rlHair`, HD brows (`F:\Reallusion Content\Reallusion Templates\Hair\Group\`).
+
+### 14.2 · The gate: views, measures, runs
+
+- **The stage's light, trials** (Cycles, the library's Average woman, 2026-11-04): three area lights (key 300 W, fill
+  100 W, rim 120 W) under AgX base contrast read flat and pale; Poly Haven's Studio Small 09 as the fill at 0.5 flattened
+  it again; at 0.25, no fill light, AgX "Medium High Contrast" and -0.3 EV the face had shape. AgX's looks in 5.3
+  include "AgX - Medium High Contrast" (set and rendered).
+- **The gate's first run (2026-11-04, measured; `../plans/2026-11-04-realism.md` §6a):** EEVEE 5.3's world light on a
+  plain 18% grey sphere's lit side is 17-19% weaker than Cycles' (key 1.006, rim 0.84-0.91); on the face, lit skin
+  agrees across EEVEE, Cycles and Unreal (MetaHuman's baked skin material on our maps), shadows part (EEVEE's jaw shadow
+  15% darker and 28% harsher than Cycles'). Unreal 5.8 facts: commandlets can't spawn actors; `-ExecutePythonScript`
+  quits the editor after the script; `name.1001.png` / `name_1001.png` import as a UDIM virtual texture; UV0 is the
+  first UV layer.
+- **Clean skins and the first clean-input gate** (*measured, 2026-11-06*, `../gate/2026-11-06/report.md`,
+  `../plans/2026-11-06-inputs-audit.md`): hair comes out of scan photos by region, not by strands alone - DullRazor's
+  line closings (Lee et al. 1997) catch single strands and stray hairs but neither the dense lash band round an eye
+  nor stubble (dots) and they also catch fine creases; so a ~5 mm band round the eye and brow holes is dropped, strands
+  are found in the eye zone and by the hairline, stubble is found per texel (dark-mark density >1.35x the scan's own
+  clean face) - the scan list's by-eye stubble tags were wrong (HSR0040's upper lip; LPS's whole beard 911k texels),
+  and holes are filled with mirrored real skin, the colour by a smooth multi-width fill. Women's scans carry eye makeup
+  (liner, mascara, shadow): darkening round the eyes held to 12%. The pore tile: Ten24's sample scan (its page: "Feel
+  free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a
+  credit") - its Level_01 relief normals on a clean upper cheek, 33 mm, Moisan-tiled; the LPS tile it replaces carried
+  his beard's streaks (his whole lower face is stubble, `lambertian.jpg`); LPS's forehead has no hair but deep
+  wrinkles and scan streaks. With the new tile the pore depth that matches HD Aaron's upper cheek is 0.15 mm
+  (bands 1.135 / 0.884 vs 1.154 / 0.894; 0.3 mm gave 1.74 / 1.31), the microrelief 0.015 mm (fine 0.63 vs 0.51). The
+  torso: Artec's scan wrapped (our torso onto it, NICP, p50 2.2 / p90 4.6 mm) then baked - the prototype's rigid
+  placement read the two bodies' difference as relief. The eye's recess measured the scans' way on base v2: upper
+  -2.9 mm (man) / -2.2 mm (woman) against the real -2.86 - no move needed. Found unapplied in code while fixing: the
+  design's lash settings (180 upper, 0.08 mm, melanin 1.0), the caruncle (proof 4c), the photo iris (harness only).
+- **Data in an image's alpha, the live view, and other gate findings** (*measured, 2026-11-06*, gate runs 7-8,
+  scratchpad `factors.py` with its `show-<node>` mode - a node's value rendered as emission): a region map with a data
+  channel in its alpha (`face_regions.png` RGBA, the image's alpha mode Channel Packed) read right through
+  `image.pixels` (R 0.125 on the neck) but the live view's pore depth there came out 2x and more - R, G, B divided by
+  an alpha of 0; a separate greyscale map fixed it (`face_share.png`). The skin builder's read of the same map
+  (`image.pixels` of an 8-bit RGBA PNG) divided too: the head tile's neck roughness came out up to 1.0 (255) - the
+  dark characters' neck patch in gate run 9. Rule: no data in alpha, anywhere. Also
+  measured: the skin's scattering halved changes neither side of the face (our shadow side L* 50.7 either way against
+  HD Aaron's 36.4 - his face's form, not our material); our upper lashes rise 12 deg median root to tip (p90 22, none
+  past 60 - the "spikes" at the eye view are the longest middle lashes seen end-on); the live view's tearline (a
+  Fresnel mix of transparent and glossy) drew a dark outline round the opening on a dark stage (hidden: gone; Cycles
+  not checked) - an additive film keeps the eye seen through it.
+- **Measuring skin detail** (*R1 Q6*): no published skin-specific measure. Better than our band standard deviation:
+  DISTS (MIT; built for textures that don't align pixel for pixel), the radially averaged power spectrum, ISO 25178
+  band-limited roughness on the relief maps (light-free); for mid-scale form a multi-scale ridge filter (Frangi 1998) at
+  ~1.5-8 mm - it separates long ridges (veins, tendons, creases) from speckle, why run 11's "fine" rose while the hand
+  read flatter.
+- **The proof log of 2026-11-05 / 06** (*measured*; moved here from RESUME.md 2026-11-07, where it was kept until
+  then; `.dev/gate/parts/proof*/`; bands then = L* standard deviations of a Gaussian band-pass in pixels at 1024,
+  fine / pore / fold - not comparable with `tools/gate/measure.py`'s bands in mm). Entries (1), (1b), (4b), (4c) and
+  the brows / lashes judgments were measured on skins with painted hair - VOID ("Painted hair in our inputs", §14.8):
+  - (1) face skin, one character (Average man, composed 632 = HSR0040 + LPS colour and relief): cheek 0.42/0.97/0.72 vs
+  Aaron 0.45/0.96/0.79 = EQUAL; forehead 0.96/0.91/0.57 vs 1.73/1.74/0.92, by eye close (his glossier). Made by: pore
+  relief 1.0 / 0.3 mm + per-pore shine, region factors (`tools/make_face_regions.py`: forehead pores x2, micro x5),
+  the scans' geometry relief (`scan_bake.py NAME normal`, `skin_base._relief`). Scan colour alone = 0.40 pore band
+  (Aaron without normals: 0.40) - pores are relief. NEXT: the same on 4 characters (scan relief bakes for hsr0027
+  0028 0015 0042 0081 0102), then step (2) body relief. Seen: at face distance the gap is now shape (MakeHuman
+  proportions, HSR0040's heavy bags), tone, hair - not texture.
+  - (1b) face skin on 6 characters (library men and women, light to dark, the six "Scan" skins with relief,
+  `.dev/gate/parts/proof_chars/`): cheek pore band 0.97-2.18 (Aaron 0.96) - HOLDS for any character; forehead men
+  55-70% of Aaron's, dark woman equal, young women lower (smoother, as real). Defect: a scar-like mark on Scan woman
+  B's cheek (HSR0028's). NEW RISK found: face SHAPE - MakeHuman's faces read generic and puffy round the eyes beside
+  Aaron's; testing a real face shape (a scan's fit in our topology) on the same skin next.
+  - (1c) face shape: HSR0040's real face (his fit in our topology as a shape key, `.dev/gate/parts/proof_shape/`) on the
+  same skin reads no more like Aaron than MakeHuman's - shape is NOT the main gap. Tone is: melanin 0.07 overshoots
+  (face L* 40 vs Aaron 48.5; a*/b* match), ~0.045 should match - a per-character choice. Sheen (roughness x0.8): no
+  visible change. THE EYES are now the main face-distance gap (`.dev/gate/parts/proof_eyes/`): ours meet the eyeball
+  at a sharp lid edge with no margin, no pink wet rim, lashes thin, white flat, pupil small; Aaron's lids have a thick
+  wet pink margin wrapping the eyeball, lashes on it, a larger pupil, a lighter iris. Pupil 0.38 / white x0.85 /
+  today's lashes: barely visible change (the pupil may be GNM's pupil-disc geometry - check). NEXT: the eye region
+  (step 4 moved up): lid margin (geometry thickness + a wet pink rim by MPFB2's `mpfb_eyelids` mask?), tearline,
+  pupil, iris; then the library characters rebuilt with today's lashes, brows, eyes open, scan skins.
+  - (4) eyes, measured (`.dev/gate/parts/proof_eyes/`, scratchpad `eye_exp3.py`): our white L* 80 vs Aaron's ~48-60 -
+  his sits in the lids' shadow (CC5's occlusion); ours uniform. Our occlusion film (eyeshell) darkens nothing in EEVEE
+  (hidden or not: same) - a fault to fix first. The pupil is GNM's 2.7 mm pupil-disc geometry (the shader's
+  PupilSize 0.082 -> 0.15 changed nothing). Cornea reflection x0.3: no change. Lashes: radius 0.08 mm, 180 upper,
+  melanin 1.0 give a visible lash line at face distance (adopt). Amber iris overshot to yellow.
+  FOUND: the occlusion film (eyeshell, rendered solid red: `proof_eyes/eevee_eye_ours_shellred.png`) does not fit the
+  opened eye - a lens in the middle of the opening, strips under the upper lid and above the lower one uncovered, so
+  its lid-edge darkening lands inside the opening. FIXED in code: `eye_layers.refit` finds the lids again (test
+  `test_they_follow_the_lids_when_the_eyes_open`).
+  - (4b) eyes on one character (Average man, Scan man A skin; scratchpad harness `eye_photo.py`, options per factor;
+  `.dev/gate/parts/proof_eyes/`, crops beside Aaron's eye view; measures: white L* inside the opening found by a red
+  film render, iris annulus Lab, a vertical L*a*b* profile under the iris). Each against Aaron:
+  white x0.71 (warm R x1.05) L* 67.5 vs 68.3 = EQUAL; a polar-unwrapped iris PHOTO (`.dev/downloads/other_samples/
+  commons_green_iris`, recoloured by its lightness to albedo 0.053/0.030/0.021, structure ^0.7) L* 24.6 C 14.8 vs
+  27.2 / 11.3, detail bands 1.9/3.5/4.2 vs 1.1/2.6/3.9 = EQUAL (its light collarette ring is this photo's; brown photos
+  are content); the iris' own specular 0 (the cornea shell glosses - at 0.5 a grey haze sat on the pupil); pupil 0.45
+  of the iris vs his 0.49 (a parameter; the procedural eye's PupilSize did nothing); the lid MARGIN: our lower lid's
+  edge stands up to 3.3 mm off the eyeball (a dark crevice, L* 21) - sealing the one vertex ring onto the eyeball left
+  a 4-8 px band (MakeHuman's lid has no margin geometry); the TEARLINE strip (ICT's ring, eyeEdge) shaded as wet pink
+  tissue (0.50/0.22/0.20, roughness 0.15, coat 0.6) gives a 32 px band L* 60-72 a* 12-18 vs his ~36 px L* 65-72 a*
+  10-19 = EQUAL. Thick lashes (radius 0.08 mm, 180 upper, melanin 1.0) make the lash line. Not done: caruncle (a
+  geometry mask at the inner corner barely shows), veins (invisible at face distance). Shape: MakeHuman's own sliders
+  (bag -1, eyefold concave -0.7 / up 0.6, height1 +0.6) open the eye (9.7 -> 10.7 mm at the iris, iris covered 12.8 ->
+  9.7 deg) - a per-character choice. Seen at face distance and NOT eye parts: our skin round the eyes reads rougher
+  and far paler and less red than his (lid L* 80 a* 5 vs 60 a* 19) - recheck the skin proof (1) there.
+  - (4c) the same settings on four library characters (own skins, no tuning; `proof_eyes/*multiphotolashocctearpink*`):
+  iris, white, pupil hold; the pink tearline strip DISPROVED as made - it outlines the whole opening (a drawn pink ring,
+  worst on dark skin). Pink on the lower lid's part only, fading at the corners, the upper part the clear tear film
+  (`*multi2*lowonly*`, five characters): a wet waterline on all five, no ring; darkened by the character's own melanin
+  (x(1 - 0.7 min(m/0.25, 1)) toward 0.20/0.08/0.06 - conjunctival melanosis; `*multi3*`). The strip's inner end as the
+  caruncle: hidden under the corner skin (failed). The caruncle as the corner skin painted wet pink (0.45/0.18/0.16,
+  geometry mask past the inner corner, scratchpad `lid_margin_mask.py mode=caruncle`): shows, as on Aaron. Seen: our
+  default opening shows white below the iris (scleral show - a stare), Aaron's lower lid meets the iris: shape, per
+  character. Final run of every piece on five characters: `*final*`. EYES: equal by measure at face distance on one
+  character, the pieces hold on five; at close-up still below (flat white without veins or soft shading; the photo is a
+  hazel eye recoloured - a light collarette ring; brown photos are content). Adoption into code waits for the user's go
+  (the list in the session report, 2026-11-05).
+  - (2) body, started (`.dev/gate/parts/proof_body/`; RESEARCH "Body relief and muscle definition"): MakeHuman's muscle
+  gives bulk, not definition (Muscular man vs Aaron); a texture-tile seam across the chest and arms on two characters
+  (to diagnose); no bare athletic torso among our downloads (HSRD bodies clothed but HSR0042-Body-045; deep3dstudio's
+  athletic man in a tank top; Ten24 in a sweater). Triplegangers' free full-body sample (the user's link): athletic, in
+  underwear, CC BY-NC-ND - a LOCAL test source only, behind a registration the user must do.
+  - (2b) the user's links, the user: "i want you to download all these ones i am giving you yes downloade dthem":
+  Artec 3D "Body scan" DOWNLOADED (`.dev/downloads/artec_body_scan/`, 60.5 MB; its `license.txt`: CC BY 3.0 Unported,
+  "Body scan by Artec 3D"; 765k triangles, 8K colour, no normal map; a lean athletic man, arms raised). Triplegangers
+  needs the user's registration; Digital Reality Lab's form (name, email, company, use) mails the link to the user.
+  Measured (scratchpad `scan_torso2.py`, the torso framed as Aaron's; bands fine/pore/fold/form at 1024 px, form =
+  12-48 px = the muscles): ours 0.31/0.18/0.38/2.27, Muscular man 2.00/0.88/0.53/2.76, the Artec scan as scanned
+  0.27/0.40/0.71/3.12, Aaron 0.86/0.67/1.23/4.34 - the scan carries real definition (72% of Aaron's form band; his
+  is a sculpted glossier physique), its fine/pore come from our layers. The chest SEAM (`proof_body/*nonormal*`,
+  `*flatcolour*`): COLOUR - the head tile's painted colour ends at the upper chest against the torso tile's, plus
+  a dark line from the colour map's unpadded island edge; normals cut: no change. NEXT: fit the Artec torso to our
+  body and bake its relief into our UVs (the face route on the torso), apply to two body types, measure; the seam
+  fix (pad the islands, blend the head tile into the torso tile at the border).
+
+### 14.3 · Assets, sources, licences, patents
+
+- **Texturing.XYZ's licence** (2026-11-04): not reached - searches "Texturing.XYZ license terms redistribution AI
+  training open source" and "texturing.xyz EULA 'license' personal indie studio redistribute textures" returned other
+  vendors' terms (no raw redistribution, embedding in finished media only, AI training by separate permission:
+  aiTextured, Cubebrush, a Gumroad seller, CGTrader's 2026-05-15 change); `texturing.xyz/pages/licenses` 404;
+  `texturing.xyz/policies/terms-of-service` covers the shop, not the textures. A gap: only Texturing.XYZ can say.
+  **READ 2026-11-04 (the redo):** the licence is `texturing.xyz/pages/terms-of-service` ("Terms & conditions /
+  Licensing", updated 2026-08-29): §7 bars releasing Materials "or derivative products under an Open Source License"
+  and any use "with artificial intelligence, machine-learning ... systems or software" without written authorisation -
+  a user's own purchase, imported, is the only route (`../plans/2026-11-04-research-licences-redo.md`, with every
+  other licence the CC-only filter had cut: Pexels, Unsplash, Pixabay, BlenderKit, Superhive, Fab, CGTrader,
+  Sketchfab Store, HumanScanRepository, Renderpeople, Triplegangers, Ten24's commercial-use sample scan).
+
+*web, 2026-10-29* — the eye shells (step 1.5: occlusion and tearline), public docs only:
+- **The gaps search (2026-11-04, the session "just-stage asset search", `../plans/2026-11-04-research-gaps.md`; its
+  query logs checked - no licence filter; three slips logged in its §0):**
+  - Older people of colour at 16K exist, all paid (IMPORT, none SHIP): 3D.sk raw heads - Black men 62-66 (six),
+    Black women 62, 63, 70; Arab people 61-72 (five, two women); Indian 61-62 (four) - ages read per scan page (3D.sk's
+    age filter undercounts); HumanScanRepository HSR0274 Hispanic F 67, HSR0172 African M 63 (EUR 35 a pose, model
+    releases stated, a custom SHIP licence invited); Triplegangers Bertha Horan Hispanic F 76 ($49.99; SHIP "with
+    written consent"). No scan labelled Southeast Asian, Indigenous or Pacific Islander anywhere searched.
+  - Photos for calibration and patches: Pexels 8265216 (elderly Indonesian man, 4000 x 6000, sharp pores), 14684597;
+    nappy.co (CC0) is closing "in the next few months". **Fetched 2026-11-05** (the asset search session, by hand
+    from nappy's own search pages; `.dev/downloads/nappy_2026-11-05/`, 27 photos, 67 MB, `SOURCES.md` with each
+    page URL, uploader, pixels, what it shows and the search terms): nappy.co/license re-read that day - "All photos
+    posted on Nappy are licensed under the Creative Commons Zero (CC0) license"; DON'T "Resell our photos without
+    significant modification", "Repost our photos on other stock websites"; AI and model releases not mentioned.
+    Best for colour: Nigeria Art Market x3 (6720 x 4480, an older man's face and hands), MetaLab's hands (6720 x
+    4480, a grey-bearded man), the walker (7000 x 4836, older feet and hand), "Grandpa" x11 (2560 x 1707), an older
+    Latina woman (2048 px). Black-and-white close-ups (four) give relief and wrinkles, not colour. Two files
+    uploaded by the account `pixabay` are REFERENCE until nappy's CC0 over Pixabay-origin photos is read.
+  - Sclera: no shippable sharp macro; keep procedural veins (rec 12) - Bérard et al.'s published recipe is in patent
+    US10217265 (Disney / ETH, listed active to 2036); calibration numbers (CCLRU redness by region,
+    vessel 18.8 um, melanosis 92.5% in Black people, pinguecula 73% over 60) in its §2.
+  - Renderpeople "Fabienne & Percy 001" (mother and child, `.dev/downloads/scans/rp_fabienne/`; Sketchfab uid
+    8c9bfd4fb8a444b3a42a4fc31935a2fb, uploaded by the studio's own account `renderpeople` 2020-05-12, "CC
+    Attribution" by/4.0, tags incl. "kids", "child", "noai" [API, read 2026-11-05]): **both people used like any CC
+    BY scan** - credited in `ATTRIBUTION.md`, inputs to our own maps, the likeness rule (never one scan's face
+    shipped) as for every scan, no AI training on Renderpeople uploads (the "noai" tag, also on Carla and Mei [API];
+    Sketchfab: "the tag may not be enforceable outside of the Sketchfab platform" for CC models - we follow it
+    anyway). CC BY 4.0 §2(b)(1) leaves personality rights unlicensed for anyone [page]. (The user, 2026-11-05: "go" -
+    replaces "the child is never used"; TASKS "FABIENNE & PERCY: THE CHILD USED LIKE ANY CC BY SCAN".)
+    **Measured 2026-11-05** (Blender, the 200k FBX's UVs on the 8K diffuse, per-island texel density = sqrt(UV px² /
+    surface mm²)): one merged mesh, one uniform density - the child's face 3.98 texels/mm, his neck and ear 4.0, his
+    hand 3.98, the mother's face 3.99 (0.25 mm a texel; his face island ~900 px across). Below our face tile (6.0) and
+    Ten24's face (7.6-11): pores (0.1-0.3 mm) sit at or under one texel, so it is **not a pore source**; it is a
+    source for a child's skin colour and its variation across the face (a medium-brown, school-age boy - the age my
+    estimate from the render, not stated), and for head and face proportions (his body is posed, legs wrapped round
+    her, so limb lengths only in part). The 2026-11-02 windows ("only shoes and hair") missed his face, ears, neck
+    and hand - they are in the atlas (upper right). The texture has lighting baked in, so delighting first, as for
+    every scan.
+  - **The two patents' claims, read 2026-11-05 (not legal advice; the claims as Google Patents prints them [page],
+    the user's go "your rec all"):** US10217265B2 "Methods and systems of generating a parametric eye model" (ETH
+    Zurich, Disney; Active, expiry 2036-10-26): 21 claims, three independent (1 method, 9 system, 16 stored
+    instructions), each requiring ALL of - eye data "from an eye model database"; an eyeball model built by
+    "iteratively establishing correspondences among the plurality of eyes" (rigid alignment, fitting by "identifying a
+    limbus ... in one or more input images", non-rigid deformation, update); an iris model by "sampling a plurality of
+    patches from the plurality of eyes and merging the plurality of patches into a high-resolution synthesized
+    texture ... constrained by the iris control map". The veins ("grown from seed points in directions and by amounts
+    controlled by one or more vein recipes") are claimed only as additions to that (claims 2, 10, 17).
+    US10217275B2 "Methods and systems of performing eye reconstruction using a parametric model" (same family, Active,
+    expires 2036-11-09): 11 claims, three independent (1, 6, 11), each requiring input "a three-dimensional face scan
+    ... from a multi-view scanner", an eyeball model fitted to it, an iris control map from "a proxy iris centered on a
+    pupil ... texture information ... from at least one of the one or more input images", and "rendering the vein
+    network onto a sclera backplate determined from the one or more images". **Our design rule:** our procedural
+    veins (rec 12) never form part of a method that fits an eyeball model over an eye database or to a scan AND
+    synthesises the iris from patches or a control map taken from images; scan import (HSRD, the 3D.sk heads) keeps
+    our own eyes, never one reconstructed from the scan's eye pixels. Veins grown from seeds by our own rules,
+    deeper = bluer and blurrier, are then outside every claim's full set of elements. Query: WebSearch
+    `patent "vein network" sclera "seed points" "vein recipes" Disney ETH continuation` (found the sibling); claims
+    extracted from the two pages' `itemprop="claims"` sections.
+  - Nails: no texture pack; keep the layered shader (rec 14); plate transmittance per wavelength, melanonychia by
+    ancestry and age, lunula visibility by finger, ridges 85% over 60 - its §3; a CC0 hand-and-nail set of 250 people
+    aged 18-95 (Yakimov 2024, figshare).
+  - Children: measured skin (cheek pores x14 from 3-7 y to 19-23 y; furrow depth; melanin rising to adolescence) and
+    eye numbers (the eyeball and iris must not scale with the head); CC5 has no child base or child skin; **Anny**
+    (NAVER, Apache-2.0 code, CC0 data) calibrates MPFB2's age targets to WHO growth standards - better than our
+    four-anchor blend; FaceBase's per-age head norms tables are open.
+  - Better than ours: TAU "Procedural Human Hair" brows (CC BY-SA; compare before rec 8); Thunk3D ear scans on
+    Sketchfab (CC BY, geometry). Corrects `2026-10-30-research-hair-eyes-teeth.md` §7: Cem Yuksel's grooms are
+    "for your personal or research projects".
+
+*agent, 2026-10-30* — what makes rendered skin read as a photo: relief, pores, shading, light, upscaling, eyes (notes,
+ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-skin-detail-shading.md`](../plans/2026-10-30-research-skin-detail-shading.md); facts to
+re-check before the rec list; nothing run on skin here):
+- Open for the user: whether CC Blender Tools (GPL-3, ships Reallusion texture files) is a clean-room reference;
+  whether to train a small FLUX.2 klein-4B LoRA (SimpleTuner: ~8 GB at int8 — skin training data is the blocker).
+- **HSRD-100's licence, read at its source** (*page read, 2026-11-06*: the Hugging Face API
+  `huggingface.co/api/datasets/digitalrealitylab/HSRD-100` and the card's `README.md`, last modified 2025-09-18):
+  `cardData.license` "cc-by-4.0"; the card's "## License": "This dataset is licensed under Creative Commons
+  Attribution 4.0 International (CC BY 4.0)", "Commercial use allowed", "Modification allowed", "Distribution allowed",
+  "Attribution required", "No additional restrictions"; "Consent: All participants provided informed consent for data
+  collection" (consent for collection - personality rights are not licensed: the likeness rule stands). Each pose's
+  `pose_meta.json` says `"license": "Commercial"` with `"price_commercial": "70"`, `"price_personal": "35"` - the
+  maker's store listing of the same scan, not the grant on the files we downloaded from the dataset; the dataset's
+  grant is CC BY 4.0 (ATTRIBUTION.md's row stands). Queries: none - two direct reads.
+- **Patents near what we ship or plan - claims read at Google Patents** (*page read, 2026-11-06*; the agent's R2 Q1,
+  the claims below re-read by me from each page's raw HTML; **not legal advice**):
+  - **US 2024/0346733 A1** (Disney, "Graph simulation for facial micro features with dynamic animation", pending in
+    the US; R2: granted AU2024202285B2 and GB2633151B, to 2044 - those claims unread). Claim 1: "sampling, from a
+    three-dimensional (3D) representation of a facial structure, a plurality of nodes, wherein each node ... represents
+    a pore ...; generating one or more edges connecting a node ... to one or more different nodes ..., wherein each edge
+    ... represents a candidate wrinkle ...; generating ... a graph ...; calculating, for each edge ..., an edge weight
+    ...; and generating a wrinkle graph". Our `tools/make_microrelief.py` (shipped tile): nodes by Poisson disk on a
+    flat 2D tile, not sampled from a 3D face; the furrows are the walls of the nodes' Voronoi cells; pores sit on wall
+    junctions, not at the nodes - it lacks claim 1's first element as written. Its docstring describes it as Weiss et
+    al.'s method ("pores are a graph's nodes") - to reword to what it does.
+  - **US 12,651,397 B2** (Disney, "Graph simulation for facial micro features via pre-computed displacement texture
+    maps" - the EG 2024 orientation-bin method; R2: granted, to 2044-04-06). Claim 1: a wrinkle graph of pores and
+    wrinkles on a 3D face; wrinkles "assign[ed] ... to one of a plurality of bins" by a wrinkle characteristic;
+    "pre-computed displacement texture maps" per bin; "a per-frame displacement texture map"; "modifying an animation
+    frame". The design's "wrinkle content generated per character by the published orientation-bin method" (design
+    L145-147) reads onto it - that route is out. The paper's CC BY licence grants no patent rights (CC BY 4.0 §2(b)(2)).
+  - **US 12,062,140 B2** (Microsoft; inventors Baltrusaitis, Hewitt, Wood, Raman - the authors of the tension paper our
+    design cites; to 2043). Claim 1: a tension map per vertex, compressed / expanded wrinkle textures "formed by
+    aggregating maps of the first face with different expressions using the tension map", applied "according to the
+    tension map", rendered. Claim 17 (no render step): "computing a weighted combination of the maps to produce a
+    compressed wrinkle texture, wherein the weights ... are negative weights from the tension map" (and expanded from
+    positive), "storing" them. Design rule: tension may set the DNA's animated-map weights offline; never build
+    wrinkle textures as tension-weighted combinations of expression maps. Raman's MIT add-on carries no patent grant.
+    US 12,555,324 (same family, to 2042) and US 8,217,955 (per-pixel stress shader perturbing normals, to 2030): R2.
+  - **US 9,269,185 B2** (Sony, "System and method for procedural CG eye meniscus", active, expires 2033-08-24). Claim
+    16: "A meniscus plug-in ... comprising: an input module to receive a computer-generated model; an analysis module to
+    automatically determine at least one feature of the module in which a liquid component may exhibit a meniscus; and a
+    meniscus module to procedurally modify the model or procedurally add to the model to cause a meniscus to appear."
+    Our tearline (ICT's ring placed to the lids' opening found automatically, `head/eye_layers.py`) reads close to it.
+    Design-around to weigh: the tearline as a fixed part bound to base v2's known margin rows (an MHCLO-style binding, as
+    the teeth) - no automatic search for where a meniscus forms. A question for the user (and counsel if wanted).
+  - **US 9,336,622** (Sony): claims only a gaze rig with a fixed visual-axis offset of 2-15 deg (R2) - our lid
+    darkening is outside; a future look-at rig avoids that offset until 2034.
+  - **US 8,922,553 B1** (to 2033-08-28) needs a solve across per-region linear models with continuity constraints;
+    **US 11,354,844 B2** (to 2039-10-25) needs masks from muscle action units + "demographic prediction modifications"
+    + a modified eyeball / cornea / teeth / tongue / skull asset together (R2) - the approved mixer (a weighted blend of
+    whole identities per mask) holds none of the first and not all of the second's elements as R2 reads them.
+- **Licences read at their sources** (*page read, 2026-11-06*, R2 Q2-Q5): CC BY 4.0 credit: creator, notices, a link,
+  a change notice, the licence URI, "in any reasonable manner" (a linked credits page is CC's own example); CC BY 3.0:
+  the licence URI with every copy, the title, a credit "at least as prominent" as others; BY-SA -> GPLv3 is one-way, BY-SA
+  4.0 only, "must specify version 3 of the GPL", source form provided, for content "melded with code". REUSE 3.3: every
+  `LicenseRef-*` needs `LICENSES/LicenseRef-<id>.txt` (`LicenseRef-cited-data` has none); Ten24's grant needs its own id
+  with the text verbatim. Blender 5.3 manifest: `license` and `copyright` take several entries; **extensions.blender.org's
+  Terms (1.2): assets inside an extension "must be licensed as Public Domain (CC0)"** - our extension (CC BY, Apache,
+  MIT, Ten24 data) can't be listed there; self-hosting a third-party repository is the documented route. Blender's
+  "Hair Styles" demo: "CC-BY-SA", no version. SONICOM: no licence file (the paper says MIT, the page "for research
+  purposes") - stays REFERENCE. Yakimov 2024 nails: CC0 (figshare API). Curly-Cue: the guides-to-full Python step MIT,
+  the switchback generator GPL-3.0-or-later. Artec "Top of hand": "Creative Commons license v4", credit "Top of hand by
+  Artec 3D" (the archive's `license.txt` unread). Blender Studio's Human Base Meshes: CC0 (page, README, 25 asset
+  records) - but the .blend also carries "The Rain Rig is released under the Creative Commons Attribution 4.0 license"
+  and two stylized meshes are "Based on" the CC BY Rain and Snow rigs. Epic's "Send to Unreal" add-on is MIT and ships
+  no Unreal plugin; Reallusion's Unreal Auto Setup licence unread.
+
+### 14.4 · Base mesh, topology, UVs
+
+- **The body's UDIM layout** (`tools/make_udim.py` on the default human, hm08's own islands packed per region by
+  Blender's packer, measured 2026-11-04): 1001 head and neck 4,934 polygons (everything above 1.28 m), 1002 torso
+  1,146, 1003 arms and hands 5,743, 1004 legs and feet 1,310, 1005 nails 245 (MPFB2's CC0 nail masks). hm08 is all
+  quads (73,944 loops, 18,486 polygons with the helpers).
+- **The base mesh** (2026-11-05, `../plans/2026-11-05-research-base-mesh.md`): hm08 has no lid-margin or caruncle geometry (one ring at the lid edge, measured); Blender Studio's CC0 Human Base Meshes (v1.4.1, downloaded) model both - a 2-3 loop lid margin turning toward the eyeball and a dense inner-corner pocket (rendered); MakeHuman's standard route to another topology is its proxy system (`.mhclo` -> `.proxy`, refit on slider change) [page].
+
+*measured, 2026-10-29* — JustStage's server (`server/`, the kit at just-core `75d3cb01` then `b41154a7`) on this machine:
 - hm08's UVs: a median 0.57 UV units per metre of skin over the body's faces (10th–90th percentile 0.40–1.10).
 
 *leads from the user, 2026-10-29, not checked* — cloud face generators as fallbacks for the face test's pictures
@@ -1972,9 +1972,158 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
 - hm08's head (the body's faces above the neck joint, 4,242 faces) holds 21.1% of the UV square — about 1,880 px a
   side at 4096², 3,760 at 8192² — *measured 2026-10-29*.
 
+### 14.5 · Mouth, nails, ears
+
+*web + measured, 2026-10-31* - the face's neutral: lips and lids (`../plans/2026-10-31-audit-face-edits.md`, 18 searches,
+every one logged; key claims page-read):
+- MakeHuman's CC0 identity mouth targets (in our repo, `extension/juststage/data/fetched/makehuman/targets/mouth/`)
+  thin and narrow the lips without moving the seam (`mouth-scale-horiz-decr` narrows 2.9 mm on average, the lip-height
+  targets change the seam by under 0.6 mm); the eye-height targets move the lids only 0.75-1.3 mm.
+
+*measured, 2026-10-31* - eye openings, ICT's tear strip and flow between the paintings (face test rounds 50-51):
+- *measured, 2026-11-02*: the lips' seam - the clay's contact line (its darkest row in the evenly lit render) against
+  MediaPipe's inner lip points on each painting: the clay's sits 3.6-9.9 px lower in every view that sees it (close
+  view 6.8, front 4.2 - about 1.3-1.7 mm). The outer lips with the painting brought into the clay's frame (a
+  similarity on eye corners and nose): in the close view that fit errs 11.6 px (MediaPipe on the clay misreads the
+  corners and nose), in the front view 3.0 px - there the painting's mouth is as wide (158.8 against 156.1 px) and
+  as high at the top, its corners ~10 px lower and its lower edge ~5 px lower: a thinner upper lip, a taller lower
+  one, the corners turned down (MakeHuman's upperlip-height-decr, lowerlip-height-incr, angles-down).
+- **Mouth** (*page read*, R3 Q5): no automatic lip-seal tool or method found; MetaHuman requires sealed neutral lips
+  and names no tool (edit the mesh, Update Vertices). Dental scans onto a template: per-tooth labels, a rigid fit of
+  each template tooth, a Laplacian deformation of the crown, the template's roots kept (RMS < 0.096 mm); Teeth3DS stores
+  per-vertex tooth labels in JSON; Poseidon3D's label format is not stated on its page.
+
+### 14.6 · Shape spaces, sliders, mixing
+
+- **MakeHuman's MHM names for the macro sliders** (`makehuman/data/modifiers/modeling_modifiers.json`, MakeHuman's
+  repo, read 2026-11-03): `macrodetails/Gender`, `/Age`, `/African`, `/Asian`, `/Caucasian`;
+  `macrodetails-universal/Muscle`, `/Weight`; `macrodetails-height/Height`; `macrodetails-proportions/BodyProportions`;
+  `breast/BreastSize`, `/BreastFirmness` - the ids `juststage:sliderIds` carries (character-data-model §0, §1.3).
+- **GNM's wrap onto hm08: max error 29.19 mm** (*file, 2026-11-06*, `data/generated/gnm/REPORT.json`; S3) beside the
+  mean 0.87 / p95 2.17 mm recorded above; transfer distance mean 4.49 / max 72.9 mm.
+
+### 14.7 · Face rig, expressions, body rig, capture
+
+- **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
+  runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
+  (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065
+  `py3dna_13_5_2`, C3861); PyPI's `swig` 4.3.1 still defines it (`SWIG_QUOTE_STRING`). The C++ libraries and benchmarks
+  compiled under 4.5.1.
+
+*web, 2026-10-29* — re-checked for the user's "is there another better body … i feel you ddint reasearch well" and
+"we need to create non human body as well like creatures just like cc5 allows" (Opus re-check of the review):
+- MetaHuman's face names on disk (`F:\Epic\UE_5.8\Engine\Plugins\MetaHuman\MetaHumanCoreTechLib\Content\ArchetypeDNA\SKM_Face.dna`,
+  11.2 MB, byte scan 2026-10-29, for the spec's item 10): 373 distinct `FACIAL_[CLR]_*` joint names, among them
+  `FACIAL_C_FacialRoot`, `FACIAL_C_Jaw`, `FACIAL_L_Eye`/`FACIAL_R_Eye`, `FACIAL_C_TeethUpper`, `FACIAL_C_TeethLower`,
+  `FACIAL_C_Tongue1`–`4`; mesh names `head`, `teeth`, `saliva`, `eyeLeft`, `eyeRight`, `eyeshell`, `eyelashes`,
+  `eyeEdge`, `cartilage` (each `<name>_lod0_mesh` at LOD0).
+- Reallusion's spine mapping (`soupday/cc_blender_tools` `rigify_mapping_data.py`, read 2026-10-29): Rigify `spine` ↔
+  `CC_Base_Hip`, `spine.001` ↔ `CC_Base_Waist`, `spine.002` ↔ `CC_Base_Spine01`, `spine.003` ↔ `CC_Base_Spine02`,
+  `spine.004` ↔ `CC_Base_NeckTwist01`, `spine.005` ↔ `CC_Base_NeckTwist02`, `spine.006` ↔ `CC_Base_Head`; its
+  `GAME_BASE_BONE_MAPPING` puts `spine.001`–`.003` on UE4's `spine_01`–`spine_03` (UE4 has three spine bones) and splits
+  `spine.004`/`.005` 50/50 onto `neck_01`; Rigify's `chest` control sits on `ORG-spine.002` (= `CC_Base_Spine01`). So
+  by humanoid role CC's `Waist` is spine, `Spine01` chest, `Spine02` upper chest — UE5 `spine_01`, `spine_03`,
+  `spine_05` (the review's first fix had used the UE4 table).
+
+*web, 2026-10-29* — the eye shells (step 1.5: occlusion and tearline), public docs only:
+- Lead for the face rig (step 7), contents not yet read: MakeHuman's functional packs also list "Faceunits 01: ARKit
+  style face units" and "Visemes 01/02" (Microsoft and Meta/Oculus style), CC0.
+
+*web, 2026-10-31* - anything new from Apple for face capture? (the user: "is apple iphone have anthing new since ai
+boom"). Queries: "WWDC 2026 ARKit face tracking new features" (only a visionOS 27 ARKit summary - Vision Pro, no face
+tracking named - and 2017-2021 material); "iPhone face capture 2026 MetaHuman Animator Live Link Face update depth";
+"Apple Vision framework face landmarks 2026 new API iOS 26 face tracking blendshapes" (`FaceObservation.Landmarks2D`
+from iOS 18; one forum report of iOS 26 landmark coordinates outside [0,1]); "iPhone 17 TrueDepth camera face tracking
+improvements ARKit blendshapes 2025 2026" (nothing specific); developer.apple.com "ARKit iOS 26 what's new face tracking
+ARFaceAnchor" (ARFaceAnchor: 52 blend shapes, 60 updates a second, gaze since ARKit 2, multiple faces, ARKit 5's better
+accuracy - no iOS 26 change found); Epic's sites "MetaHuman Animator monocular video webcam Android audio driven
+animation release notes":
+- Apple: no new face-capture API found for iOS 26 / WWDC 2026 - ARKit's face tracking (TrueDepth, 52 blend shapes) is
+  as it was; a search gap, not proof.
+- Epic, since 2025: MetaHuman 5.6 - MetaHuman Animator in real time from mono cameras (most webcams, many phones,
+  Android through Live Link) and from audio alone (with the speaker's emotion and plausible head movement); 5.7 notes -
+  its mode on iOS devices without TrueDepth; 5.8 - Live Link Face for Android (take recording, RTSP streaming), RTSP on
+  iOS too, a new real-time audio-driven model, single-camera body capture (Fab plugin, Windows, offline, experimental).
+  Device advice in Epic's docs: iPhone 12 or newer, 16 / 16 Pro recommended.
+
+*web + measured, 2026-10-31* - the face's neutral: lips and lids (`../plans/2026-10-31-audit-face-edits.md`, 18 searches,
+every one logged; key claims page-read):
+- MetaHuman's neutral is sealed: "In the neutral pose the lips should be completely sealed, without gaps and without
+  intersections"; "Expressions are stored and treated as differences from the Neutral Pose"; for likeness scans a
+  "relaxed face with the teeth touching, but not clenched" (Neutral Pose; Expressions for Likeness Calibration - page read).
+- MetaHuman's lids turn about the eye: rotate `FACIAL_[L|R]_EyelidUpperA` joints and check the lids keep "a sectional
+  contour of the eyeball" (Skin Weights - page read); "The eyelid shell and folds shouldn't intersect".
+- ARKit's `mouthClose` is jaw-relative ("closing of the lips without relation to the position of the jaw", Apple - page
+  read). Measured on hm08: Faceunits `mouthClose` at 1 lowers the upper lip 2-7 mm and lifts lower lip and chin ~27 mm;
+  `eyeBlinkLeft` at 0.2 sinks the upper lid ~0.7 mm further into the eyeball (1.1 mm at 0.5) - the flattening
+  MetaHuman warns about.
+- MakeHuman's Faceunits 01 (Mika Suominen): 52 targets with ARKit's names, every metadata entry "license": "CC0";
+  `faceunits01.zip` 257,821 bytes, sha256 d113107b…, from files2.makehumancommunity.org/functional/; not in our system
+  asset pack nor in MPFB2's repo (MPFB2 loads it when installed); byte-identical to naver/anny's copy. Same topology as
+  hm08: no transfer needed.
+- ICT-FaceKit (MIT, push 2020-12-01): 57 expression OBJs (ARKit names without tongueOut, split L/R, plus cheekRaiser,
+  PupilDilate), 100 identity modes, eye occlusion, lacrimal fluid and lash meshes; FACS map in its README (AU45 ->
+  eyeBlink, AU7 -> eyeSquint, AU24 -> mouthPress, AU28 -> mouthRoll).
+- Transfer tools: Blender's Surface Deform (built in); ShapeKeyWrap, ShapeKeyTransferBlender, mesh-expression-retargeter
+  (GPL-3); `vasiliskatr/deformation_transfer_ARkit_blendshapes` (MIT, Sumner & Popovic 2004) and its example-based
+  facial rigging repo (MIT); ARKitBlendshapeHelper and arkit-blendshape-tool have no licence.
+- GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
+  and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
+  landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
+- **Blinks** (*page read*, R3 Q4): OmniFaceRig's rest of the page says only "upper-eyelid vertices snapped to lower lid
+  and locally relaxed" - no vertex set, weights or iterations: the details are ours. CC5's manual: Transformer >
+  Character > "Correct Eyeblink" snaps the upper lid onto the lower. MetaHuman moves the lids by joints (EyelidUpperA/B,
+  EyelidLowerA/B); expressions are joint animation with per-vertex corrective shapes at LOD0 only.
+
+### 14.8 · Skin colour: scans, the scan route, delighting, hair out, the AI painting route (retired)
+
+- **The face test's colour maps** (`.dev/facetest/chars/<name>/face_albedo.png`, measured 2026-11-04): all four
+  people's maps share one brightness (median ~0.54 / 0.31 / 0.22 linear) - `test_face_project.py` scales every map to
+  the skin model's luminance at melanin 0.012, then a per-channel gain normalised to luminance 1, and makes a dark
+  person dark through the scene's exposure (Amara -2.59 EV). A skin taken from them needs its own brightness.
+- **Skin variety methods not yet in our files** (the same agent, 2026-11-04): chromophore-space mixing - each scan
+  layer inverted per texel to melanin and blood maps by our own skin model, characters made by shifting them, a
+  residual kept (Donner et al. 2008; Aliaga, Hery & Xia 2022 arXiv 2201.10695; Aliaga et al. EGSR 2023; no code
+  found); age and person variety from per-region multiscale detail statistics (Golovinskiy et al. SIGGRAPH 2006, page
+  read: "adjusting the apparent age of faces"); parametric freckles as a point process on UV (Schneider, Egger &
+  Vetter FG 2018, snippet); skin-optics ageing (Iglesias-Guitian et al. EG 2015, no wrinkles); WildCap (CVPR 2026, GPL-3,
+  weights' data licence not stated, nvdiffrast non-commercial, Linux) and DoRA (non-commercial); AvatarTex (3DV 2026, a
+  FLUX UV LoRA, snippet). Body sites (PMC11084701, 53 Korean women, rankings only): elbows then knees darkest and most
+  melanin and erythema; forearm redness rises with age.
+- **CC5's SkinGen, its inventory** (reallusion.com/character-creator/skingen.html, page read 2026-11-04, the user's
+  link): a layer stack ("dynamic skin effects layer stack", per-layer sliders, 4 blend modes - normal, multiply, overlay,
+  soft-light; free version capped at 15 layers; "up to 4K real-time editing for each body material"). Skin elements
+  90 free / 270 premium / 360: skin base 42; normal effects (muscle, sinew, fat crease, vascular, skin noise, skin
+  details) 86; skin details (decal, coloration, capillary, roughness) 61; blemish (acne, freckle, mole, suntan) 38;
+  acquired (liquid, scale, scar, tattoo) 39; body hair and scalp (scalp, beard, body hair) 55; nails 29 + nail presets
+  10. Makeup elements 79 / 281 / 360. "SkinGen is embedded with MicroSkin textures licensed from TexturingXYZ"; "powered
+  by Adobe Substance Technology". The digital-human page (page read): "Authentic Human Skin" (skin, hair and nail
+  materials from 3D scans, adjustable by age), "Intricate Wrinkles" (high-res scans, a real-time wrinkle shader), the
+  Digital Human Shader (SSS, micro normal) for skin, eyes, teeth, hair; HD Ultimate Morphs 172; "40+ scanned assets".
+- **Painted hair in our inputs - the measurements on them are void** (*checked 2026-11-06*, after the user: "why are
+  our lashes paintedt on cc5 lashes and beards are not painted on"). **CC5 paints no hair** (HD Aaron's files on disk,
+  `.dev/gate/cc5_aaron_blender/hd_aaron.fbm/`, `aron_with_hair.fbm/`): lashes a mesh (`Std_Eyelash` colour and
+  opacity - cards), brows a mesh (`Brows_Base`, `Brows_Color`, `Brows_Hair`), stubble a mesh (`Beard_Transparency`);
+  his head colour map `Std_Skin_Head_Diffuse.jpg` has no lashes and no brows, only a faint grey shaved tint on the jaw
+  and lip under the stubble mesh. **Ours:** Daniel's head colour (`.dev/skins/man_a/Daniel skin.base_color.1001.png`,
+  from the face test's AI-painted face, rounds 74-101 - `tools/build_skins.py`) has the lashes painted along both lids
+  and stray brow hairs; Scan man A's (HSRD scan photos) his stubble; Scan man A's normal map (the scan's geometry
+  baked) shows lumpy rows at the hairline and the beard's edge [seen, to confirm per region]; the pore tile on every
+  character (`.dev/facetest/pores_lps.png`, the Lee Perry-Smith scan's cheek) shows seams at its quarter lines and
+  elongated streaks like stubble [seen, to confirm against the scan]. Our strand lashes and brows (`hair/lashes.py`,
+  `brows.py`) are there but 0.1 mm thick and sub-pixel at face distance in EEVEE (no minimum width) - the painted
+  ones are what shows. No step ever removed hair from a skin; nothing approved painting it. **Void until re-measured on
+  clean inputs:** the face-skin proof (cheek pore band "equal on six characters"), the brows and lashes judgments, the
+  lower-lid wet margin and caruncle, the lid band (28-50 px), every face-distance comparison with Aaron (he wears his
+  Stubble mesh, ours none). **Stand:** iris, white and pupil (measured inside the opening), the geometry (lid
+  anatomy, slider sweep, recess), the gate's tooling, the live view's calibration (111-117% of Cycles: L280's ratios are 113 / 117 / 111% - was: "113-117%" until 2026-11-07).
+
+*leads from the user, 2026-10-29, not checked* — cloud face generators as fallbacks for the face test's pictures
+(the user: "Canva AI Face Generator: … for commercial projects, provided you follow their AI Product Terms"; "Adobe
+Firefly: … trained on licensed and public domain content"; "EaseMate AI: … text-to-image or image-to-image … free
+credits"). Their terms, image-to-image control and APIs are unread; the face test runs on the local model first.
+
 *measured, 2026-10-29* — the face test (`tools/face_test/`):
-- Blender 5.x worlds light through their Background node; `World.color` changes nothing in a render — the first clay
-  views were nearly black. A white Background at strength 1 gives the even light the clay views need.
 - FLUX.2 klein on stable-diffusion.cpp ignores a starting picture sent as `init` alone at the preset's strength 1
   (seven views came back byte-identical); sent as `init` and `refs` (house-paint's `aiphoto/edit.js`: "the photo is
   both init and reference image") it repaints each view in its pose and framing — the front view's eyes within ~2 px
@@ -1990,45 +2139,14 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
   *search snippet*); the skin panel picks from a "Face Texture Index" of scanned textures
   ([skin material tools](https://dev.epicgames.com/documentation/metahuman/skin-material-tools), *search snippet*).
 
-*agent, 2026-10-30* — hair, eyes and teeth (notes, ranked by quality, training buckets, apps, every search logged:
-[`../plans/2026-10-30-research-hair-eyes-teeth.md`](../plans/2026-10-30-research-hair-eyes-teeth.md); facts to re-check
-before the rec list; measured in Blender 5.3 and read in our code):
-- Why ours looks fake: the hair defaults (melanin 0.8, redness 1.0) are Blender's own — by the manual's formula all red
-  pigment, no brown-black — and every strand has the same value; Principled Hair BSDF is "Cycles Only" (EEVEE's default
-  hair draws each strand ~1 px wide); scalp counts 10K–42K (MetaHuman's real-time level); each brow guide copied into a
-  ~19-strand tuft (the clumps); lashes ~50 upper and 33 lower per eye at 5 points (real lids 90–160 and 75–80); flat
-  iris, sclera and teeth; no occlusion, tearline or caruncle meshes.
-- Image to strands: DiffLocks, Im2Haircut, TANGLED, Perm (MIT), HairStep — training we can't do, or non-commercial or
-  unlicensed weights. Text to strands without training: Digital Salon (MIT; CLIP search over a captioned groom library,
-  then live editing). Facial hair from multi-view capture: Wispy to Voluminous (training-free, no code yet).
-- Training-free: Blender's hair node groups used properly, and DiffLocks' published Blender recipe (75 guide sets × 110
-  random parameters) — a CC0 groom library of our own; hair cards by Unreal's generator or our own baker.
-- Eyes: a layered stack with the iris ~3.6 mm behind the cornea (Navarro's optics); a procedural iris, or an SDXL LoRA
-  (kohya: 8 GB at the edge). Teeth: per-part shaders on our GNM teeth.
-- Open: no measured melanin table per hair colour; VRAM unknown for the hair AI methods; no fix rendered.
-
 *agent, 2026-10-30* — what makes rendered skin read as a photo: relief, pores, shading, light, upscaling, eyes (notes,
 ranked by quality, training buckets, apps, every search logged:
 [`../plans/2026-10-30-research-skin-detail-shading.md`](../plans/2026-10-30-research-skin-detail-shading.md); facts to
 re-check before the rec list; nothing run on skin here):
-- Why ours looks waxy: `modules/skin/material.py` has one roughness (≈0.59) everywhere — no cavity map, no second
-  specular lobe, no sheen; `modules/skin/detail.py` turns brightness into bump, which no professional pipeline does —
-  they take the light out of the colour first, and pores come from scanned or generated height.
 - Taking the light out: OpenDelight (SIGGRAPH 2026, face-specific; code GPL-3, weights' licence not stated), Marigold IID
   (OpenRAIL++).
-- Relief from images: Sapiens2 normals (human-specific; no non-commercial clause; bans deepfakes), StableNormal
-  (Apache), Marigold / E2E-FT, MoGe-2 (MIT, official ONNX) — none tested at pore scale.
-- Pores, all training-free: Disney's graph-based micro-wrinkles (SGP 2023), example tiles from the CC-BY 3.0 Lee
-  Perry-Smith scan, Blender Studio's tension-map wrinkles.
-- Blender 5.3: multires bakes normals, displacement and vector displacement; adaptive subdivision is no longer
-  experimental. EEVEE has no Random Walk, IOR or anisotropy for skin scattering — Cycles for the final render.
 - Upscaling: SeedVR2 (Apache; its README: 8 GB works with GGUF Q4) the strongest; SUPIR non-commercial; Real-ESRGAN and
   MoSR run inside stable-diffusion.cpp.
-- Eyes: ICT-FaceKit (MIT) ships eye occlusion, tearline and eye-corner meshes; the cornea in Cycles by MNEE shadow
-  caustics or a shadow-ray trick.
-- BumpMesh (CNC Kitchen, AGPL) pushes brightness as height for 3D printing — the same as ours, not a skin fix.
-- Open for the user: whether CC Blender Tools (GPL-3, ships Reallusion texture files) is a clean-room reference;
-  whether to train a small FLUX.2 klein-4B LoRA (SimpleTuner: ~8 GB at int8 — skin training data is the blocker).
 
 *agent, 2026-10-30* — AI texturing of our own mesh, the methods (notes, ranked by quality — the papers' own claims, no
 independent comparison exists — training buckets, apps, every search logged:
@@ -2054,30 +2172,6 @@ before the rec list):
 - Small training on 8 GB: an SDXL LoRA fits (kohya: "8GB GPU memory (10GB recommended)"); a FLUX.2 klein 4B LoRA is
   borderline (SimpleTuner: ~8 GB at int8, 16 GB recommended).
 - Open for the user: whether OpenRAIL weights (SD2.1, Marigold IID) are acceptable. Nothing measured this session.
-
-*agent, 2026-10-30* — every JustStage function surveyed for what is new since 2026-10-29, plus Blender 5.0–5.3 (notes,
-tables ranked by quality, training buckets, apps and how they work, every search logged:
-[`../plans/2026-10-30-research-all-functions.md`](../plans/2026-10-30-research-all-functions.md); facts to re-check
-before the rec list):
-- Motion: NVIDIA's stack on SOMA (the body layer in §5) — GEM-X (video → body, hands, world-space motion; NVIDIA Open
-  Model License), Kimodo (text and keyframes → motion, 282M parameters, 700 h of mocap; its card says "ready for
-  commercial use"; under 3 GB with the text encoder on the CPU), MotionBricks (real-time motion from keyframes), SOMA
-  Retargeter — each ported to C++/GGML by `localai-org` (Apache-2.0). Any-skeleton motion: UniMate (code MIT, weights
-  CC-BY-NC-4.0), MoCapAnything V2, TopX (paper only).
-- Rigging: SkinTokens still the best released; Armature, a new free AI rigging app (under $100k revenue) exporting USD;
-  Rigel3D and AniGen (generate a mesh already rigged) — papers without code.
-- Clothing: NGL-Prompter — sewing patterns from one image with a stock vision-language model and GarmentCode, no
-  fine-tuning (code not found).
-- Image to 3D: Pixal3D (MIT), SUPRA-Tex (MIT, relightable textures); Meshy T2's repo has no licence; Hunyuan3D 3.x
-  looks API-only.
-- Faces: no released model makes a full ARKit-52 set for any head; the training-free route is transferring the shapes
-  from a CC0/MIT template (MPFB2 Faceunits, ICT-FaceKit); NFR has MIT code, its weights' licence unstated.
-- Blender: 5.2 experimental XPBD cloth and hair dynamics; 5.3 EEVEE Material Lighting nodes, Gaussian splats,
-  world-space animation copy/paste, Vulkan the default.
-- LoRA on 8 GB (trainers' documented minimums): a vision-language model up to ~11B by QLoRA (Unsloth); FLUX.2 klein-4B
-  borderline at ~8 GB in int8; Z-Image (10–12 GB) and Qwen-Image (24 GB) don't fit; no trainer documents LoRA for 3D or
-  motion models.
-- Not verified: AccuRIG, Cascadeur and Mixamo internals; GEM-X's VRAM; MetaHuman 5.8's notes; nothing run here.
 
 *agent, 2026-10-30* — photo to a 3D head on our base, the research the user asked for (notes, every search logged:
 [`../plans/2026-10-30-research-ai-photo-to-head.md`](../plans/2026-10-30-research-ai-photo-to-head.md); facts to be
@@ -2207,22 +2301,6 @@ questions on FLUX 3 and Krea 2:
   1-2 mm, no more than the two detectors disagree; the fitted change didn't follow it. A whole-head model fit doesn't
   resolve this head's remaining differences; they are mid-scale forms.
 
-*web, 2026-10-31* - relief from pictures into geometry (queries: "latest techniques recover 3D face geometry detail
-from normal maps normal integration 2026" -> SuperNormal (multi-view normal integration, arXiv 2312.04803),
-discontinuity-aware normal integration (ICCV 2025), anisotropic screen-space meshing (CVPR 2025), feature-preserving
-decimation for normal integration, Cao et al. inverse plane fitting (CVPR 2021), Ma et al. 2008 gradient-illumination
-face normals refining geometry, Wang et al. 3DV 2013 template registration to normal maps, Bouafif et al. 2020 face
-normals integrated by weighted least squares; "mesh refinement from normal map open source combine positions and
-normals" -> `normal-position-combination` (PyPI 0.0.3, MIT, a binding of Nehab et al. SIGGRAPH 2005's C++), Berkiten et
-al. 3DV 2014 (Nehab's linear method combines high-frequency normals with low-frequency positions; Poisson
-reconstruction smooths when their resolutions differ), CraftsMan3D (normal-map refiner by differentiable rendering);
-"best open source monocular face depth geometry estimation 2026 sapiens2 pointmap MoGe" -> MoGe / MoGe-2 (MIT code;
-metric pointmaps, depth, normals, FOV; general, not face-specific), Sapiens2 pointmap 0.4B-5B (human-centric; licence
-tagged "other"), no face-specific comparison found):
-- For a mesh whose broad shape is right and whose normals carry the detail - our head with the paintings' projected
-  normal map - Nehab et al.'s method is the standard: vertex positions solved so the surface's tangents are
-  perpendicular to the target normals, held near the original positions; one sparse linear solve.
-
 *web, 2026-10-31* - is MediaPipe the right tool for aligning the paintings? (the user: "from my searches it is not the
 best and is old, are you sure you should be using it?"). Queries: "best face landmark detection model 2026 more
 accurate than mediapipe" -> no 2026 landmark model benchmarked against MediaPipe on 300W/WFLW found; one comparison
@@ -2247,23 +2325,6 @@ is the modern form of Yu et al.'s idea: dense per-pixel correspondence to a head
   visage|SDK 151 points, OpenSeeFace) and not RealDenseFace - named-candidate, leaderboard and GitHub/arXiv/Hugging
   Face searches find what plain queries miss here.
 
-*web, 2026-10-31* - anything new from Apple for face capture? (the user: "is apple iphone have anthing new since ai
-boom"). Queries: "WWDC 2026 ARKit face tracking new features" (only a visionOS 27 ARKit summary - Vision Pro, no face
-tracking named - and 2017-2021 material); "iPhone face capture 2026 MetaHuman Animator Live Link Face update depth";
-"Apple Vision framework face landmarks 2026 new API iOS 26 face tracking blendshapes" (`FaceObservation.Landmarks2D`
-from iOS 18; one forum report of iOS 26 landmark coordinates outside [0,1]); "iPhone 17 TrueDepth camera face tracking
-improvements ARKit blendshapes 2025 2026" (nothing specific); developer.apple.com "ARKit iOS 26 what's new face tracking
-ARFaceAnchor" (ARFaceAnchor: 52 blend shapes, 60 updates a second, gaze since ARKit 2, multiple faces, ARKit 5's better
-accuracy - no iOS 26 change found); Epic's sites "MetaHuman Animator monocular video webcam Android audio driven
-animation release notes":
-- Apple: no new face-capture API found for iOS 26 / WWDC 2026 - ARKit's face tracking (TrueDepth, 52 blend shapes) is
-  as it was; a search gap, not proof.
-- Epic, since 2025: MetaHuman 5.6 - MetaHuman Animator in real time from mono cameras (most webcams, many phones,
-  Android through Live Link) and from audio alone (with the speaker's emotion and plausible head movement); 5.7 notes -
-  its mode on iOS devices without TrueDepth; 5.8 - Live Link Face for Android (take recording, RTSP streaming), RTSP on
-  iOS too, a new real-time audio-driven model, single-camera body capture (Fab plugin, Windows, offline, experimental).
-  Device advice in Epic's docs: iPhone 12 or newer, 16 / 16 Pro recommended.
-
 *web, 2026-10-31* - the standard fix for misaligned projected pictures. Queries: "Floating Textures Eisemann optical
 flow multi-view texture projection misalignment" -> Eisemann et al., Floating Textures (Computer Graphics Forum 27(2)
 409-418, Eurographics 2008 best student paper, doi 10.1111/j.1467-8659.2008.01138.x): projective texturing from several
@@ -2274,35 +2335,438 @@ one camera's part meets another's; "multi-view texture mapping misaligned images
 2025 2026" -> Volino et al. (BMVC 2014): surface-based optical flow between views for multi-layer texture video; no
 2025-2026 method found (a search gap; newer work may sit under neural textures or Gaussian splatting).
 
-*web + measured, 2026-10-31* - the face's neutral: lips and lids (`../plans/2026-10-31-audit-face-edits.md`, 18 searches,
-every one logged; key claims page-read):
-- MetaHuman's neutral is sealed: "In the neutral pose the lips should be completely sealed, without gaps and without
-  intersections"; "Expressions are stored and treated as differences from the Neutral Pose"; for likeness scans a
-  "relaxed face with the teeth touching, but not clenched" (Neutral Pose; Expressions for Likeness Calibration - page read).
-- MetaHuman's lids turn about the eye: rotate `FACIAL_[L|R]_EyelidUpperA` joints and check the lids keep "a sectional
-  contour of the eyeball" (Skin Weights - page read); "The eyelid shell and folds shouldn't intersect".
-- ARKit's `mouthClose` is jaw-relative ("closing of the lips without relation to the position of the jaw", Apple - page
-  read). Measured on hm08: Faceunits `mouthClose` at 1 lowers the upper lip 2-7 mm and lifts lower lip and chin ~27 mm;
-  `eyeBlinkLeft` at 0.2 sinks the upper lid ~0.7 mm further into the eyeball (1.1 mm at 0.5) - the flattening
-  MetaHuman warns about.
-- MakeHuman's Faceunits 01 (Mika Suominen): 52 targets with ARKit's names, every metadata entry "license": "CC0";
-  `faceunits01.zip` 257,821 bytes, sha256 d113107b…, from files2.makehumancommunity.org/functional/; not in our system
-  asset pack nor in MPFB2's repo (MPFB2 loads it when installed); byte-identical to naver/anny's copy. Same topology as
-  hm08: no transfer needed.
-- MakeHuman's CC0 identity mouth targets (in our repo, `extension/juststage/data/fetched/makehuman/targets/mouth/`)
-  thin and narrow the lips without moving the seam (`mouth-scale-horiz-decr` narrows 2.9 mm on average, the lip-height
-  targets change the seam by under 0.6 mm); the eye-height targets move the lids only 0.75-1.3 mm.
-- ICT-FaceKit (MIT, push 2020-12-01): 57 expression OBJs (ARKit names without tongueOut, split L/R, plus cheekRaiser,
-  PupilDilate), 100 identity modes, eye occlusion, lacrimal fluid and lash meshes; FACS map in its README (AU45 ->
-  eyeBlink, AU7 -> eyeSquint, AU24 -> mouthPress, AU28 -> mouthRoll).
-- Transfer tools: Blender's Surface Deform (built in); ShapeKeyWrap, ShapeKeyTransferBlender, mesh-expression-retargeter
-  (GPL-3); `vasiliskatr/deformation_transfer_ARkit_blendshapes` (MIT, Sumner & Popovic 2004) and its example-based
-  facial rigging repo (MIT); ARKitBlendshapeHelper and arkit-blendshape-tool have no licence.
-- GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
-  and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
-  landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
-- Lead: MakeHuman's packs page lists "Eyebrows 01 - A set of high-res eyebrows by Mindfront" under CC0 mesh assets (not in
-  our local pack).
+*measured, 2026-10-31* - eye openings, ICT's tear strip and flow between the paintings (face test rounds 50-51):
+- MediaPipe's Face Landmarker on a clay render (no brows, flat colour) guesses: between two clay renders a degree or
+  two of lid apart, its brow points moved 9-11 px (median), nose 5.5 px (max 13.8; the nose unchanged), eye rings 6
+  px, face oval 3.1 px, lips 1.3 px (face view, 1024 px); its lid contour read a near-shut clay eye as matching an
+  open painted one. On a clay, measure the lids from its colours (the eye opening is what isn't skin-coloured); keep
+  MediaPipe for the paintings, where its lid lines and iris (radius 36.7 px in the face view, against our geometry's
+  5.83 mm iris = 36.4 px) hold. A circle fitted to the clay's coloured iris under-read it (26-29 px).
+- Flow between the AI's paintings (Floating Textures, OpenCV DIS on the light-free colours, judged on held-out views):
+  at pore scale (difference of Gaussians 1.5-4 px) the paintings don't correspond at all - correlation 0.03-0.14 -
+  each view invents its own pores, and the close view its own brows, eye bags and moles; at feature scale (3-16 px)
+  flow from a quarter resolution raises agreement on two of three held-out views (face 0.411 -> 0.445, front 0.554 ->
+  0.568 at 6-16 px) without blurring. But in a full round (52) it hurt: raw DIS flows between views 20-37 px at the
+  median (p90 up to 83 px), the mean at its 15 px cap over half the face, pores -20%, the eye bags flattened. With a
+  forward-backward check (Sundaram, Brox & Keutzer, ECCV 2010: |w + w'|^2 < 0.01 (|w|^2 + |w'|^2) + 0.5) the features
+  (lids, lip line) stay near zero but smooth skin keeps 15 px patches - DIS's aperture problem on low-texture skin
+  whose shading differs between paintings. Bilinear resampling alone costs pore-scale detail; Lanczos keeps it.
+  Re-judged 2026-10-31 on the paintings made in sequence (one person): agreement without flow rose (face view 0.514,
+  front 0.748 at 6-16 px; the front's pore band 0.366); DIS and RAFT (torchvision `raft_large` C_T_SKHT_V2, BSD-3,
+  weights from download.pytorch.org, 20.1 MB) both raise the front and lower the face and the 40-degree view - a
+  learned flow doesn't change the verdict.
+- Painting the views in sequence with FLUX 3 Image Klein (sd-cli edit mode, measured 2026-10-31): given two pictures
+  - the re-projected composite first, the hero painting second - it painted the hero's own front view into the
+  30-degree view (lips 180 px off); given the composite alone it keeps the pose (lids 1.8-5.4 px, lips 4-12.5 px) and
+  carries the painted part's person into the rest of the head, 100 s a view on the 8 GB card. Over nine views in a
+  chain the skin tone drifts darker and more orange.
+- TEXTure's trimap (Richardson et al. 2023, read 2026-11-02 at ar5iv.labs.arxiv.org/html/2302.01721; searches
+  "TEXTure trimap keep refine generate z-normals ..."): a meta-texture keeps, per texel, the face normal's z
+  component it was painted from; a region painted before is "refine" when "the current view provides a better
+  colorization angle", otherwise "keep" (frozen); "generate" where unpainted. Refine regions are repainted with a
+  checkerboard mask over the first 25 sampling steps; the paper gives no threshold.
+- *measured, 2026-11-02 (round 65's paintings)*: under that rule (the current view's cosine 0.2 better than the best
+  earlier view's), 0-23% of each view's painted part would be repainted (the profiles most); it would not have kept
+  left40's grey scalp out of left90's start - left40 supplies 84% of left90's scalp there and is kept. The profiles'
+  scalp blotches (grey-green on left90, dark smudges on right90) are FLUX's own, where that painted grey meets the
+  clay. The paintings' backdrop inside our mesh's outline (head painted smaller than the mesh at the scalp): 0.1-4.6%
+  of each view's head pixels, nearly all weighted under 0.05 by facing - not the bright streak on the 40-degree
+  view's forehead edge (that render clips to white there; the coat lobe at grazing is the next suspect).
+- *measured, 2026-11-02*: MediaPipe's iris centre on the close painting sits 9.4-11.9 px (1024 px) below the circle
+  through the iris' edges (row chords where the white starts, least-squares circle, Kasa 1976), 4-6 px on the front
+  painting: the hooded lid hides the iris' top and MediaPipe takes the middle of what shows. On our renders, whose
+  lids cover less, the two agree within ~4 px. The circles: the painting's 30.8-31.0 px round, ours 29.7-30.2.
+- *measured, 2026-11-02*: MediaPipe's lid lines on the close painting run along the outer edges of its thick lid
+  margins - the lower one at 311 px where the eyeball stops showing at ~305 (by eye at 4x) - while on our render
+  (thin margins) they sit at the edge (315-319 against ~318). In eye widths from the line through MediaPipe's corners
+  (by eye at 4x, unwarped painting): the painting's upper lid 0.23 / 0.25 above it, lower 0.05 / 0.02 below, iris
+  centre 0.17 / 0.20 above; round 65's 0.26 / 0.28, 0.09 / 0.06, 0.13 / 0.16. Colour segmentation and gradient
+  searches for the lid edges failed here (the nose shadow, eye-bag creases).
+- *2026-11-02, the skin's source* (`../plans/2026-11-02-research-texture-source.md`): Headshot 3 textures from ONE
+  photo plus "a skin-base preset by age and facial hair" merged by blend masks (ai-texturing §6) - we paint ten AI
+  views instead. MakeHuman's CC0 skins (Skins 02, downloaded, measured): 2048² whole-body maps in our UV layout, the
+  face ~250 px across, painted with shading baked in - not a base. Free scanned heads: Digital Emily 2 is non-commercial; Ten24's sample allows commercial use with credit - "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used" (its page saved 2026-11-04; §14 "The hand donor") (was: "Free scanned heads (Ten24, Digital Emily 2) are
+  non-commercial" until 2026-11-07); the Lee Perry-Smith scan stays the one CC-BY head. Nano Banana Pro: ~$0.24 a 4K picture on Google's
+  API; Google "won't claim ownership" of outputs and bars using the service "to develop models that compete". SkinGen:
+  a skin base under masked layers (blend modes, normal and micro-normal strengths, region tools). Histogram-preserving
+  blending (Heitz & Neyret 2018) tiles skin swatches; pores need their own layer. Claude makes no images.
+  The scans downloaded and checked, and the method for each step of carrying a scan's skin onto our head (with the
+  research each pick rests on): `../plans/2026-11-02-scan-skin-base.md`.
+- *2026-11-02, the scan route measured on scan02* (`tools/face_test/scan_*.py`; run log in the working doc §7):
+  RealDenseFace on the CPU reads a 1024² picture in a few seconds - 1,511 pairs on a zoomed square-on render
+  (~0.25 mm a pixel; the whole-bust render at 1.4 mm a pixel gave 48 usable); our two round views put the same FLAME
+  point within 0.53 mm (median). Pairs → `procrustes` → `nricp_amberg` held by the pairs: above the neck 0.9-1.0 mm
+  from the scan (the eye-aligned fit without pairs: 1.2), 44 s, 460 MB. Blender's Selected-to-Active bake of the
+  scan's colour onto HeadTile at 4096²: 6 s on the CPU. SegFace ConvNeXt-512 on the CPU: 13 views in under a minute,
+  2.2 GB; it labels flat-lit scan renders cleanly from the front and calls part of a bald crown "hair" from a side
+  turn. A file can break its format's UV convention: scan02's glTF stores V upward (21.5% of skin triangles on black
+  read the spec's way, 0.6% flipped).
+
+*from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
+(`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0
+downloads, CC BY-NC, weak on profiles (their notes: `E:\Dev\Web\just-core\docs\plans\2026-10-31-just-direct-
+research-mocap-notes\face-landmarks-juststage.md`). Also suggested there: SEA-RAFT for the flow step, flow rejection,
+a limbus ellipse fit for the iris, the crop box from the mesh projected through the known camera. Not on disk here:
+Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weights.
+- Krea 2 Raw / Turbo (2026-06-22, 12B; Krea 2 Community License, free under US$1M revenue — search snippet):
+  text-to-image only; runs in stable-diffusion.cpp; add-ons for identity (V2 non-commercial) and pose (Apache), a
+  depth ControlNet card unread; no reference + depth add-on found.
+
+*agent, 2026-10-30* — ComfyUI nodes, FLAME-Universe, the apps that turn photos into head textures, and alternatives
+to FLAME (the user: "did we reall check all confy ui stuff to see if somehwone doesnt already havea a really good
+working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-research-comfyui-flame.md`](../plans/2026-10-30-research-comfyui-flame.md)):
+- `BD_FlameFit` (the BrainDead FaceWrap pack; `pyproject.toml` MIT, no LICENSE file): our pipeline's shape — landmarks,
+  fit, per-view projection bake, angle-weighted blend, Qwen fill, transfer to CC5 / MetaHuman UVs — but weaker: FLAME
+  shape refitted per view from zero, 105 sparse MediaPipe points, a simplified camera (~3–4 px per landmark, its docs);
+  no delighting, normal maps or lashes.
+- Most promising (each argued in the notes): UltraTex (SIGGRAPH Asia 2026; paints 6–10 views of a mesh together up to
+  2048², albedo + metal/rough, keeps our UVs; low-VRAM ComfyUI build 6.8 GB at 1536 per its author; code and LoRA MIT,
+  on FLUX.2 klein base 9B, non-commercial; objects only shown, needs Triton); Hunyuan3D-2's delight model (an
+  InstructPix2Pix SD model, `Hy3DDelightImage`; Tencent community licence, not EU/UK/KR); inverse rendering on our known
+  mesh (NextFace GPL-3, GTAvatar's UV-space method — our code from the methods); HeadCraft (FLAME + StyleGAN2 UV
+  displacement; code MIT, weights' licence unstated, trained on NPHM); FFHQ-UV (50K+ evenly lit 1024² face UVs, the HF
+  dataset MIT) as a colour prior; the commercial apps' layering — projected colour for the low and mid frequencies,
+  scanned normal and cavity detail on top (MetaHuman: albedo from a scan-trained model, normal/cavity from a library;
+  Headshot 3: projection over its base skin, AI delighting, two normal layers).
+- Alternatives to FLAME: none shown better than GNM on a shared benchmark; detail comes as a displacement layer on a
+  base model (HeadCraft; FaceScape's 4K displacements, non-commercial; HRN Apache-2.0; DECA / EMOCA 256², non-commercial).
+  NPHM and Gaussian / NeRF avatars give no riggable mesh; SMPL-X's head is FLAME.
+- Not found (a search gap, not proof): a ComfyUI face-delighting node to true albedo, a pore/wrinkle displacement node,
+  a face-UV generator for a given layout, a photometric FLAME fitter; Civitai / OpenArt pages never came back.
+
+*measured + web, 2026-10-30* — eyes, lashes and pore sources for the face test (rounds 19–27, `docs/dev/TASKS.md`):
+- Painted views must be aligned to, and depth-tested against, renders of the same surface they are projected onto: the
+  face test's clay views had the head's open mouth while the paintings closed it, and the 478-point landmark warp
+  stretched the painted lips open again (round 43).
+- **Hair out of scan colour** (*R1 Q1*): no studio publishes an automatic tool - avoid at capture, smooth geometry
+  (ZBrush), paint out by hand. Detection better than DullRazor: Koehoorn, Sobiecki, Rauber, Jalba and Telea 2016 (training-free; code linked, licence unstated) and a learned mask - Ollamberganov et al. 2025's SegFormer-based pipeline, Dice 0.967 against SegFormer alone 0.932 and DullRazor 0.781 on dermoscopy images (HAM10000), no code link, no open hair-segmentation weights checked [page]
+  (was: "Telea et al. 2016" and "learned SegFormer masks (Dice 0.967 vs DullRazor's 0.781 on skin-lesion images)" until 2026-11-07). Learned fills
+  (LaMa, Apache-2.0) smooth fine texture - a fill from the same scan keeps pores. Makeup-removal models work on
+  low-resolution photos only: picking makeup-free scans is the fix.
+- **Delighting** (*R1 Q2*): Unity's De-Lighting Tool (MIT, 2020) rebuilds the light from the surface with bent
+  normals, AO weighing near against overall light - it handles crease shading the SH fit can't; it needs a bent-normal
+  bake Blender 5.3 lacks (we would compute it). HSRD-100 ships each pose's 112 source photos and RealityCapture cameras
+  (CC BY) - multi-view specular separation (Su et al. 2022) is possible. MAGINet (2025-12): too low resolution.
+- **A face-recognition model for the likeness test** (*API + snippet, 2026-11-06*; query "best open source face
+  recognition model 2026 face similarity"): the strongest open recogniser is InsightFace's ArcFace (its weights a
+  non-commercial label [snippet: a 2026 playbook, fullstackcv.github.io/playbook/face]); `timesler/facenet-pytorch` is
+  MIT (GitHub API, last push 2025-09-16; its pretrained weights' terms unread); no recogniser with both a commercial
+  licence and ArcFace-class accuracy was found. The likeness test is a build-time check - nothing of it ships - so the
+  weights' licence is a label: ArcFace for accuracy, facenet-pytorch as the MIT fallback.
+
+### 14.9 · Skin relief: mid-scale, pores, microrelief, regions
+
+- **MPFB2's region masks** (CC0, `src/mpfb/data/textures/mpfb_*.jpg` at 6ff1eb35, 2048², hm08's UVs): aureolae,
+  crotch, ears, eyelids, face, fingernails, genitals, inside-mouth, lips, toenails - crisp white shapes. Its v2
+  procedural skin (`entities/nodemodel/v2`, GPL-3 code) builds on its own services and would need MPFB2 installed and
+  run; a trial run in an isolated Blender was refused by Claude Code's permission check as code from outside.
+- **The head tile's false shading - Cycles' Normal bake and shape keys** (*measured, 2026-11-06*, scratchpad
+  `factors.py`, `bake_probe.py`, `keys_probe.py`; test `tests/blender/test_build_skins.py`): the gate's face (run 5)
+  showed a brown lower face with a hard edge on one cheek and dark sockets. One factor at a time on the face view: a flat
+  colour map - unchanged; a flat normal map - gone (the face clean, the sockets far lighter). The scan skins' head
+  normal (`build_skins.py`: the composed relief moved from the face test's `HeadTile` frames to the UDIM layer's by a
+  Normal bake on man_a's `round.blend`) held low-frequency tilt (after a 40-texel blur p50 0.13 / p90 0.31) the
+  composed relief does not (p50 0.00). A plain BSDF, no normal map, baked the same tilt: Cycles' tangent frames stay on
+  the Basis while the shading normal follows the shape keys - each key that reshapes the face adds it in proportion
+  (MakeHuman's ethnic keys moving up to 0.19 m: p90 0.11-0.12 each; `gnm.identity` 0.11; keys of a few mm: 0.002);
+  Basis only, modifiers off: p99 0.011. Every scan skin carried the face test character's face as shading. Fixed:
+  `build_skins._bake` bakes normals on the Basis with modifiers off. A bare shape-keyed grid reproduces it (p99 0.43);
+  a Subsurf modifier hides it (re-evaluated frames). `scan_bake.py` is not affected: it bakes onto the fitted head
+  built as a plain mesh (no shape keys).
+
+*agent, 2026-10-30* — what makes rendered skin read as a photo: relief, pores, shading, light, upscaling, eyes (notes,
+ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-skin-detail-shading.md`](../plans/2026-10-30-research-skin-detail-shading.md); facts to
+re-check before the rec list; nothing run on skin here):
+- Relief from images: Sapiens2 normals (human-specific; no non-commercial clause; bans deepfakes), StableNormal
+  (Apache), Marigold / E2E-FT, MoGe-2 (MIT, official ONNX) — none tested at pore scale.
+- Pores, all training-free: Disney's graph-based micro-wrinkles (SGP 2023), example tiles from the CC-BY 3.0 Lee
+  Perry-Smith scan, Blender Studio's tension-map wrinkles.
+- Blender 5.3: multires bakes normals, displacement and vector displacement; adaptive subdivision is no longer
+  experimental. EEVEE has no Random Walk, IOR or anisotropy for skin scattering — Cycles for the final render.
+- BumpMesh (CNC Kitchen, AGPL) pushes brightness as height for 3D printing — the same as ours, not a skin fix.
+
+*web, 2026-10-31* - relief from pictures into geometry (queries: "latest techniques recover 3D face geometry detail
+from normal maps normal integration 2026" -> SuperNormal (multi-view normal integration, arXiv 2312.04803),
+discontinuity-aware normal integration (ICCV 2025), anisotropic screen-space meshing (CVPR 2025), feature-preserving
+decimation for normal integration, Cao et al. inverse plane fitting (CVPR 2021), Ma et al. 2008 gradient-illumination
+face normals refining geometry, Wang et al. 3DV 2013 template registration to normal maps, Bouafif et al. 2020 face
+normals integrated by weighted least squares; "mesh refinement from normal map open source combine positions and
+normals" -> `normal-position-combination` (PyPI 0.0.3, MIT, a binding of Nehab et al. SIGGRAPH 2005's C++), Berkiten et
+al. 3DV 2014 (Nehab's linear method combines high-frequency normals with low-frequency positions; Poisson
+reconstruction smooths when their resolutions differ), CraftsMan3D (normal-map refiner by differentiable rendering);
+"best open source monocular face depth geometry estimation 2026 sapiens2 pointmap MoGe" -> MoGe / MoGe-2 (MIT code;
+metric pointmaps, depth, normals, FOV; general, not face-specific), Sapiens2 pointmap 0.4B-5B (human-centric; licence
+tagged "other"), no face-specific comparison found):
+- For a mesh whose broad shape is right and whose normals carry the detail - our head with the paintings' projected
+  normal map - Nehab et al.'s method is the standard: vertex positions solved so the surface's tangents are
+  perpendicular to the target normals, held near the original positions; one sparse linear solve.
+
+*from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
+(`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0
+downloads, CC BY-NC, weak on profiles (their notes: `E:\Dev\Web\just-core\docs\plans\2026-10-31-just-direct-
+research-mocap-notes\face-landmarks-juststage.md`). Also suggested there: SEA-RAFT for the flow step, flow rejection,
+a limbus ellipse fit for the iris, the crop box from the mesh projected through the known camera. Not on disk here:
+Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weights.
+- **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
+  Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
+  `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.
+  DAViD ViT-L (`normal-model-vitl16_384.onnx`, MIT, ONNX Runtime 1.31 on the CPU — its CUDA provider didn't load): 1.6 s
+  a view at 512². Against our mesh's own normals (from the views' depth pictures, the face's inner part, 6 px blur):
+  Sapiens2 8.5–12.7° mean (left40 8.5, front 9.1, faceleft30 10.4, face 12.7); DAViD 9.6–15.9°; a flat card 31–34°. Both
+  agree with the mesh along the forehead within ~0.1 per axis. Sapiens2 kept. (The first comparison counted the clay
+  world's background, which the view-distance picture stores as 1.0, as head — fixed.)
+
+*measured + web, 2026-10-30* — eyes, lashes and pore sources for the face test (rounds 19–27, `docs/dev/TASKS.md`):
+- Scanned pores: three.js ships the Lee Perry-Smith head scan (`examples/models/gltf/LeePerrySmith/`: a 4096²
+  displacement JPEG, a 1024² tangent normal, 1024² colour and specular; "Infinite, 3D Head Scan by Lee Perry-Smith is
+  licensed under a Creative Commons Attribution 3.0 Unported License … always mention where you got them from"). Its
+  high-passed displacement shows pores and fine lines (with 8×8 JPEG blocks — blurred σ 0.8 first); a 512² seamless
+  cheek tile made (`.dev/facetest/pores_lps.png`) for the pore comparison.
+
+### 14.10 · Skin shading: scattering, specular, roughness, the tone model
+
+- **Skin lightness by melanin** (`core/skin_optics.py`, eumelanin 0.6, blood 0.016; CIE L* of the albedo):
+  - melanin 0.003 gives L* 75.6, 0.01 gives 69.0, 0.03 gives 54.7;
+  - melanin 0.06 gives 41.0, 0.1 gives 30.8, 0.13 gives 26.3;
+  - melanin 0.25 gives 17.6, 0.5 gives 10.9.
+
+  The library's eight tones solve L* 74 down to 25 in steps of 7: melanin 0.00457, 0.01239, 0.02164, 0.03288,
+  0.04705, 0.06597, 0.09366, 0.14102. *Computed, 2026-11-04.*
+- **MetaHuman's skin materials, read from the installed plugin** (Unreal 5.8, `Engine/Plugins/MetaHuman/
+  MetaHumanCharacter/Content/Lookdev_UHM/Skin/Materials/`, 2026-11-04, names read from the `.uasset` files; nothing
+  copied): presets use `MI_skin_unified_MH_preset_Baked` on parent `M_skin_unified` with region masks
+  `T_region_face_A-D` / `T_region_body_A-D` (hundreds of per-region basecolor / normal / fuzz parameters, animated
+  wrinkle maps cm1-3 / wm1-3, "a fake peachfuzz effect adjustable through regions"); `M_skin_unified_baked` takes
+  plain baked inputs - `Basecolor Baked`, `Normal Baked`, `SRMF Baked` (specular / roughness / metal / fuzz packed),
+  `Scatter Baked` - plus `Micro Skin Details` (tiling micro normal and cavity, `T_SkinMicro3_N` / `_CAV`) with
+  `Micro MaskA-D` strengths; subsurface profile `SSP_skin_unified`. For the gate: our maps on the baked variant.
+
+*web, 2026-10-29* — re-checked for the user's "is there another better body … i feel you ddint reasearch well" and
+"we need to create non human body as well like creatures just like cc5 allows" (Opus re-check of the review):
+- Skin colour from chromophores (R5's physically based melanin and haemoglobin layers), read 2026-10-29: Donner &
+  Jensen, "A Spectral BSSRDF for Shading Human Skin", EGSR 2006 (the PDF from graphics.ucsd.edu, §3.3–§3.5): eumelanin
+  σa = 6.6×10¹⁰·λ^−3.33 mm⁻¹ (eq. 3), pheomelanin 2.9×10¹⁴·λ^−4.75 (eq. 4), baseline 0.0244 + 8.53·e^−(λ−154)/66.2 (eq. 5),
+  epidermis Cm(βm·em + (1−βm)·pm) + (1−Cm)·baseline (eq. 6), dermis Ch(γ·oxy + (1−γ)·deoxy) + (1−Ch)·baseline with
+  γ = 0.75 (eq. 7), σs' = 14.74·λ^−0.22 + 2.2×10¹¹·λ^−4 (eq. 8, halved in the dermis), epidermis 0.25 mm, n = 1.4;
+  parameter ranges Ch 0.001–0.1, Cm 0–0.5, βm 0–1 (Table 1). Haemoglobin: Prahl's molar extinction (OMLC, 1998,
+  250–1000 nm). Colour: CIE 1931 2° and D65 (files.cie.co.at/Publications-datasets/). Calibration data: NIST's
+  "Reference Data Set of Human Skin Reflectance" (Cooksey, Allen & Tsai 2017, doi:10.18434/M38597, public domain): 100
+  people, R1–R3 and their average, 250–2500 nm. With Kubelka–Munk for both layers the measured spectra are fitted best
+  at an epidermal backscatter of 0.22 × KM's 0.75σs': mean RMS 0.0098, worst 0.020 over 400–700 nm (plain KM 0.039;
+  an absorbing-only epidermis over-darkens dark skin). Fitted melanin 0.56–5.1% (median 1.0%), blood 0.7–6.3% (median
+  1.6%) — the NIST set leans light to medium. The Monk Skin Tone Scale (CC BY 4.0) was looked at as a tone target; its
+  page is a script app and no source gave values that could be checked, so it isn't used.
+
+*agent, 2026-10-30* — what makes rendered skin read as a photo: relief, pores, shading, light, upscaling, eyes (notes,
+ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-skin-detail-shading.md`](../plans/2026-10-30-research-skin-detail-shading.md); facts to
+re-check before the rec list; nothing run on skin here):
+- Why ours looks waxy: `modules/skin/material.py` has one roughness (≈0.59) everywhere — no cavity map, no second
+  specular lobe, no sheen; `modules/skin/detail.py` turns brightness into bump, which no professional pipeline does —
+  they take the light out of the colour first, and pores come from scanned or generated height.
+- **Blender 5.2's Random Walk radius** (*source read*, R1 Q7): from 5.2 plain Random Walk reads Subsurface Radius as the
+  mean free path (1/σt) - the same value scatters 4π ≈ 12.6x farther than in "Legacy" mode; Random Walk (Skin) is
+  unchanged (its radius the diffuse mean free path 1/σtr - our skin's, `skin_optics.py`). Our sclera, teeth, gums and
+  tongue use plain Random Walk (`head/part_materials.py`) - their radii to re-check.
+- **Weyrich et al. 2006** (*figure read*, R1 Q7: values read off Figure 15's vector paths - no table published): Torrance-
+  Sparrow m / ρs - nose 0.234 / 0.304, cheeks 0.271 / 0.234, forehead 0.270 / 0.272, chin 0.289 / 0.228, lips 0.285 /
+  0.289; measured diffuse mean free path 1.82 / 1.02 / 0.65 mm (R / G / B) - a target for our radius.
+- **HD Aaron's cavity map does not follow his normal map** (*measured, 2026-11-07*, local test, scratchpad
+  `aaron_cavity_fit.py`): `Std_Skin_Head_Cavitymap.jpg` (2048², mean 0.83) against the Frankot-Chellappa height of his
+  `Std_Skin_Head_NBMap.jpg`, high-passed at 2-32 px: correlation <= 0.15 with either green convention. His cavity is
+  not derived from that normal map alone (CC5 likely bakes it from the HD sculpt). So "cavity from our relief" can't be
+  calibrated to his map this way; whether a cavity map is needed at all is left to the face proof's highlight measure.
+
+### 14.11 · Body skin and fitting a scan
+
+- **Anny (NAVER), read 2026-11-05** (github.com/naver/anny README [page], the user's link): "a free, open-source, differentiable human body mesh model" in PyTorch, infants to elders, "based on the tremendous work of the MakeHuman community"; licences: code Apache-2.0, `data/mpfb2` and `data/faceunits01` CC0 1.0, `data/soma` Apache-2.0, `smplx` non-commercial; topologies `anny` (default, triangulated, unattached vertices removed), `anny-quads`, `anny-full`, **`makehuman` ("unedited quad MakeHuman mesh")**, `smplx`, `smpl`, `soma`; rig 104 bones by default, 163 with `rig="makehuman"`; phenotype parameters in [0, 1], local changes in [-1, 1], facial actions from MakeHuman's Face Units (CC0). The README names no scan / keypoint / image fitting and doesn't say how ages are calibrated. Use for us: a differentiable copy of our base (if `makehuman` matches hm08's vertex order - to check) to fit our body's shape and pose to any scan by gradient descent (the Artec body fit that failed rigidly); the SOMA bridge for MHR shapes and SOMA-X correctives.
+- **Limbs from a bare-body scan - fitting our body's pose** (*measured, 2026-11-06*, `tools/body_scan.py hsr0042`,
+  HSRD-100's HSR0042-Body-045: bare but for trunks and cap, barefoot, near A-pose, 500k vertices, a floor sheet under
+  the feet): our default A-pose bends the forearm 19 cm forward (elbow y -0.016 to wrist y -0.207) where the scan's
+  arm hangs straight; a turn at the shoulder alone left the arms 8 cm off; a joint-by-joint two-angle search (each
+  segment weighed the same - the hand's 1,577 vertices had outweighed the upper arm's 172; each joint's swing limited -
+  the floor sheet had drawn the feet 73 deg round) then Amberg's non-rigid ICP: hands 3 / 8 mm (p50 / p90), forearms
+  5-6 / 12-17, feet 9-10 / 17-19, upper arms 13-16 / 39-42, thighs 9-12 / 35-56, shins 14-15 / 30. The bake takes the
+  scan's detail only where the wrapped surface lies within 6-12 mm (the fit's gap baked per tile). **Then Anny**
+  (`pip install anny` 0.6.2 into venv-rdf, Apache-2.0 code, CC0 MakeHuman data): `Anny(rig="makehuman",
+  topology="makehuman")` is the unedited quad mesh - 19,158 vertices, 13,742 quads, hm08's order (head within 6 mm
+  index for index after a rigid fit; its default `anny` topology is the triangulated, trimmed one - not used); 163
+  bones; phenotype gender, age, muscle, weight, height, proportions. Its README names no scan fitting: ours by gradient
+  descent (bones' turns, the phenotype, a placement; a robust two-way nearest-point loss, 400 Adam steps, GPU) then
+  the wrap: upper arms 3 / 7-8 mm, forearms 2-3 / 7-8, hands 2-3 / 6-8, thighs 3-4 / 9, shins 6-8 / 20-22, feet 5 / 13-16
+  - every segment better. (The fit ended at gender 0.08 - male, right for this man: Anny's gender runs 0 male, 1 female (`anny/models/model_data.py` `gender=["male", "female"]`, anchors 0..1 in `phenotype.py`), the reverse of MakeHuman's 1 = male; `fit_anny` starts it at logit 4.0 commented "a man" (`tools/body_scan.py` L234) - 0.98, female in Anny - and its loss has no phenotype term, so that is an inverted start value, not a prior (was: "a shape-space quirk" until 2026-11-07); only the surface matters
+  here.) Anny is a fitting tool in the scan pipeline only: the shipped mesh stays hm08 + base v2.
+  Queries (2026-11-06, after the user asked whether Anny was researched against MakeHuman): "best way to fit a
+  parametric human body model to a 3D body scan 2026" - older SCAPE / SMPL pipelines (joint-anchored fitting,
+  BODYFITR, learned registration to SMPL+D), no 2026 consensus [snippets]; "Anny body model NAVER fit to 3D scan
+  accuracy compared SMPL-X MHR" - the Anny paper (arXiv 2511.03589) via summaries: ~2.4 mm mean point-to-mesh error on
+  adult scans (3DBodyTex), 2.0 vs SMPL-X 3.2 mm on children's, SMPL-X better on high-BMI skin folds, no MHR comparison
+  [snippets - to read at the source before a plan rests on them]; "how do studios wrap a 3D scan to a base mesh
+  topology R3DS Wrap alternative open source" - R3DS Wrap, Wrap for Blender ($49), TopoWrap: corresponding points,
+  then a non-rigid fit, then clean-up; no open tool found [snippets]. Verdict: Anny + non-rigid ICP is the open form
+  of the studio method on our own topology; MHR via SOMA-X (Apache-2.0) is the one to try if heavy bodies' folds
+  come out wrong.
+- **Body relief and muscle definition** (*measured + web, 2026-11-05*, proof step 2, `.dev/gate/parts/proof_body/`):
+  MakeHuman's muscle macro (our Muscular man, 0.9) gives bulk, not definition - no abs or separation beside HD Aaron's
+  torso; the same horizontal chest seam and arm bands show on Average and Muscular man (a texture-tile defect, not
+  diagnosed yet). Bare torsos we hold: of HSRD-100's 13 downloaded poses only HSR0042-Body-045 (swim trunks; an
+  average-build older man) - the rest wear shirts, dresses, hoodies (their `pose_meta.json`); the plan's "HSRD-100
+  bodies ... mostly bare" was wrong. deep3dstudio's "Athletic African man walking 223" (CC BY, 8K tangent normal map)
+  wears a tank top - bare arms show real definition; Ten24's sample wears a sweater. Web (queries, standard mode): "best
+  way to add realistic muscle definition to a 3D character body skin normal map 2026" - listings and texture packs:
+  the industry way is sculpted detail baked to normal + cavity maps (MetaHuman custom bodies, VRChat muscle packs);
+  "free 3D scan shirtless male body full body photogrammetry download" - Ten24 (clothed), 3D Scan Store (paid; its
+  terms bar character makers - licences-redo file); "textured 3D human body scan dataset minimal clothing underwear
+  high resolution" - 3D.sk underwear scans (RenderHub listing: no commercial use), 3DBodyTex (close-fitting clothing,
+  terms unread), CAPE / BUFF (textured raw scans on request, terms unread); "sketchfab shirtless man full body scan
+  downloadable CC attribution" - Scanlab "human man scan *mbody" and "cdkc/cdbc a pose reference male scan" (licences
+  and clothing unread), Heges app scan (CC BY, raw STL); "is there anything better than MakeHuman for realistic body
+  shape and muscle detail open source 2026" - aggregator pages only (MakeHuman + sculpting; Ara 3D Gen, MIT, unread).
+  **Triplegangers' free samples** (the user's link, triplegangers.com/blog/technology/free-scan-samples, read in Chrome
+  2026-11-05 [page]): a face, a full body and a hand; the body an athletic man in underwear, BACS pose, mesh with clear
+  pectoral and abdominal definition [seen]; "All free samples below are licensed under a Creative Commons
+  Attribution-NonCommercial-NoDerivatives 4.0 International License" ... "You may not use the material for commercial
+  purposes. If you remix, transform, or build upon the material, you may not distribute the modified material";
+  download after registering (Google Drive, .7z). LOCAL TEST only - never shipped, nothing derived from it ships.
+  **Artec 3D "Body scan"** (the user's link, artec3d.com/3d-models/body-scan, read in Chrome 2026-11-05 [page]): a
+  young athletic man in shorts, bare torso, arms raised in a muscle flex (scanned with Artec Leo, 10 min, processed in
+  Artec Studio) [seen]; its Free download tab: "Under Creative Commons license v4, attribution to Artec 3D and a link
+  back to our website is all you need to use this 3D model for free" - the link goes to
+  creativecommons.org/licenses/by/4.0 (CC BY 4.0); credit "Body scan by Artec 3D"; one OBJ archive, 57.73 MB, a direct
+  CDN link (no account). SHIP with credit - the first bare athletic torso we can ship from. Downloaded 2026-11-05
+  (`.dev/downloads/artec_body_scan/`); its own `license.txt` says CC BY 3.0 Unported ("This 3D model by Artec Group inc.
+  ... is licensed under the Creative Commons Attribution 3.0 Unported License") - the file's grant; the page says v4.
+  **Digital Reality Lab samples** (the user's link, digitalrealitylab.com/sample-model, 2026-11-05 [page]): full body
+  A-pose (3.5 GB raw / 480 MB rig-ready, 16K), heads raw / clean / PBR (separate eyes, 16K PBR), facial expressions
+  (1.6 GB), hand, clothing, a rigged female; "The sample models are free for personal and commercial use with credit
+  mentioned on any social media" [page, found in Chrome]; "we do not allow resale or free distribution on other
+  websites" [WebFetch summary - unread in the page itself]; /legal and /faq hold no licence text. A form (name, email,
+  company, job, use) mails the link - the user's to fill. Shipping derived maps: UNREAD (whether a baked map in our
+  repo is "free distribution on other websites") - ask them in writing before anything ships.
+  **3D.sk free samples** (the user's link, static.3d.sk/photos/freeSample, read in Chrome 2026-11-05 [page]): Dale
+  Base Body Scan (a bodybuilder, A-pose, 57.89 MB), Adelle Sabelle Standing Clean Body Scan, Alison Clean A Pose Scan
+  (clothed), Bshara Henry Head Scan, Vinna Reed head premade texture, Lenny groom scan, photo sets (Darren in underwear,
+  poses, expressions). Their Content Commercial License Agreement (3d.sk/page/commercialterms [page]): "you may not use
+  the Content in products for resale, license or other distribution, unless the original Content has been
+  fundamentally modified ... and where the primary value ... is not recognizable as the Content nor is the Content
+  capable of being downloaded, extracted or accessed by a third party as a stand-alone file" - a relief map in our
+  open repo is a stand-alone file: LOCAL TEST only. The download link (`/photos/download?id=969125` for Dale) is
+  bot-protected (curl: 403) and a browser click saves to Chrome's download folder - the user downloads it. 3D.sk's ArtStation post "FREE 3D Scan | Retopo Hands & Premade Head Textures" (the user's link [page]): its only free item is Adelle Sabelle's cleaned raw body scan (the same sample); the hands and head textures it shows are paid products.
+  **CGTrader free characters** (the user's 16 links, 2026-11-05; four read in Chrome [page]): "Matt" and "Amber Free
+  High-Poly" (Martinthedark-, rigged game characters; FBX / BLEND / Unity / Unreal), "Realistic Male Full Body Sculpt"
+  (daniartist, 171 reviews), "Head Parts Anatomy" (Avanar) - each "License (no AI) ... Free for personal and commercial
+  use"; CGTrader's terms (§21A, read 2026-11-04, `../plans/2026-11-04-research-licences-redo.md`): "strictly limited to
+  Incorporated Product", in software "prevent the end user from gaining access to the Product" - LOCAL REFERENCE only,
+  never shipped; downloads need the user's CGTrader login. Most useful as references: the full-body sculpt (body
+  definition), Head Parts Anatomy (lid and mouth anatomy); the stylised or game ones (knight, centaur, bunny girl, monkey
+  king, cool girl, Asian girl PBR) add nothing for realism (titles; pages unread).
+- **Anny ships a fitter for registered meshes and MPFB2's rigs** (*code read, 2026-11-06*, `.dev/venv-rdf` anny
+  0.6.2): `anny_inverter.py` L35-44 `AnnyInverter` - "Estimate Anny parameters fitting a target mesh", pose "via
+  joint-wise rigid registration", phenotype "via finite-difference Jacobian optimization", input `[batch_size, V, 3]`
+  (vertices already in Anny's topology - i.e. after our wrap); `keypoints.py` (keypoint regressors);
+  `models/model_data.py` L223-231 its rigs are MPFB2's files - `"makehuman": ("rig.default.json",
+  "weights.default.json")` (163 bones), `"game_engine": ("rig.game_engine.json", "weights.game_engine.json")` (53
+  bones, root `Root`) - joints by MPFB2's `CUBE` strategy (`models/full_model.py` L243-255). So `Anny(rig="game_engine",
+  topology="makehuman")` is our mesh with the MPFB2 base of the spec's skeleton (`character-data-model.md` §2: "placed
+  from the joint cubes (MPFB2's `CUBE` strategy)", weights "from MPFB2's `weights.game_engine.json`"). Earlier line
+  L352 ("Its README names no scan fitting") is true of the README only. The package also holds `anthropometry.py`,
+  `shape_distribution.py`, `face_segmentation.py` (not read).
+- **The hand donor was on our disk** (*seen, 2026-11-06*; `.dev/audit/2026-11-06/research/R1.md` Q3, checked by me on a
+  crop of `.dev/downloads/ten24_sample/x/OBJ Package/Normal Maps/Level_01_Normal.PSD`, 8192² - not 16K - x 5100-7000,
+  y 200-2900): Ten24's sample has bare hands; its normal map shows the extensor tendons fanning to the knuckles, veins on
+  the back of the hand, knuckle and finger creases, palm creases and wrist skin lines (the forearm's colour carries hair;
+  the cuff is a sweater). Licence: "Feel free to use this scan as you wish for both commercial and personal projects. All
+  we ask is that you provide us with a credit wherever it's used" (the page saved 2026-11-04). Its feet are in shoes. So
+  run 11's flat hands have a donor in hand: our hand fitted to Ten24's mesh and its relief baked onto our hand tiles.
+  Feet: Thunk3D's "Leg-foot" (Sketchfab, "CC Attribution" [API], 2.97M faces, geometry only) is the one detailed bare
+  foot found; more hands: Arkify "Pencil Hand Pack" (3 female + 3 male, Artec Space Spider, CC Attribution [API]),
+  Thunk3D hands - their detail unseen until downloaded.
+- **HSR0042 is a 24-year-old, 179 cm, 112 kg African man** (*page read, 2026-11-06*, HSRD-100's
+  `manifest/persons.jsonl`: `{"person_id": "HSR0042", "age": "24", "sex": "Male", "ethnicity": "African", "height_cm":
+  "179", "weight": "112", ...}`) - L371-372 above ("an average-build older man") is wrong; L355's "a heavy man" is right.
+  HSR0040 (Scan man A's and B's main colour scan): 50, Caucasian, 180 cm, 92 kg.
+- **Bare bodies of women, heavier, older, darker** (*page read, R1 Q4*): none found fully bare under terms that let us
+  ship. On disk or in HSRD-100 (CC BY): poses with bare arms or legs - women 22, 23, 41, 60; men 50 and 62 (~90 kg)
+  (HSR0015-069/-070, HSR0112-078, HSR0040-074, HSR0023-071, HSR0042-043 - not downloaded); `d3d_bodysuit_woman` (CC BY, on
+  disk): a dark-skinned, heavier woman with bare arms, legs and feet. Renderbot (a one-year site licence), store
+  "Standard" licences, editorial-only and NC sources fail; Sketchfab's Store has closed.
+- **Anny paper, v3** (*page read*, arXiv 2511.03589): no scan-fitting method is described; adults fit at 2.5 mm against
+  SMPL-X 1.9 and ATLAS 1.8 (head and hands excluded); children 2.0 vs SMPL-X 3.2 on three scans; "SMPL-X better captures
+  fine skin-fold details of high-BMI bodies compared with Anny"; no MHR comparison. L360's 2.4 mm is v1's figure.
+
+### 14.12 · Eyes
+
+- **EEVEE's eye white and the lids' shadow** (Blender 5.3, a close eye, one 120 W area light 0.6 m wide, measured
+  2026-11-04):
+  - The lid stands about a millimetre off the eyeball. The light's `shadow_maximum_resolution` defaults to 1 mm.
+  - At 0.1 mm without `use_shadow_jitter` the white stays flat. Jittered, the upper lid's shadow shows.
+  - Render time was the same at every limit: 0.56 s for a close eye at 512 px and 64 samples, 0.44 s for a full body
+    at 1280 x 720.
+  - In 5.3 the setting is `shadow_maximum_resolution`; `shadow_resolution_scale` no longer exists.
+  - The viewport jitters only with `scene.eevee.use_shadow_jitter_viewport`.
+- **The eye part by part against HD Aaron** (*measured, 2026-11-05*, proof step 4, `.dev/gate/parts/proof_eyes/`,
+  RESUME (4b)): a cut-out iris photo, unwrapped to polar coordinates and sampled on our eye's linear iris UVs (pupil
+  edge to 4% past the limbus), measures equal to his iris (L* 24.6 / C 14.8 vs 27.2 / 11.3) with more detail; the
+  iris surface itself must not be specular (0.5 at roughness 0.4 laid a grey haze over the pupil - the cornea shell
+  carries the gloss, the real iris sits in index-matched fluid). Source on disk: `Green_iris.jpg` (Wikimedia Commons,
+  Lizapopova143, 2019-07-15, 5,315 x 3,838) - its file page [page, read 2026-11-05]: "This file is licensed under the
+  Creative Commons Attribution 4.0 International license." MakeHuman's lid has no margin geometry: its lower lid's
+  edge stands up to 3.3 mm off the eyeball (a dark crevice in the render); moving that one vertex ring onto the eyeball
+  leaves a 4-8 px band against his ~36 px. ICT's tearline strip shaded as wet pink tissue gives the band on the
+  Average man (32 px, the same colour) but on four other library characters it outlines the whole opening, upper lid
+  included - a drawn pink ring (his upper margin hides under the lashes).
+- **Iris colour values** (searched 2026-11-04, for the eye colour presets). Queries and what they returned:
+  1. "measured iris colour CIELAB values blue green hazel brown eyes" - Edwards et al. 2012 (Am J Phys Anthropol,
+     CIELAB from a 256 x 256 patch at the iris' 9:00 meridian), Herrera Ramírez et al. 2009 (UPC, brown / blue / green
+     groups by camera), a Korean study, a 1984 Psychonomic paper - methods; no numbers on the pages reached.
+  2. "realistic iris colors for 3D eye shader presets blue green hazel" - product pages (Daz Macro Eyes presets, an
+     Unreal eye pack, Blender's Eye Designer: 12 colour sets) without values; a paper on blue as stroma scattering and
+     hazel as melanin over it.
+  3. "Edwards 2012 'quantitative measures of iris color' CIELAB ..." - the same paper's design; PMC6456006 (a South
+     Asian GWAS, 2019) reports only GWAS statistics, its camera set-up (D55, f/19, ISO 200).
+  4. "'Digital quantification of human eye color' Liu 2010 ..." - PLoS Genetics 2010: hue and saturation from photos,
+     the categories overlapping; values not reached.
+  5. "'Iris pigmentation as a quantitative trait' Edwards 2016 ..." and "iris color physics melanin stroma Rayleigh
+     scattering model ..." - the 2016 paper and qualitative physics only.
+  A gap in the search, not "none exist": the papers hold the numbers; their full texts weren't reached (an ARRO copy
+  failed its certificate). MPFB2's own eye default is a saturated blue (0.18, 0.49, 0.91; `eye_settings.default.json`).
+- **EEVEE and the occlusion film** (2026-11-04): ICT's sheet sits a median 0.57 mm off our eyeball (16 of 152 vertices
+  up to 0.2 mm under it, by the cornea); EEVEE draws it (seen as flat red) as a blended surface, but at the face test's
+  strengths (tuned in Cycles, where the lids cast real shadows) its darkening barely shows.
+
+*web, 2026-10-29* — the eye shells (step 1.5: occlusion and tearline), public docs only:
+- **CC5** ([Eye Occlusion](https://manual.reallusion.com/Character-Creator-5/Content/ENU/5.0/15_Digital_Human_Shader/Eyes/Digital-Human-Eye-Occlusion-Shader.htm),
+  *page read*): "The topmost mesh layer for the realistic eyes is the Eye Occlusion, which simulate the shadow cast from
+  the eyelids to prevent over-exposure on the eyeballs"; its settings pages are Blur, Shadow 1, Shadow 2 and Vertex
+  Offset (not read). [Tear Line](https://manual.reallusion.com/Character-Creator-5/Content/ENU/5.0/15_Digital_Human_Shader/Eyes/Digital-Human-Tearline-Shader.htm)
+  (*page read*): the layer under the occlusion, to "simulate the moisture and the tear reflectivity on the eyeballs and
+  the tear ducts"; CC5 changed its UVs because CC4's normal-map tiling was "unevenly distributed". CC4's
+  [Tear Line settings](https://manual.reallusion.com/Character-Creator-4/Content/ENU/4.0/15_Digital_Human_Shader/Eyes/Digital-Human-Tearline-Tearline.htm)
+  (*page read*): Depth Offset ("adjust the depth of the entire Tear Line mesh"), Detail Amount, Detail Scale U and V (a
+  tiling normal detail), Edge Fadeout, Roughness; the sub-section "can be used to offset the Eye Occlusion mesh in
+  order to snuggly fit the eyeballs". [New Eye Elements](https://manual.reallusion.com/character-creator-4/Content/ENU/4.0/15_Digital_Human_Shader/Eyes/New-Eye-Elements.htm)
+  (*page read*): both "will be changed along with the movement of eye sockets when morphing and performing facial
+  animations"; they can be deleted and recreated in CC.
+- **MetaHuman:** the face's meshes `eyeshell` and `eyeEdge` (names above); Epic's material set has `EyeShell` and
+  `LacrimalFluid` slots (MetaHumanCharacter API, *search snippet only*). A forum user with a custom template mesh
+  reports the eyeshell and edge clipping into the eyeball ([forum](https://forums.unrealengine.com/t/eyeshell-and-edge-not-aligning-to-eyeball-with-custom-template-mesh/2764072),
+  *search snippet only*).
+- Not found: how either vendor shapes the shells (widths, offsets, how they are generated); no Blender-specific
+  method. Both are real-time fixes — a shadow and a wet line the rasteriser misses at that scale.
+
+*agent, 2026-10-30* — hair, eyes and teeth (notes, ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-hair-eyes-teeth.md`](../plans/2026-10-30-research-hair-eyes-teeth.md); facts to re-check
+before the rec list; measured in Blender 5.3 and read in our code):
+- Eyes: a layered stack with the iris ~3.6 mm behind the cornea (Navarro's optics); a procedural iris, or an SDXL LoRA
+  (kohya: 8 GB at the edge). Teeth: per-part shaders on our GNM teeth.
+
+*agent, 2026-10-30* — what makes rendered skin read as a photo: relief, pores, shading, light, upscaling, eyes (notes,
+ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-skin-detail-shading.md`](../plans/2026-10-30-research-skin-detail-shading.md); facts to
+re-check before the rec list; nothing run on skin here):
+- Eyes: ICT-FaceKit (MIT) ships eye occlusion, tearline and eye-corner meshes; the cornea in Cycles by MNEE shadow
+  caustics or a shadow-ray trick.
 
 *web + measured, 2026-10-31* - the eye's occlusion and tear line, shaded and fitted (`../plans/2026-10-31-audit-eyes.md`,
 27 searches logged; CC5's pages read one by one):
@@ -2341,30 +2805,39 @@ every one logged; key claims page-read):
   - about 3-4 rows across; its UVs sit in tile u 4-5, both u and v running along the eye (corr with azimuth -0.90 and
   0.87). Its inner rim lies 1.5-2.5 deg inside ICT's lid edge, so 1-2.5 deg of it shows below the upper lid and above
   the lower.
-- MediaPipe's Face Landmarker on a clay render (no brows, flat colour) guesses: between two clay renders a degree or
-  two of lid apart, its brow points moved 9-11 px (median), nose 5.5 px (max 13.8; the nose unchanged), eye rings 6
-  px, face oval 3.1 px, lips 1.3 px (face view, 1024 px); its lid contour read a near-shut clay eye as matching an
-  open painted one. On a clay, measure the lids from its colours (the eye opening is what isn't skin-coloured); keep
-  MediaPipe for the paintings, where its lid lines and iris (radius 36.7 px in the face view, against our geometry's
-  5.83 mm iris = 36.4 px) hold. A circle fitted to the clay's coloured iris under-read it (26-29 px).
-- Flow between the AI's paintings (Floating Textures, OpenCV DIS on the light-free colours, judged on held-out views):
-  at pore scale (difference of Gaussians 1.5-4 px) the paintings don't correspond at all - correlation 0.03-0.14 -
-  each view invents its own pores, and the close view its own brows, eye bags and moles; at feature scale (3-16 px)
-  flow from a quarter resolution raises agreement on two of three held-out views (face 0.411 -> 0.445, front 0.554 ->
-  0.568 at 6-16 px) without blurring. But in a full round (52) it hurt: raw DIS flows between views 20-37 px at the
-  median (p90 up to 83 px), the mean at its 15 px cap over half the face, pores -20%, the eye bags flattened. With a
-  forward-backward check (Sundaram, Brox & Keutzer, ECCV 2010: |w + w'|^2 < 0.01 (|w|^2 + |w'|^2) + 0.5) the features
-  (lids, lip line) stay near zero but smooth skin keeps 15 px patches - DIS's aperture problem on low-texture skin
-  whose shading differs between paintings. Bilinear resampling alone costs pore-scale detail; Lanczos keeps it.
-  Re-judged 2026-10-31 on the paintings made in sequence (one person): agreement without flow rose (face view 0.514,
-  front 0.748 at 6-16 px; the front's pore band 0.366); DIS and RAFT (torchvision `raft_large` C_T_SKHT_V2, BSD-3,
-  weights from download.pytorch.org, 20.1 MB) both raise the front and lower the face and the 40-degree view - a
-  learned flow doesn't change the verdict.
-- Painting the views in sequence with FLUX 3 Image Klein (sd-cli edit mode, measured 2026-10-31): given two pictures
-  - the re-projected composite first, the hero painting second - it painted the hero's own front view into the
-  30-degree view (lips 180 px off); given the composite alone it keeps the pose (lids 1.8-5.4 px, lips 4-12.5 px) and
-  carries the painted part's person into the rest of the head, 100 s a view on the 8 GB card. Over nine views in a
-  chain the skin tone drifts darker and more orange.
+
+*measured + web, 2026-10-30* — eyes, lashes and pore sources for the face test (rounds 19–27, `docs/dev/TASKS.md`):
+- MPFB2's procedural eye (`src/mpfb/data/node_trees/procedural_eyes.json` at 6ff1eb35, CC0 data; 14 node groups,
+  "EnhancedEye") built by `tools/face_test/mpfb_nodes.py` works on GNM's eye: one eye per UV map centred at (0.5, 0.5),
+  eyeball UV radius 0.46, iris 0.40 of it (measured: iris UVs 0.315–0.685, pupil 0.45–0.55). Its distance node sums two
+  eyes' centres — the second must be moved off the map. Trials: a refracting or Fresnel-shell cornea greyed the eye;
+  a glossy iris and the shader's 0.4 clear coat mirrored the grey studio; the paintings' eye colours on our lids'
+  undersides read as a shiny strip.
+- **GNM's eye part as stored** (*measured, 2026-11-06*, `extension/juststage/data/generated/gnm/parts/eyeLeft.obj`,
+  hm08's decimetre units): sclera sphere radius 0.141 (14.1 mm), the cornea's apex 0.0299 in front of the iris's mean
+  plane (2.99 mm) and 0.0326 in front of the pupil's - before the MHCLO fit scales the part to our head; the fitted
+  eye's depth is unmeasured. The `eye_exteriors` shell covers the whole ball (to 178 deg from the axis), so the
+  "cornea" material also glosses the white.
+- **Lower tear meniscus** (*page read*, R3): ages 19-31 AS-OCT 0.21 ± 0.06, Keratograph 0.20 ± 0.05 mm (PMC11809819, CC
+  BY); ages 10-78: 0.34 ± 0.07 mm (0.11-0.61), ~0.002 mm a year (0.29 at 10-20 to 0.40 at 61-80), no sex difference
+  (Frontiers Med 2022, CC BY).
+- **Iris colour data** (*page read*, R3 Q1): Edwards' Dryad data (doi:10.5061/dryad.0kt87, CC0) holds iris surface
+  features only, no colour - drop it from the download list; Edwards 2012's tables paywalled; the only open numbers
+  reached: Korean dark-brown irises L* ~22, a* ~22, b* ~29 (CC BY-NC). No open per-category table found.
+
+### 14.13 · Lids, lashes, brows, facial and body hair
+
+- **MakeHuman's pack lashes** (`basic_lashes_upper`, attached to our Average woman): 99 strands for both eyes, radius
+  0.05 mm (median; max 0.1 mm), standing 8-9 mm in front of the eyes. At 256 px over 7 cm (0.28 mm a pixel) EEVEE's
+  true-width strips are a third of a pixel and vanish; at 1024 px a few strands show at the outer corner.
+  *Measured, 2026-11-04.*
+
+*web + measured, 2026-10-31* - the face's neutral: lips and lids (`../plans/2026-10-31-audit-face-edits.md`, 18 searches,
+every one logged; key claims page-read):
+- Lead: MakeHuman's packs page lists "Eyebrows 01 - A set of high-res eyebrows by Mindfront" under CC0 mesh assets (not in
+  our local pack).
+
+*measured, 2026-10-31* - eye openings, ICT's tear strip and flow between the paintings (face test rounds 50-51):
 - Eyelash angles, measured (searched 2026-10-31: "human eyelash curvature angle upper lash lift angle measurement
   study" - a Korean cilia-angle table, the SNU Asian/Caucasian curl-up and lift-up study (Na et al., BJD 2006: Asian
   lashes lower lift-up and curl-up angles, fewer, thicker; numbers not in the snippets, the page didn't load), a
@@ -2384,102 +2857,8 @@ every one logged; key claims page-read):
   readable). Its discussion: the lower lashes "grow in the upward direction against gravity" - which fits only a
   vertical pointing down (lower 90 deg straight ahead, women's 100 above it); so men's upper lashes leave the lid ~29
   deg below straight ahead (women's ~18). The close 30-degree painting shows them that way (hanging over the eyeball).
-- TEXTure's trimap (Richardson et al. 2023, read 2026-11-02 at ar5iv.labs.arxiv.org/html/2302.01721; searches
-  "TEXTure trimap keep refine generate z-normals ..."): a meta-texture keeps, per texel, the face normal's z
-  component it was painted from; a region painted before is "refine" when "the current view provides a better
-  colorization angle", otherwise "keep" (frozen); "generate" where unpainted. Refine regions are repainted with a
-  checkerboard mask over the first 25 sampling steps; the paper gives no threshold.
-- *measured, 2026-11-02 (round 65's paintings)*: under that rule (the current view's cosine 0.2 better than the best
-  earlier view's), 0-23% of each view's painted part would be repainted (the profiles most); it would not have kept
-  left40's grey scalp out of left90's start - left40 supplies 84% of left90's scalp there and is kept. The profiles'
-  scalp blotches (grey-green on left90, dark smudges on right90) are FLUX's own, where that painted grey meets the
-  clay. The paintings' backdrop inside our mesh's outline (head painted smaller than the mesh at the scalp): 0.1-4.6%
-  of each view's head pixels, nearly all weighted under 0.05 by facing - not the bright streak on the 40-degree
-  view's forehead edge (that render clips to white there; the coat lobe at grazing is the next suspect).
-- *measured, 2026-11-02*: MediaPipe's iris centre on the close painting sits 9.4-11.9 px (1024 px) below the circle
-  through the iris' edges (row chords where the white starts, least-squares circle, Kasa 1976), 4-6 px on the front
-  painting: the hooded lid hides the iris' top and MediaPipe takes the middle of what shows. On our renders, whose
-  lids cover less, the two agree within ~4 px. The circles: the painting's 30.8-31.0 px round, ours 29.7-30.2.
-- *measured, 2026-11-02*: MediaPipe's lid lines on the close painting run along the outer edges of its thick lid
-  margins - the lower one at 311 px where the eyeball stops showing at ~305 (by eye at 4x) - while on our render
-  (thin margins) they sit at the edge (315-319 against ~318). In eye widths from the line through MediaPipe's corners
-  (by eye at 4x, unwarped painting): the painting's upper lid 0.23 / 0.25 above it, lower 0.05 / 0.02 below, iris
-  centre 0.17 / 0.20 above; round 65's 0.26 / 0.28, 0.09 / 0.06, 0.13 / 0.16. Colour segmentation and gradient
-  searches for the lid edges failed here (the nose shadow, eye-bag creases).
-- *measured, 2026-11-02*: the lips' seam - the clay's contact line (its darkest row in the evenly lit render) against
-  MediaPipe's inner lip points on each painting: the clay's sits 3.6-9.9 px lower in every view that sees it (close
-  view 6.8, front 4.2 - about 1.3-1.7 mm). The outer lips with the painting brought into the clay's frame (a
-  similarity on eye corners and nose): in the close view that fit errs 11.6 px (MediaPipe on the clay misreads the
-  corners and nose), in the front view 3.0 px - there the painting's mouth is as wide (158.8 against 156.1 px) and
-  as high at the top, its corners ~10 px lower and its lower edge ~5 px lower: a thinner upper lip, a taller lower
-  one, the corners turned down (MakeHuman's upperlip-height-decr, lowerlip-height-incr, angles-down).
-- *2026-11-02, the skin's source* (`../plans/2026-11-02-research-texture-source.md`): Headshot 3 textures from ONE
-  photo plus "a skin-base preset by age and facial hair" merged by blend masks (ai-texturing §6) - we paint ten AI
-  views instead. MakeHuman's CC0 skins (Skins 02, downloaded, measured): 2048² whole-body maps in our UV layout, the
-  face ~250 px across, painted with shading baked in - not a base. Free scanned heads: Digital Emily 2 is non-commercial; Ten24's sample allows commercial use with credit - "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used" (its page saved 2026-11-04; §14 "The hand donor") (was: "Free scanned heads (Ten24, Digital Emily 2) are
-  non-commercial" until 2026-11-07); the Lee Perry-Smith scan stays the one CC-BY head. Nano Banana Pro: ~$0.24 a 4K picture on Google's
-  API; Google "won't claim ownership" of outputs and bars using the service "to develop models that compete". SkinGen:
-  a skin base under masked layers (blend modes, normal and micro-normal strengths, region tools). Histogram-preserving
-  blending (Heitz & Neyret 2018) tiles skin swatches; pores need their own layer. Claude makes no images.
-  The scans downloaded and checked, and the method for each step of carrying a scan's skin onto our head (with the
-  research each pick rests on): `../plans/2026-11-02-scan-skin-base.md`.
-- *2026-11-02, the scan route measured on scan02* (`tools/face_test/scan_*.py`; run log in the working doc §7):
-  RealDenseFace on the CPU reads a 1024² picture in a few seconds - 1,511 pairs on a zoomed square-on render
-  (~0.25 mm a pixel; the whole-bust render at 1.4 mm a pixel gave 48 usable); our two round views put the same FLAME
-  point within 0.53 mm (median). Pairs → `procrustes` → `nricp_amberg` held by the pairs: above the neck 0.9-1.0 mm
-  from the scan (the eye-aligned fit without pairs: 1.2), 44 s, 460 MB. Blender's Selected-to-Active bake of the
-  scan's colour onto HeadTile at 4096²: 6 s on the CPU. SegFace ConvNeXt-512 on the CPU: 13 views in under a minute,
-  2.2 GB; it labels flat-lit scan renders cleanly from the front and calls part of a bald crown "hair" from a side
-  turn. A file can break its format's UV convention: scan02's glTF stores V upward (21.5% of skin triangles on black
-  read the spec's way, 0.6% flipped).
-
-*from the JustDirect research session, 2026-10-31, not verified here* - a lead for the alignment test: Facepoints
-(`myned-ai/facepoints`) - 620 points on the GNM mesh with a per-point error estimate; self-reported accuracy, 0
-downloads, CC BY-NC, weak on profiles (their notes: `E:\Dev\Web\just-core\docs\plans\2026-10-31-just-direct-
-research-mocap-notes\face-landmarks-juststage.md`). Also suggested there: SEA-RAFT for the flow step, flow rejection,
-a limbus ellipse fit for the iris, the crop box from the mesh projected through the known camera. Not on disk here:
-Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weights.
-- **Normals from the paintings, measured** (the relief the AI painted — eye bags, lids, wrinkles — for a normal map):
-  Sapiens2 1B normal (`facebook/sapiens2-normal-1b`, the Sapiens2 License; code `facebookresearch/sapiens2` 7e5bae88 in
-  `.dev/venv-rdf`, PyTorch 2.7.1+cu126; fp16, two 1024×768 windows per 1024² picture): 1.4 s a view, 3,557 MiB peak.
-  DAViD ViT-L (`normal-model-vitl16_384.onnx`, MIT, ONNX Runtime 1.31 on the CPU — its CUDA provider didn't load): 1.6 s
-  a view at 512². Against our mesh's own normals (from the views' depth pictures, the face's inner part, 6 px blur):
-  Sapiens2 8.5–12.7° mean (left40 8.5, front 9.1, faceleft30 10.4, face 12.7); DAViD 9.6–15.9°; a flat card 31–34°. Both
-  agree with the mesh along the forehead within ~0.1 per axis. Sapiens2 kept. (The first comparison counted the clay
-  world's background, which the view-distance picture stores as 1.0, as head — fixed.)
-- Krea 2 Raw / Turbo (2026-06-22, 12B; Krea 2 Community License, free under US$1M revenue — search snippet):
-  text-to-image only; runs in stable-diffusion.cpp; add-ons for identity (V2 non-commercial) and pose (Apache), a
-  depth ControlNet card unread; no reference + depth add-on found.
-
-*agent, 2026-10-30* — ComfyUI nodes, FLAME-Universe, the apps that turn photos into head textures, and alternatives
-to FLAME (the user: "did we reall check all confy ui stuff to see if somehwone doesnt already havea a really good
-working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-research-comfyui-flame.md`](../plans/2026-10-30-research-comfyui-flame.md)):
-- `BD_FlameFit` (the BrainDead FaceWrap pack; `pyproject.toml` MIT, no LICENSE file): our pipeline's shape — landmarks,
-  fit, per-view projection bake, angle-weighted blend, Qwen fill, transfer to CC5 / MetaHuman UVs — but weaker: FLAME
-  shape refitted per view from zero, 105 sparse MediaPipe points, a simplified camera (~3–4 px per landmark, its docs);
-  no delighting, normal maps or lashes.
-- Most promising (each argued in the notes): UltraTex (SIGGRAPH Asia 2026; paints 6–10 views of a mesh together up to
-  2048², albedo + metal/rough, keeps our UVs; low-VRAM ComfyUI build 6.8 GB at 1536 per its author; code and LoRA MIT,
-  on FLUX.2 klein base 9B, non-commercial; objects only shown, needs Triton); Hunyuan3D-2's delight model (an
-  InstructPix2Pix SD model, `Hy3DDelightImage`; Tencent community licence, not EU/UK/KR); inverse rendering on our known
-  mesh (NextFace GPL-3, GTAvatar's UV-space method — our code from the methods); HeadCraft (FLAME + StyleGAN2 UV
-  displacement; code MIT, weights' licence unstated, trained on NPHM); FFHQ-UV (50K+ evenly lit 1024² face UVs, the HF
-  dataset MIT) as a colour prior; the commercial apps' layering — projected colour for the low and mid frequencies,
-  scanned normal and cavity detail on top (MetaHuman: albedo from a scan-trained model, normal/cavity from a library;
-  Headshot 3: projection over its base skin, AI delighting, two normal layers).
-- Alternatives to FLAME: none shown better than GNM on a shared benchmark; detail comes as a displacement layer on a
-  base model (HeadCraft; FaceScape's 4K displacements, non-commercial; HRN Apache-2.0; DECA / EMOCA 256², non-commercial).
-  NPHM and Gaussian / NeRF avatars give no riggable mesh; SMPL-X's head is FLAME.
-- Not found (a search gap, not proof): a ComfyUI face-delighting node to true albedo, a pore/wrinkle displacement node,
-  a face-UV generator for a given layout, a photometric FLAME fitter; Civitai / OpenArt pages never came back.
 
 *measured + web, 2026-10-30* — eyes, lashes and pore sources for the face test (rounds 19–27, `docs/dev/TASKS.md`):
-- MPFB2's procedural eye (`src/mpfb/data/node_trees/procedural_eyes.json` at 6ff1eb35, CC0 data; 14 node groups,
-  "EnhancedEye") built by `tools/face_test/mpfb_nodes.py` works on GNM's eye: one eye per UV map centred at (0.5, 0.5),
-  eyeball UV radius 0.46, iris 0.40 of it (measured: iris UVs 0.315–0.685, pupil 0.45–0.55). Its distance node sums two
-  eyes' centres — the second must be moved off the map. Trials: a refracting or Fresnel-shell cornea greyed the eye;
-  a glossy iris and the shader's 0.4 clear coat mirrored the grey studio; the paintings' eye colours on our lids'
-  undersides read as a shiny strip.
 - MPFB2's lash groom (hair-editor pack "basic_lashes_upper") on our GNM-shaped head: 99 strands, 3.7 mm, roots at the
   eye's middle height (z 1.616–1.623 against the eye centre 1.623) — they hang across the eye. GNM has no lash geometry.
   MakeHuman's system assets (`makehuman_system_assets_cc0.zip`, 280,737,770 bytes, sha256 b542127a8e25…; each asset file
@@ -2491,264 +2870,6 @@ working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-resea
   card's PNG as `diffuseTexture` (its RGB near black; the hair is in its alpha). A Principled BSDF left at its default
   specular and casting shadows renders a brow card as a grey film (face test round 43). Brow sets' coverage (alpha >
   0.05 share of the 512² map): 006 0.040, 007 0.050, 011 0.078, 001 0.106 … 012 0.161, 009 0.322.
-- Painted views must be aligned to, and depth-tested against, renders of the same surface they are projected onto: the
-  face test's clay views had the head's open mouth while the paintings closed it, and the 478-point landmark warp
-  stretched the painted lips open again (round 43).
-- Scanned pores: three.js ships the Lee Perry-Smith head scan (`examples/models/gltf/LeePerrySmith/`: a 4096²
-  displacement JPEG, a 1024² tangent normal, 1024² colour and specular; "Infinite, 3D Head Scan by Lee Perry-Smith is
-  licensed under a Creative Commons Attribution 3.0 Unported License … always mention where you got them from"). Its
-  high-passed displacement shows pores and fine lines (with 8×8 JPEG blocks — blurred σ 0.8 first); a 512² seamless
-  cheek tile made (`.dev/facetest/pores_lps.png`) for the pore comparison.
-
-## 11 · PhotoCraft, the setup we looked at
-
-*web, 2026-10-29* — github.com/storytold/photocraft, its README and `AGENTS.md`, read through a page
-summary:
-
-- An image editor written in Rust: a Cargo workspace of 24 crates, egui/eframe on wgpu, the same code
-  built to WebAssembly for the browser; dual-licensed MIT or Apache-2.0; early alpha.
-- Its own words: a "clean-room reimplementation of Adobe Photoshop", "implemented from public specs and
-  observed behaviour only"; `AGENTS.md`: "Never copy their code, shaders, profiles or assets."
-- No orchestrator: `AGENTS.md` and `docs/` are read first, golden rules apply, "Every change comes with
-  tests", and a parity scorecard has a floor that is raised and never lowered.
-- Everything is a command: each has an id, label, menu path, shortcut, params doc, `enabled` and `run`,
-  and is dispatched by id from the UI, the CLI, a JSON control channel and an MCP server.
-- Plugins: "sandboxed WebAssembly plug-ins" — no further design detail.
-- Parallel agents each use their own build directory and edit only files they own; a new command goes
-  in a new `<area>_cmds.rs` module.
-- It forbids webview UIs: "Never add Tauri (or any webview/JS UI framework)".
-- Its file format adds new fields with `#[serde(default)]` so older files still load.
-
-*web, 2026-10-29* — storytold's repos, read by this session through GitHub's API (`orgs/storytold/repos`), as
-evidence for the from-scratch route (TASKS):
-
-- About twenty "Craft" apps, every one "written by scratch in pure Rust" or "an open-source, clean-room
-  reimplementation of" a named app, Apache-2.0 on GitHub, nearly all created between 2026-09-30 and 2026-10-14 and
-  all pushed 2026-10-29: PhotoCraft (74,735 stars), PdfCraft (18,591), FilmCraft (16,827, a non-linear video
-  editor), WordCraft (16,557), LightCraft (15,041), VectorCraft (10,981), EffectCraft (8,139, motion graphics and
-  compositing), CADCraft (7,167, AutoCAD-style), GridCraft (6,784), DesignCraft (4,922), DeckCraft (4,406),
-  SoundCraft (3,888, a Pro Tools-style app), FigCraft (3,804), AniCraft (61, 2D animation).
-- Shared parts: `craft-libs`, `craft-ai-integrations` (an AI layer with egui widgets), `craft-fonts`,
-  `craft-i18n`, a launcher, and their own forks of `egui` and `winit`.
-- None of them is a real-time 3D character, scene or animation app; ArtCraft's 3D stage is Three.js (§10).
-
-## 12 · The name
-
-*web, 2026-10-29* — search-engine checks, npm (`registry.npmjs.org/<name>`) and GitHub's repository
-search (was: "no trademark search (USPTO, EUIPO) done yet" until 2026-10-29 — the USPTO search is the
-next entry):
-
-- `just-stage`: no product named JustStage; npm free; 22 GitHub repos carry the name. "Stage" is a
-  real-time 3D rendering and collaboration platform on Unreal Engine 5 by Trapdoor Creative
-  (blog.cadsoftwaredirect.com/?p=9009).
-- `just-animate`: taken on npm (an MIT JS animation library, last pushed 2019) and a WordPress plugin;
-  23 GitHub repos.
-- `just-character-animation`: no product; npm free; 0 GitHub repos.
-- `just-actor` npm free, 3 repos · `just-troupe` npm free, 0 repos ("Troupe" is a JetBlue trip-planning
-  app) · `just-scene` npm free, 9 · `just-figure` npm free, 12 · `just-puppet` npm free, 5 ·
-  `just-motion` taken on npm, 20 repos, plus the `just_motion` Flutter library · `just-act` npm free,
-  219 repos.
-- JustCast is an active podcast hosting service (podnews.net/directory/company/justcast).
-- Galatea is Inkitt's "Galatea: Books & Audiobooks" app, about 256K App Store reviews
-  (apps.apple.com/app/id1380362212); Sinew turned up no 3D product.
-
-*web, 2026-10-29* — USPTO's trademark search (tmsearch.uspto.gov), queried through the site's own search
-service from this session, every class, live and dead; the query was proven first on a known mark (ICLONE:
-4 records). A database check, not legal clearance:
-
-- No US application or registration, live or dead, for JUSTSTAGE, JUST STAGE or JUST-STAGE, and none
-  starting JUSTSTAG. The only marks holding both words: STAGE IS JUST A NUMBER (live; classes 18, 21, 25,
-  35) and THE WORLD IS A STAGE...JUST PRESS PLAY (dead; class 42).
-- Nearest spellings (fuzzy match): JUSTSTONE (live, class 9 — MP3 players and recorders; serial 99444663),
-  JUSTSTAND (live, classes 41 and 44; Ergotron), JUSTSTART (dead, class 9).
-- Live STAGE marks whose goods name 3D, animation, avatar, virtual-production, rendering or character
-  software, in classes 9 or 42, all lead with a strong word: UNREAL STAGE (Epic Games; one registration in
-  class 9, one in 42), NUKE STAGE (Foundry; 9 and 42), E-STAGE (Materialise; 9, 40, 42), POLYMOTION STAGE
-  (Mark Roberts Motion Control; 41, 42), SET STAGE (Set Point; 41, 42).
-- EUIPO not searched: its search sites refuse scripted requests, the Chrome extension wasn't connected, and
-  the user then dropped the trademark check — "dont worry about trademark research" (TASKS, 2026-10-29).
-
-The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`](../plans/2026-10-29-recs.md).
-
-## 13 · Working method: models and sessions
-
-- Fable 5.1 costs $10 / $50 per million input / output tokens, Opus 5.5 $4 / $20; Fable 5.1 is
-  Anthropic's "most capable widely released model, for the most demanding reasoning and long-horizon
-  agentic work" — *record, 2026-10-29* (the claude-api skill's model table, cached 2026-10-06).
-- Prompt caches are per model, so switching a session's model re-reads its context uncached — *record,
-  2026-10-29* (the same skill).
-- CLAUDE.md files at and above the working directory load at launch; one in a subdirectory loads when
-  Claude reads or edits a file there — *record* (the web kit's register §6, *web, 2026-10-09*).
-- **The WebSearch cap** — *web, 2026-10-29* (code.claude.com/docs/en/tools-reference.md, "Session search limit";
-  env-vars.md), on Claude Code 2.1.312 here (*measured*): "An interactive terminal session has a limit of 200
-  WebSearch calls. Searches from the main conversation and from subagents … count against the same limit."
-  It refills at about 100 calls an hour (v2.1.290+; `CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR` sets the rate);
-  `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises it with no upper bound but can't turn it off (v2.1.212+);
-  a new conversation or `/clear` resets the count, unless work that can still spawn subagents survives the
-  clear; with `-p` and the Agent SDK it counts per turn. At the cap, searches return a notice to carry on
-  with what was gathered. Round one's 8 agents ran it out (each notes file says so).
-- The cap is raised: `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` = "2000" in the user settings' `env`
-  (`F:\ClaudeCode\config\settings.json`), on the user's word 2026-10-29 (TASKS). It took effect in the running
-  session without a restart: a fresh shell saw the variable and WebSearch answered again — *measured,
-  2026-10-29*. So the second pass runs as 8 agents in one session (was: one session per area, until
-  2026-10-29): [`../plans/2026-10-29-research-second-pass.md`](../plans/2026-10-29-research-second-pass.md).
-- WebFetch reads up to 100,000 characters a call and caches 15 minutes; 20 subagents can run at once by
-  default (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`), with no total limit — *agent, 2026-10-29* (the same docs).
-
-## 14 · Facts found during the deep read (2026-11-06; appended here so cited line numbers stay valid - each moves to its topic when this file becomes the index)
-
-- **HSRD-100's licence, read at its source** (*page read, 2026-11-06*: the Hugging Face API
-  `huggingface.co/api/datasets/digitalrealitylab/HSRD-100` and the card's `README.md`, last modified 2025-09-18):
-  `cardData.license` "cc-by-4.0"; the card's "## License": "This dataset is licensed under Creative Commons
-  Attribution 4.0 International (CC BY 4.0)", "Commercial use allowed", "Modification allowed", "Distribution allowed",
-  "Attribution required", "No additional restrictions"; "Consent: All participants provided informed consent for data
-  collection" (consent for collection - personality rights are not licensed: the likeness rule stands). Each pose's
-  `pose_meta.json` says `"license": "Commercial"` with `"price_commercial": "70"`, `"price_personal": "35"` - the
-  maker's store listing of the same scan, not the grant on the files we downloaded from the dataset; the dataset's
-  grant is CC BY 4.0 (ATTRIBUTION.md's row stands). Queries: none - two direct reads.
-- **Anny ships a fitter for registered meshes and MPFB2's rigs** (*code read, 2026-11-06*, `.dev/venv-rdf` anny
-  0.6.2): `anny_inverter.py` L35-44 `AnnyInverter` - "Estimate Anny parameters fitting a target mesh", pose "via
-  joint-wise rigid registration", phenotype "via finite-difference Jacobian optimization", input `[batch_size, V, 3]`
-  (vertices already in Anny's topology - i.e. after our wrap); `keypoints.py` (keypoint regressors);
-  `models/model_data.py` L223-231 its rigs are MPFB2's files - `"makehuman": ("rig.default.json",
-  "weights.default.json")` (163 bones), `"game_engine": ("rig.game_engine.json", "weights.game_engine.json")` (53
-  bones, root `Root`) - joints by MPFB2's `CUBE` strategy (`models/full_model.py` L243-255). So `Anny(rig="game_engine",
-  topology="makehuman")` is our mesh with the MPFB2 base of the spec's skeleton (`character-data-model.md` §2: "placed
-  from the joint cubes (MPFB2's `CUBE` strategy)", weights "from MPFB2's `weights.game_engine.json`"). Earlier line
-  L352 ("Its README names no scan fitting") is true of the README only. The package also holds `anthropometry.py`,
-  `shape_distribution.py`, `face_segmentation.py` (not read).
-- **GNM's wrap onto hm08: max error 29.19 mm** (*file, 2026-11-06*, `data/generated/gnm/REPORT.json`; S3) beside the
-  mean 0.87 / p95 2.17 mm recorded above; transfer distance mean 4.49 / max 72.9 mm.
-- **GNM's eye part as stored** (*measured, 2026-11-06*, `extension/juststage/data/generated/gnm/parts/eyeLeft.obj`,
-  hm08's decimetre units): sclera sphere radius 0.141 (14.1 mm), the cornea's apex 0.0299 in front of the iris's mean
-  plane (2.99 mm) and 0.0326 in front of the pupil's - before the MHCLO fit scales the part to our head; the fitted
-  eye's depth is unmeasured. The `eye_exteriors` shell covers the whole ball (to 178 deg from the axis), so the
-  "cornea" material also glosses the white.
-- **Blender Lab's MCP, read in its source** (*code read, 2026-11-06*, `projects.blender.org/lab/blender_mcp` `main`
-  `dbbf836` = tag v1.0.3's code; `.dev/audit/2026-11-06/research/R4.md` Q1, the exec and CORS lines re-read by me): the
-  Blender add-on runs any Python a request of type "execute" carries (`addon/blender_mcp_addon/mcp_to_blender_server.py`
-  L245-253, `exec(code, namespace)` inside a `WeakSandboxForLLM`; L322-332) - no token, no allow-list; every tool, named
-  ones too, works by sending Python. **26 tools, not 21** (L1709 above): two run Python - `execute_blender_code` and
-  `execute_blender_code_for_cli` (its own background Blender). `blmcp --transport http`: stateless Streamable HTTP on `/`,
-  `enable_dns_rebinding_protection=False` (L86), CORS `allow_origins=["*"]` (L97). FastMCP 1.x's token auth is constructor
-  arguments `blmcp` doesn't pass; no documented per-call hook. No release on MCP SDK 2.x (`mcp[cli]>=1.2.0,<2`; PRs #43,
-  #47 open). The add-on opens its socket only with Allow Online Access on (`__init__.py` L34-38, "a grey area"; issue #45
-  open). So "the Python tool off" in the permission table (`standards/commands-and-api.md` L105) can't close the door by
-  hiding the tool - the plan's Q-APP-3.
-- **Allow Online Access and localhost** (*doc read + measured, 2026-11-06*, R4 Q2): off blocks nothing - the manual:
-  "Blender cannot prevent third-party add-ons from violating this rule"; a loopback socket round trip worked in 5.3 with
-  it off; the extension guidelines' "`localhost` is fine" stands.
-- **Live Link** (*doc read*, R4 Q3): Unreal 5.8's "Live Link Plugin Development" names a source plugin
-  (`ULiveLinkSourceFactory` + `ILiveLinkSource`) - "the recommended approach for anyone that already has there own
-  streaming protocol" - or Message Bus (the sender links Unreal's core libraries; Epic's Maya / MotionBuilder way). No
-  Epic page names VMC.
-- **VRM add-on on 5.3** (*measured*, R4 Q4): 4.10.4 (2026-11-04) declares `blender_version_max = "5.3.0"`, exclusive
-  (`blender_ext.py` L2643): 5.3 refuses it ("This Blender version (5.3.0) must be less than the maximum version (5.3.0)").
-  The range in R08 L492 / R09 L250 is 4.2.0 up to, not including, 5.3.0.
-- **GPU frame time** (*source read*, R4 Q6): `--profile-gpu` writes `profile.json` (Trace Event Format) with real GPU
-  timestamps on the OpenGL backend only (`gl_debug.cc`, `glQueryCounter(GL_TIMESTAMP)`); on Vulkan / Metal CPU time
-  only. 5.3's default here is Vulkan (measured) - so `--gpu-backend opengl --profile-gpu`. `wm.redraw_timer` is wall
-  clock; `--debug-gpu` adds labels only.
-- **Installers** (*build code read*, R4 Q5): Blender - CPack WiX `.msi` + zip (signtool via Azure), a hardened-runtime
-  DMG notarised (`notarytool`) and stapled, `.tar.xz` + Snap / Steam / Store; Bforartists - Inno Setup `.exe` + zip,
-  DMG / zip, `.tar.xz` / AppImage / `.deb`. Labels: WiX 7's binaries carry a maintenance fee at US$10,000+ revenue;
-  Inno Setup asks commercial users to buy ("not strictly required"); Velopack MIT.
-- **Patents near what we ship or plan - claims read at Google Patents** (*page read, 2026-11-06*; the agent's R2 Q1,
-  the claims below re-read by me from each page's raw HTML; **not legal advice**):
-  - **US 2024/0346733 A1** (Disney, "Graph simulation for facial micro features with dynamic animation", pending in
-    the US; R2: granted AU2024202285B2 and GB2633151B, to 2044 - those claims unread). Claim 1: "sampling, from a
-    three-dimensional (3D) representation of a facial structure, a plurality of nodes, wherein each node ... represents
-    a pore ...; generating one or more edges connecting a node ... to one or more different nodes ..., wherein each edge
-    ... represents a candidate wrinkle ...; generating ... a graph ...; calculating, for each edge ..., an edge weight
-    ...; and generating a wrinkle graph". Our `tools/make_microrelief.py` (shipped tile): nodes by Poisson disk on a
-    flat 2D tile, not sampled from a 3D face; the furrows are the walls of the nodes' Voronoi cells; pores sit on wall
-    junctions, not at the nodes - it lacks claim 1's first element as written. Its docstring describes it as Weiss et
-    al.'s method ("pores are a graph's nodes") - to reword to what it does.
-  - **US 12,651,397 B2** (Disney, "Graph simulation for facial micro features via pre-computed displacement texture
-    maps" - the EG 2024 orientation-bin method; R2: granted, to 2044-04-06). Claim 1: a wrinkle graph of pores and
-    wrinkles on a 3D face; wrinkles "assign[ed] ... to one of a plurality of bins" by a wrinkle characteristic;
-    "pre-computed displacement texture maps" per bin; "a per-frame displacement texture map"; "modifying an animation
-    frame". The design's "wrinkle content generated per character by the published orientation-bin method" (design
-    L145-147) reads onto it - that route is out. The paper's CC BY licence grants no patent rights (CC BY 4.0 §2(b)(2)).
-  - **US 12,062,140 B2** (Microsoft; inventors Baltrusaitis, Hewitt, Wood, Raman - the authors of the tension paper our
-    design cites; to 2043). Claim 1: a tension map per vertex, compressed / expanded wrinkle textures "formed by
-    aggregating maps of the first face with different expressions using the tension map", applied "according to the
-    tension map", rendered. Claim 17 (no render step): "computing a weighted combination of the maps to produce a
-    compressed wrinkle texture, wherein the weights ... are negative weights from the tension map" (and expanded from
-    positive), "storing" them. Design rule: tension may set the DNA's animated-map weights offline; never build
-    wrinkle textures as tension-weighted combinations of expression maps. Raman's MIT add-on carries no patent grant.
-    US 12,555,324 (same family, to 2042) and US 8,217,955 (per-pixel stress shader perturbing normals, to 2030): R2.
-  - **US 9,269,185 B2** (Sony, "System and method for procedural CG eye meniscus", active, expires 2033-08-24). Claim
-    16: "A meniscus plug-in ... comprising: an input module to receive a computer-generated model; an analysis module to
-    automatically determine at least one feature of the module in which a liquid component may exhibit a meniscus; and a
-    meniscus module to procedurally modify the model or procedurally add to the model to cause a meniscus to appear."
-    Our tearline (ICT's ring placed to the lids' opening found automatically, `head/eye_layers.py`) reads close to it.
-    Design-around to weigh: the tearline as a fixed part bound to base v2's known margin rows (an MHCLO-style binding, as
-    the teeth) - no automatic search for where a meniscus forms. A question for the user (and counsel if wanted).
-  - **US 9,336,622** (Sony): claims only a gaze rig with a fixed visual-axis offset of 2-15 deg (R2) - our lid
-    darkening is outside; a future look-at rig avoids that offset until 2034.
-  - **US 8,922,553 B1** (to 2033-08-28) needs a solve across per-region linear models with continuity constraints;
-    **US 11,354,844 B2** (to 2039-10-25) needs masks from muscle action units + "demographic prediction modifications"
-    + a modified eyeball / cornea / teeth / tongue / skull asset together (R2) - the approved mixer (a weighted blend of
-    whole identities per mask) holds none of the first and not all of the second's elements as R2 reads them.
-- **Licences read at their sources** (*page read, 2026-11-06*, R2 Q2-Q5): CC BY 4.0 credit: creator, notices, a link,
-  a change notice, the licence URI, "in any reasonable manner" (a linked credits page is CC's own example); CC BY 3.0:
-  the licence URI with every copy, the title, a credit "at least as prominent" as others; BY-SA -> GPLv3 is one-way, BY-SA
-  4.0 only, "must specify version 3 of the GPL", source form provided, for content "melded with code". REUSE 3.3: every
-  `LicenseRef-*` needs `LICENSES/LicenseRef-<id>.txt` (`LicenseRef-cited-data` has none); Ten24's grant needs its own id
-  with the text verbatim. Blender 5.3 manifest: `license` and `copyright` take several entries; **extensions.blender.org's
-  Terms (1.2): assets inside an extension "must be licensed as Public Domain (CC0)"** - our extension (CC BY, Apache,
-  MIT, Ten24 data) can't be listed there; self-hosting a third-party repository is the documented route. Blender's
-  "Hair Styles" demo: "CC-BY-SA", no version. SONICOM: no licence file (the paper says MIT, the page "for research
-  purposes") - stays REFERENCE. Yakimov 2024 nails: CC0 (figshare API). Curly-Cue: the guides-to-full Python step MIT,
-  the switchback generator GPL-3.0-or-later. Artec "Top of hand": "Creative Commons license v4", credit "Top of hand by
-  Artec 3D" (the archive's `license.txt` unread). Blender Studio's Human Base Meshes: CC0 (page, README, 25 asset
-  records) - but the .blend also carries "The Rain Rig is released under the Creative Commons Attribution 4.0 license"
-  and two stylized meshes are "Based on" the CC BY Rain and Snow rigs. Epic's "Send to Unreal" add-on is MIT and ships
-  no Unreal plugin; Reallusion's Unreal Auto Setup licence unread.
-- **The hand donor was on our disk** (*seen, 2026-11-06*; `.dev/audit/2026-11-06/research/R1.md` Q3, checked by me on a
-  crop of `.dev/downloads/ten24_sample/x/OBJ Package/Normal Maps/Level_01_Normal.PSD`, 8192² - not 16K - x 5100-7000,
-  y 200-2900): Ten24's sample has bare hands; its normal map shows the extensor tendons fanning to the knuckles, veins on
-  the back of the hand, knuckle and finger creases, palm creases and wrist skin lines (the forearm's colour carries hair;
-  the cuff is a sweater). Licence: "Feel free to use this scan as you wish for both commercial and personal projects. All
-  we ask is that you provide us with a credit wherever it's used" (the page saved 2026-11-04). Its feet are in shoes. So
-  run 11's flat hands have a donor in hand: our hand fitted to Ten24's mesh and its relief baked onto our hand tiles.
-  Feet: Thunk3D's "Leg-foot" (Sketchfab, "CC Attribution" [API], 2.97M faces, geometry only) is the one detailed bare
-  foot found; more hands: Arkify "Pencil Hand Pack" (3 female + 3 male, Artec Space Spider, CC Attribution [API]),
-  Thunk3D hands - their detail unseen until downloaded.
-- **HSR0042 is a 24-year-old, 179 cm, 112 kg African man** (*page read, 2026-11-06*, HSRD-100's
-  `manifest/persons.jsonl`: `{"person_id": "HSR0042", "age": "24", "sex": "Male", "ethnicity": "African", "height_cm":
-  "179", "weight": "112", ...}`) - L371-372 above ("an average-build older man") is wrong; L355's "a heavy man" is right.
-  HSR0040 (Scan man A's and B's main colour scan): 50, Caucasian, 180 cm, 92 kg.
-- **Bare bodies of women, heavier, older, darker** (*page read, R1 Q4*): none found fully bare under terms that let us
-  ship. On disk or in HSRD-100 (CC BY): poses with bare arms or legs - women 22, 23, 41, 60; men 50 and 62 (~90 kg)
-  (HSR0015-069/-070, HSR0112-078, HSR0040-074, HSR0023-071, HSR0042-043 - not downloaded); `d3d_bodysuit_woman` (CC BY, on
-  disk): a dark-skinned, heavier woman with bare arms, legs and feet. Renderbot (a one-year site licence), store
-  "Standard" licences, editorial-only and NC sources fail; Sketchfab's Store has closed.
-- **Hair out of scan colour** (*R1 Q1*): no studio publishes an automatic tool - avoid at capture, smooth geometry
-  (ZBrush), paint out by hand. Detection better than DullRazor: Koehoorn, Sobiecki, Rauber, Jalba and Telea 2016 (training-free; code linked, licence unstated) and a learned mask - Ollamberganov et al. 2025's SegFormer-based pipeline, Dice 0.967 against SegFormer alone 0.932 and DullRazor 0.781 on dermoscopy images (HAM10000), no code link, no open hair-segmentation weights checked [page]
-  (was: "Telea et al. 2016" and "learned SegFormer masks (Dice 0.967 vs DullRazor's 0.781 on skin-lesion images)" until 2026-11-07). Learned fills
-  (LaMa, Apache-2.0) smooth fine texture - a fill from the same scan keeps pores. Makeup-removal models work on
-  low-resolution photos only: picking makeup-free scans is the fix.
-- **Delighting** (*R1 Q2*): Unity's De-Lighting Tool (MIT, 2020) rebuilds the light from the surface with bent
-  normals, AO weighing near against overall light - it handles crease shading the SH fit can't; it needs a bent-normal
-  bake Blender 5.3 lacks (we would compute it). HSRD-100 ships each pose's 112 source photos and RealityCapture cameras
-  (CC BY) - multi-view specular separation (Su et al. 2022) is possible. MAGINet (2025-12): too low resolution.
-- **Anny paper, v3** (*page read*, arXiv 2511.03589): no scan-fitting method is described; adults fit at 2.5 mm against
-  SMPL-X 1.9 and ATLAS 1.8 (head and hands excluded); children 2.0 vs SMPL-X 3.2 on three scans; "SMPL-X better captures
-  fine skin-fold details of high-BMI bodies compared with Anny"; no MHR comparison. L360's 2.4 mm is v1's figure.
-- **Measuring skin detail** (*R1 Q6*): no published skin-specific measure. Better than our band standard deviation:
-  DISTS (MIT; built for textures that don't align pixel for pixel), the radially averaged power spectrum, ISO 25178
-  band-limited roughness on the relief maps (light-free); for mid-scale form a multi-scale ridge filter (Frangi 1998) at
-  ~1.5-8 mm - it separates long ridges (veins, tendons, creases) from speckle, why run 11's "fine" rose while the hand
-  read flatter.
-- **Blender 5.2's Random Walk radius** (*source read*, R1 Q7): from 5.2 plain Random Walk reads Subsurface Radius as the
-  mean free path (1/σt) - the same value scatters 4π ≈ 12.6x farther than in "Legacy" mode; Random Walk (Skin) is
-  unchanged (its radius the diffuse mean free path 1/σtr - our skin's, `skin_optics.py`). Our sclera, teeth, gums and
-  tongue use plain Random Walk (`head/part_materials.py`) - their radii to re-check.
-- **Weyrich et al. 2006** (*figure read*, R1 Q7: values read off Figure 15's vector paths - no table published): Torrance-
-  Sparrow m / ρs - nose 0.234 / 0.304, cheeks 0.271 / 0.234, forehead 0.270 / 0.272, chin 0.289 / 0.228, lips 0.285 /
-  0.289; measured diffuse mean free path 1.82 / 1.02 / 0.65 mm (R / G / B) - a target for our radius.
 - **Lid margin, measured** (*page read, 2026-11-06*; R3 Q2; the first re-read by me via Europe PMC's full text):
   "the LMT was defined as the distance from the posterior lash line to the MCJ at the center eyelid, directly above or
   below the center of the subject's pupil"; 56 normal adults: **upper 1.36 ± 0.25 mm, lower 1.0 ± 0.23 mm**, both rising
@@ -2756,9 +2877,6 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   (Wang et al., Graefes 2023, CC BY). The MCJ (line of Marx) "0.2-0.3 mm wide" (Knop et al. 2011). The whole margin
   "Nearly flat, 2 mm wide" [snippet]. Base v2 places the lash row - the margin's front edge (`hair/lashes.py` L132) - 2.6 mm off the eyeball (`tools/make_base_v2.py` LASH / MARGIN / RIM = 2.6 / 1.3 / 0.25): a whole margin of ~2.35 mm against the real whole margin's ~2 mm [snippet], ~1.2x; the LMT runs from the posterior lash line, a part of the margin, so it is no target for the front row's place
   (was: "above every measured value: a measured target for the lid band" until 2026-11-07).
-- **Lower tear meniscus** (*page read*, R3): ages 19-31 AS-OCT 0.21 ± 0.06, Keratograph 0.20 ± 0.05 mm (PMC11809819, CC
-  BY); ages 10-78: 0.34 ± 0.07 mm (0.11-0.61), ~0.002 mm a year (0.29 at 10-20 to 0.40 at 61-80), no sex difference
-  (Frontiers Med 2022, CC BY).
 - **Lashes** (*page read*, R3 Q3): the oatext study's Figure 2 seen - the vertical points down from the root, so upper
   lashes leave the lid ~29 deg (men) / 18 deg (women) below straight ahead (L2385 above stands; our code sweeps them up
   to match Aaron - a choice to state). Central density 12-15 upper lashes per 2 mm of lid. Shaft 77.8 x 63.9 µm across, elliptical (synchrotron CT; ~71 µm round) - our lashes' 0.08 mm is their radius (`hair/lashes.py` `UPPER["radius"]`, the Curves' `radius` attribute): 0.16 mm across, ~2x the real
@@ -2766,14 +2884,103 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   people): access by e-mail, evaluation only, no commercial use, no redistribution - blocked. MetaHuman's "7" lash
   styles are its style list (None + six presets); its other controls are colour (melanin, redness, lightness,
   roughness, salt-and-pepper, dye) - rec 8's "7 style parameters" was wrong.
-- **Blinks** (*page read*, R3 Q4): OmniFaceRig's rest of the page says only "upper-eyelid vertices snapped to lower lid
-  and locally relaxed" - no vertex set, weights or iterations: the details are ours. CC5's manual: Transformer >
-  Character > "Correct Eyeblink" snaps the upper lid onto the lower. MetaHuman moves the lids by joints (EyelidUpperA/B,
-  EyelidLowerA/B); expressions are joint animation with per-vertex corrective shapes at LOD0 only.
-- **Mouth** (*page read*, R3 Q5): no automatic lip-seal tool or method found; MetaHuman requires sealed neutral lips
-  and names no tool (edit the mesh, Update Vertices). Dental scans onto a template: per-tooth labels, a rigid fit of
-  each template tooth, a Laplacian deformation of the crown, the template's roots kept (RMS < 0.096 mm); Teeth3DS stores
-  per-vertex tooth labels in JSON; Poseidon3D's label format is not stated on its page.
+- **The lid margin's whole width - no source found; the measured spans are partial** (*page read, 2026-11-07*):
+  Wang et al. (Graefes 2023, PMC10368556, CC BY 4.0): "the LLMT was defined as the distance from the posterior lash
+  line to the anterior edge of the tear meniscus"; "it was difficult to measure the full thickness of lid margin
+  including the mucosa"; normals 0.90 ± 0.20 mm (OCT) / 0.86 ± 0.16 (K5M). So the 1.0 / 1.36 mm above (posterior lash
+  line -> MCJ) leave out the lash rows in front and the mucosa behind: the whole margin, lash row to eyeball, is wider.
+  Searched: "eyelid margin width 2 mm anatomy anterior posterior lid border" (only a SlideShare outline gives "2mm in
+  width" - unverified), Knop's lid-margin overview (erich-knop.squarespace.com, read: no dimensions), BCSC's eyelid
+  page (ophthalmologyreview.org, read: none), "eyelid margin total thickness OCT normal subjects mm anterior lid margin
+  to posterior lid margin" (partial spans only). A gap in the search, not proof none exists. So base v2's 2.6 mm is
+  not shown too wide by these numbers (the plan's Q-BASE-5, 2026-11-06, read them as the whole margin - corrected).
+
+### 14.14 · Scalp hair
+
+- **Cycles' hair colour from melanin** (source read 2026-11-03: `intern/cycles/kernel/svm/closure.h`,
+  `kernel/closure/bsdf_util.h` on GitHub's mirror): concentration m = −ln(max(1 − melanin, 0.0001)); eumelanin
+  m·(1 − redness), pheomelanin m·redness; σ = eu·(0.506, 0.841, 1.653) + pheo·(0.343, 0.733, 1.924); a colour's σ is
+  (ln colour / s(β))² with s(β) = ((((0.245β + 5.574)β − 10.73)β + 2.532)β − 0.215)β + 5.969 (β the radial roughness) -
+  so the colour a melanin gives is exp(−√σ · s(β)), what EEVEE's Principled BSDF stand-in for Principled Hair needs.
+- **Hair colour, EEVEE stand-in against Cycles** (`Hair to shoulder` on the Average woman, the three-quarter
+  thumbnail view, 64 samples): the mean hair colour in sRGB for melanin / redness 0.5 / 0.25 was 87,63,46 in EEVEE
+  against 101,71,51 in Cycles; for 0.65 / 0.2, 70,53,45 against 82,59,48; for 0.75 / 0.2, 61,49,44 against 71,54,47.
+  EEVEE is ~10-15% darker with the same hue. Cycles turns 0.5 / 0.25 auburn on a sparse style (light through it).
+  *Measured, 2026-11-04.*
+- **Grooms between characters** (Blender 5.3's Deform Curves on Surface; measured 2026-11-04):
+  - The node moves each curve rigidly from its root's triangle in the surface's rest position (the base mesh before
+    shape keys) to the same UV point on the evaluated surface. A strand's points don't change the move, so it can be
+    measured on a probe shape and inverted exactly.
+  - Its turn isn't the plain triangle frame (first edge, normal): that frame missed by up to 1.9 mm at a lash tip.
+  - With each character's base mesh lifted by its own `feet_on_ground` amount (0.817743 m at the default macros,
+    0.820291 at height 1, 0.819702 for a tall muscular man), grooms landed off by the difference: MakeHuman's pack
+    roots, median on the skin, were hedgehog 0.84 mm and pack lashes 1.88 mm on a tall character (0.07 / 0.31 on the
+    default). With one lift for every base mesh: 0.08 / 0.28.
+- **The live view's hair against the film's** (the library's "Hair to shoulder" on the Average woman, Standard view,
+  measured 2026-11-04). First, a mask of what the hair changes (it took in the skin the hair shadows) showed Cycles
+  1.17x EEVEE - misleading. Then the VISIBLE hair only (the hair as white emission, the rest held out): Cycles'
+  Principled Hair (0.15, 0.087, 0.056) against EEVEE's stand-in (0.068, 0.05, 0.044), grey; Cycles rendering the
+  stand-in's own BSDF just as dark (0.058, 0.043, 0.038) - so the gap is the stand-in's model, not EEVEE; EEVEE's
+  ray tracing / Fast GI change little; the hair's self-shadow matters in both. The cause: the stand-in used Chiang's
+  colour formula exp(-f(beta) sqrt(sigma)) as a plain surface colour - near-black for brown hair (0.016, 0.005,
+  0.001), the strand's colour inside a multiple-scattering model, not a surface albedo. Fitted on a grid (melanin
+  0.2-0.97 x redness 0.1-1; EEVEE's response linear in the colour, slope 1.62 everywhere): the matching colour is
+  exp(-k sqrt(sigma)) with k ~3.75 (vs 5.89) within ~5%, near-black hair floored ~0.008. Built: the stand-in at k =
+  0.637 f(beta) with that floor - under the stage's light EEVEE (0.154, 0.091, 0.055) against Cycles (0.15, 0.087,
+  0.056). Under the image light alone EEVEE is still 2.3 / 1.8 / 1.4x darker: its ambient light on hair falls short of
+  Cycles' scattering - open (the shading model, not the colour).
+
+*measured, 2026-10-29* — hair for step 1.6, on Blender 5.3 beta and MPFB2 `6ff1eb35`:
+- **MakeHuman's hair-editor pack** ([haireditor.html](https://static.makehumancommunity.org/assets/assetpacks/haireditor.html),
+  *page read*): "This pack contains two blend files ("hair.blend" and "fur.blend"), both by Tomáš Klecer"; the packs
+  page's functional section: "The assets are shared under CC0" ([assetpacks.html](https://static.makehumancommunity.org/assets/assetpacks.html)).
+  `files2.makehumancommunity.org/functional/haireditor.zip` (mirror `files.`): 18,251,712 bytes, Last-Modified
+  2026-10-24, SHA-256 `e47ade8e…cbe72`; `hair.blend` 27,310,677 bytes (`8566a128…f080`), `fur.blend` 19,207,241.
+  MPFB2 tells an old pack from the current one by `hair.blend`'s size (`is_hair_pack_outdated`).
+- **What `hair.blend` holds** (listed in Blender 5.3): 28 objects. MPFB2's lists (`haireditorpanel/properties/*.json`)
+  name 16: scalp `short_hedgehog` (42,504 curves), `hair_to_shoulder`, `short_crown`, `short_cap`, `short_ponnytail`,
+  `back_pigtail` (+ a `_brace` hair-tie mesh), `tail_base`, `empty_hair` (0 curves, the template for grooming by hand);
+  eyebrows `wild_eyebrow`, `wild_thick_eyebrow`; facial `wild_thick_beard`, `wild_thick_moustache`, `wild_beard`,
+  `wild_moustache`; other `basic_lashes_upper`, `basic_lashes_lower`. Not listed: `straight_hair_to_shoulder`,
+  `hedgehog`, `basic_short_hair` and `*_cards` meshes. `fur.blend`'s 15 (`fur_assets.json`): full body, hands, forearms,
+  arms, chest, back, neck, belly, thighs, lower legs, feet, mane, face, head, inner arms. Every style is a Curves object
+  (`surface` empty, `surface_uv_map` "UVMap", a `surface_uv_coordinate` attribute) whose modifiers are the pack's own
+  copies of Blender's hair node groups — Surface Deform (one Deform Curves on Surface node) first, then Set Hair Curve
+  Profile, Curl, Hair Curves Noise, Frizz, Roll, Clump, and Duplicate, Braid or Attach Hair Curves to Surface in some;
+  materials are "Hair shader EEVEE" groups on Principled BSDF. No text blocks, no drivers.
+- **How MPFB2 attaches a style** (`apply_hair_operator.py`, `haireditorservices.attach_curves_to_basemesh`): load the
+  object (and `<style>_brace`), set the Curves `surface` to the body, parent to it with an identity inverse ("The asset
+  was groomed on a character standing at the origin"), and first add Blender's empty hair (`ensure_hair_setup`: "or the
+  hair asset wont behave correctly"). Without the body's rest position Surface Deform reports "Evaluated surface
+  missing attribute: "rest_position"" and leaves the strands where they were groomed; `Object.add_rest_position_attribute`
+  turns it on.
+- **The floor:** MPFB2's `create_human(feet_on_ground=True)` lifts the mesh by its lowest body vertex (index < 13,380,
+  shape keys mixed) and applies it — 0.8177 m at the default macros. hm08's `base.obj` is centred on the origin, so a
+  body left there sits 0.8 m below the styles. Lifted, with rest position on: roots to the skin median 0.1–1.4 mm, 95th
+  percentile 0.3–3.8 mm (the beards highest), worst 5.6 mm, over the 15 styles with strands; the same after age 0 (a baby). `tail_base` alone stayed at
+  5.5 mm median / 16.6 mm p95 until its Attach Hair Curves to Surface modifier's empty `Surface` input was set to the
+  body: 0.3 / 0.8 mm. Blender 5.3's Principled Hair BSDF defaults: Chiang model, Melanin 0.8, Melanin Redness 1.0.
+- **Scalp masks tried and dropped** (a procedural groom: Generate Hair Curves inside a mask): MakeHuman's hair helper
+  (`helper-hair`, 428 vertices, y 0.201–0.85 m in MakeHuman's axes — it runs to the shoulders for long hair — a median
+  15 mm, p90 39 mm, above the skin) and MPFB2's `uv_layers/scalp_solid.json.gz` (its MakeUp "scalp" focus region: 520
+  faces, 567 vertices) both reach the forehead: rays along the skin's normals into the helper reach the front midline
+  9 mm below the eye's centre, `scalp_solid` from 23 mm above it; the pack's own `short_hedgehog` hairline is 56 mm
+  above it (front midline, measured on the attached style).
+
+*agent, 2026-10-30* — hair, eyes and teeth (notes, ranked by quality, training buckets, apps, every search logged:
+[`../plans/2026-10-30-research-hair-eyes-teeth.md`](../plans/2026-10-30-research-hair-eyes-teeth.md); facts to re-check
+before the rec list; measured in Blender 5.3 and read in our code):
+- Why ours looks fake: the hair defaults (melanin 0.8, redness 1.0) are Blender's own — by the manual's formula all red
+  pigment, no brown-black — and every strand has the same value; Principled Hair BSDF is "Cycles Only" (EEVEE's default
+  hair draws each strand ~1 px wide); scalp counts 10K–42K (MetaHuman's real-time level); each brow guide copied into a
+  ~19-strand tuft (the clumps); lashes ~50 upper and 33 lower per eye at 5 points (real lids 90–160 and 75–80); flat
+  iris, sclera and teeth; no occlusion, tearline or caruncle meshes.
+- Image to strands: DiffLocks, Im2Haircut, TANGLED, Perm (MIT), HairStep — training we can't do, or non-commercial or
+  unlicensed weights. Text to strands without training: Digital Salon (MIT; CLIP search over a captioned groom library,
+  then live editing). Facial hair from multi-view capture: Wispy to Voluminous (training-free, no code yet).
+- Training-free: Blender's hair node groups used properly, and DiffLocks' published Blender recipe (75 guide sets × 110
+  random parameters) — a CC0 groom library of our own; hair cards by Unreal's generator or our own baker.
+- Open: no measured melanin table per hair colour; VRAM unknown for the hair AI methods; no fix rendered.
 - **Hair colour in Cycles** (*code read*; R3 Q6, the coefficients re-read by me in Blender 5.3's
   `intern/cycles/kernel/closure/bsdf_util.h` L430-431): eumelanin (0.506, 0.841, 1.653), pheomelanin (0.343, 0.733,
   1.924) - pbrt's (0.419, 0.697, 1.37) / (0.187, 0.4, 1.05) x 1.207 / x 1.833; the 0-1 input maps by
@@ -2788,12 +2995,52 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   paper unread (over the fetch limit). Groom comparison: HairCS's silhouette IoU (coverage), tangent and depth images,
   volume Chamfer (clumping). MetaHuman binds brows by a Groom Binding through shared UVs (optional RBF); CC's brows and
   beards carry skin weights and follow the head's morphs.
-- **Iris colour data** (*page read*, R3 Q1): Edwards' Dryad data (doi:10.5061/dryad.0kt87, CC0) holds iris surface
-  features only, no colour - drop it from the download list; Edwards 2012's tables paywalled; the only open numbers
-  reached: Korean dark-brown irises L* ~22, a* ~22, b* ~29 (CC BY-NC). No open per-category table found.
-- **A face-recognition model for the likeness test** (*API + snippet, 2026-11-06*; query "best open source face
-  recognition model 2026 face similarity"): the strongest open recogniser is InsightFace's ArcFace (its weights a
-  non-commercial label [snippet: a 2026 playbook, fullstackcv.github.io/playbook/face]); `timesler/facenet-pytorch` is
-  MIT (GitHub API, last push 2025-09-16; its pretrained weights' terms unread); no recogniser with both a commercial
-  licence and ArcFace-class accuracy was found. The likeness test is a build-time check - nothing of it ships - so the
-  weights' licence is a label: ArcFace for accuracy, facenet-pytorch as the MIT fallback.
+
+### 14.15 · The live view against the film
+
+- **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over
+  (pores, stubble, redness); every part's output is Target `ALL` with nothing on Thickness, the cornea has no raytraced
+  refraction, `scene.eevee.use_raytracing` is off and the lashes draw as 1-px `STRAND` curves — the EEVEE tuning of
+  RESEARCH skin (`../plans/2026-10-30-research-skin-detail-shading.md:349-358, 495-500`) and hair
+  (`../plans/2026-10-30-research-hair-eyes-teeth.md:111-122`) was never built — *measured, 2026-11-03*.
+- **EEVEE 5.3 can shade per light in nodes** (a research agent's finding 2026-11-04 - manual rst, PR #161429 merged
+  2026-09-02, task #139341, PR #164595; verified on our 5.3 beta by listing the nodes, measured): `ShaderNodeLightAccumulation`
+  (inputs LightIndex, Diffuse Light / Color, Glossy Light / Color, Transmission Light / Color, Weight - its input tree
+  evaluated once per scene light and summed), `ShaderNodeLightEvaluation` (LightIndex, Position, Normal, Roughness ->
+  Factor, Mask, Direction, Distance), `ShaderNodeLightInfo` (Color, Power, Position), `ShaderNodeShadowRaycast`
+  (LightIndex, Position, Softness -> Color), `ShaderNodeRaycast`. The Geometry node's Tangent output is the strand's
+  tangent on curves (source `node_geometry`: `sd.curve_T`); Hair Info's "Tangent Normal" is the view-facing normal.
+  **Units, measured 2026-11-06** (scratchpad `lightacc_test.py`: two spheres under one area light, linear EXR): Light
+  Accumulation's output is the sum over lights of Light x Color, as radiance; with Diffuse Light = Light Evaluation's
+  Factor (Normal = the surface normal) x Light Info's Color x Power and Diffuse Color = the albedo, it equals a
+  Principled diffuse surface within 2% (0.385 / 0.313 / 0.242 vs 0.377 / 0.312 / 0.246) - Factor carries the cosine,
+  the falloff and the 1/pi, not the power. Its LightIndex and Weight inputs are hidden (implicit per light).
+  Light Accumulation covers light objects only (the world needs its own term). So a Marschner-family hair model (R,
+  TT, TRT lobes from L, V, T; Karis SIGGRAPH 2016 for Unreal, Tafuri 2019 for Frostbite; multiple scattering as
+  Karis' wrapped term or dual scattering's density fallback) can be written in EEVEE nodes. Also: Blender 5.0 added a
+  Cylinder curve shape (STRAND / STRIP / CYLINDER in 5.3); EEVEE's Principled Hair falls back to a diffuse closure of
+  its Color socket; WIP PR #164595 (an EEVEE hair closure, one Kajiya-Kay lobe) "not expected to land in its current
+  state". Chiang's colour mapping is "a precomputed fit of absorption coefficients to scattered hair color" (pbrt) -
+  the colour after multiple scattering, so near-black as a single-bounce colour; per fibre for brown hair (melanin 0.65,
+  redness 0.2): A (0.016, 0.004, 0.000), R 0.075 white, TT (0.34, 0.17, 0.03), TRT (0.009, 0.003, 0.000) (computed from
+  Cycles' absorption).
+- **EEVEE 5.3 against Cycles on the gate's face, one setting at a time (2026-11-04, measured):** `indirect_light_intensity`
+  1.2 brings the world light on a grey sphere from 0.836 to 1.002 of Cycles' and the jaw shadow from 0.855 to 0.947;
+  the skin's subsurface radius x1.5 cuts the shadow-detail error from 0.103 to 0.075; `trace_max_roughness` 0.75,
+  full-resolution tracing, finer Fast GI and 128 samples change nothing; dropping sheen or coat makes the match worse.
+  **Corrected the same evening:** the sphere's five brightness bands (dark to lit), EEVEE over Cycles under the image
+  light alone: 1.262, 1.294, 1.224, 0.973, 0.836 - EEVEE's world light is flat, not weak; x1.2 gives 1.524 ... 1.002
+  (the dark side ~50% too bright), so x1.2 is dropped. EEVEE's world sun extraction is on at Blender's defaults
+  (`world.sun_threshold` 10, `sun_angle` 0.0092 rad, `use_sun_shadow` on, `probe_resolution` 1024) and Studio Small
+  09 peaks at 541 (135 after our 0.25 strength), so its softbox cores become one sharp sun - the next one-factor sweep.
+  **Later the same night (measured, the realism doc §6a):** under the full stage the sphere matches Cycles exactly, so
+  the sweep was dropped; the jaw's 15% darkness is EEVEE's shading of the 1.5 m key light at grazing angles (~60%; a
+  0.5 m key gives 0.950; no EEVEE shadow setting closes it) plus off-screen bounce (~40%). A light-probe volume
+  (`LightProbeVolume`: `capture_indirect` on and `capture_world` off by default; `bpy.ops.object.lightprobe_cache_bake`
+  works headless, 3.5-6.7 s) - coarse with the world captured helps a little, fine (24 x 20 x 36) darkens the world.
+  Skin scattering x2 keeps lit detail within 3% of Cycles and cuts shadow harshness 1.28 -> 1.16.
+- **The live view's fine detail against the film render** (*measured, 2026-11-05*, rec 1; `.dev/gate/parts/proof_eevee/`, bands fine/pore/fold on the gate's cheek view): HD Aaron (CC Blender Tools' material) in EEVEE keeps 58% / 64% / 70% of his Cycles detail; one factor at a time: skin scattering off 0.609 fine (+36%), film filter 0.75 px +7%, anisotropic 16x and 256 samples no change, cubic textures lower - EEVEE's screen-space scattering blurs his normal-map detail. **Our skin with its live-view calibration (`skin/material.py` EEVEE_SCATTER 2.0) is not affected:** Cycles 0.484 / 1.297 / 1.055 against EEVEE 0.546 / 1.512 / 1.169 (113-117%); scattering x1.0 and x0.5 sharpen further (0.715, 0.849 fine). The live view matches the film render on our content; the earlier 80-87% was Aaron's uncalibrated material.
+- **GPU frame time** (*source read*, R4 Q6): `--profile-gpu` writes `profile.json` (Trace Event Format) with real GPU
+  timestamps on the OpenGL backend only (`gl_debug.cc`, `glQueryCounter(GL_TIMESTAMP)`); on Vulkan / Metal CPU time
+  only. 5.3's default here is Vulkan (measured) - so `--gpu-backend opengl --profile-gpu`. `wm.redraw_timer` is wall
+  clock; `--debug-gpu` adds labels only.
