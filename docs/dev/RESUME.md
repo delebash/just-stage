@@ -65,6 +65,17 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   rebuilt library and the body trials (`scratchpad/batch_body.sh`, when JustVoice's "card free" comes); body excess
   this morning hand 0.085, torso 0.051, foot 0.107. Hair (RESEARCH §14.14): the groom is the gap (about half his
   stand-off on top and sides; 2% stray strands on the upper back).
+- Later 2026-11-07 (all EEVEE against HD Aaron; RESEARCH §14.10-14.14 hold the numbers): body - hand 0.047 (arms'
+  micro x2 shipped), torso 0.055 (the scan's red dots unreddened, `hair.spots` / `hair.unred`; re-measure queued),
+  foot 0.10 (no scan relief - needs Thunk3D's foot, the user's download); his body shine (coat 0.10 at 0.35, specular
+  0.40, base 0.72) read and tried - not the lever. Hair - the mask cut to the head (2% strays on the body, fixed,
+  test); "short taper" on trial (stand-off within ~2 mm of his; a bare seam above the ear fixed by combing the sides
+  back, re-render queued); contrast - his dark roots / light tips: `factors hairtip` queued. Eyes - iris and white
+  close; margin shine, tint, tearline, occlusion change nothing: the lower roll is geometry - the eye-open sliders on
+  trial (`factors eyebag*0 ... --alone`). New gate views nose and chin; `dists.py` nose patches (the chin is under
+  stubble). The smile: CC5's Mouth_Corner_Pull carries his cheek raise and eye squint, our ARKit mouthSmile only the
+  mouth - the expression sets' scoring (plan §19.2 item 9). The card: JustVoice (justvioce-0f) lets us use it
+  whenever idle - send "card free" when done.
 - Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins
   and characters rebuilt (backup `.dev/backup/library_2026-11-07`): ridges x3 like for like (still below Aaron's veins);
   feet - no detailed donor until Thunk3D (§19.2 item 25); torso folds 0.53-0.85.
