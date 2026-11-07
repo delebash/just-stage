@@ -372,14 +372,20 @@ def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, sa
     settings.file_format, settings.color_mode, settings.color_depth = "PNG", "RGB", "8"
     settings.color_management = "FOLLOW_SCENE"  # the app's look (AgX), as the live view shows it
     current = "neutral"
+    frames_path = out_dir / "frames.json"  # each render's frame width at its target (tools/gate/measure.py's scale)
+    frames = json.loads(frames_path.read_text()) if frames_path.exists() else {}
     for name in names:
         expression = VIEWS[name][1]
         if expression != current:
             set_expression(who, built, expression)
             current = expression
-        place(cam, *view(name, a))
-        scene.render.filepath = str(out_dir / f"{engine}_{name}_{who}{tag}.png")
+        placed = view(name, a)
+        place(cam, *placed)
+        stem = f"{engine}_{name}_{who}{tag}"
+        scene.render.filepath = str(out_dir / f"{stem}.png")
         bpy.ops.render.render(write_still=True)
+        frames[stem] = {"width_m": placed[3], "size": size}
+        frames_path.write_text(json.dumps(frames, indent=1))
         print("RENDERED", scene.render.filepath, flush=True)
 
 
