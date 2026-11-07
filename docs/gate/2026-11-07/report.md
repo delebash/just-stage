@@ -53,6 +53,41 @@ Cycles than in EEVEE (cheek pores 2.69 against 1.73), ours the same in both (1.4
 hypothesis to test one factor at a time: his maps (normal + micro normal) gain from Cycles' many samples per pixel
 where EEVEE's texture filtering softens them, and our bump-node relief behaves differently. Hands and feet: a third of his or less.
 
+## Why Aaron's detail is stronger in Cycles
+
+CC Blender Tools builds his head skin differently per engine (`aaron_hair_eevee.blend` against `aaron_hair_cycles.blend`,
+read 2026-11-07): Cycles' Normal Strength 1.25 against EEVEE's 1.0, Micro Normal Strength 0.396 against 0.317 (both
++25%), Roughness Power 0.75 against 0.56, Subsurface Scale 1.0 against 1.43 (EEVEE scatters farther). So the CC5
+reference's own Blender pipeline gives each engine its own relief and scatter - as our skin's EEVEE output scatters x2
+(approved). Ours reads the same in both engines (the oracle rule holds on our content); each engine is compared with
+his build for it. The live view first (the user's bar), then a per-engine relief strength for the film, measured.
+
+## The cheek one factor at a time (EEVEE, `tools/gate/factors.py`)
+
+| Ours with | micro | pores | folds | form |
+|---|---|---|---|---|
+| everything (baseline) | 0.482 | 1.485 | 0.975 | 0.636 |
+| microrelief off | 0.166 | 1.559 | 1.001 | 0.649 |
+| pore tile off | 0.512 | 0.526 | 0.728 | 0.675 |
+| the scan's relief off | 0.508 | 1.487 | 0.889 | 0.567 |
+| colour flat | 0.496 | 1.445 | 0.776 | 0.383 |
+| Aaron | 0.639 | 1.727 | 1.345 | 0.697 |
+
+**Read:** the pore tile makes the pore band and a quarter of the folds; the microrelief the micro band; the scans'
+mid-scale relief only ~9% of the folds; the colour ~20% of the folds and ~40% of the form. At the forehead the
+microrelief (x5 there) *lowers* the pore and fold bands by 20-30% (off: 1.56 -> 1.90, 0.91 -> 1.26) - its fine bumps
+average the larger ones. (The first colour factors read identical to the baseline: the library's images are packed,
+so changing their path did nothing - fixed by loading new tiled images.)
+
+## The hands' donor, first try (Ten24)
+
+Our hands fitted to Ten24's sample (Anny, then the wrap: p50 2.8 / p90 4.8 mm, after a fix - Blender's OBJ importer
+puts the Y-up turn in the object, not the mesh), its 8K Level_01 normal map baked through the 100k mesh: blotches and
+holes, not tendons and veins - the Level_01 map holds everything between its coarse level-1 surface and the scan, so on
+the 100k mesh the medium shape counts twice. Kept detail under 12 mm: still patchy. Output deleted (nothing shipped).
+Next, the structural option: the relief taken in the map's own texture space (Frankot-Chellappa height, high-passed -
+the pore tile's method) and carried to our hands through the fit's correspondence.
+
 ## Next
 
 The cheek's gap one factor at a time (`tools/gate/factors.py`: relief0, pores0, micro0, colourpores0, colourflat), then

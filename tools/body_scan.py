@@ -51,7 +51,11 @@ SOURCES = {
     "ten24": {"scan": TEN24 / "OBJ" / "Decimated" / "Ten24_Sample_100k.OBJ", "image": TEN24 / "Colour Maps" / "JPG" / "Colour_8k.jpg",
               "normal": TEN24 / "Normal Maps" / "Level_01_Normal.PSD", "axes": ("NEGATIVE_Z", "Y"),
               "scale": 1.0, "tiles": (2,), "fit": "anny", "part": "hands", "work": WORK_ROOT / "ten24",
-              "edge_fade": 24.0,  # texels (~9 mm): a finger is ~160 texels round on this tile - 96 would fade it out
+              "edge_fade": 24.0,
+              # only detail under 12 mm: its Level_01 map holds everything between its coarse level-1 surface and the
+              # scan, so on the 100k mesh the medium shape counted twice (blotches, 2026-11-07); tendons, veins and
+              # creases are all narrower
+              "relief_hp_mm": 12.0,  # texels (~9 mm): a finger is ~160 texels round on this tile - 96 would fade it out
               "source": "Ten24, the free sample scan (3dscanstore.com - the page saved 2026-11-04)",
               "licence": "Ten24's grant: 'Feel free to use this scan as you wish for both commercial and personal projects. "
                          "All we ask is that you provide us with a credit wherever it's used'"},
@@ -113,7 +117,9 @@ def export(src: str = "artec") -> None:
     sm = scan.data
     sv = np.empty(len(sm.vertices) * 3, np.float64)
     sm.vertices.foreach_get("co", sv)
-    sv = sv.reshape(-1, 3) * spec["scale"]
+    sv = sv.reshape(-1, 3)
+    mw = np.array(scan.matrix_world)  # the importer puts its axis turn in the object, not the mesh (Ten24's Y-up OBJ)
+    sv = (sv @ mw[:3, :3].T + mw[:3, 3]) * spec["scale"]
     sv[:, 2] -= sv[:, 2].min()
     sm.calc_loop_triangles()
     sf = np.empty(len(sm.loop_triangles) * 3, np.int64)
@@ -482,7 +488,7 @@ def post(src: str = "artec") -> None:
 
         # relief: the tangent xy over its own wide blur (the fit's leftover out), faded at the island's edge
         xy = nrm[..., :2] * 2 - 1
-        hp = (xy - mblur(xy, RELIEF_HP_MM * px_per_mm / 2.0)) * w[..., None]
+        hp = (xy - mblur(xy, spec.get("relief_hp_mm", RELIEF_HP_MM) * px_per_mm / 2.0)) * w[..., None]
         # faded out well inside the scan's reach and the tile's own island: no step where the detail ends
         edge = np.clip(np.minimum(cv2.distanceTransform(baked.astype(np.uint8), cv2.DIST_L2, 5),
                                   cv2.distanceTransform(cover, cv2.DIST_L2, 5)) / spec.get("edge_fade", EDGE_FADE), 0, 1)  # fmt: skip
@@ -508,7 +514,7 @@ def post(src: str = "artec") -> None:
         cv2.imwrite(str(OUT / f"{stem}_colour.png"),
                     np.round(np.clip(ratio[..., ::-1] / 2, 0, 1) * 65535).astype(np.uint16))  # fmt: skip
         info = {"tile": name, "size": SIZE, "source": spec["source"], "licence": spec["licence"],
-                "relief_hp_mm": RELIEF_HP_MM, "colour_hp_mm": COLOUR_HP_MM,
+                "relief_hp_mm": spec.get("relief_hp_mm", RELIEF_HP_MM), "colour_hp_mm": COLOUR_HP_MM,
                 "colour": "a ratio around 1, stored halved (0.5 = 1)", "strands_filled": int(found.sum()),
                 "fabric_out": int(fabric.sum()), "covered": float(baked.mean())}  # fmt: skip
         (OUT / f"{stem}.json").write_text(json.dumps(info, indent=1), encoding="utf-8")

@@ -14,7 +14,8 @@ Factors (the skin's, `modules/skin/maps.py` nodes):
 - `colourpores0` - the colour map's detail finer than 1.5 mm blurred out (the pore band of the scan's colour): rec
   17's "colour and relief pores from one source" - how much of the pore band the colour carries, against the relief's
   pores from Ten24's tile;
-- `colourflat` - the colour map at its mean over the skin: what the relief alone gives.
+- `colourflat` - the colour map at its mean over the skin: what the relief alone gives;
+- a trial setting `pores*1.15+micro*1.35+relief*2` - each layer's depth scaled everywhere (names keep the `*` and `+`).
 
 `tools/gate/measure.py` then reads every `{engine}_{view}_ours_f-<factor>.png` beside the baseline."""
 
@@ -67,40 +68,53 @@ def micro0(built: dict) -> None:
     _depth(built, "micro")
 
 
-def _colour_images(built: dict):
+def _colour_nodes(built: dict):
     for nt in _skin_trees(built):
-        node = nt.nodes[_maps().NODE + "base_color"]
-        yield node.image
+        yield nt.nodes[_maps().NODE + "base_color"]
 
 
-def _tile_pixels(image, number: int) -> tuple[np.ndarray, object]:
-    """One UDIM tile of a tiled image as an array (via a plain image loaded from the tile's file)."""
-    path = Path(bpy.path.abspath(image.filepath_raw.replace("<UDIM>", str(number))))
-    tile = bpy.data.images.load(str(path), check_existing=False)
-    tile.colorspace_settings.name = image.colorspace_settings.name
-    w, h = tile.size
+def _tile_pixels(image, number: int) -> np.ndarray:
+    """One UDIM tile of a tiled image as an array (its own buffer, so a packed image works too)."""
+    tile = image.tiles.get(number)
+    image.tiles.active = tile
+    w, h = image.size
     px = np.empty(w * h * 4, np.float32)
-    tile.pixels.foreach_get(px)
-    return px.reshape(h, w, 4), tile
+    image.pixels.foreach_get(px)
+    return px.reshape(h, w, 4)
 
 
 def _rewrite_colour(built: dict, change) -> None:
-    """Each colour tile changed by `change(rgb, mm_per_px) -> rgb` and the skin pointed at the changed copies."""
+    """Each colour tile changed by `change(rgb, mm_per_px) -> rgb`, written to new files and loaded as a new tiled
+    image the skin then reads - the library's images are packed, so changing a path did nothing (2026-11-07)."""
     maps = _maps()
     out = Path(bpy.app.tempdir) / "gate_factors"
     out.mkdir(parents=True, exist_ok=True)
-    for image in _colour_images(built):
-        for tile in image.tiles:
-            px, plain = _tile_pixels(image, tile.number)
-            mm_per_px = maps.MM_PER_UV.get(tile.number, 724.0) / px.shape[0]  # the tile's mean density
+    for node in _colour_nodes(built):
+        image = node.image
+        numbers = [t.number for t in image.tiles]
+        for number in numbers:
+            px = _tile_pixels(image, number)
+            mm_per_px = maps.MM_PER_UV.get(number, 724.0) / px.shape[0]  # the tile's mean density
             px[..., :3] = change(px[..., :3], mm_per_px)
+            h, w = px.shape[:2]
+            plain = bpy.data.images.new(f"factor_{number}", w, h, float_buffer=True)
+            plain.colorspace_settings.name = image.colorspace_settings.name
             plain.pixels.foreach_set(px.ravel())
-            plain.filepath_raw = str(out / f"colour.{tile.number}.png")
-            plain.file_format = "PNG"
+            plain.filepath_raw = str(out / f"colour.{number}.exr")
+            plain.file_format = "OPEN_EXR"
             plain.save()
             bpy.data.images.remove(plain)
-        image.filepath = str(out / "colour.<UDIM>.png")
-        image.reload()
+        new = bpy.data.images.load(str(out / f"colour.{numbers[0]}.exr"), check_existing=False)
+        new.source = "TILED"
+        new.filepath = str(out / "colour.<UDIM>.exr")
+        new.colorspace_settings.name = image.colorspace_settings.name
+        new.reload()
+        for number in numbers[1:]:
+            if new.tiles.get(number) is None:
+                new.tiles.new(tile_number=number)
+        new.reload()
+        node.image = new
+        print("COLOUR REWRITTEN", [t.number for t in new.tiles], flush=True)
 
 
 def colourpores0(built: dict) -> None:
@@ -123,6 +137,27 @@ def colourflat(built: dict) -> None:
 FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat)}
 
 
+def scaled(spec: str):
+    """A trial setting: `pores*1.15`, `micro*1.35`, `relief*2` (the scan relief's normal-map strength), joined by `+` -
+    each layer's depth scaled everywhere, to see a change before it is made in the region map."""
+    def prepare(built: dict) -> None:
+        for part in spec.split("+"):
+            key, factor = part.split("*")
+            for nt in _skin_trees(built):
+                if key in ("pores", "micro"):
+                    node = nt.nodes[_maps().NODE + f"{key.rstrip('s')}_depth"]
+                    node.inputs[1].default_value *= float(factor)
+                elif key == "relief":
+                    nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"].default_value *= float(factor)
+                else:
+                    raise KeyError(key)
+    return prepare
+
+
+def factor(name: str):
+    return FACTORS[name] if name in FACTORS else scaled(name)
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -135,8 +170,9 @@ if __name__ == "__main__":
     a = p.parse_args(args)
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     for name in a.factors.split(","):
-        pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=f"_f-{name}",
-                  prepare=FACTORS[name])
+        tag = "_f-" + name.replace("*", "x").replace(".", "p").replace("+", "_")  # a file name Windows takes
+        pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=tag,
+                  prepare=factor(name))
         for view in a.views.split(","):
-            made = out / f"{a.engine}_{view}_ours_f-{name}.png"
+            made = out / f"{a.engine}_{view}_ours{tag}.png"
             print("WRITTEN" if made.exists() else "MISSING", made, flush=True)
