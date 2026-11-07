@@ -2713,7 +2713,9 @@ re-check before the rec list; nothing run on skin here):
   finger creases. Ten24's hands sit at x 5160-7947, y 256-4207 of its 8K maps, ~4.4 texels / mm. Two traps: Blender's OBJ
   importer keeps a Y-up file's axis turn in the object, not the mesh; an ffmpeg crop box past the image's edge comes
   back shifted (here ~900 texels). On the gate's back-of-hand window: form 0.71 -> 0.95 and ridges 0.29 -> 0.47 of
-  Aaron's in EEVEE (Cycles 0.53 -> 0.70, 0.21 -> 0.35) - still below his sculpted veins.
+  Aaron's in EEVEE (Cycles 0.53 -> 0.70, 0.21 -> 0.35) - still below his sculpted veins; at x1.5 with its colour: form 1.24
+  (within his 29% band), ridges 0.74 / 0.80, folds 0.78 - adopted (a UDIM image's `pixels` reads only its first tile,
+  measured: the part is blended in the shader, not by rewriting pixels).
 
 ### 14.12 · Eyes
 

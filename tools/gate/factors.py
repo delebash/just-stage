@@ -73,48 +73,59 @@ def _colour_nodes(built: dict):
         yield nt.nodes[_maps().NODE + "base_color"]
 
 
-def _tile_pixels(image, number: int) -> np.ndarray:
-    """One UDIM tile of a tiled image as an array (its own buffer, so a packed image works too)."""
-    tile = image.tiles.get(number)
-    image.tiles.active = tile
+def _first_tile(image) -> np.ndarray:
+    """The first UDIM tile (1001, the head) as an array - the only tile `image.pixels` reads (measured 2026-11-07)."""
     w, h = image.size
     px = np.empty(w * h * 4, np.float32)
     image.pixels.foreach_get(px)
     return px.reshape(h, w, 4)
 
 
-def _rewrite_colour(built: dict, change) -> None:
-    """Each colour tile changed by `change(rgb, mm_per_px) -> rgb`, written to new files and loaded as a new tiled
-    image the skin then reads - the library's images are packed, so changing a path did nothing (2026-11-07)."""
+def _tile_uv(nt, number: int):
+    """The skin's UDIM UVs moved so tile `number` reads as 0-1, and a factor that is 1 on that tile only."""
     maps = _maps()
-    out = Path(bpy.app.tempdir) / "gate_factors"
-    out.mkdir(parents=True, exist_ok=True)
-    for node in _colour_nodes(built):
-        image = node.image
-        numbers = [t.number for t in image.tiles]
-        for number in numbers:
-            px = _tile_pixels(image, number)
-            mm_per_px = maps.MM_PER_UV.get(number, 724.0) / px.shape[0]  # the tile's mean density
-            px[..., :3] = change(px[..., :3], mm_per_px)
-            h, w = px.shape[:2]
-            plain = bpy.data.images.new(f"factor_{number}", w, h, float_buffer=True)
-            plain.colorspace_settings.name = image.colorspace_settings.name
-            plain.pixels.foreach_set(px.ravel())
-            plain.filepath_raw = str(out / f"colour.{number}.exr")
-            plain.file_format = "OPEN_EXR"
-            plain.save()
-            bpy.data.images.remove(plain)
-        new = bpy.data.images.load(str(out / f"colour.{numbers[0]}.exr"), check_existing=False)
-        new.source = "TILED"
-        new.filepath = str(out / "colour.<UDIM>.exr")
-        new.colorspace_settings.name = image.colorspace_settings.name
-        new.reload()
-        for number in numbers[1:]:
-            if new.tiles.get(number) is None:
-                new.tiles.new(tile_number=number)
-        new.reload()
-        node.image = new
-        print("COLOUR REWRITTEN", [t.number for t in new.tiles], flush=True)
+    uv = nt.nodes.new("ShaderNodeUVMap")
+    uv.uv_map = maps.UV
+    shift = nt.nodes.new("ShaderNodeVectorMath")
+    shift.operation = "SUBTRACT"
+    shift.inputs[1].default_value = (number - 1001, 0.0, 0.0)
+    nt.links.new(uv.outputs["UV"], shift.inputs[0])
+    tile = nt.nodes[maps.NODE + "tile_index"].outputs["Value"]
+    on = nt.nodes.new("ShaderNodeMath")
+    on.operation, on.inputs[1].default_value, on.inputs[2].default_value = "COMPARE", number - 1001, 0.5
+    nt.links.new(tile, on.inputs[0])
+    return shift.outputs["Vector"], on.outputs["Value"]
+
+
+def _plain(px: np.ndarray, name: str, colorspace: str):
+    h, w = px.shape[:2]
+    img = bpy.data.images.new(name, w, h, float_buffer=True)
+    img.colorspace_settings.name = colorspace
+    img.pixels.foreach_set(px.astype(np.float32).ravel())
+    img.pack()
+    return img
+
+
+def _rewrite_colour(built: dict, change) -> None:
+    """The head tile's colour changed by `change(rgb, mm_per_px) -> rgb`, shown over that tile only (the face views'
+    factors; other tiles keep the skin's own)."""
+    maps = _maps()
+    for nt in _skin_trees(built):
+        node = nt.nodes[maps.NODE + "base_color"]
+        px = _first_tile(node.image)
+        px[..., :3] = change(px[..., :3], maps.MM_PER_UV.get(1001, 724.0) / px.shape[0])
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image = _plain(px, "factor_colour_1001", node.image.colorspace_settings.name)
+        vec, on = _tile_uv(nt, 1001)
+        nt.links.new(vec, tex.inputs["Vector"])
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        nt.links.new(on, mix.inputs["Factor"])
+        for link in list(node.outputs["Color"].links):
+            nt.links.new(mix.outputs["Result"], link.to_socket)
+        nt.links.new(node.outputs["Color"], mix.inputs["A"])
+        nt.links.new(tex.outputs["Color"], mix.inputs["B"])
+        print("COLOUR REWRITTEN on the head tile", flush=True)
 
 
 def colourpores0(built: dict) -> None:
@@ -134,58 +145,60 @@ def colourflat(built: dict) -> None:
     _rewrite_colour(built, flat)
 
 
-def handspart(built: dict) -> None:
-    """A body part's donor relief (`tools/body_scan.py texture`: `body_1003_hands_*`) blended into the skin's normal
-    tile by its weight, in memory - a library skin is not rebuilt before the part is measured."""
-    import json
-
+def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
+    """A body part's donor relief (`tools/body_scan.py texture`: `body_1003_hands_*`) over the skin's own on the arm
+    tile, by its weight, in the shader - nothing rebuilt before the part is measured. `strength` scales its tilt;
+    `colour` multiplies in its colour detail by the same weight."""
     maps = _maps()
     folder = Path(maps.paths.GENERATED) / "skin"
 
-    def png(name, size):
-        img = bpy.data.images.load(str(folder / name), check_existing=False)
-        img.colorspace_settings.name = "Non-Color"
-        if tuple(img.size) != (size, size):
-            img.scale(size, size)  # the part at the skin tile's own size (4K on a scan-skinned body)
-        w, h = img.size
-        px = np.empty(w * h * 4, np.float32)
-        img.pixels.foreach_get(px)
-        bpy.data.images.remove(img)
-        return px.reshape(h, w, 4)
+    def tex(nt, name, vec):
+        node = nt.nodes.new("ShaderNodeTexImage")
+        node.image = bpy.data.images.load(str(folder / name), check_existing=True)
+        node.image.colorspace_settings.name = "Non-Color"
+        node.extension = "CLIP"
+        nt.links.new(vec, node.inputs["Vector"])
+        return node.outputs["Color"]
 
-    out = Path(bpy.app.tempdir) / "gate_factors"
-    out.mkdir(parents=True, exist_ok=True)
     for nt in _skin_trees(built):
-        node = nt.nodes[maps.NODE + "normal"]
-        image = node.image
-        numbers = [t.number for t in image.tiles]
-        for number in numbers:
-            px = _tile_pixels(image, number)
-            if number == 1003:
-                part = png("body_1003_hands_relief.png", px.shape[0])
-                weight = png("body_1003_hands_weight.png", px.shape[0])[..., :1]
-                xy = px[..., :2] * (1 - weight) + part[..., :2] * weight
-                z = np.sqrt(np.clip(1 - ((xy * 2 - 1) ** 2).sum(-1, keepdims=True), 0, 1))
-                px[..., :3] = np.concatenate([xy, z], -1)
-            h, w = px.shape[:2]
-            plain = bpy.data.images.new(f"factor_n_{number}", w, h, float_buffer=True)
-            plain.colorspace_settings.name = "Non-Color"
-            plain.pixels.foreach_set(px.ravel())
-            plain.filepath_raw = str(out / f"normal.{number}.exr")
-            plain.file_format = "OPEN_EXR"
-            plain.save()
-            bpy.data.images.remove(plain)
-        new = bpy.data.images.load(str(out / f"normal.{numbers[0]}.exr"), check_existing=False)
-        new.source = "TILED"
-        new.filepath = str(out / "normal.<UDIM>.exr")
-        new.colorspace_settings.name = "Non-Color"
-        new.reload()
-        for number in numbers[1:]:
-            if new.tiles.get(number) is None:
-                new.tiles.new(tile_number=number)
-        new.reload()
-        node.image = new
-        print("NORMAL WITH THE HANDS PART", json.dumps([t.number for t in new.tiles]), flush=True)
+        vec, on = _tile_uv(nt, 1003)
+        weight = nt.nodes.new("ShaderNodeMath")
+        weight.operation = "MULTIPLY"
+        nt.links.new(nt.nodes.new("ShaderNodeSeparateColor").outputs[0], weight.inputs[0])
+        sep = weight.inputs[0].links[0].from_node
+        nt.links.new(tex(nt, "body_1003_hands_weight.png", vec), sep.inputs["Color"])
+        nt.links.new(on, weight.inputs[1])
+        scaled = nt.nodes.new("ShaderNodeVectorMath")  # (part - 0.5) * strength + 0.5
+        scaled.operation = "MULTIPLY_ADD"
+        nt.links.new(tex(nt, "body_1003_hands_relief.png", vec), scaled.inputs[0])
+        scaled.inputs[1].default_value = (strength, strength, 1.0)
+        scaled.inputs[2].default_value = (0.5 - 0.5 * strength, 0.5 - 0.5 * strength, 0.0)
+        normal = nt.nodes[maps.NODE + "normal"]
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        nt.links.new(weight.outputs["Value"], mix.inputs["Factor"])
+        for link in list(normal.outputs["Color"].links):
+            nt.links.new(mix.outputs["Result"], link.to_socket)
+        nt.links.new(normal.outputs["Color"], mix.inputs["A"])
+        nt.links.new(scaled.outputs["Vector"], mix.inputs["B"])
+        if colour:  # x (1 - w + ratio * w), the ratio stored halved
+            base = nt.nodes[maps.NODE + "base_color"]
+            ratio = nt.nodes.new("ShaderNodeVectorMath")
+            ratio.operation = "MULTIPLY"
+            nt.links.new(tex(nt, "body_1003_hands_colour.png", vec), ratio.inputs[0])
+            ratio.inputs[1].default_value = (2.0, 2.0, 2.0)
+            gain = nt.nodes.new("ShaderNodeMix")
+            gain.data_type = "RGBA"
+            nt.links.new(weight.outputs["Value"], gain.inputs["Factor"])
+            gain.inputs["A"].default_value = (1.0, 1.0, 1.0, 1.0)
+            nt.links.new(ratio.outputs["Vector"], gain.inputs["B"])
+            times = nt.nodes.new("ShaderNodeVectorMath")
+            times.operation = "MULTIPLY"
+            for link in list(base.outputs["Color"].links):
+                nt.links.new(times.outputs["Vector"], link.to_socket)
+            nt.links.new(base.outputs["Color"], times.inputs[0])
+            nt.links.new(gain.outputs["Result"], times.inputs[1])
+        print("HANDS PART in the shader, strength", strength, "colour", colour, flush=True)
 
 
 FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart)}
@@ -209,7 +222,12 @@ def scaled(spec: str):
 
 
 def factor(name: str):
-    return FACTORS[name] if name in FACTORS else scaled(name)
+    if name in FACTORS:
+        return FACTORS[name]
+    if name.startswith("handspart"):  # handspart*1.5, handspartc*1.5 (with the donor's colour)
+        k = float(name.split("*")[1]) if "*" in name else 1.0
+        return lambda built: handspart(built, k, colour=name.startswith("handspartc"))
+    return scaled(name)
 
 
 if __name__ == "__main__":

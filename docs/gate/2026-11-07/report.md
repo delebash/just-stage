@@ -115,8 +115,22 @@ the object. Blended into the gate character's arm tile in memory (`factors.py ha
 | Cycles, before | 0.29 | 0.35 | 0.53 | 0.21 |
 | Cycles, Ten24's hands | 0.29 | 0.40 | 0.70 | 0.35 |
 
-**Read:** the tendons and knuckles come through (form to 0.95 in EEVEE); still below Aaron, whose veins are sculpted
-high and coloured blue, his knuckles red. Next on the hands: the donor's colour (knuckles, veins) in the same route,
+**Re-measured:** `image.pixels` reads only a UDIM image's first tile whatever tile is active (measured 2026-11-07), so
+the first factor's "arm tile" was the face tile's normals under the part; `handspart` now blends the part in the shader
+(no pixels read). The numbers came out the same - the window lies where the part's weight is 1 - and the strength and
+colour trials (EEVEE, back of the hand, Aaron's bands: form 29%, ridges 9% / 18%, folds 20%):
+
+| Ours with | pores | folds | form | ridges dark / light |
+|---|---|---|---|---|
+| nothing (before) | 0.51 | 0.51 | 0.71 | 0.29 / 0.29 |
+| Ten24's hands x1 | 0.51 | 0.59 | 0.95 | 0.47 / 0.48 |
+| x1.5 | 0.53 | 0.67 | 1.12 | 0.61 / 0.64 |
+| x1.5 + its colour | 0.55 | 0.78 | **1.24 =** | 0.74 / 0.80 |
+
+**Adopted:** x1.5 with its colour (`body_scan.py` SOURCES["ten24"]["strength"]); the library backed up
+(`.dev/backup/library_2026-11-07`) and the scan skins rebuilt. By eye: tendons fanning to the knuckles, veins, knuckle
+and finger creases on ours; Aaron's still glossier, more tanned, his veins higher. Still below: ridges (his sculpted
+veins), folds, pores; tone (L* 77 against 68 - his tone is his). Next on the hands: the donor's colour (knuckles, veins) in the same route,
 the part's strength measured, our hand's tone (L* 77 against his 68), then the skins rebuilt (library backed up first).
 
 ## Next

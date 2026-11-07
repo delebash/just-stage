@@ -55,7 +55,10 @@ SOURCES = {
               # only detail under 12 mm: its Level_01 map holds everything between its coarse level-1 surface and the
               # scan, so on the 100k mesh the medium shape counted twice (blotches, 2026-11-07); tendons, veins and
               # creases are all narrower
-              "relief_hp_mm": 12.0,  # texels (~9 mm): a finger is ~160 texels round on this tile - 96 would fade it out
+              "relief_hp_mm": 12.0,
+              # the part's tilt x1.5: at x1 the back of the hand's ridges read 0.47 of HD Aaron's, at x1.5 with the
+              # colour 0.74-0.80 and its form within his band (1.24, band 29%) - factors.py, 2026-11-07
+              "strength": 1.5,  # texels (~9 mm): a finger is ~160 texels round on this tile - 96 would fade it out
               "source": "Ten24, the free sample scan (3dscanstore.com - the page saved 2026-11-04)",
               "licence": "Ten24's grant: 'Feel free to use this scan as you wish for both commercial and personal projects. "
                          "All we ask is that you provide us with a credit wherever it's used'"},
@@ -695,7 +698,7 @@ def texture(src: str = "ten24") -> None:
     edge = np.clip(cv2.distanceTransform((have & (on_skin > 0.5)).astype(np.uint8), cv2.DIST_L2, 5)
                    / spec.get("edge_fade", EDGE_FADE), 0, 1)  # fmt: skip
     w *= edge * edge * (3 - 2 * edge)
-    xy *= w[..., None]
+    xy *= w[..., None] * spec.get("strength", 1.0)
     z = np.sqrt(np.clip(1 - (xy**2).sum(-1), 0, 1))
     relief = np.dstack([xy * 0.5 + 0.5, z])
     ratio = np.exp(np.clip(ratio_log, -0.5, 0.3) * w[..., None])

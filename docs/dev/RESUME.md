@@ -33,12 +33,21 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 
 ### Where it stands (update after every step)
 
-- 2026-11-07: the plan checked and corrected; RESEARCH made an index by topic (§14.1-14.15); this file cut to a pointer.
-  §20 step 0: `test_body` fixed; the oiliness link and no pores on lips / lining built (tests green); cavity from relief
-  -> a measure in the face proof (Aaron's cavity map doesn't follow his normal map). Step 1: `tools/gate/measure.py`
-  built (the standard measures); `quality-gate.md` brought to the bar. Step 2, the face-relief proof: baseline renders
-  `.dev/gate/parts/2026-11-07a` (eye, cheek, face, front, torso, hand, foot; ours and Aaron; EEVEE and Cycles).
-- Clock: the hair bound (Q-HAIR-7) runs to 2026-11-08 09:37.
+- 2026-11-07: the plan checked and corrected; RESEARCH an index by topic (§14.1-14.15); this file cut to a pointer.
+- Gate tools (§20 step 1): `tools/gate/measure.py` (standard measures, windows set by looking), `measure_table.py`,
+  `factors.py` (one factor at a time, trial settings `pores*k+micro*k+relief*k`, `handspart*k` / `handspartc*k` in the
+  shader); `quality-gate.md` brought to the bar. Baselines `.dev/gate/parts/2026-11-07a` (both engines), `-07b` (face
+  after the fix). Report: `docs/gate/2026-11-07/report.md`.
+- Proof (1) face relief: EEVEE cheek within HD Aaron's bands after pores x1.15 / microrelief x1.35 (`make_face_regions`)
+  except the folds (0.76); forehead equal. Cycles ~0.55 of his Cycles build - the question of which build is the bar is
+  the plan's §19.2 item 26. Next on the face: the microrelief's look (regular cells against his directional furrows -
+  a direction field per region), the cheek's folds.
+- Proof (2) body relief: Ten24's hands in texture space (`body_scan.py texture ten24`, x1.5 + colour) - back of the
+  hand form 1.24 (equal), ridges 0.74-0.80 (below). Library backed up (`.dev/backup/library_2026-11-07`); the scan skins
+  rebuilt (`rebuild_scan_skins.py build`) - next: the hand view rendered with the rebuilt skin (`parts_gate --skin`),
+  then the characters (`build_library`). Feet: no detailed donor until Thunk3D's "Leg-foot" (§19.2 item 25).
+- Fixes done: `test_body`; the oiliness link; no pores on lips / lining. Full suites not yet run (at the end).
+- Clock: the hair bound (Q-HAIR-7) runs to 2026-11-08 09:37 - the scalp proof is third.
 
 ## Tools and references
 
