@@ -284,9 +284,31 @@ def hairthrough(built: dict, share: float) -> None:
     print("HAIR LIGHT THROUGH", share, "on", n, "nodes", flush=True)
 
 
+def hairmodel(built: dict, diffuse: float, glossy: float, ambient: float) -> None:
+    """The live-view hair model's shares set (`hair_shading.DIFFUSE`, `GLOSSY`, `AMBIENT`) and every groom's material
+    built again with them (`groom.hair_material`) - calibrating against Cycles on more than one view."""
+    hs = importlib.import_module("bl_ext.system.juststage.modules.hair.hair_shading")
+    groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    hs.DIFFUSE, hs.GLOSSY, hs.AMBIENT = diffuse, glossy, ambient
+    remade = {}
+    for obj in bpy.data.objects:
+        if obj.type != "CURVES":
+            continue
+        for slot in obj.material_slots:
+            mat = slot.material
+            if mat and mat.node_tree and mat.node_tree.nodes.get("js_hair.world_mean") is not None:
+                if mat.name not in remade:
+                    remade[mat.name] = groom.hair_material(mat.name + " f")
+                slot.material = remade[mat.name]
+    print("HAIR MODEL diffuse", diffuse, "glossy", glossy, "ambient", ambient, "on", len(remade), "materials", flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("hairmodel"):  # hairmodel*0.4*1.0*0.45 (diffuse, glossy, ambient)
+        d, g, amb = (float(x) for x in name.split("*")[1:4])
+        return lambda built: hairmodel(built, d, g, amb)
     if name.startswith("hairambient"):  # hairambient*0.45
         return lambda built: hairambient(built, float(name.split("*")[1]))
     if name.startswith("hairthrough"):  # hairthrough*0.15 (the share, not a scale)
