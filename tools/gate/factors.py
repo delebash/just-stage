@@ -134,7 +134,59 @@ def colourflat(built: dict) -> None:
     _rewrite_colour(built, flat)
 
 
-FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat)}
+def handspart(built: dict) -> None:
+    """A body part's donor relief (`tools/body_scan.py texture`: `body_1003_hands_*`) blended into the skin's normal
+    tile by its weight, in memory - a library skin is not rebuilt before the part is measured."""
+    import json
+
+    maps = _maps()
+    folder = Path(maps.paths.GENERATED) / "skin"
+
+    def png(name):
+        img = bpy.data.images.load(str(folder / name), check_existing=False)
+        img.colorspace_settings.name = "Non-Color"
+        w, h = img.size
+        px = np.empty(w * h * 4, np.float32)
+        img.pixels.foreach_get(px)
+        bpy.data.images.remove(img)
+        return px.reshape(h, w, 4)
+
+    part, weight = png("body_1003_hands_relief.png"), png("body_1003_hands_weight.png")[..., :1]
+    out = Path(bpy.app.tempdir) / "gate_factors"
+    out.mkdir(parents=True, exist_ok=True)
+    for nt in _skin_trees(built):
+        node = nt.nodes[maps.NODE + "normal"]
+        image = node.image
+        numbers = [t.number for t in image.tiles]
+        for number in numbers:
+            px = _tile_pixels(image, number)
+            if number == 1003:
+                assert px.shape[:2] == part.shape[:2], (px.shape, part.shape)  # the part made at the tile's size
+                xy = px[..., :2] * (1 - weight) + part[..., :2] * weight
+                z = np.sqrt(np.clip(1 - ((xy * 2 - 1) ** 2).sum(-1, keepdims=True), 0, 1))
+                px[..., :3] = np.concatenate([xy, z], -1)
+            h, w = px.shape[:2]
+            plain = bpy.data.images.new(f"factor_n_{number}", w, h, float_buffer=True)
+            plain.colorspace_settings.name = "Non-Color"
+            plain.pixels.foreach_set(px.ravel())
+            plain.filepath_raw = str(out / f"normal.{number}.exr")
+            plain.file_format = "OPEN_EXR"
+            plain.save()
+            bpy.data.images.remove(plain)
+        new = bpy.data.images.load(str(out / f"normal.{numbers[0]}.exr"), check_existing=False)
+        new.source = "TILED"
+        new.filepath = str(out / "normal.<UDIM>.exr")
+        new.colorspace_settings.name = "Non-Color"
+        new.reload()
+        for number in numbers[1:]:
+            if new.tiles.get(number) is None:
+                new.tiles.new(tile_number=number)
+        new.reload()
+        node.image = new
+        print("NORMAL WITH THE HANDS PART", json.dumps([t.number for t in new.tiles]), flush=True)
+
+
+FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart)}
 
 
 def scaled(spec: str):

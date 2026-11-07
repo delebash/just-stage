@@ -36,8 +36,14 @@ RELIEF_SCALE = 8.0  # R = factor / RELIEF_SCALE
 #: (relief factor, roughness) by region; "cheek" everywhere else on the head tile
 #: (pore relief factor, microrelief factor, roughness) by region. The forehead's extra detail is fine (the
 #: microrelief): its pore tile at x5 read craggy at the face's distance, HD Aaron's forehead clean there (2026-11-05)
-REGIONS = {"forehead": (2.0, 5.0, 0.36), "nose": (2.0, 3.0, 0.35), "chin": (1.5, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
-           "cheek": (1.0, 1.0, 0.48)}  # fmt: skip
+#: 2026-11-07, the first clean baseline measured with the standard bands (docs/gate/2026-11-07/report.md): the cheek
+#: below HD Aaron (micro 0.75, pores 0.86) - pores x1.15 and microrelief x1.35 on every region bring it to 0.93 / 0.92
+#: (within his own bands) and keep the forehead equal (0.96 / 0.85); microrelief x3 read as crackle-glaze cells and
+#: flattened the larger bumps
+SCALE = (1.15, 1.35)
+REGIONS = {k: (v[0] * SCALE[0], v[1] * SCALE[1], v[2]) for k, v in {
+    "forehead": (2.0, 5.0, 0.36), "nose": (2.0, 3.0, 0.35), "chin": (1.5, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
+    "cheek": (1.0, 1.0, 0.48)}.items()}  # fmt: skip
 #: the head tile's neck, down to the chest, is body skin (2026-11-06: as "cheek" it took the face's roughness and the
 #: face's coat - a glossy band ending in a line across the chest on dark skin): the body tiles' values, and a face
 #: share of 0 (1 elsewhere, `face_share.png`), softened like the rest - modules/skin/maps.py fades the clear coat and

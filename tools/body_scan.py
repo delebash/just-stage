@@ -522,6 +522,199 @@ def post(src: str = "artec") -> None:
               f"texels out; tile covered {baked.mean():.1%}")
 
 
+HAND_HP_MM = 8.0  # the hands' detail kept from the donor's map: tendons, veins, creases (all narrower)
+DONOR_SKIN_VALUE, DONOR_SKIN_MARGIN_MM = 0.3, 3.0  # a donor texel is skin above this sRGB value, this far from fabric
+
+
+def texture(src: str = "ten24") -> None:
+    """A part's relief and colour from its donor's maps in their own texture space - the pore tile's method
+    (`tools/gate/relief_tiles.py`), for a donor whose detail lives in a normal map made for another surface (Ten24's
+    Level_01 map is relative to its coarse level-1 mesh: baked through its 100k mesh the medium shape counted twice,
+    2026-11-07). The map's tilt is high-passed at HAND_HP_MM inside the donor's own islands (its medium shape out);
+    each of our hand texels takes the tilt and colour at the nearest point of the donor's surface (after the fit), the
+    tilt turned from the donor's tangent frame into ours - no integration to height (Frankot-Chellappa ran across the
+    islands' seams and left stripes, 2026-11-07). Writes the same part files as `post`."""
+    import subprocess
+
+    import cv2
+    import trimesh
+    from scipy.spatial import cKDTree
+
+    sys.path.insert(0, str(ROOT / "tools" / "gate"))
+
+    spec = SOURCES[src]
+    work = spec["work"]
+    o, s, f = np.load(work / "ours.npz"), np.load(work / "scan.npz", allow_pickle=True), np.load(work / "fit.npz")
+    co = o["co"].astype(np.float64)
+    co[f["moved_v"]] = f["fitted"]  # our hands on the donor's surface
+    place = f["place"]
+    sv = (np.c_[s["co"], np.ones(len(s["co"]))] @ place.T)[:, :3]
+    sf, suv = s["faces"], s["uv"]  # uv per triangle corner
+    # the donor's hand triangles and their box in its 8K maps
+    d, _ = cKDTree(co[_hand_vertices(o)]).query(sv[sf].mean(1))
+    keep = d < 0.015
+    tri_uv = suv[keep]
+    big = 8192
+    # the box inside the map (a square past its edge came back shifted by ffmpeg - the normals read ~900 texels off
+    # the colour and the UVs: the stripes of 2026-11-07)
+    x0, x1 = max(int(tri_uv[..., 0].min() * big) - 8, 0), min(int(tri_uv[..., 0].max() * big) + 8, big)
+    y0, y1 = max(int((1 - tri_uv[..., 1].max()) * big) - 8, 0), min(int((1 - tri_uv[..., 1].min()) * big) + 8, big)
+    cw, ch = x1 - x0, y1 - y0
+    tv = sv[sf[keep]]
+    area3d = np.linalg.norm(np.cross(tv[:, 1] - tv[:, 0], tv[:, 2] - tv[:, 0]), axis=1).sum() / 2 * 1e6  # mm2
+    tuvp = tri_uv * big
+    e1, e2 = tuvp[:, 1] - tuvp[:, 0], tuvp[:, 2] - tuvp[:, 0]
+    area_uv = np.abs(e1[:, 0] * e2[:, 1] - e1[:, 1] * e2[:, 0]).sum() / 2  # NumPy 2 has no 2D cross
+    donor_px_per_mm = float(np.sqrt(area_uv / area3d))
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(spec["normal"]), "-vf", f"crop={cw}:{ch}:{x0}:{y0}",
+                          "-f", "rawvideo", "-pix_fmt", "rgb48le", "-"], check=True, capture_output=True).stdout
+    normals = np.frombuffer(raw, np.uint16).reshape(ch, cw, 3).astype(np.float32) / 65535.0
+    sigma = HAND_HP_MM * donor_px_per_mm / 2.0
+    island = np.zeros((ch, cw), np.uint8)  # the donor's hand triangles in the crop: blur stays inside them
+    for tri in tuvp:
+        cv2.fillConvexPoly(island, np.round(np.c_[tri[:, 0] - x0, big - tri[:, 1] - y0]).astype(np.int32), 1)
+    inside = island.astype(np.float32)
+    dxy = normals[..., :2].astype(np.float32) * 2 - 1
+    # hair out: the backs of Ten24's hands are hairy and its normal map carries the strands as parallel stripes
+    # (2026-11-07) - the strands found in its colour (dark on light skin; tools/face_test/hair.py, the scan colour's
+    # way) and the tilt filled under them; tendons and veins are 13-22 of its texels wide and stay
+    sys.path.insert(0, str(ROOT / "tools" / "face_test"))
+    import hair  # noqa: E402
+
+    rgb = cv2.imread(str(spec["image"]), cv2.IMREAD_COLOR)[y0:y1, x0:x1, ::-1].astype(np.float32) / 255
+    strands = hair.mask(rgb, island > 0)
+    dxy = hair.fill(np.dstack([dxy * 0.5 + 0.5, np.zeros(dxy.shape[:2], np.float32)]), strands)[..., :2] * 2 - 1
+    print(f"TEXTURE donor hair: {strands.sum()} strand texels filled ({strands[island > 0].mean():.1%} of the hands)")
+    num = cv2.GaussianBlur(dxy * inside[..., None], (0, 0), sigma)
+    den = cv2.GaussianBlur(inside, (0, 0), sigma)[..., None]
+    dxy = (dxy - num / np.maximum(den, 1e-6)) * inside[..., None]  # the tilt under HAND_HP_MM, its medium shape out
+    # anti-aliased to our texels before resampling: the palms' fine ridges (~0.5 mm) folded into stripes at our
+    # coarser 2.7 px / mm (2026-11-07)
+    ours_px_per_mm = SIZE / _mm_per_uv(1001 + spec["tiles"][0])
+    if donor_px_per_mm > ours_px_per_mm:
+        dxy = cv2.GaussianBlur(dxy, (0, 0), 0.6 * donor_px_per_mm / ours_px_per_mm)
+    colour = rgb
+    lin = np.where(colour <= 0.04045, colour / 12.92, ((colour + 0.055) / 1.055) ** 2.4).astype(np.float32)
+    # the donor's skin only: Ten24's black knit sweater meets the wrists (its ribbing came through as stripes,
+    # 2026-11-07) - skin is light (sRGB value > DONOR_SKIN_VALUE), kept DONOR_SKIN_MARGIN_MM in from the fabric
+    value = colour.max(-1)
+    skin_ok = cv2.erode((value > DONOR_SKIN_VALUE).astype(np.uint8),
+                        np.ones((2 * int(DONOR_SKIN_MARGIN_MM * donor_px_per_mm) + 1,) * 2, np.uint8)).astype(np.float32)
+    blur = cv2.GaussianBlur(lin, (0, 0), COLOUR_HP_MM * donor_px_per_mm / 2.0)
+    log_ratio = np.log(np.maximum(lin, 1e-4)) - np.log(np.maximum(blur, 1e-4))
+    print(f"TEXTURE donor: {keep.sum()} hand triangles, map box {x0},{y0} {cw} x {ch}, {donor_px_per_mm:.2f} px/mm")
+    # our hand texels on the tile: each texel's 3D point and its triangle's scale (mm per texel)
+    number = spec["tiles"][0]
+    tris, tuv, tile = o["tris"], o["tuv"], o["tile"]
+    on_hand = _hand_vertices(o)
+    sel = np.flatnonzero((tile == number) & on_hand[tris].all(axis=1))
+    tri_id = np.full((SIZE, SIZE), -1, np.int64)
+    pos = np.zeros((SIZE, SIZE, 3), np.float64)
+    mm_tex = np.zeros((SIZE, SIZE), np.float32)
+    have = np.zeros((SIZE, SIZE), bool)
+    for t in sel:
+        xs, ys = (tuv[t][:, 0] - number) * SIZE, (1 - tuv[t][:, 1]) * SIZE
+        bx0, bx1 = int(np.floor(xs.min())), int(np.ceil(xs.max()))
+        by0, by1 = int(np.floor(ys.min())), int(np.ceil(ys.max()))
+        gx, gy = np.meshgrid(np.arange(bx0, bx1 + 1) + 0.5, np.arange(by0, by1 + 1) + 0.5)
+        m = np.array([[xs[1] - xs[0], xs[2] - xs[0]], [ys[1] - ys[0], ys[2] - ys[0]]])
+        if abs(np.linalg.det(m)) < 1e-9:
+            continue
+        b = np.einsum("ij,jkl->ikl", np.linalg.inv(m), np.stack([gx - xs[0], gy - ys[0]]))
+        w = np.stack([1 - b[0] - b[1], b[0], b[1]])
+        inside = (w >= -1e-4).all(0)
+        if not inside.any():
+            continue
+        p3 = np.einsum("kij,kc->ijc", w, co[tris[t]])
+        e3 = np.linalg.norm(np.cross(co[tris[t][1]] - co[tris[t][0]], co[tris[t][2]] - co[tris[t][0]])) / 2 * 1e6
+        e2 = abs(np.linalg.det(m)) / 2
+        iy, ix = (gy[inside] - 0.5).astype(int), (gx[inside] - 0.5).astype(int)
+        ok = (iy >= 0) & (iy < SIZE) & (ix >= 0) & (ix < SIZE)
+        pos[iy[ok], ix[ok]] = p3[inside][ok]
+        mm_tex[iy[ok], ix[ok]] = np.sqrt(e3 / max(e2, 1e-9))
+        tri_id[iy[ok], ix[ok]] = t
+        have[iy[ok], ix[ok]] = True
+    pts = pos[have]
+    donor = trimesh.Trimesh(sv, sf[keep], process=False)
+    near = trimesh.proximity.ProximityQuery(donor)
+    closest, dist, tid = [], [], []
+    for i in range(0, len(pts), 20000):
+        c, dd, t = near.on_surface(pts[i:i + 20000])
+        closest.append(c)
+        dist.append(dd)
+        tid.append(t)
+    closest, dist, tid = np.concatenate(closest), np.concatenate(dist), np.concatenate(tid)
+    bary = trimesh.triangles.points_to_barycentric(donor.triangles[tid], closest)
+    duv = np.einsum("ij,ijk->ik", bary, tri_uv[tid])
+    mapx = (duv[:, 0] * big - x0).astype(np.float32).reshape(-1, 1)
+    mapy = ((1 - duv[:, 1]) * big - y0).astype(np.float32).reshape(-1, 1)
+
+    def sample(img):  # remap takes at most 32767 rows: the points laid out as a 2D grid
+        n, cols = len(mapx), 1024
+        rows = -(-n // cols)
+        gx = np.zeros(rows * cols, np.float32)
+        gy = np.zeros(rows * cols, np.float32)
+        gx[:n], gy[:n] = mapx[:, 0], mapy[:, 0]
+        out = cv2.remap(img.astype(np.float32), gx.reshape(rows, cols), gy.reshape(rows, cols), cv2.INTER_LINEAR)
+        return out.reshape(rows * cols, -1)[:n]
+
+    def frames(p3, uv):
+        """Each triangle's tangent (along u) and bitangent (along v), unit, in 3D (the standard tangent basis)."""
+        e1, e2 = p3[:, 1] - p3[:, 0], p3[:, 2] - p3[:, 0]
+        d1, d2 = uv[:, 1] - uv[:, 0], uv[:, 2] - uv[:, 0]
+        r = 1.0 / np.where(np.abs(d1[:, 0] * d2[:, 1] - d2[:, 0] * d1[:, 1]) < 1e-12, 1e-12,
+                           d1[:, 0] * d2[:, 1] - d2[:, 0] * d1[:, 1])[:, None]  # fmt: skip
+        t = (e1 * d2[:, 1:2] - e2 * d1[:, 1:2]) * r
+        b = (e2 * d1[:, 0:1] - e1 * d2[:, 0:1]) * r
+        n = np.cross(e1, e2)
+        n /= np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-12)
+        t -= n * (t * n).sum(1, keepdims=True)
+        t /= np.maximum(np.linalg.norm(t, axis=1, keepdims=True), 1e-12)
+        b -= n * (b * n).sum(1, keepdims=True) + t * (b * t).sum(1, keepdims=True)
+        b /= np.maximum(np.linalg.norm(b, axis=1, keepdims=True), 1e-12)
+        return t, b
+
+    dt, db = frames(sv[sf[keep]], tri_uv)  # the donor's frames (its map's green is +v, as the pore tile reads it)
+    ot, ob = frames(co[tris], tuv)  # ours
+    tilt = sample(dxy)  # the donor's tilt at each of our texels, in its frame
+    p3 = tilt[:, :1] * dt[tid] + tilt[:, 1:2] * db[tid]  # in 3D
+    mine = tri_id[have]
+    xy_have = np.c_[(p3 * ot[mine]).sum(1), (p3 * ob[mine]).sum(1)]  # in our frame
+    ratio_log = np.zeros((SIZE, SIZE, 3), np.float32)
+    ratio_log[have] = sample(log_ratio)
+    gap = np.full((SIZE, SIZE), 1.0, np.float32)
+    gap[have] = dist
+    on_skin = np.zeros((SIZE, SIZE), np.float32)
+    on_skin[have] = sample(skin_ok)[:, 0]
+    print(f"TEXTURE ours: {have.sum()} hand texels, gap p50 {np.median(dist) * 1000:.1f} / p90 "
+          f"{np.percentile(dist, 90) * 1000:.1f} mm")
+    xy = np.zeros((SIZE, SIZE, 2), np.float32)
+    xy[have] = xy_have
+    close = 1.0 - np.clip((gap - FIT_GAP[0]) / (FIT_GAP[1] - FIT_GAP[0]), 0.0, 1.0)
+    w = have.astype(np.float32) * close * close * (3 - 2 * close) * on_skin
+    edge = np.clip(cv2.distanceTransform((have & (on_skin > 0.5)).astype(np.uint8), cv2.DIST_L2, 5)
+                   / spec.get("edge_fade", EDGE_FADE), 0, 1)  # fmt: skip
+    w *= edge * edge * (3 - 2 * edge)
+    xy *= w[..., None]
+    z = np.sqrt(np.clip(1 - (xy**2).sum(-1), 0, 1))
+    relief = np.dstack([xy * 0.5 + 0.5, z])
+    ratio = np.exp(np.clip(ratio_log, -0.5, 0.3) * w[..., None])
+    name = 1001 + number
+    stem = f"body_{name}_{spec['part']}"
+    OUT.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(OUT / f"{stem}_relief.png"), np.round(np.clip(relief[..., ::-1], 0, 1) * 65535).astype(np.uint16))
+    cv2.imwrite(str(OUT / f"{stem}_weight.png"), np.round(np.clip(w, 0, 1) * 65535).astype(np.uint16))
+    cv2.imwrite(str(OUT / f"{stem}_colour.png"),
+                np.round(np.clip(ratio[..., ::-1] / 2, 0, 1) * 65535).astype(np.uint16))  # fmt: skip
+    info = {"tile": name, "size": SIZE, "source": spec["source"], "licence": spec["licence"], "method": "texture space",
+            "hand_hp_mm": HAND_HP_MM, "donor_px_per_mm": round(donor_px_per_mm, 2),
+            "gap_mm_p50_p90": [round(float(np.median(dist)) * 1000, 1), round(float(np.percentile(dist, 90)) * 1000, 1)]}
+    (OUT / f"{stem}.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
+    slope = np.linalg.norm(xy[have], axis=-1)
+    print(f"TEXTURE {stem}: written; slope p50 {np.median(slope):.3f} / p99 {np.percentile(slope, 99):.3f}")
+
+
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
-    {"export": export, "fit": fit, "bake": bake, "post": post}[argv[0]](*(argv[1:2] or ["artec"]))
+    stages = {"export": export, "fit": fit, "bake": bake, "post": post, "texture": texture}
+    stages[argv[0]](*(argv[1:2] or ["artec"]))
