@@ -130,7 +130,12 @@ colour trials (EEVEE, back of the hand, Aaron's bands: form 29%, ridges 9% / 18%
 **Adopted:** x1.5 with its colour (`body_scan.py` SOURCES["ten24"]["strength"]); the library backed up
 (`.dev/backup/library_2026-11-07`) and the scan skins rebuilt. By eye: tendons fanning to the knuckles, veins, knuckle
 and finger creases on ours; Aaron's still glossier, more tanned, his veins higher. Still below: ridges (his sculpted
-veins), folds, pores; tone (L* 77 against 68 - his tone is his). Next on the hands: the donor's colour (knuckles, veins) in the same route,
+veins), folds, pores; tone (L* 77 against 68 - his tone is his).
+**In the rebuilt skins** (`parts_gate --skin` with the old skin from the backup and the rebuilt one - both through the
+same path, which renders the hand paler, L* 84 against his 68, so contrast is lower than in the character's own tone),
+back of the hand, Aaron = 1: EEVEE ridges 0.17 -> 0.51-0.54, folds 0.36 -> 0.56, form 0.57 -> 0.78; Cycles ridges 0.14
+-> 0.41-0.44, folds 0.26 -> 0.42, form 0.44 -> 0.58. The library's characters still wear the skins as they were when
+they were built (`tools/build_library.py` next, the backup kept). Next on the hands: the donor's colour (knuckles, veins) in the same route,
 the part's strength measured, our hand's tone (L* 77 against his 68), then the skins rebuilt (library backed up first).
 
 ## The face's folds, and what the bands miss
