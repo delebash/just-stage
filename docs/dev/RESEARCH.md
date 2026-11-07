@@ -2978,7 +2978,14 @@ every one logged; key claims page-read):
   5.4 / 6.8; the iris ring L* 31.9, C 18.8 against 28.8 / 23.2 (the older "chroma 31% above his" no longer holds). One
   factor at a time (DISTS 0.267 as built): the margin's wet shine off 0.268, its pink tint off 0.266, the tearline off
   0.265 (its bright line along the lower white goes), the occlusion film off 0.267 - none moves it, and by eye the lower
-  roll stays as thick with each: its cause is geometry (the margin's width, the eye-open sliders' push - next).
+  roll stays as thick with each: its cause is geometry. Then (`factors.py --alone`): the eye-open sliders at 0 one at
+  a time - the bag 0.267, the lid's middle 0.263 (its upper lid then covers the iris's top as his does - an almond
+  opening; the +1 was 11-05's calibration on voided inputs: the opening height to re-measure before it changes), the
+  fold 0.268 - none moves the lower roll; the lash line capped at 1.6 / 1.2 mm off the eyeball (base v2's 2.6) 0.264
+  / 0.267 - the roll a little thinner, still a puffy ~3-4 mm tube where his lower lid is a thin pink ledge over flat
+  skin. So the lower lid's own skin shape (MakeHuman's lid with base v2's carried rows) is the cause - the plan's
+  escalation for a failed lid is the head on a new topology (§4). Also seen: a clump of 4-5 long straight upper
+  lashes standing up at the lid's middle on every render (his curl) - a lash defect to find.
 
 ### 14.14 · Scalp hair
 
