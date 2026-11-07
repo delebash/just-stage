@@ -218,7 +218,20 @@ his forehead's by 0.189. Excess (5 patches; a 24-patch grid with a permutation t
 | s0, the forehead's microrelief at 1/5 (his mask's level) | - | 0.059 |
 | s0, our colour set to his | 0.040 | 0.073 |
 
-His own patches split at random against each other: 0.000 +- 0.027 (cheek), +- 0.019 (forehead). **Read:** the tile
+His own patches split at random against each other: 0.000 +- 0.027 (cheek), +- 0.019 (forehead).
+
+**On a 24-patch grid with the energy test's permutation band** (`dists.py --patches`, features cached - piq's own DISTS to 1e-4): the chance band is +-0.002-0.004, so every row below is a real difference; `--flat` (each patch's light level out - the two faces' shapes) changes it by < 0.007: the excess is texture.
+
+| Skin | cheek | forehead |
+|---|---|---|
+| today's | 0.047 | 0.107 |
+| tile s0 | 0.026 | 0.104 |
+| tile t1 (no tilt) | **0.018** | 0.100 |
+| s0 + coat x3 | 0.025 | 0.096 |
+| s0 + roughness x1.38 | 0.043 | **0.076** |
+| s0, microrelief at 0.4 (the forehead's x5 factor toward his mask's 1) | - | **0.074** |
+
+The cheek: the tile closes ~60% of its gap; the forehead: the tile barely moves it (the 5-patch table above said 0.072 - its patches sat lower), its two levers are roughness toward his and the microrelief toward his mask - tried together in the t1 batch. **Read:** the tile
 is the one clear gain; the cheek with t1 sits inside his own chance range, the forehead does not; colour is not the
 gap. His shine read at each pixel (`shine_probe.py`): roughness 0.66, even over face and body; ours 0.37-0.48, flat in
 a region - raising ours helps the forehead and hurts the cheek (ours then varies less than his skin: 0.149 against

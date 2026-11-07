@@ -66,17 +66,34 @@ def patch(path: Path, box: tuple[float, float, float, float]) -> torch.Tensor:
     return torch.from_numpy(np.asarray(cut, np.float32)[None] / 255.0).permute(0, 3, 1, 2)
 
 
-def _matrix(metric, a: list[torch.Tensor], b: list[torch.Tensor], chunk: int = 32) -> np.ndarray:
-    """DISTS between every patch of `a` and every patch of `b`, batched."""
-    pairs = [(i, j) for i in range(len(a)) for j in range(len(b))]
-    out = np.zeros((len(a), len(b)))
+def _features(metric, patches_: list[torch.Tensor]) -> list[list[torch.Tensor]]:
+    """Each patch's DISTS features once (its VGG maps and the input itself, `piq.DISTS.get_features`)."""
     with torch.no_grad():
-        for k in range(0, len(pairs), chunk):
-            part = pairs[k:k + chunk]
-            d = metric(torch.cat([a[i] for i, _ in part]), torch.cat([b[j] for _, j in part]))
-            for (i, j), v in zip(part, d.tolist(), strict=True):
-                out[i, j] = v
-    return out
+        return [metric.get_features(x) for x in patches_]
+
+
+def _matrix(metric, fa: list[list[torch.Tensor]], fb: list[list[torch.Tensor]]) -> np.ndarray:
+    """DISTS between every patch of `fa` and every patch of `fb` from their cached features - piq's own formula
+    (`DISTS.compute_distance`, `ContentLoss.forward`'s weights; 1 - the weighted sum): per layer and channel the means'
+    similarity (2 mx my + c) / (mx^2 + my^2 + c) and the covariance's (2 cov + c) / (vx + vy + c), every pair's
+    covariance from one matrix product per layer instead of VGG once per pair."""
+    eps = 1e-6
+    n_layers = len(fa[0])
+    loss = torch.zeros(len(fa), len(fb), dtype=torch.float64)
+    with torch.no_grad():
+        for layer in range(n_layers):
+            x = torch.cat([f[layer] for f in fa]).flatten(2).double()  # n, C, P
+            y = torch.cat([f[layer] for f in fb]).flatten(2).double()
+            mx, my = x.mean(2), y.mean(2)  # n, C
+            vx, vy = x.var(2, unbiased=False), y.var(2, unbiased=False)
+            exy = torch.einsum("icp,jcp->ijc", x, y) / x.shape[2]
+            cov = exy - mx[:, None, :] * my[None, :, :]
+            structure = (2 * mx[:, None, :] * my[None, :, :] + eps) / (mx[:, None, :] ** 2 + my[None, :, :] ** 2 + eps)
+            texture = (2 * cov + eps) / (vx[:, None, :] + vy[None, :, :] + eps)
+            ws = metric.weights[layer].flatten().double()
+            wt = metric.weights[n_layers + layer].flatten().double()
+            loss += (structure * ws).sum(2) + (texture * wt).sum(2)
+    return (1 - loss).numpy()
 
 
 def _energy(pooled: np.ndarray, first: np.ndarray) -> float:
@@ -88,7 +105,14 @@ def _energy(pooled: np.ndarray, first: np.ndarray) -> float:
     return float(pooled[np.ix_(a, b)].mean() - within)
 
 
-def patches(out_dir: Path, engine: str, views: list[str], tags: list[str], tone: bool = False) -> None:
+def _flatten(patches_: list[torch.Tensor], to: torch.Tensor) -> list[torch.Tensor]:
+    """Each patch's channel means set to `to` (1, 3, 1, 1): the light's level on that patch out - the two faces' shapes
+    put each patch under a different light; what stays is the texture."""
+    return [(x * to / x.mean((2, 3), keepdim=True)).clamp(0, 1) for x in patches_]
+
+
+def patches(out_dir: Path, engine: str, views: list[str], tags: list[str], tone: bool = False,
+            flat: bool = False) -> None:
     """The texture measured as two samples of skin, not one window against itself moved: Aaron's patches against each
     other (how much his own skin differs from place to place), ours against his, ours against ours. The excess - the
     mean ours-against-his less the two within-means' average (half Székely & Rizzo's energy statistic) - is ~0 when
@@ -102,7 +126,11 @@ def patches(out_dir: Path, engine: str, views: list[str], tags: list[str], tone:
         boxes = PATCHES[view]
         n = len(boxes)
         his = [patch(out_dir / f"{engine}_{view}_cc5.png", b) for b in boxes]
-        hh = _matrix(metric, his, his)
+        level = torch.cat(his).mean((0, 2, 3), keepdim=True)
+        if flat:
+            his = _flatten(his, level)
+        f_his = _features(metric, his)
+        hh = _matrix(metric, f_his, f_his)
         off = ~np.eye(n, dtype=bool)
         print(f"{view}: {n} patches; Aaron's against each other {hh[off].mean():.4f}")
         for tag in [""] + tags:
@@ -113,7 +141,10 @@ def patches(out_dir: Path, engine: str, views: list[str], tags: list[str], tone:
             if tone:  # our skin's colour set to his (each channel's mean over all patches): the texture alone
                 gain = torch.cat(his).mean((0, 2, 3), keepdim=True) / torch.cat(ours).mean((0, 2, 3), keepdim=True)
                 ours = [(o * gain).clamp(0, 1) for o in ours]
-            oh, oo = _matrix(metric, ours, his), _matrix(metric, ours, ours)
+            if flat:
+                ours = _flatten(ours, level)
+            f_ours = _features(metric, ours)
+            oh, oo = _matrix(metric, f_ours, f_his), _matrix(metric, f_ours, f_ours)
             pooled = np.block([[hh, oh.T], [oh, oo]])
             first = np.arange(2 * n) < n
             excess = _energy(pooled, first)
@@ -131,9 +162,10 @@ def main() -> None:
     p.add_argument("--views", default="cheek,eye")
     p.add_argument("--tone", action="store_true", help="each crop's channel means set to Aaron's first: structure only")
     p.add_argument("--patches", action="store_true", help="two samples of skin (`patches`): the excess over his own")
+    p.add_argument("--flat", action="store_true", help="--patches: each patch's light level out (`_flatten`)")
     a = p.parse_args()
     if a.patches:
-        patches(a.out_dir, a.engine, a.views.split(","), a.tags, a.tone)
+        patches(a.out_dir, a.engine, a.views.split(","), a.tags, a.tone, a.flat)
         return
     metric = piq.DISTS(reduction="none")
     for view in a.views.split(","):
