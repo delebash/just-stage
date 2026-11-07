@@ -354,9 +354,13 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
            cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "library",
-           character: str = "", scalp: str = "library") -> None:
+           character: str = "", scalp: str = "library", prepare=None) -> None:
+    """`prepare(built)`, if given, changes the built character before any render - one factor at a time
+    (`tools/gate/factors.py`)."""
     scene, cam = _stage()
     built = build_ours(scene, skin, brows, character, scalp) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
+    if prepare is not None:
+        prepare(built)
     set_expression(who, built, "neutral")
     a = anchors(who, built)
     out_dir.mkdir(parents=True, exist_ok=True)
