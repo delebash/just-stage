@@ -318,5 +318,42 @@ def test_the_nails_have_no_pores(human, tmp_path):
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
     for key in ("pore", "micro"):
-        factor = nodes[maps.NODE + f"{key}_depth"].inputs[0].links[0].from_node
-        assert factor.name == maps.NODE + f"{key}_off_nails", factor.name
+        assert maps.NODE + f"{key}_off_nails" in _upstream(nodes[maps.NODE + f"{key}_depth"].inputs[0])
+
+
+def _upstream(socket):
+    """Every node feeding a socket, walked back through its links."""
+    seen, todo = set(), [link.from_node for link in socket.links]
+    while todo:
+        node = todo.pop()
+        if node.name in seen:
+            continue
+        seen.add(node.name)
+        todo += [link.from_node for put in node.inputs for link in put.links]
+    return seen
+
+
+def test_the_oiliness_slider_scales_a_mapped_skins_shine(human, tmp_path):
+    """On a mapped skin the cavity and pore-shine chain drives Specular IOR Level, so the oiliness slider's default value
+    under the link did nothing (the plan's §10 fix list): the chain is scaled by oiliness / 0.5, 1 at the default."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    for oiliness in (0.25, 1.0):
+        api.run("juststage.skin.set_tone", character=made.character, oiliness=oiliness)
+        nt = body.juststage.skin_material.node_tree
+        factor = nt.nodes[maps.NODE + "oiliness"]
+        assert factor.inputs[1].default_value == pytest.approx(oiliness / 0.5)
+        bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+        assert factor.name in _upstream(bsdf.inputs["Specular IOR Level"])
+
+
+def test_the_lips_and_the_mouths_lining_have_no_pores(human, tmp_path):
+    """Lips (no follicles) and the wet lining took the cheek's pores (the plan's §9: "no pores on lips, lining, nails"):
+    the pore depth is cut by MPFB2's lips mask and the lining's mask, the microrelief by the lining's."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    pores = _upstream(nodes[maps.NODE + "pore_depth"].inputs[0])
+    micro = _upstream(nodes[maps.NODE + "micro_depth"].inputs[0])
+    assert {maps.NODE + "lips_mask", maps.NODE + "mouth_mask"} <= pores
+    assert maps.NODE + "mouth_mask" in micro and maps.NODE + "lips_mask" not in micro

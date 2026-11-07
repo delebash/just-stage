@@ -93,5 +93,6 @@ def apply(obj: bpy.types.Object, skin: skin_optics.Skin, oiliness: float) -> bpy
         from . import maps
 
         maps.set_gain(mat, rgb)
+        maps.set_oiliness(mat, oiliness)
     sync_live(mat)
     return mat

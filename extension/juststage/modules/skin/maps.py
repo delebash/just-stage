@@ -109,6 +109,7 @@ LIP_TINT, LIP_STRENGTH = (1.0, 0.56, 0.90), 1.0  # at 0.74 / 0.79 still paler th
 #: less yellow (56.4 / 30.4 / 15.1) and his lower lip shining - the tint from the two lips' linear ratio (0.70 / 0.75 x
 #: 0.80 / 1.22), the vermilion smoother and lightly coated
 LIP_ROUGHNESS, LIP_COAT = 0.33, 0.3
+OILINESS_DEFAULT = 0.5  # the oiliness slider's default (skin_set_tone.Params): the chain's factor is 1 there
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
 #: metres, a few centimetres across, +-MOTTLE/2 of the colour - SkinGen's broad "blotch" layer in kind
@@ -386,6 +387,22 @@ def _lip_layer(nt, bsdf) -> None:
         nt.links.new(_mix(nt, f"lips_{key}", "FLOAT", share, own, value), bsdf.inputs[name])
 
 
+def _relief_off_mouth(nt) -> None:
+    """No pores on the lips (no follicles) or the wet lining, and no microrelief on the lining - they took the cheek's
+    (the plan's §9, 2026-11-07): the relief's depth factors cut by MPFB2's lips mask and the lining's mask, after both
+    layers are built."""
+    nodes = nt.nodes
+    lips = nodes[NODE + "lips_mask"].outputs["Color"]
+    lining = nodes[NODE + "mouth_in"].outputs["Value"]  # the lining's mask, on the head tile only
+    for key, masks in (("pore", (("lips", lips), ("lining", lining))), ("micro", (("lining", lining),))):
+        depth = nodes[NODE + f"{key}_depth"]
+        factor = depth.inputs[0].links[0].from_socket
+        for name, mask in masks:
+            keep = _math(nt, f"{key}_keep_{name}", "SUBTRACT", 1.0, mask)
+            factor = _math(nt, f"{key}_off_{name}", "MULTIPLY", factor, keep)
+        nt.links.new(factor, depth.inputs[0])
+
+
 def _margin_layer(nt, bsdf) -> None:
     """The lid margin's wet pink (MARGIN_TINT, MARGIN_ROUGHNESS, MARGIN_COAT) by base v2's `js_margin` attribute (0
     off the margin, and on characters without it)."""
@@ -622,8 +639,12 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     links.new(micro_height, micro_bump.inputs["Height"])
     links.new(bump.outputs["Normal"], micro_bump.inputs["Normal"])
     links.new(micro_bump.outputs["Normal"], bsdf.inputs["Normal"])
-    shine = _math(nt, "pore_shine", "MULTIPLY_ADD", pore_height, PORE_SHINE[1], PORE_SHINE[0])
-    links.new(_math(nt, "pore_specular", "MULTIPLY", spec.outputs["Value"], shine), bsdf.inputs["Specular IOR Level"])
+    shine = _math(nt, "pore_specular", "MULTIPLY", spec.outputs["Value"],
+                  _math(nt, "pore_shine", "MULTIPLY_ADD", pore_height, PORE_SHINE[1], PORE_SHINE[0]))
+    # the oiliness slider scales the whole chain (1 at its default 0.5): its value under the link did nothing on a
+    # mapped skin (the plan's §10 fix list, 2026-11-07)
+    links.new(_math(nt, "oiliness", "MULTIPLY", shine, mat.juststage.oiliness / OILINESS_DEFAULT),
+              bsdf.inputs["Specular IOR Level"])
     # the base coat first, the wet layers over it (linked after them, it replaced the nails' and the mouth's coat)
     coat = _node(nt, "ShaderNodeMix", "coat", (-450, 500))
     coat.data_type = "FLOAT"
@@ -634,6 +655,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     _nail_layer(nt, bsdf, uv, which)
     _lip_layer(nt, bsdf)
     _mouth_layer(nt, bsdf, uv, which)
+    _relief_off_mouth(nt)
     bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS
     bsdf.inputs["Coat IOR"].default_value = COAT_IOR
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT
@@ -652,6 +674,13 @@ def refresh(mat: bpy.types.Material) -> None:
         if obj.type == "MESH" and obj.juststage.kind == "HUMAN" and mat.name in obj.data.materials:
             if TEXEL not in obj.data.attributes:
                 add_texel(obj)
+
+
+def set_oiliness(mat: bpy.types.Material, oiliness: float) -> None:
+    """The oiliness slider on a mapped skin: the factor on its specular chain, oiliness / OILINESS_DEFAULT."""
+    node = mat.node_tree.nodes.get(NODE + "oiliness")
+    if node is not None:
+        node.inputs[1].default_value = oiliness / OILINESS_DEFAULT
 
 
 def set_gain(mat: bpy.types.Material, rgb: tuple[float, float, float]) -> None:
