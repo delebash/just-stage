@@ -38,8 +38,10 @@ OUT = Path(__file__).resolve().parents[1] / "extension" / "juststage" / "data" /
 #: The single-order tile below put 31% finer than 0.1 mm and none above 0.6 - thin walls round flat cells.
 #: Per order: Poisson spacing (mm), the pillow's rise and its shoulder width (mm), the wall's groove and its width (mm).
 LAYERS = {
-    "primary": {"spacing": 0.55, "pillow": 1.0, "shoulder": 0.15, "groove": 0.25, "groove_w": 0.03, "tilt": 0.25,
-                "lift": 0.15},
+    # t1 of the 2026-11-07 trials: no per-cell tilt (it drew flat facets with straight creases), domes rounded, cells
+    # lifted unevenly - the cheek's texture excess against HD Aaron 0.047 -> 0.018 (dists.py --patches)
+    "primary": {"spacing": 0.55, "pillow": 1.0, "shoulder": 0.15, "groove": 0.25, "groove_w": 0.03, "tilt": 0.0,
+                "lift": 0.3, "round": 0.05},
     "secondary": {"spacing": 0.22, "pillow": 0.3, "shoulder": 0.05, "groove": 0.08, "groove_w": 0.012},
     "fine": {"spacing": 0.10, "pillow": 0.0, "shoulder": 0.01, "groove": 0.02, "groove_w": 0.008},
 }
@@ -257,7 +259,7 @@ def main() -> None:
     p.add_argument("--spacing-mm", type=float, default=0.3)
     p.add_argument("--pore-spacing-mm", type=float, default=0.8)
     p.add_argument("--angle-deg", type=float, default=35.0)
-    p.add_argument("--method", choices=("layered", "single"), default="single")  # layered: on trial at the gate (plan §0)
+    p.add_argument("--method", choices=("layered", "single"), default="layered")  # single: the 11-05 tile
     a = p.parse_args()
     if a.method == "layered":
         height = layered(a.tile_mm, a.px, a.seed, a.angle_deg)

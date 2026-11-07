@@ -66,8 +66,10 @@ REGION_RELIEF_SCALE = 8.0  # the map's R x this = the factor (make_face_regions.
 #: 0.45, ours 0.23 without it, 0.42 with it at 0.03 mm)
 MICRO_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_microrelief.py"
 MICRO_TILE_MM = 10.0
-#: 2026-11-06: 0.015 mm (from 0.035) - the cheek's finest band 0.63 vs HD Aaron's 0.51 (0.035: 0.80)
-MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.000015
+#: 2026-11-06: 0.015 mm (from 0.035) - the cheek's finest band 0.63 vs HD Aaron's 0.51 (0.035: 0.80). 2026-11-07: the
+#: layered tile (make_microrelief.py `layered`) has 0.372x the old tile's slope per unit of height, so x2.686 keeps the
+#: slope - HD Aaron's micro slope 0.090 (his tile's 0.285 x his shader's 0.317), ours 0.095 at the cheek's x1.35
+MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.0000403
 #: the nails (rec 14, the realism brief §6.14: "a layered nail shader on tile 1005"): each nail's own coordinates
 #: (`tools/make_nail_coords.py`: along it 0 at the cuticle to 1 at the free edge, across it -1 to 1, its digit); the
 #: plate drawn inside them with a curved cuticle edge and rounded sides (the tile's polygons are coarse), over a bed
