@@ -204,9 +204,28 @@ def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
 FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart)}
 
 
+#: the shine trials: a key -> the Principled input it scales on both of the skin's BSDFs (the film's and the live view's)
+SHINE = {"rough": "Roughness", "spec": "Specular IOR Level", "coat": "Coat Weight", "coatrough": "Coat Roughness"}
+
+
+def _scale_input(nt, socket: str, k: float) -> None:
+    """`socket` on every Principled BSDF of the tree times `k`: a linked one through a multiply node, clamped to 0-1."""
+    for bsdf in [n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"]:
+        s = bsdf.inputs[socket]
+        if not s.is_linked:
+            s.default_value = min(s.default_value * k, 1.0)
+            continue
+        times = nt.nodes.new("ShaderNodeMath")
+        times.operation, times.use_clamp = "MULTIPLY", True
+        nt.links.new(s.links[0].from_socket, times.inputs[0])
+        times.inputs[1].default_value = k
+        nt.links.new(times.outputs[0], s)
+
+
 def scaled(spec: str):
-    """A trial setting: `pores*1.15`, `micro*1.35`, `relief*2` (the scan relief's normal-map strength), joined by `+` -
-    each layer's depth scaled everywhere, to see a change before it is made in the region map."""
+    """A trial setting: `pores*1.15`, `micro*1.35`, `relief*2` (the scan relief's normal-map strength), `rough*0.75`,
+    `spec*1.5`, `coat*3`, `coatrough*0.5` (the shine, `SHINE`), joined by `+` - each scaled everywhere on the skin, to
+    see a change before it is made."""
     def prepare(built: dict) -> None:
         for part in spec.split("+"):
             key, factor = part.split("*")
@@ -216,6 +235,8 @@ def scaled(spec: str):
                     node.inputs[1].default_value *= float(factor)
                 elif key == "relief":
                     nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"].default_value *= float(factor)
+                elif key in SHINE:
+                    _scale_input(nt, SHINE[key], float(factor))
                 else:
                     raise KeyError(key)
     return prepare
@@ -256,8 +277,8 @@ def reliefband(built: dict, k: float, below_mm: float = 7.0) -> None:
 
 
 def _hair_trees():
-    for mat in bpy.data.materials:
-        if mat.node_tree and mat.node_tree.nodes.get("js_hair.world_mean") is not None:
+    for mat in bpy.data.materials:  # not the gate's kept originals (fake users: `parts_gate.render` variants)
+        if mat.node_tree and not mat.use_fake_user and mat.node_tree.nodes.get("js_hair.world_mean") is not None:
             yield mat.node_tree
 
 
@@ -303,9 +324,37 @@ def hairmodel(built: dict, diffuse: float, glossy: float, ambient: float) -> Non
     print("HAIR MODEL diffuse", diffuse, "glossy", glossy, "ambient", ambient, "on", len(remade), "materials", flush=True)
 
 
+MICRO_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "micro"
+
+
+def microtile(built: dict, stem: str) -> None:
+    """The microrelief tile swapped for a candidate (`.dev/gate/micro/<stem>.png`, the same 10 mm size) on every skin's
+    microrelief image nodes - the face skin's pattern against HD Aaron's micro normal (plan §0, 2026-11-07)."""
+    image = bpy.data.images.load(str(MICRO_TRIALS / f"{stem}.png"), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    n = 0
+    for nt in _skin_trees(built):
+        for node in nt.nodes:
+            if node.type == "TEX_IMAGE" and node.image and node.image.name.startswith("microrelief"):
+                node.image = image
+                n += 1
+    if not n:
+        raise RuntimeError("no microrelief image node found on the skin")
+    print("MICRO TILE", stem, "on", n, "nodes", flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("microtile"):  # microtile*v2b, microtile*v2b+micro*1.5 (then the depth scaled)
+        stem, _, rest = name.split("*", 1)[1].partition("+")
+        after = scaled(rest) if rest else None
+
+        def prepare(built: dict) -> None:
+            microtile(built, stem)
+            if after:
+                after(built)
+        return prepare
     if name.startswith("hairmodel"):  # hairmodel*0.4*1.0*0.45 (diffuse, glossy, ambient)
         d, g, amb = (float(x) for x in name.split("*")[1:4])
         return lambda built: hairmodel(built, d, g, amb)
@@ -333,10 +382,13 @@ if __name__ == "__main__":
     p.add_argument("--lights", choices=("stage", "world"), default="stage")
     a = p.parse_args(args)
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
-    for name in a.factors.split(","):
-        tag = "_f-" + name.replace("*", "x").replace(".", "p").replace("+", "_") + ("_world" if a.lights == "world" else "")
-        pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=tag,
-                  prepare=factor(name), lights=a.lights)
+    names = a.factors.split(",")
+    tags = ["_f-" + n.replace("*", "x").replace(".", "p").replace("+", "_") + ("_world" if a.lights == "world" else "")
+            for n in names]  # fmt: skip
+    # built once, the materials set back before each factor (parts_gate.render's variants)
+    pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, lights=a.lights,
+              variants=[(t, factor(n)) for t, n in zip(tags, names, strict=True)])
+    for tag in tags:
         for view in a.views.split(","):
             made = out / f"{a.engine}_{view}_ours{tag}.png"
             print("WRITTEN" if made.exists() else "MISSING", made, flush=True)

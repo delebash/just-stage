@@ -46,6 +46,16 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   below), forehead equal; but DISTS 0.188 against his 0.06 floor, the same with tone matched - the texture's structure
   (our soft bumps against his crisp network) is the gap; the microrelief generator is NOT STANDARD awaiting the user
   (§19.2 item 2). Cycles ~0.55 of his Cycles build - which build is the bar: §19.2 item 26.
+- Face loop, 2026-11-07 evening (`.dev/gate/parts/2026-11-07d`, EEVEE only): (a) why ours reads soft - our pore tile
+  is 4.6 px/mm (Ten24 Level_01; his head normal 3.9), so at the cheek view's 34 px/mm the crisp detail is the micro tile
+  alone; his is a 388 px/mm micro normal of pillowed ~0.6-1 mm cells with finer cells inside, ours thin walls round flat
+  cells (RESEARCH §14.9). (b) A layered tile (`make_microrelief.py --method layered`, `tools/gate/micro_compare.py`,
+  `tests/tools/test_microrelief.py`): texture-space DISTS 0.385 -> 0.298 (his floor 0.156), the cheek render 0.188 ->
+  0.173 (factor `microtile*s0+micro*1.97`, slope matched) - not yet the shipped tile. (c) Shine moves the bands most:
+  roughness x0.75 -> micro 1.70 / pore 1.31 / fold 0.92 of his. (d) The forehead's microrelief factor is 5x the
+  cheek's (`make_face_regions.py`, set on voided inputs 11-05) where his MicroNMask is ~1 everywhere - it reads as a
+  crisp honeycomb against his soft forehead. (e) `tools/gate/shine_probe.py` reads each BSDF's roughness / specular as
+  emission, his and ours. Factor trials now build once (`parts_gate.render` variants).
 - Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins
   and characters rebuilt (backup `.dev/backup/library_2026-11-07`): ridges x3 like for like (still below Aaron's veins);
   feet - no detailed donor until Thunk3D (§19.2 item 25); torso folds 0.53-0.85.
@@ -54,9 +64,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   27 (cards baked from our own strands, after the face and body proofs).
 - Full suites, 2026-11-07 end: Blender 140 passed, 1 failed, 1 deselected (the AI test); unit 45 passed; tools 18 passed.
   The failure, `test_migrations::test_a_v1_character_comes_in_as_v2_with_its_grooms_in_place`: the brows land 0.50 mm
-  off after the v1 -> v2 upgrade against the test's 0.2 mm - not from 2026-11-07's changes (no commit touched brows,
-  migrations or the base); likely since the brows' 11-06 changes (2bb61cb, 7d012e5: more hairs) - open; its log message
-  says "within 0.0005 mm" for 0.5 mm (a unit slip).
+  off after the v1 -> v2 upgrade against the test's 0.2 mm. Diagnosed 2026-11-07 evening: the migration put them back
+  within 0.0005 mm (the log was right - not a unit slip, as I first wrote), then refitted the eyes, whose contact key
+  reshapes the lids under the brows' lower hairs; fixed by putting the grooms back after the refit
+  (`migrations/v2_base.py`).
 - For the user to clean: `C:\.dev\gate\` - ten stray factor renders from my run (a relative path Blender resolved from
   C:\; the removal needs the user's approval).
 

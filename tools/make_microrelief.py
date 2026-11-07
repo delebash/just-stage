@@ -32,8 +32,21 @@ from PIL import Image
 from scipy import ndimage
 
 OUT = Path(__file__).resolve().parents[1] / "extension" / "juststage" / "data" / "generated" / "skin" / "microrelief.png"
-#: furrow depths and widths (relative height; millimetres): primary furrows follow the line direction, secondary
-#: ones cross them shallower and narrower - the skin's two orders of lines
+#: The layered tile (2026-11-07, `layered`): HD Aaron's micro normal, measured in texture space
+#: (`tools/gate/micro_compare.py`), holds its slope at 0.25-0.6 mm (51%), 0.1-0.25 (29%), 0.6-1.5 (14%) and little
+#: finer than 0.1 (5%): pillowed primary cells ~0.6-1 mm, each tilted its own way, finer cells inside them, faint lines.
+#: The single-order tile below put 31% finer than 0.1 mm and none above 0.6 - thin walls round flat cells.
+#: Per order: Poisson spacing (mm), the pillow's rise and its shoulder width (mm), the wall's groove and its width (mm).
+LAYERS = {
+    "primary": {"spacing": 0.55, "pillow": 1.0, "shoulder": 0.15, "groove": 0.25, "groove_w": 0.03, "tilt": 0.25,
+                "lift": 0.15},
+    "secondary": {"spacing": 0.22, "pillow": 0.3, "shoulder": 0.05, "groove": 0.08, "groove_w": 0.012},
+    "fine": {"spacing": 0.10, "pillow": 0.0, "shoulder": 0.01, "groove": 0.02, "groove_w": 0.008},
+}
+LAYERED_PORES = {"share": 0.25, "radius": (0.025, 0.05), "depth": 0.6}  # pits on primary walls: a share of the cells
+LAYERED_SMOOTH_MM = 0.02  # s0 of the 2026-11-07 sweep: DISTS 0.298 against his tile (0.385 the 11-05 tile)
+#: the single-order tile (2026-11-05): furrow depths and widths (relative height; millimetres): primary furrows follow
+#: the line direction, secondary ones cross them shallower and narrower - the skin's two orders of lines
 PRIMARY_DEPTH, SECONDARY_DEPTH = 0.55, 0.28
 PRIMARY_WIDTH_MM, SECONDARY_WIDTH_MM = 0.016, 0.010
 #: how far the cells rise between the furrows (relative), and the final smoothing (pixels)
@@ -89,6 +102,69 @@ def _wrap_edt(mask: np.ndarray, pad: int):
     dist, (iy, ix) = ndimage.distance_transform_edt(~padded, return_indices=True)
     inner = (slice(pad, -pad), slice(pad, -pad))
     return dist[inner], (iy[inner] - pad) % mask.shape[0], (ix[inner] - pad) % mask.shape[1]
+
+
+def cells(px: int, tile_mm: float, spacing_mm: float, angle_deg: float, stretch: float, rng: np.random.Generator):
+    """One order of cells on the torus (Poisson-disk nodes, their Voronoi cells stretched along the line direction):
+    per pixel the exact distance (mm) to its cell's wall - from its two nearest nodes, (d2^2 - d1^2) / 2|n2 - n1|, so
+    walls have no pixel staircase - its offset (mm) from its cell's node, and the cell's label."""
+    from scipy.spatial import cKDTree
+
+    nodes = poisson_disk(spacing_mm / tile_mm, rng)
+    theta = np.radians(angle_deg)
+    u, v = np.array([np.cos(theta), np.sin(theta)]), np.array([-np.sin(theta), np.cos(theta)])
+
+    def frame(p: np.ndarray) -> np.ndarray:
+        return np.stack([(p @ u) / stretch, p @ v], -1) * tile_mm
+
+    offsets = np.array([(dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1)], float)
+    copies = (nodes[None] + offsets[:, None]).reshape(-1, 2)
+    copies_f = frame(copies)
+    yy, xx = np.mgrid[0:px, 0:px].astype(np.float32)
+    pts = np.stack([(xx + 0.5) / px, (yy + 0.5) / px], -1).reshape(-1, 2)
+    d, idx = cKDTree(copies_f).query(frame(pts), k=2)
+    n1, n2 = copies_f[idx[:, 0]], copies_f[idx[:, 1]]
+    wall = (d[:, 1] ** 2 - d[:, 0] ** 2) / (2 * np.linalg.norm(n2 - n1, axis=1) + 1e-12)
+    offset = (pts - copies[idx[:, 0]]) * tile_mm
+    return wall.reshape(px, px), offset.reshape(px, px, 2), (idx[:, 0] % len(nodes)).reshape(px, px), len(nodes)
+
+
+def layered(tile_mm: float, px: int, seed: int, angle_deg: float, stretch: float = 1.3,
+            layers: dict | None = None, pores: dict | None = None, smooth_mm: float = LAYERED_SMOOTH_MM) -> np.ndarray:
+    """The height tile (0-1), in orders of cells (`LAYERS`): each order's cells rise from their walls as pillows
+    (1 - exp(-wall / shoulder)), with a groove along the wall; the primary cells each tilted and lifted their own way
+    (the shading that varies cell to cell on HD Aaron's tile); the secondary order turned across the line direction;
+    pits on a share of the primary walls."""
+    layers = LAYERS if layers is None else layers
+    pores = LAYERED_PORES if pores is None else pores
+    rng = np.random.default_rng(seed)
+    height = np.zeros((px, px), np.float32)
+    primary_wall = None
+    for name, spec in layers.items():
+        turn = 0.0 if name != "secondary" else 90.0 + rng.normal(0.0, 10.0)
+        wall, offset, label, n = cells(px, tile_mm, spec["spacing"], angle_deg + turn,
+                                       stretch if name != "secondary" else 1.0 / stretch, rng)
+        lift = 1.0 + rng.normal(0.0, spec.get("lift", 0.0), n).astype(np.float32)
+        soft = spec["pillow"] * (1 - np.exp(-wall / spec["shoulder"])) * lift[label]
+        if spec.get("tilt"):
+            tilt = rng.normal(0.0, spec["tilt"], (n, 2)).astype(np.float32)
+            soft = soft + (offset * tilt[label]).sum(-1)
+        if spec.get("round"):  # the wall distance creases where a cell's second-nearest node changes: domes rounded
+            soft = ndimage.gaussian_filter(soft, spec["round"] * px / tile_mm, mode="wrap")
+        height += soft - spec["groove"] * np.exp(-((wall / spec["groove_w"]) ** 2))
+        if primary_wall is None:
+            primary_wall = wall
+    on_wall = np.argwhere(primary_wall < 0.004)
+    count = int(pores["share"] * (tile_mm / layers["primary"]["spacing"]) ** 2)
+    for (cy, cx), radius in zip(on_wall[rng.choice(len(on_wall), count, replace=False)],
+                                rng.uniform(*pores["radius"], count), strict=True):
+        r_px = int(radius * 3 / tile_mm * px) + 2
+        ys, xs = np.arange(cy - r_px, cy + r_px + 1) % px, np.arange(cx - r_px, cx + r_px + 1) % px
+        dy = ((ys[:, None] - cy + px / 2) % px - px / 2) / px * tile_mm
+        dx = ((xs[None, :] - cx + px / 2) % px - px / 2) / px * tile_mm
+        height[np.ix_(ys, xs)] -= pores["depth"] * np.exp(-((np.hypot(dx, dy) / radius) ** 2)) * rng.uniform(0.6, 1.0)
+    height = ndimage.gaussian_filter(height, smooth_mm * px / tile_mm, mode="wrap")
+    return (height - height.min()) / (height.max() - height.min())
 
 
 def make(tile_mm: float, px: int, seed: int, spacing_mm: float, pore_spacing_mm: float, angle_deg: float,
@@ -181,13 +257,21 @@ def main() -> None:
     p.add_argument("--spacing-mm", type=float, default=0.3)
     p.add_argument("--pore-spacing-mm", type=float, default=0.8)
     p.add_argument("--angle-deg", type=float, default=35.0)
+    p.add_argument("--method", choices=("layered", "single"), default="single")  # layered: on trial at the gate (plan §0)
     a = p.parse_args()
-    height = make(a.tile_mm, a.px, a.seed, a.spacing_mm, a.pore_spacing_mm, a.angle_deg)
+    if a.method == "layered":
+        height = layered(a.tile_mm, a.px, a.seed, a.angle_deg)
+        meta = {"size_mm": a.tile_mm, "px": a.px, "seed": a.seed, "angle_deg": a.angle_deg, "layers": LAYERS,
+                "pores": LAYERED_PORES, "smooth_mm": LAYERED_SMOOTH_MM,
+                "method": "layered cells - pillowed primary cells, finer orders inside (our code; matched to HD Aaron's "
+                          "micro normal in texture space, tools/gate/micro_compare.py)"}
+    else:
+        height = make(a.tile_mm, a.px, a.seed, a.spacing_mm, a.pore_spacing_mm, a.angle_deg)
+        meta = {"size_mm": a.tile_mm, "px": a.px, "seed": a.seed, "spacing_mm": a.spacing_mm,
+                "pore_spacing_mm": a.pore_spacing_mm, "angle_deg": a.angle_deg,
+                "method": "graph-based microrelief after Weiss et al., SGP 2023 (our code)"}
     a.out.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray((height * 65535).astype(np.uint16)).save(a.out)
-    meta = {"size_mm": a.tile_mm, "px": a.px, "seed": a.seed, "spacing_mm": a.spacing_mm,
-            "pore_spacing_mm": a.pore_spacing_mm, "angle_deg": a.angle_deg,
-            "method": "graph-based microrelief after Weiss et al., SGP 2023 (our code)"}
     a.out.with_suffix(".json").write_text(json.dumps(meta, indent=1))
     print("wrote", a.out, height.shape)
 

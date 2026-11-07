@@ -29,18 +29,22 @@ def migrate(body: bpy.types.Object) -> None:
     bpy.context.view_layer.update()
     before = {o.name: lashes.evaluated_points(o) for o in grooms}
     base.upgrade(body)
+    remake_lashes = False
+    if any(o.juststage.part_of == cid and o.juststage.part in ("eyeLeft", "eyeRight") for o in bpy.data.objects):
+        from ..modules.head import parts
+
+        parts.refit(body)  # its contact key reshapes the lids too - the grooms are put back after it, not before
+        remake_lashes = any(o.name.removeprefix(f"{body.name}.").startswith(lashes.NAME) for o in grooms)
     bpy.context.view_layer.update()
     for o in grooms:
+        if remake_lashes and o.name.removeprefix(f"{body.name}.").startswith(lashes.NAME):
+            continue  # made again below
         now = lashes.evaluated_points(o)
         if len(now) == len(before[o.name]) and np.abs(now - before[o.name]).max() > 1e-5:
             miss = lashes.keep_in_place(o, before[o.name])
             print(f"JustStage: {o.name} put back where it was drawn (within {miss * 1000:.4f} mm)")
-    if any(o.juststage.part_of == cid and o.juststage.part in ("eyeLeft", "eyeRight") for o in bpy.data.objects):
-        from ..modules.head import parts
-
-        parts.refit(body)
-        if any(o.name.removeprefix(f"{body.name}.").startswith(lashes.NAME) for o in grooms):
-            lashes.make(body)  # replaces the part
+    if remake_lashes:
+        lashes.make(body)  # replaces the part
 
 
 def is_v2(body: bpy.types.Object) -> bool:

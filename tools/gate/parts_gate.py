@@ -354,13 +354,31 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
            cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "library",
-           character: str = "", scalp: str = "library", prepare=None, lights: str = "stage") -> None:
+           character: str = "", scalp: str = "library", prepare=None, lights: str = "stage",
+           variants: list[tuple[str, object]] | None = None) -> None:
     """`prepare(built)`, if given, changes the built character before any render - one factor at a time
-    (`tools/gate/factors.py`)."""
+    (`tools/gate/factors.py`). `variants` [(tag, prepare)]: the character built once, and before each variant every
+    object's materials set back to fresh copies of the built ones (a variant may change only its materials' trees and
+    load images - one that changes anything else runs alone) - a trial in about a minute instead of a rebuild's six."""
     scene, cam = _stage()
     built = build_ours(scene, skin, brows, character, scalp) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
+    if variants:
+        slots = [(obj, i, s.material) for obj in scene.objects for i, s in enumerate(obj.material_slots) if s.material]
+        pristine = {m.name: m.copy() for m in {m for _, _, m in slots}}
+        for m in pristine.values():
+            m.use_fake_user = True
+        for vtag, vprepare in variants:
+            for obj, i, m in slots:
+                obj.material_slots[i].material = pristine[m.name].copy()
+            vprepare(built)
+            _render_views(who, engine, out_dir, names, size, samples, vtag, built, scene, cam, lights)
+        return
     if prepare is not None:
         prepare(built)
+    _render_views(who, engine, out_dir, names, size, samples, tag, built, scene, cam, lights)
+
+
+def _render_views(who, engine, out_dir, names, size, samples, tag, built, scene, cam, lights) -> None:
     if lights == "world":  # the image light alone (rec 1's bound: hair within 10% of Cycles under both lights)
         for obj in scene.objects:
             if obj.type == "LIGHT":

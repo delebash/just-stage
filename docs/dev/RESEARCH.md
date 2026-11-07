@@ -2535,6 +2535,19 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   EEVEE build - Normal Strength 1.25 / 1.0, Micro Normal Strength 0.396 / 0.317, Roughness Power 0.75 / 0.56,
   Subsurface Scale 1.0 / 1.43. His detail reads ~1.6x stronger in Cycles; ours the same in both engines.
 
+- **HD Aaron's crisp skin detail is one micro-normal tile - and ours had the wrong pattern, not the wrong strength**
+  (*measured, 2026-11-07*, `tools/gate/micro_compare.py`; `aaron_hair_eevee.blend` read in Blender). His head skin in
+  Blender (CC Blender Tools 2.4.5, EEVEE build): a 4096² micro normal tiled 50x over his head's UVs (his mesh: 528 mm
+  a UV unit -> 10.56 mm a repeat, 388 px/mm) at Micro Normal Strength 0.317 (his MicroNMask ~1 over the face); his head
+  normal map 2048² (3.9 px/mm); cavity 2048² at 0.823; scatter radius (10, 3.7, 3) mm x weight from his SSS map. Our
+  pore tile (Ten24 Level_01, 154 px over 33.5 mm) is 4.6 px/mm - like his head normal, it can't draw a pore's edge at
+  the cheek view's 34 px/mm; the crispness there is the micro tile's alone. The two micro tiles' slope, lit the same way
+  at the same real size: power by band 0.04-0.1 / 0.1-0.25 / 0.25-0.6 / 0.6-1.5 mm - his 5 / 29 / 51 / 14%
+  (pillowed cells ~0.6-1 mm, each tilted its own way, finer cells inside them), our 11-05 tile 31 / 55 / 15 / 0% (thin
+  walls round flat cells ~0.4 mm); DISTS ours against his 0.385, his own floor 0.156. The slope strengths already
+  matched (his 0.090 after the 0.317, ours 0.095 at the cheek's x1.35) - so on the cheek render no strength of ours
+  moved DISTS (0.18-0.19 against his 0.06 floor; pores off 0.25, micro x3 0.21 - the factor renders of 2026-11-07a).
+
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
 - **Skin lightness by melanin** (`core/skin_optics.py`, eumelanin 0.6, blood 0.016; CIE L* of the albedo):
