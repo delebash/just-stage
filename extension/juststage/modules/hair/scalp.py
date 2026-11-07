@@ -40,7 +40,7 @@ SHORT_TAPER = {"lengths": ((-0.4, 9.0), (0.0, 18.0), (0.35, 42.0), (0.7, 62.0)),
                "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.35,
                "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.25, "back_lift": 0.6, "side_down": 0.15}  # fmt: skip
 STYLES = {"short combed": SHORT_COMBED, "short taper": SHORT_TAPER}
-MASK_SIZE, MASK_BLUR = 1024, 6  # the scalp mask in hm08's UVs: texels, its soft edge (texels)
+MASK_SIZE = 1024  # the scalp mask in hm08's UVs, texels
 MELANIN, MELANIN_SPREAD, REDNESS = 0.82, 0.06, 0.2
 GREY_SHARE, GREY_MELANIN = 0.2, 0.05  # grey: a share of strands nearly without pigment
 
@@ -114,16 +114,17 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
     return out
 
 
-def _above_neck(character: bpy.types.Object) -> np.ndarray:
-    """The head's own faces in hm08's UVs as a 0/1 grid (MASK_SIZE²): every face whose centre on the base shape lies
-    above the neck joint (MakeHuman's `joint-neck` cube), its UV polygon filled. The mask's gap-closing is done in UV
-    space, where hm08's head island borders the body's: without this cut 2% of the strands (2,030 of 102,137, measured
-    2026-11-07) rooted on the body, from the upper back down to 0.42 m above the floor."""
+MASK_RINGS = 2  # the style's root faces grown this many rings over the mesh (the gaps between its roots closed)
+
+
+def _head_faces(character: bpy.types.Object):
+    """The faces above the neck joint (MakeHuman's `joint-neck` cube) on the base shape - the same faces on every
+    character - with every face's UV polygon (hm08's, in mask texels) and its vertices."""
     from . import groom
 
     me = character.data
     co = np.empty(len(me.vertices) * 3, np.float32)
-    me.vertices.foreach_get("co", co)  # the base shape: the same faces are the head's on every character
+    me.vertices.foreach_get("co", co)  # the base shape
     co = co.reshape(-1, 3)
     neck = character.vertex_groups["joint-neck"].index
     cube = [v.index for v in me.vertices if any(g.group == neck and g.weight > 0.5 for g in v.groups)]
@@ -131,23 +132,47 @@ def _above_neck(character: bpy.types.Object) -> np.ndarray:
     uv = me.uv_layers[groom.SURFACE_UV].data
     loop_uv = np.empty(len(uv) * 2, np.float32)
     uv.foreach_get("uv", loop_uv)
-    loop_uv = loop_uv.reshape(-1, 2)
-    grid = np.zeros((MASK_SIZE, MASK_SIZE), np.float32)  # rows by v, as `scalp_mask`'s grid
+    loop_uv = loop_uv.reshape(-1, 2) * MASK_SIZE
+    faces = {}
     for poly in me.polygons:
-        if co[list(poly.vertices), 2].mean() <= neck_z:
-            continue
-        pts = loop_uv[poly.loop_start:poly.loop_start + poly.loop_total] * MASK_SIZE
-        _fill_polygon(grid, pts)
-    return grid
+        verts = list(poly.vertices)
+        if co[verts, 2].mean() > neck_z:
+            faces[poly.index] = (loop_uv[poly.loop_start:poly.loop_start + poly.loop_total], verts)
+    return faces
 
 
-def _fill_polygon(grid: np.ndarray, pts: np.ndarray) -> None:
-    """A UV polygon (texel units, x = u, y = v) filled into `grid` as a fan of triangles: every texel whose centre lies
-    inside, and the texels of its corners and centre (a face smaller than a texel still marks one) - numpy only,
-    Blender's Python has no imaging library."""
+def _scalp_faces(character: bpy.types.Object) -> dict[int, float]:
+    """The style's scalp as faces, each with its mask value: the head's faces (`_head_faces`) holding a root of the
+    style's region, grown MASK_RINGS rings across the mesh - 1 inside, 0.5 on the outermost ring (a soft hairline). In
+    faces, not in UV space: a mask closed and blurred over the UVs fell to nothing along the head island's own seams and
+    left a bare line above the ear, the crown to the nape (2026-11-07); and 2% of the strands rooted on the body,
+    whose islands border the head's (2,030 of 102,137, from the upper back to 0.42 m above the floor)."""
+    head = _head_faces(character)
+    ids = np.full((MASK_SIZE, MASK_SIZE), -1, np.int32)
+    for index, (pts, _) in head.items():
+        _fill_polygon(ids, pts, index)
+    uvs = brows.region_uvs(REGION_STYLE)
+    ij = np.clip((uvs * MASK_SIZE).astype(int), 0, MASK_SIZE - 1)
+    found = ids[ij[:, 1], ij[:, 0]]
+    chosen = {int(f): 1.0 for f in np.unique(found[found >= 0])}
+    by_vertex: dict[int, list[int]] = {}
+    for index, (_, verts) in head.items():
+        for v in verts:
+            by_vertex.setdefault(v, []).append(index)
+    for ring in range(MASK_RINGS):
+        grown = {f for index in chosen for v in head[index][1] for f in by_vertex[v]} - set(chosen)
+        value = 0.5 if ring == MASK_RINGS - 1 else 1.0
+        chosen.update({f: value for f in grown})
+    return chosen
+
+
+def _fill_polygon(grid: np.ndarray, pts: np.ndarray, value: float = 1.0) -> None:
+    """A UV polygon (texel units, x = u, y = v) filled into `grid` with `value` as a fan of triangles: every texel
+    whose centre lies inside, and the texels of its corners and centre (a face smaller than a texel still marks one) -
+    numpy only, Blender's Python has no imaging library."""
     size = grid.shape[0]
     for p in np.vstack([pts, pts.mean(0)]):
-        grid[min(int(p[1]), size - 1), min(int(p[0]), size - 1)] = 1.0
+        grid[min(int(p[1]), size - 1), min(int(p[0]), size - 1)] = value
     for k in range(1, len(pts) - 1):
         a, b, c = pts[0], pts[k], pts[k + 1]
         x0, x1 = max(int(np.floor(min(a[0], b[0], c[0]))), 0), min(int(np.ceil(max(a[0], b[0], c[0]))), size - 1)
@@ -161,28 +186,23 @@ def _fill_polygon(grid: np.ndarray, pts: np.ndarray) -> None:
 
         s1, s2, s3 = side(a, b), side(b, c), side(c, a)
         inside = ((s1 >= 0) & (s2 >= 0) & (s3 >= 0)) | ((s1 <= 0) & (s2 <= 0) & (s3 <= 0))
-        grid[y0:y1 + 1, x0:x1 + 1][inside] = 1.0
+        grid[y0:y1 + 1, x0:x1 + 1][inside] = value
 
 
 def scalp_mask(character: bpy.types.Object | None = None) -> bpy.types.Image:
-    """The scalp in hm08's UVs as an image (the pack style's roots splatted, blurred to a soft edge, cut to the head's
-    own faces - `_above_neck`): the interpolation's mask texture, sampled by the strands' surface UVs. Made once, from
-    the first character it is asked for (the cut is by topology: the same faces on every character)."""
+    """The scalp in hm08's UVs as an image - the style's region chosen in faces (`_scalp_faces`) and filled into its
+    UV polygons: the interpolation's mask texture, sampled by the strands' surface UVs. Made once, from the first
+    character it is asked for (the faces are the topology's: the same on every character)."""
     name = "JustStage scalp mask"
     image = bpy.data.images.get(name)
     if image is not None:
         return image
     if character is None:
         raise ValueError("the scalp mask is made from a character the first time")
-    uvs = brows.region_uvs(REGION_STYLE)
+    head = _head_faces(character)
     grid = np.zeros((MASK_SIZE, MASK_SIZE), np.float32)
-    ij = np.clip((uvs * MASK_SIZE).astype(int), 0, MASK_SIZE - 1)
-    grid[ij[:, 1], ij[:, 0]] = 1.0
-    for _ in range(4):  # close the gaps between the roots and the notches in the style's region, then a soft edge
-        for axis in (0, 1):
-            grid = sum(np.roll(grid, k, axis=axis) for k in range(-MASK_BLUR, MASK_BLUR + 1)) / (2 * MASK_BLUR + 1)
-        grid = np.clip(grid * 4.0, 0.0, 1.0)
-    grid *= _above_neck(character)
+    for index, value in sorted(_scalp_faces(character).items(), key=lambda kv: kv[1]):  # 1 painted over 0.5
+        _fill_polygon(grid, head[index][0], value)
     image = bpy.data.images.new(name, MASK_SIZE, MASK_SIZE, alpha=False, float_buffer=True)
     image.colorspace_settings.name = "Non-Color"
     image.pixels.foreach_set(np.dstack([grid, grid, grid, np.ones_like(grid)]).ravel())
