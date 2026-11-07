@@ -59,6 +59,8 @@ PATCHES = {
     "hand": _grid([0.60, 0.65, 0.70, 0.75], [0.36, 0.41, 0.46, 0.51], 0.05),
     "torso": _grid([0.20, 0.28, 0.45, 0.53, 0.61, 0.69], [0.36, 0.44, 0.52], 0.08),
     "foot": _grid([0.30, 0.36, 0.42, 0.48, 0.54], [0.42, 0.48, 0.54], 0.06),
+    # the nose's side and back (~3.6 mm patches), clear of its edge on ours (the chin view is under stubble on both)
+    "nose": _grid([0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48], [0.26, 0.32, 0.38, 0.44], 0.06),
 }
 PERMUTATIONS = 2000
 
