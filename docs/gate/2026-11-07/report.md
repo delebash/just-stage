@@ -191,7 +191,40 @@ approved rule ("then hair cards take the live view") the live view goes to cards
 no cards exist for our generated styles (Strands2Cards' method, the plan's §14 "Cards", TO BUILD) - the plan's §19.2
 item 27.
 
+## Evening: the face loop - EEVEE only, the plan's §0
+
+The user, 2026-11-07 evening: the bar is the live view - ours against HD Aaron in EEVEE, nothing else (plan §0). So
+this section is EEVEE only; the Cycles tables above are diagnostics of ours, and the hair bound's verdict above was
+judged against our own Cycles, not against Aaron in EEVEE - it is re-measured against his hair (plan §19.2 item 27).
+
+**Why ours reads soft** (RESEARCH §14.9): our pore tile is 4.6 px/mm (Ten24 Level_01), his head normal 3.9 - at the
+cheek view's 34 px/mm neither draws a pore's edge; his crispness is his 388 px/mm micro normal (tiled 50x, strength
+0.317) of pillowed ~0.6-1 mm cells with finer cells inside, ours thin walls round flat cells (texture-space slope power
+at 0.25-0.6 mm: his 51%, ours 15%). The strengths already matched.
+
+**The texture measure corrected.** The 0.06 floor above was his window against itself moved 1.5% - nearly the same
+pixels; "about 3x his own floor" overstated the gap. Measured as two samples of skin (`dists.py --patches`: ours
+against his beside his against his own; the excess is ~0 for the same texture): his own cheek patches differ by 0.198,
+his forehead's by 0.189. Excess (5 patches; a 24-patch grid with a permutation test follows):
+
+| Skin (`.dev/gate/parts/2026-11-07d`) | cheek | forehead |
+|---|---|---|
+| today's | 0.060 | 0.100 |
+| layered tile s0 (`microtile*s0+micro*1.97`) | 0.041 | 0.072 |
+| layered tile t1, no per-cell tilt (`microtile*t1+micro*2.686`) | **0.035** | **0.064** |
+| s0 + roughness x1.38 (toward his 0.66) | 0.069 | 0.057 |
+| s0 + roughness x0.75 | 0.058 | 0.092 |
+| s0 + coat x3 | 0.041 | 0.062 |
+| s0, the forehead's microrelief at 1/5 (his mask's level) | - | 0.059 |
+| s0, our colour set to his | 0.040 | 0.073 |
+
+His own patches split at random against each other: 0.000 +- 0.027 (cheek), +- 0.019 (forehead). **Read:** the tile
+is the one clear gain; the cheek with t1 sits inside his own chance range, the forehead does not; colour is not the
+gap. His shine read at each pixel (`shine_probe.py`): roughness 0.66, even over face and body; ours 0.37-0.48, flat in
+a region - raising ours helps the forehead and hurts the cheek (ours then varies less than his skin: 0.149 against
+0.198 patch to patch). Next: the t1 batch (coat, scatter x2 / x3, roughness with deeper pores, the forehead's micro at
+his level with roughness, the scans' relief x1.3), scored on the 24-patch grid.
+
 ## Next
 
-The cheek's gap one factor at a time (`tools/gate/factors.py`: relief0, pores0, micro0, colourpores0, colourflat), then
-the fix, re-measured in both renderers; Cycles' numbers beside these; the hand donor (Ten24's sample, on disk).
+The face per the loop above; then the hands, the feet, the hair against Aaron's hair, the eyes - all EEVEE.

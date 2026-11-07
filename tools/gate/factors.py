@@ -205,7 +205,8 @@ FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colour
 
 
 #: the shine trials: a key -> the Principled input it scales on both of the skin's BSDFs (the film's and the live view's)
-SHINE = {"rough": "Roughness", "spec": "Specular IOR Level", "coat": "Coat Weight", "coatrough": "Coat Roughness"}
+SHINE = {"rough": "Roughness", "spec": "Specular IOR Level", "coat": "Coat Weight", "coatrough": "Coat Roughness",
+         "sss": "Subsurface Scale"}  # sss: how far the light scatters (HD Aaron's radius is wider than ours)
 
 
 def _scale_input(nt, socket: str, k: float) -> None:
@@ -213,7 +214,7 @@ def _scale_input(nt, socket: str, k: float) -> None:
     for bsdf in [n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"]:
         s = bsdf.inputs[socket]
         if not s.is_linked:
-            s.default_value = min(s.default_value * k, 1.0)
+            s.default_value = s.default_value * k if socket == "Subsurface Scale" else min(s.default_value * k, 1.0)
             continue
         times = nt.nodes.new("ShaderNodeMath")
         times.operation, times.use_clamp = "MULTIPLY", True

@@ -49,7 +49,10 @@ and looked at before a number is used):
   bands of real size on the skin: micro 0.06-0.3 mm, pores 0.3-1.5, folds 1.5-7, form 7-30 (an RMS in L* units; a band
   the view doesn't resolve reads None);
 - **ridges** - Frangi's 1998 vesselness at 1.5-8 mm (veins, tendons, creases apart from speckle), dark and light;
-- **repeatability** - each measure's spread with the window moved 1.5% of the frame (3 x 3 positions).
+- **repeatability** - each measure's spread with the window moved 1.5% of the frame (3 x 3 positions);
+- **texture structure** - DISTS (Ding et al. 2020) as two samples of skin (`tools/gate/dists.py --patches`): five
+  patches per view, ours against his beside his against his own; "the same texture" is an excess (ours-against-his
+  less the two within-means' average) of ~0. Not the 1.5%-jitter floor - that is the same pixels moved (2026-11-07).
 
 Also recorded, as before: the live view's frame time on the GPU (`--gpu-backend opengl --profile-gpu` - OpenGL's
 timestamps; the default Vulkan backend is unmeasured, said with each number) and VRAM at the working resolutions; the

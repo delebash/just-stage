@@ -2547,6 +2547,22 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   walls round flat cells ~0.4 mm); DISTS ours against his 0.385, his own floor 0.156. The slope strengths already
   matched (his 0.090 after the 0.317, ours 0.095 at the cheek's x1.35) - so on the cheek render no strength of ours
   moved DISTS (0.18-0.19 against his 0.06 floor; pores off 0.25, micro x3 0.21 - the factor renders of 2026-11-07a).
+- **The texture measure's floor was wrong; measured as two samples of skin, the face's gap is a third of what it read**
+  (*measured, 2026-11-07 evening*, `tools/gate/dists.py --patches`, `.dev/gate/parts/2026-11-07d`, EEVEE). The 0.06
+  "floor" was his window against itself moved 1.5% - nearly the same pixels. Five patches of his own cheek differ from
+  each other by 0.198 (0.12-0.28), of his forehead by 0.189 - so "the same texture" is ours-against-his no higher than
+  the within-means' average (the excess, an energy distance). Excess, cheek / forehead: today's skin 0.060 / 0.100;
+  the layered tile s0 0.041 / 0.072; the layered tile without the per-cell tilt (t1: round 0.05 mm, lift 0.3,
+  `micro*2.686` slope-matched) 0.035 / 0.064; our colour set to his changes it by 0.001-0.003 (colour is not the gap).
+- **His shine, read from his shader at each pixel** (*measured, 2026-11-07*, `tools/gate/shine_probe.py`): roughness
+  0.66 at cheek and forehead (p10-p90 0.62-0.70), even over face and body, the lips a little lower; Specular IOR Level
+  0.36; coat ~0.10 (none on the lips). Ours: roughness 0.48 cheek, 0.37 forehead, 0.43 over the face centre, flat inside
+  a region (p10-p90 0.474-0.479); specular 0.35 (0.28-0.42 by cavity); coat 0.13. On the excess: roughness x1.38 helps
+  the forehead (0.072 -> 0.057) and hurts the cheek (0.041 -> 0.069: ours becomes more even than his - our
+  patch-to-patch 0.149 against his 0.198, since his roughness varies and ours doesn't); lower roughness hurts both
+  (x0.75: 0.058 / 0.092); specular x1.6 hurts; coat x3 helps the forehead only (0.062). His MicroNMask is 1 over the
+  whole face but brows, lash lines, nostrils, the nose tip (~0.6) and lips (~0.5) - ours scales the microrelief x5 on
+  the forehead, x3 nose, x1.6 chin (`make_face_regions.py`, set on voided inputs); the forehead at 1/5 of it: 0.059.
 
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
