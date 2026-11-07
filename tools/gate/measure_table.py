@@ -8,7 +8,7 @@
 Reads `measures_<engine>.json` (`tools/gate/measure.py`). Per window: L* a* b*, the detail bands (micro / pore / fold /
 form, RMS L*), the ridges (dark / light) and the worst repeatability spread; then each of ours as a ratio of Aaron's,
 marked = (within that measure's repeatability band on Aaron, two-sided - quality-gate.md §5), < or >, the
-band in brackets, "!" where it is over 5% (that measure goes back)."""
+band in brackets, "!" where it is over 15% (the window straddles a feature: move it)."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ def table(report: dict) -> str:
                         ratio = v / rv
                         band = rep.get(f"bands.{k}", 0.05)
                         mark = "=" if abs(ratio - 1) <= band else ("<" if ratio < 1 else ">")
-                        marks.append(f"{k} {ratio:.2f}{mark}[{band:.0%}]" + ("!" if band > 0.05 else ""))
+                        marks.append(f"{k} {ratio:.2f}{mark}[{band:.0%}]" + ("!" if band > 0.15 else ""))
                     line += "\n" + " " * 26 + "vs Aaron: " + " ".join(marks)
                 rows.append(line)
     return "\n".join(rows)

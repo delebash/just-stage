@@ -20,7 +20,8 @@ fraction lands on the same part of both):
   Frangi et al.'s 1998 vesselness (scikit-image's `frangi`) over the window, dark ridges (creases, veins) and light
   ones (tendons) apart.
 - **repeatability** - each measure again with the window moved by JITTER of the frame in a 3 x 3 grid: its spread
-  ((max - min) / |mean|). "Equal" at the gate is within this band (Q-GATE-1); a band over 5% sends the measure back.
+  ((max - min) / |mean|). "Equal" at the gate is within this band (Q-GATE-1); over 15% the window straddles a feature
+  and is moved (the skin itself varies 8-9% on the cheek at 1.5% of the frame - 2026-11-07).
 
 The scale comes from `frames.json`, which `parts_gate.py render` writes beside the renders (each view's frame
 width at its target). Writes `measures_<engine>.json` beside the renders and `windows_<view>.png`, each render with its windows outlined - looked at

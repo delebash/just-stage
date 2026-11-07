@@ -25,6 +25,18 @@ independent read of the skin, the eyes and lids, and the hair; I re-read every c
 before it enters the plan; the code checked by reading its modules whole. Work files: `.dev/audit/2026-11-06/`
 (CHECKLIST.md, G1-G10.md).
 
+The user, 2026-11-07, on finding the session closed and nothing done since the plan: "damint, you have been doing
+nothing for a day, make sure the plan is correcte rethink adverserially read all docs you need to and give me your rec
+reathink on rec adverserily multiple times"; "i thought the first pan was to consoidlate all your research and docs so
+you dont keep getting lost, did that happen?" (no - step 4, RESEARCH as an index, and RESUME pointing only to the plan
+were left undone); on my rec (the checkers report -> the plan and RESEARCH's wrong lines fixed -> RESEARCH indexed once
+-> RESUME a pointer to the plan -> the decisions): "your rec go"; then "i am going away from computer so i want you to
+think on your recs then go start coding, i dont want to come back to see a prompt waiting forme to answer questions,
+you need to think on your rec and go code, understood?". So: four independent readers checked the plan claim by claim
+(`.dev/audit/2026-11-07/CHECK-A.md` to `CHECK-D.md`); the plan corrected; its §19.1 decisions taken under this go and
+worked from; §19.2 (NOT STANDARD pieces by name, changes to the user's own decisions, research before a rec, the user's
+own actions) waits for the user without stopping other work.
+
 ## Research: what JustStage is built on, its features and its standards — the go [2026-10-29]
 
 GO:     the user, verbatim (2026-10-29, the opening request): "i want to start working on a clone of reallusion

@@ -295,7 +295,7 @@ Subjects: [1 · The machine](#1--the-machine) ·
   clean inputs:** the face-skin proof (cheek pore band "equal on six characters"), the brows and lashes judgments, the
   lower-lid wet margin and caruncle, the lid band (28-50 px), every face-distance comparison with Aaron (he wears his
   Stubble mesh, ours none). **Stand:** iris, white and pupil (measured inside the opening), the geometry (lid
-  anatomy, slider sweep, recess), the gate's tooling, the live view's calibration (113-117% of Cycles).
+  anatomy, slider sweep, recess), the gate's tooling, the live view's calibration (111-117% of Cycles: L280's ratios are 113 / 117 / 111% - was: "113-117%" until 2026-11-07).
 - **Clean skins and the first clean-input gate** (*measured, 2026-11-06*, `../gate/2026-11-06/report.md`,
   `../plans/2026-11-06-inputs-audit.md`): hair comes out of scan photos by region, not by strands alone - DullRazor's
   line closings (Lee et al. 1997) catch single strands and stray hairs but neither the dense lash band round an eye
@@ -352,7 +352,7 @@ Subjects: [1 · The machine](#1--the-machine) ·
   bones; phenotype gender, age, muscle, weight, height, proportions. Its README names no scan fitting: ours by gradient
   descent (bones' turns, the phenotype, a placement; a robust two-way nearest-point loss, 400 Adam steps, GPU) then
   the wrap: upper arms 3 / 7-8 mm, forearms 2-3 / 7-8, hands 2-3 / 6-8, thighs 3-4 / 9, shins 6-8 / 20-22, feet 5 / 13-16
-  - every segment better. (The fit set gender 0.08 for a heavy man - a shape-space quirk; only the surface matters
+  - every segment better. (The fit ended at gender 0.08 - male, right for this man: Anny's gender runs 0 male, 1 female (`anny/models/model_data.py` `gender=["male", "female"]`, anchors 0..1 in `phenotype.py`), the reverse of MakeHuman's 1 = male; `fit_anny` starts it at logit 4.0 commented "a man" (`tools/body_scan.py` L234) - 0.98, female in Anny - and its loss has no phenotype term, so that is an inverted start value, not a prior (was: "a shape-space quirk" until 2026-11-07); only the surface matters
   here.) Anny is a fitting tool in the scan pipeline only: the shipped mesh stays hm08 + base v2.
   Queries (2026-11-06, after the user asked whether Anny was researched against MakeHuman): "best way to fit a
   parametric human body model to a 3D body scan 2026" - older SCAPE / SMPL pipelines (joint-anchored fitting,
@@ -2416,8 +2416,8 @@ every one logged; key claims page-read):
 - *2026-11-02, the skin's source* (`../plans/2026-11-02-research-texture-source.md`): Headshot 3 textures from ONE
   photo plus "a skin-base preset by age and facial hair" merged by blend masks (ai-texturing §6) - we paint ten AI
   views instead. MakeHuman's CC0 skins (Skins 02, downloaded, measured): 2048² whole-body maps in our UV layout, the
-  face ~250 px across, painted with shading baked in - not a base. Free scanned heads (Ten24, Digital Emily 2) are
-  non-commercial; the Lee Perry-Smith scan stays the one CC-BY head. Nano Banana Pro: ~$0.24 a 4K picture on Google's
+  face ~250 px across, painted with shading baked in - not a base. Free scanned heads: Digital Emily 2 is non-commercial; Ten24's sample allows commercial use with credit - "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used" (its page saved 2026-11-04; §14 "The hand donor") (was: "Free scanned heads (Ten24, Digital Emily 2) are
+  non-commercial" until 2026-11-07); the Lee Perry-Smith scan stays the one CC-BY head. Nano Banana Pro: ~$0.24 a 4K picture on Google's
   API; Google "won't claim ownership" of outputs and bars using the service "to develop models that compete". SkinGen:
   a skin base under masked layers (blend modes, normal and micro-normal strengths, region tools). Histogram-preserving
   blending (Heitz & Neyret 2018) tiles skin swatches; pores need their own layer. Claude makes no images.
@@ -2726,8 +2726,8 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   disk): a dark-skinned, heavier woman with bare arms, legs and feet. Renderbot (a one-year site licence), store
   "Standard" licences, editorial-only and NC sources fail; Sketchfab's Store has closed.
 - **Hair out of scan colour** (*R1 Q1*): no studio publishes an automatic tool - avoid at capture, smooth geometry
-  (ZBrush), paint out by hand. Detection better than DullRazor: Telea et al. 2016 (training-free; code linked, licence
-  unstated) and learned SegFormer masks (Dice 0.967 vs DullRazor's 0.781 on skin-lesion images) [page]. Learned fills
+  (ZBrush), paint out by hand. Detection better than DullRazor: Koehoorn, Sobiecki, Rauber, Jalba and Telea 2016 (training-free; code linked, licence unstated) and a learned mask - Ollamberganov et al. 2025's SegFormer-based pipeline, Dice 0.967 against SegFormer alone 0.932 and DullRazor 0.781 on dermoscopy images (HAM10000), no code link, no open hair-segmentation weights checked [page]
+  (was: "Telea et al. 2016" and "learned SegFormer masks (Dice 0.967 vs DullRazor's 0.781 on skin-lesion images)" until 2026-11-07). Learned fills
   (LaMa, Apache-2.0) smooth fine texture - a fill from the same scan keeps pores. Makeup-removal models work on
   low-resolution photos only: picking makeup-free scans is the fix.
 - **Delighting** (*R1 Q2*): Unity's De-Lighting Tool (MIT, 2020) rebuilds the light from the surface with bent
@@ -2754,15 +2754,15 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   below the center of the subject's pupil"; 56 normal adults: **upper 1.36 ± 0.25 mm, lower 1.0 ± 0.23 mm**, both rising
   with age (Ophthalmol Ther 2021, PMC8770731, CC BY-NC). Lower lid by OCT / Keratograph 0.90 ± 0.20 / 0.86 ± 0.16 mm
   (Wang et al., Graefes 2023, CC BY). The MCJ (line of Marx) "0.2-0.3 mm wide" (Knop et al. 2011). The whole margin
-  "Nearly flat, 2 mm wide" [snippet]. Base v2 places the lash row 2.6 mm off the eyeball (`tools/make_base_v2.py` LASH /
-  MARGIN / RIM = 2.6 / 1.3 / 0.25) - above every measured value: a measured target for the lid band.
+  "Nearly flat, 2 mm wide" [snippet]. Base v2 places the lash row - the margin's front edge (`hair/lashes.py` L132) - 2.6 mm off the eyeball (`tools/make_base_v2.py` LASH / MARGIN / RIM = 2.6 / 1.3 / 0.25): a whole margin of ~2.35 mm against the real whole margin's ~2 mm [snippet], ~1.2x; the LMT runs from the posterior lash line, a part of the margin, so it is no target for the front row's place
+  (was: "above every measured value: a measured target for the lid band" until 2026-11-07).
 - **Lower tear meniscus** (*page read*, R3): ages 19-31 AS-OCT 0.21 ± 0.06, Keratograph 0.20 ± 0.05 mm (PMC11809819, CC
   BY); ages 10-78: 0.34 ± 0.07 mm (0.11-0.61), ~0.002 mm a year (0.29 at 10-20 to 0.40 at 61-80), no sex difference
   (Frontiers Med 2022, CC BY).
 - **Lashes** (*page read*, R3 Q3): the oatext study's Figure 2 seen - the vertical points down from the root, so upper
   lashes leave the lid ~29 deg (men) / 18 deg (women) below straight ahead (L2385 above stands; our code sweeps them up
-  to match Aaron - a choice to state). Central density 12-15 upper lashes per 2 mm of lid. Shaft 77.8 x 63.9 µm,
-  elliptical (synchrotron CT) - our 0.08 mm fits. No frontal fan study found (again). Kerbiriou's data (InterDigital, 56
+  to match Aaron - a choice to state). Central density 12-15 upper lashes per 2 mm of lid. Shaft 77.8 x 63.9 µm across, elliptical (synchrotron CT; ~71 µm round) - our lashes' 0.08 mm is their radius (`hair/lashes.py` `UPPER["radius"]`, the Curves' `radius` attribute): 0.16 mm across, ~2x the real
+  (was: "our 0.08 mm fits" until 2026-11-07). No frontal fan study found (again). Kerbiriou's data (InterDigital, 56
   people): access by e-mail, evaluation only, no commercial use, no redistribution - blocked. MetaHuman's "7" lash
   styles are its style list (None + six presets); its other controls are colour (melanin, redness, lightness,
   roughness, salt-and-pepper, dye) - rec 8's "7 style parameters" was wrong.
@@ -2782,7 +2782,7 @@ The rec list built on this register (2026-10-29): [`../plans/2026-10-29-recs.md`
   (we had 0.81), blonde 0.220 (we had 0.12)** [calc, re-done by me]. Measured single-fibre absorption (Bashkatov 2006)
   is ~50x below rendering values - not a default source.
 - **Hair densities** (*page read*, R3 Q6-Q7): scalp terminal 223 / cm² (175-300; Barman 1965) - African 149, Asian 175,
-  Caucasian 226, Hispanic 178; Szabo's 980 counts all follicles. Beard shaft 125.6 ± 10.9 µm (Tolgyesi 1983); beard
+  Caucasian 226, Hispanic 178 - these by ethnicity are Table 6 of Alsharif & AlGhamdi 2022 (CCID 15:2737, CC BY-NC 3.0, citing Birnbaum 2018 and Maymone 2021; R3 Q6), not Barman (was: credited to Barman 1965 with the 223 until 2026-11-07); Szabo's 980 counts all follicles. Beard shaft 125.6 ± 10.9 µm (Tolgyesi 1983); beard
   densities reached run to ~120 / cm² (ours 160). Forearm 39 ± 12 follicles / cm². Brow shaft 54 µm (men), 47 (women);
   no measured hairs-per-brow count found (a full transplanted brow ~200 follicles; ours 2,200 a brow). Strands2Cards'
   paper unread (over the fetch limit). Groom comparison: HairCS's silhouette IoU (coverage), tangent and depth images,

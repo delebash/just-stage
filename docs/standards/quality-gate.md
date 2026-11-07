@@ -55,7 +55,8 @@ materials across the USD trip.
 
 Per part, per renderer: **equal** = Aaron's value within the measure's repeatability band, two-sided; **above** only
 by the user's eye on the contact sheet, never by a bigger number (gate run 1's orange-peel skin had more detail than
-Aaron and read worse); a band over 5% sends the measure back. A part short of the bar is diagnosed one factor at a
+Aaron and read worse); a band over 15% means the window straddles a feature and is moved (skin itself varies 8-9% within
+1.5% of the frame on the cheek, measured 2026-11-07). A part short of the bar is diagnosed one factor at a
 time (`--cc5-inputs`, scratch factor renders) before it is fixed. **The gate passes when no part is below Aaron in
 either renderer**, and the same holds on four or more characters.
 
