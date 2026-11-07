@@ -2618,6 +2618,15 @@ re-check before the rec list; nothing run on skin here):
   not derived from that normal map alone (CC5 likely bakes it from the HD sculpt). So "cavity from our relief" can't be
   calibrated to his map this way; whether a cavity map is needed at all is left to the face proof's highlight measure.
 
+- **HD Aaron's shine over the body, read at each pixel (*measured, 2026-11-07 evening*, `tools/gate/shine_probe.py`,
+  EEVEE).** Roughness: torso 0.72 (p10-p90 0.69-0.74), foot 0.74 (0.70-0.78), hand 0.72; ours 0.59 flat (`material.
+  ROUGHNESS`) on every body tile. Specular IOR Level 0.40 (ours 0.35). Coat weight 0.10 on face and body (ours 0.13
+  face, 0.03 body - `maps.BODY_COAT_WEIGHT`), its roughness 0.33 cheek, 0.36 torso, 0.37 foot (ours 0.44). So his
+  shiny, crumpled-looking foot is his coat over a rough base, not a smooth base: lowering our base roughness x0.5 did
+  bring the torso's and the foot's texture excess down (0.055 -> 0.046, 0.102 -> 0.076) but against his own values -
+  rejected, not shipped (the hand at x0.5 rose 0.047 -> 0.075). His set (coat 0.10 at 0.35, specular 0.40, base 0.72)
+  is on trial.
+
 ### 14.11 · Body skin and fitting a scan
 
 - **Anny (NAVER), read 2026-11-05** (github.com/naver/anny README [page], the user's link): "a free, open-source, differentiable human body mesh model" in PyTorch, infants to elders, "based on the tremendous work of the MakeHuman community"; licences: code Apache-2.0, `data/mpfb2` and `data/faceunits01` CC0 1.0, `data/soma` Apache-2.0, `smplx` non-commercial; topologies `anny` (default, triangulated, unattached vertices removed), `anny-quads`, `anny-full`, **`makehuman` ("unedited quad MakeHuman mesh")**, `smplx`, `smpl`, `soma`; rig 104 bones by default, 163 with `rig="makehuman"`; phenotype parameters in [0, 1], local changes in [-1, 1], facial actions from MakeHuman's Face Units (CC0). The README names no scan / keypoint / image fitting and doesn't say how ages are calibrated. Use for us: a differentiable copy of our base (if `makehuman` matches hm08's vertex order - to check) to fit our body's shape and pose to any scan by gradient descent (the Artec body fit that failed rigidly); the SOMA bridge for MHR shapes and SOMA-X correctives.

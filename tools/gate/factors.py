@@ -450,13 +450,14 @@ if __name__ == "__main__":
     p.add_argument("--engine", choices=("eevee", "cycles"), default="eevee")
     p.add_argument("--out", type=Path, default=pg.OUT / "factors")
     p.add_argument("--lights", choices=("stage", "world"), default="stage")
+    p.add_argument("--scalp", default="library", help='our scalp: library, generated, "generated:<style>"')
     a = p.parse_args(args)
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     names = a.factors.split(",")
     tags = ["_f-" + n.replace("*", "x").replace(".", "p").replace("+", "_") + ("_world" if a.lights == "world" else "")
             for n in names]  # fmt: skip
     # built once, the materials set back before each factor (parts_gate.render's variants)
-    pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, lights=a.lights,
+    pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, lights=a.lights, scalp=a.scalp,
               variants=[(t, factor(n)) for t, n in zip(tags, names, strict=True)])
     for tag in tags:
         for view in a.views.split(","):
