@@ -321,6 +321,19 @@ def test_the_nails_have_no_pores(human, tmp_path):
         assert maps.NODE + f"{key}_off_nails" in _upstream(nodes[maps.NODE + f"{key}_depth"].inputs[0])
 
 
+def test_the_arms_tile_takes_more_microrelief(human, tmp_path):
+    """The back of the hand read too even against HD Aaron's (EEVEE, `dists.py --patches` 0.071); the microrelief x2
+    on the arms' tile brought it to 0.047 (2026-11-07) - the torso's and the foot's tiles keep 1."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    arms = nodes[maps.NODE + "micro_on_arms"]
+    assert arms.name in _upstream(nodes[maps.NODE + "micro_depth"].inputs[0])
+    assert nodes[maps.NODE + "regions_on_arms"].inputs[1].default_value == maps.ARM_TILE_INDEX
+    assert next(i for i in arms.inputs if i.identifier == "B_Float").default_value == maps.ARM_MICRO > 1.0
+    assert maps.NODE + "pore_on_arms" not in nodes  # the pores keep 1 there
+
+
 def _upstream(socket):
     """Every node feeding a socket, walked back through its links."""
     seen, todo = set(), [link.from_node for link in socket.links]

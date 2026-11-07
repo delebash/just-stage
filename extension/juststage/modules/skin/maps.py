@@ -78,6 +78,10 @@ MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.0000403
 #: coated; raised a little at its edge
 NAIL_TOOL = "python tools/dev.py blender -b --python tools/make_nail_coords.py"
 NAIL_TILE_INDEX = 4  # 1005
+#: the arms' and hands' tile (1003): the microrelief x2 - HD Aaron's back of the hand against ours in EEVEE, the
+#: texture's excess over his own patch-to-patch (`tools/gate/dists.py --patches`) 0.071 -> 0.047 (2026-11-07; the
+#: torso's and the foot's didn't move with it, so only this tile)
+ARM_TILE_INDEX, ARM_MICRO = 2, 2.0
 NAIL_CUTICLE, NAIL_CUTICLE_CURVE = 0.08, 0.35  # where the plate starts: along > cuticle + curve * across^2
 NAIL_SIDE, NAIL_EDGE_SOFT = 0.8, 0.06  # |across| inside this; the edges' softness (in along / across)
 NAIL_FREE_EDGE = (0.92, 0.97)  # along: the free edge - a thin pale rim on a short nail - fades in over this
@@ -444,7 +448,7 @@ def face_share() -> bpy.types.Image:
 
 def _region_relief(nt, uv, which):
     """The relief's depth factors (pores, microrelief): the region map's on the head tile (R, B x
-    REGION_RELIEF_SCALE), 0 on the nails' tile, 1 elsewhere."""
+    REGION_RELIEF_SCALE), 0 on the nails' tile, the microrelief ARM_MICRO on the arms' tile, 1 elsewhere."""
     regions = _node(nt, "ShaderNodeTexImage", "face_regions", (-1600, -2700))
     regions.image, regions.interpolation, regions.extension = face_regions(), "Linear", "EXTEND"
     nt.links.new(uv.outputs["UV"], regions.inputs["Vector"])
@@ -452,10 +456,12 @@ def _region_relief(nt, uv, which):
     nt.links.new(regions.outputs["Color"], parts.inputs["Color"])
     on_head = _math(nt, "regions_on_head", "COMPARE", which.outputs["Value"], 0.0, 0.5)
     on_nails = _math(nt, "regions_on_nails", "COMPARE", which.outputs["Value"], float(NAIL_TILE_INDEX), 0.5)
+    on_arms = _math(nt, "regions_on_arms", "COMPARE", which.outputs["Value"], float(ARM_TILE_INDEX), 0.5)
     factors = []
     for channel, key in (("Red", "pore"), ("Blue", "micro")):
         head = _math(nt, f"regions_{key}", "MULTIPLY", parts.outputs[channel], REGION_RELIEF_SCALE)
-        factor = _mix(nt, f"{key}_factor", "FLOAT", on_head, 1.0, head)
+        body = _mix(nt, f"{key}_on_arms", "FLOAT", on_arms, 1.0, ARM_MICRO) if key == "micro" else 1.0
+        factor = _mix(nt, f"{key}_factor", "FLOAT", on_head, body, head)
         # none on the nails' tile: tiled under the nails' coat they read as a bumpy plate with white specks (gate run 4)
         factors.append(_mix(nt, f"{key}_off_nails", "FLOAT", on_nails, factor, 0.0))
     return factors
