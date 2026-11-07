@@ -2746,6 +2746,20 @@ re-check before the rec list; nothing run on skin here):
   (within his 29% band), ridges 0.74 / 0.80, folds 0.78 - adopted (a UDIM image's `pixels` reads only its first tile,
   measured: the part is blended in the shader, not by rewriting pixels).
 
+- **The body against HD Aaron in EEVEE, one factor at a time (*measured, 2026-11-07 evening*, plan §0;
+  `tools/gate/dists.py --patches` - the texture's excess over his own patch-to-patch; `.dev/gate/parts/2026-11-07f`).**
+  On the rebuilt library (the layered microrelief): hand 0.071 (0.085 this morning, before the hands' rebuild), torso
+  0.052, foot 0.103. Hand: microrelief x2 -> 0.047 (kept: `maps.ARM_MICRO`, the arms' tile only); the scans' relief
+  x1.5 / x2, coat x3, roughness x1.12 don't help. Torso: nothing in the shader moves it (relief x2 0.048 at best); by
+  eye ours is covered in small red dots - 4,240 in the measured area against his 274 - and painted out of the render
+  the excess falls to 0.030: the Artec scan's own spots, now taken out of its colour (`hair.spots`, body_scan post;
+  416,587 texels on the torso tile). Foot: no relief factor changes it at all (the foot carries no scan relief); by
+  eye his foot is strongly shiny with a crumpled glinting texture, ours matte and smooth (roughness x1.12 made it
+  worse: 0.115). Blender Studio's CC0 bundle on our disk, weighed: "Foot - Realistic" is a sculpting base (1,497
+  vertices, one Multires level) - no scanned detail, not a relief donor; its realistic bodies (10,582 vertices, three
+  levels, ~677k at the top, ~1.6 mm apart) could give folds and form, not pores. The foot's donor stays Thunk3D's
+  "Leg-foot" (the user's Sketchfab download, plan §19.2 item 25).
+
 ### 14.12 · Eyes
 
 - **EEVEE's eye white and the lids' shadow** (Blender 5.3, a close eye, one 120 W area light 0.6 m wide, measured
