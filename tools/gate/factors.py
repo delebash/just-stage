@@ -204,7 +204,7 @@ def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
 def _margin_value(built: dict, key: str, value) -> None:
     for nt in _skin_trees(built):
         node = nt.nodes[_maps().NODE + f"margin_{key}"]
-        sock = next(i for i in node.inputs if i.identifier in ("B_Float", "B_Color"))
+        sock = next(i for i in node.inputs if i.identifier == ("B_Color" if node.data_type == "RGBA" else "B_Float"))
         sock.default_value = value
 
 

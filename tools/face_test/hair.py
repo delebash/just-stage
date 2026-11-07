@@ -113,6 +113,20 @@ def spots(colour: np.ndarray, valid: np.ndarray, px_per_mm: float) -> np.ndarray
     return cv2.dilate(found, np.ones((3, 3), np.uint8)).astype(bool)
 
 
+def unred(colour: np.ndarray, where: np.ndarray, valid: np.ndarray, px_per_mm: float) -> np.ndarray:
+    """`where` (the spots) brought to the redness of the skin round it - its red channel scaled so its log R/G is its
+    surroundings' (the spots left out of the blur) - its lightness and texture kept. Filling the spots instead (Telea,
+    as the strands) left round stains where they cluster: their masks merge and the fill paints a flat blob (the torso,
+    2026-11-07)."""
+    lin = np.maximum(colour.astype(np.float32), 1e-4).copy()
+    red = np.log(lin[..., 0] / lin[..., 1])
+    w = (valid.astype(bool) & ~where).astype(np.float32)
+    sigma = max(SPOT_SPAN_MM * px_per_mm, 1.0)
+    bg = cv2.GaussianBlur(red * w, (0, 0), sigma) / np.maximum(cv2.GaussianBlur(w, (0, 0), sigma), 1e-6)
+    lin[..., 0] = np.where(where, lin[..., 1] * np.exp(bg), lin[..., 0])
+    return lin
+
+
 def clean(colour: np.ndarray, valid: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
     """The image with its strands filled, and the strands' mask (uint8)."""
     found = mask(colour, valid)

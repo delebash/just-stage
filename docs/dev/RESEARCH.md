@@ -2960,6 +2960,16 @@ every one logged; key claims page-read):
   to posterior lid margin" (partial spans only). A gap in the search, not proof none exists. So base v2's 2.6 mm is
   not shown too wide by these numbers (the plan's Q-BASE-5, 2026-11-06, read them as the whole margin - corrected).
 
+- **The eye against HD Aaron in EEVEE, the first factors (*measured, 2026-11-07 evening*, plan §0 and §19.1 item 6;
+  `tools/gate/eye_measure.py` - a pupil-aligned, iris-scaled crop, DISTS only to rank trials: one eye has no second
+  sample, so no floor).** By eye: our white reads as an insert - flat, a hard dark outline round it; the lower lid a
+  thick glossy roll; the brow low on the lid; no catch light, no pink corner; his: soft pink margins, a tearline, a warm
+  white with faint veins, a catch light, the caruncle. Measured: the white L*a*b* 65.3 / 3.5 / 5.5 against his 67.1 /
+  5.4 / 6.8; the iris ring L* 31.9, C 18.8 against 28.8 / 23.2 (the older "chroma 31% above his" no longer holds). One
+  factor at a time (DISTS 0.267 as built): the margin's wet shine off 0.268, its pink tint off 0.266, the tearline off
+  0.265 (its bright line along the lower white goes), the occlusion film off 0.267 - none moves it, and by eye the lower
+  roll stays as thick with each: its cause is geometry (the margin's width, the eye-open sliders' push - next).
+
 ### 14.14 · Scalp hair
 
 - **Cycles' hair colour from melanin** (source read 2026-11-03: `intern/cycles/kernel/svm/closure.h`,

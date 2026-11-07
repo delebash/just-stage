@@ -155,3 +155,18 @@ def test_small_red_spots_are_found_and_a_mole_is_left():
     assert hit > 0.8, hit
     assert not found[124:133, 124:133].any()  # the mole kept
     assert found.mean() < 0.05  # not the skin
+
+
+def test_unred_takes_a_spots_redness_and_keeps_its_lightness():
+    """`hair.unred`: a red spot brought to its surroundings' log R/G, its green and blue (its lightness) kept - a fill
+    left stains where spots cluster (2026-11-07)."""
+    rng = np.random.default_rng(4)
+    img = _skin(rng)
+    cv2.circle(img, (64, 64), 2, (0.66, 0.36, 0.33), -1)
+    where = np.zeros(img.shape[:2], bool)
+    where[60:69, 60:69] = True
+    out = hair.unred(img, where, np.ones(img.shape[:2], bool), 4.0)
+    skin_ratio = np.median(img[..., 0] / img[..., 1])
+    assert abs(out[64, 64, 0] / out[64, 64, 1] - skin_ratio) < 0.05 * skin_ratio
+    assert np.allclose(out[..., 1:], img[..., 1:])  # green and blue untouched
+    assert np.allclose(out[~where], img[~where])  # the rest untouched
