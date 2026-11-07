@@ -33,6 +33,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 
 ### Where it stands (update after every step)
 
+- **The plan's §0 governs (2026-11-07 evening): the bar is ours against HD Aaron in EEVEE only - never Aaron in Cycles;
+  one loop per part (render both in EEVEE -> measure and look -> one change -> keep or undo) with the stop rule; no
+  new tool, audit or decision list unless a measured gap needs it; no turn ends on a report.** Cycles numbers below are
+  diagnostics of ours, not verdicts.
 - 2026-11-07: the plan checked and corrected; RESEARCH an index by topic (§14.1-14.15); this file cut to a pointer.
 - Gate tools (§20 step 1): `measure.py` (bands in mm, ridges, Lab, repeatability), `measure_table.py`, `dists.py`
   (DISTS against Aaron with his floor), `factors.py` (one factor at a time; trial settings; parts and colour edits in

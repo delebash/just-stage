@@ -12,7 +12,12 @@
 CC5's HD Aaron, rendered in Blender, part by part - every part of the body, toenails too (the user, 2026-11-05: "it
 has to be all parts of body meat quality bar not just skin"; "toe nails too, all body parts"). Then the same method,
 with no per-character tuning, on four or more different characters (sex, age, tone, face shape) - THE ONE PRIORITY.
-The live view (EEVEE) is the bar's renderer, Cycles the film and the live view's oracle (AGENTS.md).
+**The bar is the live view: ours against Aaron, both in EEVEE** (the user, 2026-11-05: "realism in live view is the
+bar with known improvement with cycles render"; 2026-11-07: "my concer was live view in cc5 = eevee, so why do you keep
+worrying about cycles?"; "that has always been the bar ... why do you keep changing the bar we set multple time").
+Cycles is not part of the verdict and Aaron is never compared in it. It is a diagnostic only: when ours is off from
+Aaron, our own Cycles render of the same scene tells whether the gap is our content or EEVEE's shortcut (AGENTS.md's
+oracle rule), and the film is checked to be no worse than the live view.
 
 ## 2 · The comparison set
 
@@ -28,8 +33,8 @@ Unreal is out of the part gate (plan §19.1 item 4); it is judged with the full 
 ## 3 · Renders
 
 `tools/gate/parts_gate.py render`: each character alone on the app's stage (key, rim, the studio image at 0.25) and
-through the app's look (AgX "Medium High Contrast", -0.3 - `core/viewport.py`), 2048 x 2048, 85 mm, in EEVEE and in
-Cycles (256 samples, OIDN). Twenty-one views, each camera placed from anatomy measured on each character (front,
+through the app's look (AgX "Medium High Contrast", -0.3 - `core/viewport.py`), 2048 x 2048, 85 mm, in EEVEE (Cycles,
+256 samples, OIDN, only for ours when a gap is diagnosed - §1). Twenty-one views, each camera placed from anatomy measured on each character (front,
 three-quarter, profile, face, back of the hair, eye, lips, lip corner, cheek, ear, torso, hand, nails, foot,
 toenails, full body; jawOpen, smile, browInnerUp), so a view frames the same part on both. Each render's frame width
 goes to `frames.json` beside it.
@@ -53,12 +58,12 @@ materials across the USD trip.
 
 ## 5 · The verdict
 
-Per part, per renderer: **equal** = Aaron's value within the measure's repeatability band, two-sided; **above** only
+Per part, in EEVEE: **equal** = Aaron's value within the measure's repeatability band, two-sided; **above** only
 by the user's eye on the contact sheet, never by a bigger number (gate run 1's orange-peel skin had more detail than
 Aaron and read worse); a band over 15% means the window straddles a feature and is moved (skin itself varies 8-9% within
 1.5% of the frame on the cheek, measured 2026-11-07). A part short of the bar is diagnosed one factor at a
 time (`--cc5-inputs`, scratch factor renders) before it is fixed. **The gate passes when no part is below Aaron in
-either renderer**, and the same holds on four or more characters.
+the live view (EEVEE)**, and the same holds on four or more characters.
 
 The report (`docs/gate/<date>/report.md`: the sheets, the numbers, the inputs table, the user's words verbatim) is the
 proof; TASKS records the verdict.

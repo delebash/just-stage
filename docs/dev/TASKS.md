@@ -37,6 +37,17 @@ you need to think on your rec and go code, understood?". So: four independent re
 worked from; §19.2 (NOT STANDARD pieces by name, changes to the user's own decisions, research before a rec, the user's
 own actions) waits for the user without stopping other work.
 
+The user, 2026-11-07 evening, after I ended a turn on a report and the list: "why did you stop i told you to keep going
+and that i did not want to come back with you stopped askeing questions, why did you ignore ths?"; on Cycles in the
+gate: "why do you keep comparing cycles or even worrying about cycles, i dont understandd, my concer was live view in
+cc5 = eevee, so why do you keep worrying about cycles?"; "can you mee the quality or not is the question, yes or no?";
+"that has always been the bar you stupid machine why do you keep changing the bar we set multple time, you got dumber
+latley"; "you have been trying this for days, you have had 1 goal since day 1 meet the quality of cc5 live view, but
+keep messing up, keep making bad judgments and get stuck in loops that dont make since, can you meet that qaulity, is
+the plan correct, can you continue without stoping for turns until you either meet quality or determine it cant be meat
+without beign stucck in a loop that doenst make sense". So: the bar is ours against HD Aaron in EEVEE only; the work
+runs as the plan's §0 loop with its stop rule (`docs/plans/2026-11-06-the-plan.md` §0; `quality-gate.md` §1).
+
 ## Research: what JustStage is built on, its features and its standards — the go [2026-10-29]
 
 GO:     the user, verbatim (2026-10-29, the opening request): "i want to start working on a clone of reallusion
