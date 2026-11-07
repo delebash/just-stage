@@ -133,6 +133,21 @@ and finger creases on ours; Aaron's still glossier, more tanned, his veins highe
 veins), folds, pores; tone (L* 77 against 68 - his tone is his). Next on the hands: the donor's colour (knuckles, veins) in the same route,
 the part's strength measured, our hand's tone (L* 77 against his 68), then the skins rebuilt (library backed up first).
 
+## The face's folds, and what the bands miss
+
+The scans' relief boosted below 7 mm only (`factors.py reliefband`): x2 folds 0.76 -> 0.83, form 0.90 -> 1.10; x3 folds
+0.92 = but form 1.32 > and micro / pores just below - the high-pass leaks into the form band; a true 1.5-7 mm band-pass
+is the cleaner version. By eye at full resolution none of it changes the look: **ours reads as soft round bumps,
+Aaron's as a crisp, sharp, cross-hatched network with sharp little highlights** - the bands measure energy per scale,
+not that character, so the cheek is "equal" on three bands and **below by eye** (the gate's rule: the eye decides
+inside the band). The next measure is the plan's DISTS (a texture-structure similarity, "only if the bands and the eye
+disagree" - they do). The likely fix is a crisper microrelief; our generator is a NOT STANDARD piece waiting for the
+user's word (plan §19.2 item 2), and no shippable scanned micro-normal was found - not developed further meanwhile.
+**DISTS** (`tools/gate/dists.py`, piq's implementation; 256 px crops of each window moved 1.5%): Aaron against himself
+0.059 (cheek) / 0.073 (forehead); **ours against him 0.188 / 0.188** - about 3x his own floor; the fold boosts change
+nothing (0.187); with our tone set to his first (`--tone`) 0.184 / 0.189 - **the gap is texture structure, not
+colour**. The face proof stands: **not proved** - the bands' energy is there, the structure is not.
+
 ## The hair bound's gate (rec 1, approved 11-04: "two days to its 10% gate under both lights, then hair cards take
 ## the live view"; the clock to 2026-11-08 09:37)
 
