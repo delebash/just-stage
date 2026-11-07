@@ -138,3 +138,20 @@ def test_relief_debris_is_found_and_folds_are_kept():
     assert mask[ring].all()
     assert mask[np.abs(np.hypot(xx - 180, yy - 80) - 12) < 5].mean() > 0.9  # and round it
     assert mask[:, :120].mean() == 0.0  # the folds kept
+
+
+def test_small_red_spots_are_found_and_a_mole_is_left():
+    """The person's small red spots out of a body scan's colour (`hair.spots`, 2026-11-07: Artec's torso showed 15x
+    HD Aaron's count): small blobs redder than the skin round them are found; a larger mole and the pores are not."""
+    rng = np.random.default_rng(3)
+    img = _skin(rng)
+    px_per_mm = 4.0  # a ~1 mm spot is 4 texels across
+    dots = [(int(y), int(x)) for y, x in rng.integers(20, 236, (30, 2))]
+    for y, x in dots:
+        cv2.circle(img, (x, y), 2, (0.66, 0.36, 0.33), -1)  # redder than the skin: R up, G down
+    cv2.circle(img, (128, 128), 12, (0.40, 0.25, 0.20), -1)  # a mole: larger, darker brown
+    found = hair.spots(img, np.ones(img.shape[:2], bool), px_per_mm)
+    hit = np.mean([found[y, x] for y, x in dots])
+    assert hit > 0.8, hit
+    assert not found[124:133, 124:133].any()  # the mole kept
+    assert found.mean() < 0.05  # not the skin

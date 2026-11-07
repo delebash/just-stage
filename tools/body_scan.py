@@ -505,6 +505,8 @@ def post(src: str = "artec") -> None:
         lin = np.maximum(col, 1e-4)
         found = hair.mask(lin, baked)
         lin = np.maximum(hair.fill(lin, found), 1e-4)
+        marks = hair.spots(lin, baked, px_per_mm)  # the person's small red spots out (2026-11-07, the torso's gap)
+        lin = np.maximum(hair.fill(lin, marks), 1e-4)
         ratio_log = np.log(lin) - np.log(np.maximum(mblur(lin, COLOUR_HP_MM * px_per_mm / 2.0), 1e-4))
         ratio_log = np.clip(ratio_log, -0.5, 0.3) * w[..., None] * edge[..., None]
         ratio = np.exp(ratio_log)
@@ -519,9 +521,9 @@ def post(src: str = "artec") -> None:
         info = {"tile": name, "size": SIZE, "source": spec["source"], "licence": spec["licence"],
                 "relief_hp_mm": spec.get("relief_hp_mm", RELIEF_HP_MM), "colour_hp_mm": COLOUR_HP_MM,
                 "colour": "a ratio around 1, stored halved (0.5 = 1)", "strands_filled": int(found.sum()),
-                "fabric_out": int(fabric.sum()), "covered": float(baked.mean())}  # fmt: skip
+                "fabric_out": int(fabric.sum()), "spots_filled": int(marks.sum()), "covered": float(baked.mean())}  # fmt: skip
         (OUT / f"{stem}.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
-        print(f"POST {name}: relief and colour written; {found.sum()} strand texels filled; {fabric.sum()} fabric "
+        print(f"POST {name}: relief and colour written; {found.sum()} strand texels, {marks.sum()} spot texels filled; {fabric.sum()} fabric "
               f"texels out; tile covered {baked.mean():.1%}")
 
 

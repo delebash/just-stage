@@ -90,6 +90,29 @@ def fill(colour: np.ndarray, where: np.ndarray, radius: int = RADIUS) -> np.ndar
     return out
 
 
+SPOT_RED = 0.06  # log(R/G) above its 1.5 mm surroundings: a red spot (a texel ~6% redder than the skin round it)
+SPOT_SPAN_MM, SPOT_RADIUS_MM = 1.5, 1.2  # the surroundings' blur; the largest spot taken (a mole or a vessel is larger)
+
+
+def spots(colour: np.ndarray, valid: np.ndarray, px_per_mm: float) -> np.ndarray:
+    """Small red spots in a scan's colour (H x W x 3, linear) - the person's marks out, as the composition's rule has
+    it (docs/plans/2026-11-06-the-plan.md §8): HD Aaron's torso shows 274 such spots where ours showed 4,240 (Artec's
+    scan; EEVEE, 2026-11-07), and painted out of the render the torso's texture excess fell 0.052 -> 0.030. A boolean
+    mask: texels redder than their surroundings (log R/G over its blur) in blobs no wider than SPOT_RADIUS_MM."""
+    lin = np.maximum(colour.astype(np.float32), 1e-4)
+    red = np.log(lin[..., 0] / lin[..., 1])
+    w = valid.astype(np.float32)
+    sigma = max(SPOT_SPAN_MM * px_per_mm, 1.0)
+    bg = cv2.GaussianBlur(red * w, (0, 0), sigma) / np.maximum(cv2.GaussianBlur(w, (0, 0), sigma), 1e-6)
+    found = ((red - bg) > SPOT_RED) & valid.astype(bool)
+    count, labels, stats, _ = cv2.connectedComponentsWithStats(found.astype(np.uint8), connectivity=8)
+    largest = max(int(np.pi * (SPOT_RADIUS_MM * px_per_mm) ** 2), 1)
+    keep = np.flatnonzero(stats[:, cv2.CC_STAT_AREA] <= largest)
+    keep = keep[keep > 0]
+    found = np.isin(labels, keep).astype(np.uint8)
+    return cv2.dilate(found, np.ones((3, 3), np.uint8)).astype(bool)
+
+
 def clean(colour: np.ndarray, valid: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
     """The image with its strands filled, and the strands' mask (uint8)."""
     found = mask(colour, valid)
