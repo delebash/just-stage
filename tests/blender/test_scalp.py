@@ -39,6 +39,10 @@ def test_a_combed_groom_covers_the_scalp_and_takes_the_groom_colour():
         d = np.array([tree.find_nearest(Vector(r))[3] for r in sample])
         assert np.median(d) < 0.001, np.median(d)  # on the body, not on its rest shape 0.8 m below (the first stack)
         assert np.percentile(sample[:, 2], 5) > 1.4  # on the head
+        # none on the body: the nape's roots reach ~0.17 m below the median root, strays rooted on the body through the
+        # mask's UV bleed lay 0.31 m and more below it (2% of the strands, 2026-11-07)
+        low = int((roots[:, 2] < np.median(roots[:, 2]) - 0.25).sum())
+        assert low == 0, f"{low} strands rooted below the head"
         melanin = np.empty(len(curves.curves), np.float32)
         curves.attributes["melanin"].data.foreach_get("value", melanin)
         assert abs(np.median(melanin) - scalp.MELANIN) < 0.05 and (melanin < 0.2).mean() > 0.1  # its own, some grey

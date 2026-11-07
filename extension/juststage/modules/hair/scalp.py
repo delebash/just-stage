@@ -98,13 +98,66 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
     return out
 
 
-def scalp_mask() -> bpy.types.Image:
-    """The scalp in hm08's UVs as an image (the pack style's roots splatted, blurred to a soft edge): the
-    interpolation's mask texture, sampled by the strands' surface UVs."""
+def _above_neck(character: bpy.types.Object) -> np.ndarray:
+    """The head's own faces in hm08's UVs as a 0/1 grid (MASK_SIZE²): every face whose centre on the base shape lies
+    above the neck joint (MakeHuman's `joint-neck` cube), its UV polygon filled. The mask's gap-closing is done in UV
+    space, where hm08's head island borders the body's: without this cut 2% of the strands (2,030 of 102,137, measured
+    2026-11-07) rooted on the body, from the upper back down to 0.42 m above the floor."""
+    from . import groom
+
+    me = character.data
+    co = np.empty(len(me.vertices) * 3, np.float32)
+    me.vertices.foreach_get("co", co)  # the base shape: the same faces are the head's on every character
+    co = co.reshape(-1, 3)
+    neck = character.vertex_groups["joint-neck"].index
+    cube = [v.index for v in me.vertices if any(g.group == neck and g.weight > 0.5 for g in v.groups)]
+    neck_z = float(co[cube, 2].mean())
+    uv = me.uv_layers[groom.SURFACE_UV].data
+    loop_uv = np.empty(len(uv) * 2, np.float32)
+    uv.foreach_get("uv", loop_uv)
+    loop_uv = loop_uv.reshape(-1, 2)
+    grid = np.zeros((MASK_SIZE, MASK_SIZE), np.float32)  # rows by v, as `scalp_mask`'s grid
+    for poly in me.polygons:
+        if co[list(poly.vertices), 2].mean() <= neck_z:
+            continue
+        pts = loop_uv[poly.loop_start:poly.loop_start + poly.loop_total] * MASK_SIZE
+        _fill_polygon(grid, pts)
+    return grid
+
+
+def _fill_polygon(grid: np.ndarray, pts: np.ndarray) -> None:
+    """A UV polygon (texel units, x = u, y = v) filled into `grid` as a fan of triangles: every texel whose centre lies
+    inside, and the texels of its corners and centre (a face smaller than a texel still marks one) - numpy only,
+    Blender's Python has no imaging library."""
+    size = grid.shape[0]
+    for p in np.vstack([pts, pts.mean(0)]):
+        grid[min(int(p[1]), size - 1), min(int(p[0]), size - 1)] = 1.0
+    for k in range(1, len(pts) - 1):
+        a, b, c = pts[0], pts[k], pts[k + 1]
+        x0, x1 = max(int(np.floor(min(a[0], b[0], c[0]))), 0), min(int(np.ceil(max(a[0], b[0], c[0]))), size - 1)
+        y0, y1 = max(int(np.floor(min(a[1], b[1], c[1]))), 0), min(int(np.ceil(max(a[1], b[1], c[1]))), size - 1)
+        if x1 < x0 or y1 < y0:
+            continue
+        yy, xx = np.mgrid[y0:y1 + 1, x0:x1 + 1] + 0.5
+
+        def side(p, q):
+            return (q[0] - p[0]) * (yy - p[1]) - (q[1] - p[1]) * (xx - p[0])
+
+        s1, s2, s3 = side(a, b), side(b, c), side(c, a)
+        inside = ((s1 >= 0) & (s2 >= 0) & (s3 >= 0)) | ((s1 <= 0) & (s2 <= 0) & (s3 <= 0))
+        grid[y0:y1 + 1, x0:x1 + 1][inside] = 1.0
+
+
+def scalp_mask(character: bpy.types.Object | None = None) -> bpy.types.Image:
+    """The scalp in hm08's UVs as an image (the pack style's roots splatted, blurred to a soft edge, cut to the head's
+    own faces - `_above_neck`): the interpolation's mask texture, sampled by the strands' surface UVs. Made once, from
+    the first character it is asked for (the cut is by topology: the same faces on every character)."""
     name = "JustStage scalp mask"
     image = bpy.data.images.get(name)
     if image is not None:
         return image
+    if character is None:
+        raise ValueError("the scalp mask is made from a character the first time")
     uvs = brows.region_uvs(REGION_STYLE)
     grid = np.zeros((MASK_SIZE, MASK_SIZE), np.float32)
     ij = np.clip((uvs * MASK_SIZE).astype(int), 0, MASK_SIZE - 1)
@@ -113,6 +166,7 @@ def scalp_mask() -> bpy.types.Image:
         for axis in (0, 1):
             grid = sum(np.roll(grid, k, axis=axis) for k in range(-MASK_BLUR, MASK_BLUR + 1)) / (2 * MASK_BLUR + 1)
         grid = np.clip(grid * 4.0, 0.0, 1.0)
+    grid *= _above_neck(character)
     image = bpy.data.images.new(name, MASK_SIZE, MASK_SIZE, alpha=False, float_buffer=True)
     image.colorspace_settings.name = "Non-Color"
     image.pixels.foreach_set(np.dstack([grid, grid, grid, np.ones_like(grid)]).ravel())
@@ -135,10 +189,11 @@ def _hair_group(name: str) -> bpy.types.NodeTree:
     return dst.node_groups[0]
 
 
-def _fill_group(seed: int) -> bpy.types.NodeTree:
+def _fill_group(seed: int, character: bpy.types.Object) -> bpy.types.NodeTree:
     """Blender's Interpolate Hair Curves with its inputs held in a group of ours - the scalp mask image among them."""
     return _chain("JustStage scalp fill", [("Interpolate Hair Curves", {
-        "Density": DENSITY, "Interpolation Guides": INTERPOLATION_GUIDES, "Mask Texture": scalp_mask(), "Seed": seed})])
+        "Density": DENSITY, "Interpolation Guides": INTERPOLATION_GUIDES, "Mask Texture": scalp_mask(character),
+        "Seed": seed})])
 
 
 def _chain(name: str, steps: list) -> bpy.types.NodeTree:
@@ -267,7 +322,7 @@ def make(character: bpy.types.Object, style: str = "short combed", seed: int = 5
     # the fill and the shaping work in rest space (Interpolate Hair Curves on the resting surface; a body's rest shape
     # is MakeHuman's basis, ~0.8 m below its floor key - first in the stack, they put the strands there), then Deform
     # Curves on Surface carries every strand onto the body: it goes last
-    obj.modifiers.new("Interpolate Hair Curves", "NODES").node_group = _fill_group(seed)
+    obj.modifiers.new("Interpolate Hair Curves", "NODES").node_group = _fill_group(seed, character)
     obj.modifiers.new("Shape", "NODES").node_group = _shape_group(spec, seed)
     obj.modifiers.new("Strand colour", "NODES").node_group = _colour_group()
     obj.modifiers.move(0, len(obj.modifiers) - 1)
