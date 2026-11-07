@@ -375,6 +375,19 @@ def hairthrough(built: dict, share: float) -> None:
     print("HAIR LIGHT THROUGH", share, "on", n, "nodes", flush=True)
 
 
+def hairmelanin(built: dict, melanin: float) -> None:
+    """Every scalp groom's own colour set to `melanin` (its `melanin` curve attribute; the strands take their guides')
+    - darker roots for HD Aaron's L* 20 at the back (ours 25)."""
+    n = 0
+    for obj in bpy.data.objects:
+        if obj.type == "CURVES" and obj.juststage.part == "scalp" and "melanin" in obj.data.attributes:
+            attr = obj.data.attributes["melanin"]
+            attr.data.foreach_set("value", np.full(len(attr.data), melanin, np.float32))
+            obj.data.update_tag()
+            n += 1
+    print("HAIR MELANIN", melanin, "on", n, "grooms", flush=True)
+
+
 def hairtip(built: dict, k: float) -> None:
     """Each strand lighter toward its tip: its melanin x (1 - k t²), t the Hair Info's Intercept (0 at the root, 1 at
     the tip) - the plan's carried "root-to-tip by Intercept" (RR rec 7); HD Aaron's hair is dark at the roots (back
@@ -479,9 +492,22 @@ def eye_slider(built: dict, key: str, value: float) -> None:
     print("EYE SLIDER", key, value, flush=True)
 
 
+SCALED_KEYS = {"pores", "micro", "relief", "roughvar", *SHINE}
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    parts = name.split("+")
+    if len(parts) > 1 and parts[0].split("*")[0] not in SCALED_KEYS:  # a chain of named factors: hairmelanin*1+hairtip*0.8
+        steps = [factor(part) for part in parts]
+
+        def chained(built: dict) -> None:
+            for step in steps:
+                step(built)
+        return chained
+    if name.startswith("hairmelanin"):  # hairmelanin*1.0
+        return lambda built: hairmelanin(built, float(name.split("*")[1]))
     if name.startswith("lashcap"):  # lashcap*1.6 (mm)
         return lambda built: lashcap(built, float(name.split("*")[1]))
     if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)
