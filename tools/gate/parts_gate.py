@@ -73,6 +73,8 @@ VIEWS = {
     "lips": ("lips, facial hair", "neutral"),
     "lip_corner": ("lips, skin", "neutral"),
     "cheek": ("skin", "neutral"),
+    "nose": ("skin", "neutral"),  # 2026-11-07: the nose's and the chin's skin, close (the face proof's regions)
+    "chin": ("skin", "neutral"),
     "ear": ("ears", "neutral"),
     "torso": ("body skin, nipples", "neutral"),
     "hand": ("hands, nails", "neutral"),
@@ -320,6 +322,10 @@ def view(name: str, a: dict[str, Vector]):
         return a["mouth"] + _v(-0.022, 0, -0.006), _v(-0.42, -0.906, 0), z, 0.05
     if name == "cheek":
         return a["pupil_r"] + _v(-0.008, 0, -0.045), _v(-0.34, -0.94, 0), z, 0.06
+    if name == "nose":  # the nose's side and back, from a little to the side
+        return m + _v(0, -0.015, -0.03), _v(-0.4, -0.917, 0), z, 0.06
+    if name == "chin":
+        return a["mouth"] + _v(0, -0.005, -0.035), _v(0, -0.97, -0.24), z, 0.06
     if name == "ear":
         return a["ear_r"], _v(-1, 0, 0), z, 0.10
     if name == "torso":
