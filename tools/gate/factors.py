@@ -221,9 +221,78 @@ def scaled(spec: str):
     return prepare
 
 
+def _fft_blur(a: np.ndarray, sigma: float) -> np.ndarray:
+    """A Gaussian blur by FFT (numpy only - Blender's Python has no scipy), wrapping at the edges."""
+    h, w = a.shape
+    fy, fx = np.fft.fftfreq(h)[:, None], np.fft.fftfreq(w)[None, :]
+    return np.real(np.fft.ifft2(np.fft.fft2(a) * np.exp(-2 * (np.pi * sigma) ** 2 * (fx**2 + fy**2))))
+
+
+def reliefband(built: dict, k: float, below_mm: float = 7.0) -> None:
+    """The scans' own relief on the head tile with its detail finer than `below_mm` scaled by `k` (its form kept):
+    the cheek's folds below HD Aaron's while x2 on the whole relief pushed the form past his (2026-11-07)."""
+    maps = _maps()
+    for nt in _skin_trees(built):
+        node = nt.nodes[maps.NODE + "normal"]
+        px = _first_tile(node.image)
+        sigma = below_mm * px.shape[0] / maps.MM_PER_UV[1001] / 2.0
+        xy = px[..., :2] * 2 - 1
+        for c in range(2):
+            xy[..., c] = xy[..., c] + (k - 1) * (xy[..., c] - _fft_blur(xy[..., c], sigma))
+        z = np.sqrt(np.clip(1 - (xy**2).sum(-1), 0, 1))
+        px[..., :3] = np.dstack([xy * 0.5 + 0.5, z])
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image = _plain(px, "factor_normal_1001", "Non-Color")
+        vec, on = _tile_uv(nt, 1001)
+        nt.links.new(vec, tex.inputs["Vector"])
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        nt.links.new(on, mix.inputs["Factor"])
+        for link in list(node.outputs["Color"].links):
+            nt.links.new(mix.outputs["Result"], link.to_socket)
+        nt.links.new(node.outputs["Color"], mix.inputs["A"])
+        nt.links.new(tex.outputs["Color"], mix.inputs["B"])
+        print("RELIEF BAND x", k, "below", below_mm, "mm on the head tile", flush=True)
+
+
+def _hair_trees():
+    for mat in bpy.data.materials:
+        if mat.node_tree and mat.node_tree.nodes.get("js_hair.world_mean") is not None:
+            yield mat.node_tree
+
+
+def hairambient(built: dict, k: float) -> None:
+    """The live-view hair model's image-light ambient (`hair_shading.AMBIENT` x the world's mean) scaled by `k`."""
+    for nt in _hair_trees():
+        nt.nodes["js_hair.world_mean"].outputs[0].default_value *= k
+    print("HAIR AMBIENT x", k, flush=True)
+
+
+def hairthrough(built: dict, share: float) -> None:
+    """The share of the light the hair's body gets in its own shadow (`hair_shading.BODY_LIGHT_THROUGH`) set to
+    `share`: the soft shadow's ADD (share) and SCALE (1 - share) nodes."""
+    n = 0
+    for nt in _hair_trees():
+        for node in nt.nodes:
+            if node.type == "VECT_MATH" and node.operation == "ADD" and node.inputs[0].is_linked:
+                src = node.inputs[0].links[0].from_node
+                if src.type == "VECT_MATH" and src.operation == "SCALE" and not node.inputs[1].is_linked:
+                    if abs(src.inputs["Scale"].default_value + node.inputs[1].default_value[0] - 1.0) < 1e-4:
+                        node.inputs[1].default_value = (share,) * 3
+                        src.inputs["Scale"].default_value = 1.0 - share
+                        n += 1
+    print("HAIR LIGHT THROUGH", share, "on", n, "nodes", flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("hairambient"):  # hairambient*0.45
+        return lambda built: hairambient(built, float(name.split("*")[1]))
+    if name.startswith("hairthrough"):  # hairthrough*0.15 (the share, not a scale)
+        return lambda built: hairthrough(built, float(name.split("*")[1]))
+    if name.startswith("reliefband"):  # reliefband*2
+        return lambda built: reliefband(built, float(name.split("*")[1]))
     if name.startswith("handspart"):  # handspart*1.5, handspartc*1.5 (with the donor's colour)
         k = float(name.split("*")[1]) if "*" in name else 1.0
         return lambda built: handspart(built, k, colour=name.startswith("handspartc"))
@@ -239,12 +308,13 @@ if __name__ == "__main__":
     p.add_argument("--views", default="eye,cheek,face")
     p.add_argument("--engine", choices=("eevee", "cycles"), default="eevee")
     p.add_argument("--out", type=Path, default=pg.OUT / "factors")
+    p.add_argument("--lights", choices=("stage", "world"), default="stage")
     a = p.parse_args(args)
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     for name in a.factors.split(","):
-        tag = "_f-" + name.replace("*", "x").replace(".", "p").replace("+", "_")  # a file name Windows takes
+        tag = "_f-" + name.replace("*", "x").replace(".", "p").replace("+", "_") + ("_world" if a.lights == "world" else "")
         pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=tag,
-                  prepare=factor(name))
+                  prepare=factor(name), lights=a.lights)
         for view in a.views.split(","):
             made = out / f"{a.engine}_{view}_ours{tag}.png"
             print("WRITTEN" if made.exists() else "MISSING", made, flush=True)

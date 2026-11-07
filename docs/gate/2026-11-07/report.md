@@ -133,6 +133,23 @@ and finger creases on ours; Aaron's still glossier, more tanned, his veins highe
 veins), folds, pores; tone (L* 77 against 68 - his tone is his). Next on the hands: the donor's colour (knuckles, veins) in the same route,
 the part's strength measured, our hand's tone (L* 77 against his 68), then the skins rebuilt (library backed up first).
 
+## The hair bound's gate (rec 1, approved 11-04: "two days to its 10% gate under both lights, then hair cards take
+## the live view"; the clock to 2026-11-08 09:37)
+
+Ours (the library's "JustStage short combed", the gate's colour), the back of the hair (`hair_back`), EEVEE against
+Cycles, the stage and the image light alone (`parts_gate --lights world`), mean linear luminance of the scalp hair's
+window and its highlights (p95), `.dev/gate/parts/2026-11-07c`:
+
+| Light | EEVEE / Cycles, mean | highlights |
+|---|---|---|
+| stage | 0.0712 / 0.0347 = **2.05** | 0.209 / 0.110 = 1.90 |
+| image light alone | 0.0020 / 0.0009 = **2.20** | 0.009 / 0.004 = 2.50 |
+
+**Fails, both lights** (the 11-06 pass, 0.112 / 0.121, was the front view's window under the stage light). By eye: a
+grey haze over EEVEE's hair where Cycles' is dark with defined highlights. Not the parked sky-only flatness - the stage
+light fails too. Factors next, inside the clock: the body's light in its own shadow (`BODY_LIGHT_THROUGH` 0.5) and the
+constant image-light ambient (checker D: "a constant ambient of the world's mean frozen at build").
+
 ## Next
 
 The cheek's gap one factor at a time (`tools/gate/factors.py`: relief0, pores0, micro0, colourpores0, colourflat), then
