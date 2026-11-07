@@ -3054,6 +3054,17 @@ before the rec list; measured in Blender 5.3 and read in our code):
   the light through the hair's own shadow moves both together (best balance 0.49x / 0.84x) - the model's angular
   response is off, not its level.
 
+- **Our scalp groom against HD Aaron's hair, EEVEE (*measured, 2026-11-07 evening*, plan §0; `.dev/gate/parts/
+  2026-11-07e`).** By eye (hair_back, front, profile): his "Classic Slick Back" (cards) is a short cut - tapered sides
+  and back with the ears clear, a full textured top with clumps and lighter tips; ours ("JustStage short combed") lies
+  flat as a helmet, long over the ears and down the nape, pulled back from the hairline, evenly dark (its brightness
+  closer since `AMBIENT` 0.45). How far the hair stands off the scalp (each hair point's distance to the body's
+  surface; his card vertices, our evaluated strand points; head-centred regions), p50 / p90 mm: top his 13.3 / 22.9,
+  ours 5.5 / 11.7; sides 4.3 / 12.2 against 2.0 / 5.8; back 7.8 / 14.9 against 6.1 / 13.1; nape 6.9 / 13.5 against
+  4.7 / 12.4 - ours about half his volume on top and at the sides. And 2% of our evaluated hair points (1,154 of a
+  60,000 sample) lie over 20 cm from the head - stray strands, a defect to find (the fill's rest-space trap of commit
+  0b0b736, or guides).
+
 ### 14.15 · The live view against the film
 
 - **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over

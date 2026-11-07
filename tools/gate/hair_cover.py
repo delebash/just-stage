@@ -29,8 +29,12 @@ NOT_SCALP = ("brow", "lash", "beard", "stubble", "body", "eye", "teeth", "tongue
 
 
 def _is_scalp(obj) -> bool:
+    """His by name (cards: "Classic_Slick_Back"); ours any groom that is not brows, lashes or stubble (the library's
+    styles carry their own names, "JustStage short combed")."""
     name = obj.name.lower()
-    return any(w in name for w in SCALP_WORDS) and not any(w in name for w in NOT_SCALP)
+    if any(w in name for w in NOT_SCALP):
+        return False
+    return obj.type == "CURVES" or any(w in name for w in SCALP_WORDS)
 
 
 def only_hair(built: dict) -> None:
