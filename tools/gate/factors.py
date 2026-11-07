@@ -447,6 +447,29 @@ EYE_SLIDERS = {"eyebag": "bag-decr-incr", "eyeheight2": "height2-decr-incr", "ey
                "eyefoldup": "eyefold-down-up", "eyeheight1": "height1-decr-incr"}
 
 
+def lashcap(built: dict, mm: float) -> None:
+    """The lid margin narrower: the lash line's most off the eyeball (base v2's 2.6 mm, `parts.eyelid_contact`) capped
+    at `mm`, the contact made again - the lower lid's thick roll (plan §19.1 item 6: the margin's width against the
+    real ~2 mm and HD Aaron's 1.0-2.3 mm ledge; the films, shine and eye sliders didn't move it, 2026-11-07). A shape:
+    run with --alone."""
+    base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    original = base.record  # it reads its file on every call: the call patched, not its result
+
+    def capped() -> dict:
+        rec = original()
+        rec["radii_mm"]["lash"] = mm
+        return rec
+
+    base.record = capped
+    try:
+        rows = parts.eyelid_contact(built["body"])
+    finally:
+        base.record = original
+    bpy.context.view_layer.update()
+    print("LASH CAP", mm, "mm on", rows, "rows", flush=True)
+
+
 def eye_slider(built: dict, key: str, value: float) -> None:
     sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
     catalog = sliders.catalog()
@@ -459,6 +482,8 @@ def eye_slider(built: dict, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("lashcap"):  # lashcap*1.6 (mm)
+        return lambda built: lashcap(built, float(name.split("*")[1]))
     if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)
         key, value = name.split("*")
         return lambda built: eye_slider(built, key, float(value))
