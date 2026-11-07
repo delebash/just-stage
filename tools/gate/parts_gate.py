@@ -354,13 +354,17 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
            cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "library",
-           character: str = "", scalp: str = "library", prepare=None) -> None:
+           character: str = "", scalp: str = "library", prepare=None, lights: str = "stage") -> None:
     """`prepare(built)`, if given, changes the built character before any render - one factor at a time
     (`tools/gate/factors.py`)."""
     scene, cam = _stage()
     built = build_ours(scene, skin, brows, character, scalp) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
     if prepare is not None:
         prepare(built)
+    if lights == "world":  # the image light alone (rec 1's bound: hair within 10% of Cycles under both lights)
+        for obj in scene.objects:
+            if obj.type == "LIGHT":
+                obj.hide_render = True
     set_expression(who, built, "neutral")
     a = anchors(who, built)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -483,10 +487,12 @@ if __name__ == "__main__":
     p.add_argument("--brows", choices=("library", "generated"), default="library")
     p.add_argument("--character", default="", help="another library character for ours")
     p.add_argument("--scalp", choices=("library", "generated"), default="library")
+    p.add_argument("--lights", choices=("stage", "world"), default="stage", help="world: the image light alone")
     a = p.parse_args(args)
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\
     if a.command == "render":
         inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}
-        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin, a.brows, a.character, a.scalp)
+        render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin, a.brows, a.character,
+               a.scalp, lights=a.lights)
     else:
         sheet(out)
