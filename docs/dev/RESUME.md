@@ -48,7 +48,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - Proof (3) scalp hair: the bound's gate FAILED for the hair's own reasons (front 0.77x, back 2.05x Cycles under the
   stage light; the image light fixed by ambient x0.45); by the approved rule cards take the live view - how: §19.2 item
   27 (cards baked from our own strands, after the face and body proofs).
-- Full suites: running at the end of 2026-11-07's work (results in the session report).
+- Full suites, 2026-11-07 end: Blender 140 passed, 1 failed, 1 deselected (the AI test); unit 45 passed; tools 18 passed.
+  The failure, `test_migrations::test_a_v1_character_comes_in_as_v2_with_its_grooms_in_place`: the brows land 0.50 mm
+  off after the v1 -> v2 upgrade against the test's 0.2 mm - not from 2026-11-07's changes (no commit touched brows,
+  migrations or the base); likely since the brows' 11-06 changes (2bb61cb, 7d012e5: more hairs) - open; its log message
+  says "within 0.0005 mm" for 0.5 mm (a unit slip).
 - For the user to clean: `C:\.dev\gate\` - ten stray factor renders from my run (a relative path Blender resolved from
   C:\; the removal needs the user's approval).
 
