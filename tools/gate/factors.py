@@ -142,16 +142,17 @@ def handspart(built: dict) -> None:
     maps = _maps()
     folder = Path(maps.paths.GENERATED) / "skin"
 
-    def png(name):
+    def png(name, size):
         img = bpy.data.images.load(str(folder / name), check_existing=False)
         img.colorspace_settings.name = "Non-Color"
+        if tuple(img.size) != (size, size):
+            img.scale(size, size)  # the part at the skin tile's own size (4K on a scan-skinned body)
         w, h = img.size
         px = np.empty(w * h * 4, np.float32)
         img.pixels.foreach_get(px)
         bpy.data.images.remove(img)
         return px.reshape(h, w, 4)
 
-    part, weight = png("body_1003_hands_relief.png"), png("body_1003_hands_weight.png")[..., :1]
     out = Path(bpy.app.tempdir) / "gate_factors"
     out.mkdir(parents=True, exist_ok=True)
     for nt in _skin_trees(built):
@@ -161,7 +162,8 @@ def handspart(built: dict) -> None:
         for number in numbers:
             px = _tile_pixels(image, number)
             if number == 1003:
-                assert px.shape[:2] == part.shape[:2], (px.shape, part.shape)  # the part made at the tile's size
+                part = png("body_1003_hands_relief.png", px.shape[0])
+                weight = png("body_1003_hands_weight.png", px.shape[0])[..., :1]
                 xy = px[..., :2] * (1 - weight) + part[..., :2] * weight
                 z = np.sqrt(np.clip(1 - ((xy * 2 - 1) ** 2).sum(-1, keepdims=True), 0, 1))
                 px[..., :3] = np.concatenate([xy, z], -1)

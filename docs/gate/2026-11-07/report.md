@@ -88,6 +88,37 @@ the 100k mesh the medium shape counts twice. Kept detail under 12 mm: still patc
 Next, the structural option: the relief taken in the map's own texture space (Frankot-Chellappa height, high-passed -
 the pore tile's method) and carried to our hands through the fit's correspondence.
 
+## The face: the first fix (EEVEE)
+
+Trial settings first (`factors.py`, each layer scaled everywhere): pores x1.15 + microrelief x1.35 took the cheek to
+micro 0.93 / pores 0.92 and kept the forehead equal; + the scans' relief x2 lifted the folds 0.75 -> 0.85 but pushed
+the form past Aaron (1.11); microrelief x3 read as crackle-glaze cells at full resolution and lowered the larger bands
+(it acts as roughness). So `tools/make_face_regions.py` scales every head region's pores x1.15 and microrelief x1.35
+(the head tile only). Re-rendered (`.dev/gate/parts/2026-11-07b`): **cheek micro 0.93 =, pores 0.92 =, form 0.90 =,
+folds 0.76 < (9% band); forehead pores 0.96 =, folds 0.85 =**. Still below: the cheek's folds; and by eye at full
+resolution our cheek's bumps read soft and round where Aaron's show a crisp, irregular, directional network of fine
+furrows - our microrelief generator's cells are too regular (the method gap the plan's §9 microrelief row names: a
+direction field per region). Cycles: next.
+
+## The hands: Ten24's relief in texture space
+
+`tools/body_scan.py texture ten24`: Ten24's normal-map tilt high-passed at 8 mm inside its own UV islands, its hair
+strands (found in its colour) filled, anti-aliased to our texels, carried through the fit's nearest point and turned
+from its tangent frame into ours (fit gap p50 0.9 / p90 2.8 mm). Two bugs on the way, both found and fixed: a crop box
+past the 8K map's edge came back shifted ~900 texels (the "stripes"), and Blender's OBJ importer keeps its axis turn in
+the object. Blended into the gate character's arm tile in memory (`factors.py handspart`; no library skin rebuilt):
+
+| Back of the hand | pores | folds | form | ridges |
+|---|---|---|---|---|
+| EEVEE, before | 0.51 | 0.51 | 0.71 | 0.29 |
+| EEVEE, Ten24's hands | 0.51 | 0.59 | **0.95** | **0.47** |
+| Cycles, before | 0.29 | 0.35 | 0.53 | 0.21 |
+| Cycles, Ten24's hands | 0.29 | 0.40 | 0.70 | 0.35 |
+
+**Read:** the tendons and knuckles come through (form to 0.95 in EEVEE); still below Aaron, whose veins are sculpted
+high and coloured blue, his knuckles red. Next on the hands: the donor's colour (knuckles, veins) in the same route,
+the part's strength measured, our hand's tone (L* 77 against his 68), then the skins rebuilt (library backed up first).
+
 ## Next
 
 The cheek's gap one factor at a time (`tools/gate/factors.py`: relief0, pores0, micro0, colourpores0, colourflat), then

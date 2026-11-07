@@ -2523,6 +2523,17 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   licensed under a Creative Commons Attribution 3.0 Unported License … always mention where you got them from"). Its
   high-passed displacement shows pores and fine lines (with 8×8 JPEG blocks — blurred σ 0.8 first); a 512² seamless
   cheek tile made (`.dev/facetest/pores_lps.png`) for the pore comparison.
+- **The face's relief against HD Aaron, one factor at a time** (*measured, 2026-11-07*, `../gate/2026-11-07/report.md`;
+  `tools/gate/measure.py` bands in mm, `tools/gate/factors.py`): on the cheek in EEVEE the pore tile makes the pore band
+  (off: 1.49 -> 0.53) and a quarter of the folds, the microrelief the micro band (off: 0.48 -> 0.17), the scans' own
+  mid-scale relief only ~9% of the folds, the colour ~20% of the folds and ~40% of the form. Microrelief acts as
+  roughness on the larger bands (the forehead's x5: off, its pore and fold bands rise 20-30%); at x3 on the cheek it
+  reads as regular crackle-glaze cells. Pores x1.15 and microrelief x1.35 on every head region bring the cheek within
+  Aaron's bands (micro 0.93, pores 0.92, form 0.90) with the forehead equal; the cheek's folds stay below (0.76). Ten24's
+  8K maps resolve ~4.4-4.6 texels / mm - too coarse for real pores (0.1-0.25 mm): the "pore tile" carries 1-2 mm bumps.
+- **HD Aaron's skin per engine** (*file read, 2026-11-07*, local test): CC Blender Tools' Cycles build against its
+  EEVEE build - Normal Strength 1.25 / 1.0, Micro Normal Strength 0.396 / 0.317, Roughness Power 0.75 / 0.56,
+  Subsurface Scale 1.0 / 1.43. His detail reads ~1.6x stronger in Cycles; ours the same in both engines.
 
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
@@ -2694,6 +2705,15 @@ re-check before the rec list; nothing run on skin here):
 - **Anny paper, v3** (*page read*, arXiv 2511.03589): no scan-fitting method is described; adults fit at 2.5 mm against
   SMPL-X 1.9 and ATLAS 1.8 (head and hands excluded); children 2.0 vs SMPL-X 3.2 on three scans; "SMPL-X better captures
   fine skin-fold details of high-BMI bodies compared with Anny"; no MHR comparison. L360's 2.4 mm is v1's figure.
+- **Ten24's hands carried in texture space** (*measured, 2026-11-07*, `tools/body_scan.py texture ten24`): baking its
+  Level_01 normal map through the 100k decimated mesh gave blotches (the map is relative to the coarse level-1 mesh: the
+  medium shape counts twice). Taken instead in the map's own texture space - its tilt high-passed at 8 mm inside each
+  UV island, its hair strands (found in its colour) filled, anti-aliased to our 2.7 texels / mm, carried through the
+  fit's nearest point and turned from its tangent frame into ours - it gives palm creases, extensor tendons, knuckle and
+  finger creases. Ten24's hands sit at x 5160-7947, y 256-4207 of its 8K maps, ~4.4 texels / mm. Two traps: Blender's OBJ
+  importer keeps a Y-up file's axis turn in the object, not the mesh; an ffmpeg crop box past the image's edge comes
+  back shifted (here ~900 texels). On the gate's back-of-hand window: form 0.71 -> 0.95 and ridges 0.29 -> 0.47 of
+  Aaron's in EEVEE (Cycles 0.53 -> 0.70, 0.21 -> 0.35) - still below his sculpted veins.
 
 ### 14.12 · Eyes
 
