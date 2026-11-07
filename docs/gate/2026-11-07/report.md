@@ -135,7 +135,9 @@ veins), folds, pores; tone (L* 77 against 68 - his tone is his).
 same path, which renders the hand paler, L* 84 against his 68, so contrast is lower than in the character's own tone),
 back of the hand, Aaron = 1: EEVEE ridges 0.17 -> 0.51-0.54, folds 0.36 -> 0.56, form 0.57 -> 0.78; Cycles ridges 0.14
 -> 0.41-0.44, folds 0.26 -> 0.42, form 0.44 -> 0.58. The library's characters still wear the skins as they were when
-they were built (`tools/build_library.py` next, the backup kept). Next on the hands: the donor's colour (knuckles, veins) in the same route,
+they were built - then rebuilt (`tools/build_library.py -- characters`, 14:27): the six on the new skins. Seen,
+not explained: the four face-test characters (Amara, Daniel, Mei, Walter) carry save times of 13:11 today though no
+step of mine was meant to save them; the backup (13:55) holds those files. Next on the hands: the donor's colour (knuckles, veins) in the same route,
 the part's strength measured, our hand's tone (L* 77 against his 68), then the skins rebuilt (library backed up first).
 
 ## The face's folds, and what the bands miss
@@ -169,6 +171,25 @@ window and its highlights (p95), `.dev/gate/parts/2026-11-07c`:
 grey haze over EEVEE's hair where Cycles' is dark with defined highlights. Not the parked sky-only flatness - the stage
 light fails too. Factors next, inside the clock: the body's light in its own shadow (`BODY_LIGHT_THROUGH` 0.5) and the
 constant image-light ambient (checker D: "a constant ambient of the world's mean frozen at build").
+
+One factor at a time (`factors.py hairthrough`, `hairambient`, `hairmodel*body*lobes*ambient`; EEVEE / Cycles, mean):
+
+| Setting | back, image light | back, stage | front, stage |
+|---|---|---|---|
+| as built (body 0.4, lobes 1.0, ambient 1.0, light through 0.5) | 2.20 | 2.05 | 0.77 |
+| ambient x0.45 | **1.02** | 1.98 | 0.76 |
+| light through 0.15 / 0 | - | 1.80 / 1.70 | - |
+| body 0.2 | - | 1.50 | 0.66 |
+| lobes 0.5 | - | 1.30 | 0.58 |
+| body 0.2, lobes 0.5 | - | 0.84 | 0.49 |
+
+**Read:** the image light's half is the constant ambient - x0.45 meets the gate (1.02), adopted (`hair_shading.AMBIENT`).
+Under the stage light the front of the head reads darker than Cycles and the back brighter, and every global share
+moves both together - no calibration meets 10% on both views: the model's angular response is wrong (the rim light
+behind the head, the TT / body balance), not its level. **The bound's gate fails for the hair's own reasons.** By the
+approved rule ("then hair cards take the live view") the live view goes to cards at the clock's end (2026-11-08 09:37);
+no cards exist for our generated styles (Strands2Cards' method, the plan's §14 "Cards", TO BUILD) - the plan's §19.2
+item 27.
 
 ## Next
 

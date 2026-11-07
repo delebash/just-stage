@@ -32,7 +32,10 @@ ROUGHNESS = 0.3  # the longitudinal roughness (Cycles' Principled Hair default)
 DIFFUSE = 0.4  # the multiple-scattered body's share
 GLOSSY = 1.0  # the lobes' share
 BODY_LIGHT_THROUGH = 0.5  # the share of the light the body gets in the strands' own shadow
-AMBIENT = 1.0  # the image light's ambient, x the world's mean radiance (WORLD_MEAN, set from the stage's world)
+#: the image light's ambient, x the world's mean radiance (WORLD_MEAN, set from the stage's world): x0.45 puts the back of
+#: the hair under the image light alone at 1.02x Cycles (was 2.2x at 1.0 - the gate, 2026-11-07); the stage light's
+#: front-to-back mismatch (0.77x / 2.05x) is the model's angular error, not this term
+AMBIENT = 0.45
 ROOT_AO = 0.35  # the ambient at the root (the strands above shade it), rising to 1 at the tip
 NODE = "js_hair."
 

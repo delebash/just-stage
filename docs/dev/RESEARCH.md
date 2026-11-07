@@ -3018,6 +3018,13 @@ before the rec list; measured in Blender 5.3 and read in our code):
   volume Chamfer (clumping). MetaHuman binds brows by a Groom Binding through shared UVs (optional RBF); CC's brows and
   beards carry skin weights and follow the head's morphs.
 
+- **The live hair model against Cycles across views** (*measured, 2026-11-07*, `../gate/2026-11-07/report.md`): the back
+  of the hair (`hair_back`) read 2.05x Cycles under the stage light and 2.2x under the image light alone, where the
+  11-06 calibration (front view, stage light) had passed. The image light's excess is the constant ambient (x0.45 -
+  1.02x, adopted); under the stage light the front reads 0.77x and the back 2.05x, and scaling the body, the lobes or
+  the light through the hair's own shadow moves both together (best balance 0.49x / 0.84x) - the model's angular
+  response is off, not its level.
+
 ### 14.15 · The live view against the film
 
 - **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over

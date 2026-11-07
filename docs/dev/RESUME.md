@@ -34,20 +34,23 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 ### Where it stands (update after every step)
 
 - 2026-11-07: the plan checked and corrected; RESEARCH an index by topic (§14.1-14.15); this file cut to a pointer.
-- Gate tools (§20 step 1): `tools/gate/measure.py` (standard measures, windows set by looking), `measure_table.py`,
-  `factors.py` (one factor at a time, trial settings `pores*k+micro*k+relief*k`, `handspart*k` / `handspartc*k` in the
-  shader); `quality-gate.md` brought to the bar. Baselines `.dev/gate/parts/2026-11-07a` (both engines), `-07b` (face
-  after the fix). Report: `docs/gate/2026-11-07/report.md`.
-- Proof (1) face relief: EEVEE cheek within HD Aaron's bands after pores x1.15 / microrelief x1.35 (`make_face_regions`)
-  except the folds (0.76); forehead equal. Cycles ~0.55 of his Cycles build - the question of which build is the bar is
-  the plan's §19.2 item 26. Next on the face: the microrelief's look (regular cells against his directional furrows -
-  a direction field per region), the cheek's folds.
-- Proof (2) body relief: Ten24's hands in texture space (`body_scan.py texture ten24`, x1.5 + colour) - back of the
-  hand form 1.24 (equal), ridges 0.74-0.80 (below). Library backed up (`.dev/backup/library_2026-11-07`); the scan skins
-  rebuilt (`rebuild_scan_skins.py build`) - next: the hand view rendered with the rebuilt skin (`parts_gate --skin`),
-  then the characters (`build_library`). Feet: no detailed donor until Thunk3D's "Leg-foot" (§19.2 item 25).
-- Fixes done: `test_body`; the oiliness link; no pores on lips / lining. Full suites not yet run (at the end).
-- Clock: the hair bound (Q-HAIR-7) runs to 2026-11-08 09:37 - the scalp proof is third.
+- Gate tools (§20 step 1): `measure.py` (bands in mm, ridges, Lab, repeatability), `measure_table.py`, `dists.py`
+  (DISTS against Aaron with his floor), `factors.py` (one factor at a time; trial settings; parts and colour edits in
+  the shader - a UDIM image's `pixels` reads only its first tile), `parts_gate --lights world`; `quality-gate.md` to
+  the bar. Report: `docs/gate/2026-11-07/report.md`; renders `.dev/gate/parts/2026-11-07a/b/c`.
+- Proof (1) face relief: NOT PROVED. EEVEE cheek bands within Aaron's after pores x1.15 / microrelief x1.35 (folds 0.76
+  below), forehead equal; but DISTS 0.188 against his 0.06 floor, the same with tone matched - the texture's structure
+  (our soft bumps against his crisp network) is the gap; the microrelief generator is NOT STANDARD awaiting the user
+  (§19.2 item 2). Cycles ~0.55 of his Cycles build - which build is the bar: §19.2 item 26.
+- Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins
+  and characters rebuilt (backup `.dev/backup/library_2026-11-07`): ridges x3 like for like (still below Aaron's veins);
+  feet - no detailed donor until Thunk3D (§19.2 item 25); torso folds 0.53-0.85.
+- Proof (3) scalp hair: the bound's gate FAILED for the hair's own reasons (front 0.77x, back 2.05x Cycles under the
+  stage light; the image light fixed by ambient x0.45); by the approved rule cards take the live view - how: §19.2 item
+  27 (cards baked from our own strands, after the face and body proofs).
+- Full suites: running at the end of 2026-11-07's work (results in the session report).
+- For the user to clean: `C:\.dev\gate\` - ten stray factor renders from my run (a relative path Blender resolved from
+  C:\; the removal needs the user's approval).
 
 ## Tools and references
 
