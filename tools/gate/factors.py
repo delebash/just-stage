@@ -223,13 +223,43 @@ def _scale_input(nt, socket: str, k: float) -> None:
         nt.links.new(times.outputs[0], s)
 
 
+def roughvar(built: dict, k: float) -> None:
+    """The skin's roughness varied by its own relief: x (1 - k (h - 0.5)) with h the pore and microrelief heights' sum
+    about 0.5 - rougher in the cavities, as CC5's cavity map does (HD Aaron's roughness varies 0.62-0.70 over the cheek,
+    ours is flat in a region, 0.474-0.479; the plan's §10 "cavity into roughness in pores", TO BUILD)."""
+    maps = _maps()
+    for nt in _skin_trees(built):
+        h = nt.nodes.new("ShaderNodeMath")
+        h.operation = "ADD"
+        nt.links.new(nt.nodes[maps.NODE + "pores_blend"].outputs[0], h.inputs[0])
+        nt.links.new(nt.nodes[maps.NODE + "micro_blend"].outputs[0], h.inputs[1])
+        gain = nt.nodes.new("ShaderNodeMath")  # 1 - k (h - 1) = (1 + k) - k h
+        gain.operation = "MULTIPLY_ADD"
+        nt.links.new(h.outputs[0], gain.inputs[0])
+        gain.inputs[1].default_value, gain.inputs[2].default_value = -k, 1.0 + k
+        for bsdf in [n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"]:
+            s = bsdf.inputs["Roughness"]
+            times = nt.nodes.new("ShaderNodeMath")
+            times.operation, times.use_clamp = "MULTIPLY", True
+            if s.is_linked:
+                nt.links.new(s.links[0].from_socket, times.inputs[0])
+            else:
+                times.inputs[0].default_value = s.default_value
+            nt.links.new(gain.outputs[0], times.inputs[1])
+            nt.links.new(times.outputs[0], s)
+    print("ROUGHNESS VARIED by the relief, k", k, flush=True)
+
+
 def scaled(spec: str):
     """A trial setting: `pores*1.15`, `micro*1.35`, `relief*2` (the scan relief's normal-map strength), `rough*0.75`,
-    `spec*1.5`, `coat*3`, `coatrough*0.5` (the shine, `SHINE`), joined by `+` - each scaled everywhere on the skin, to
-    see a change before it is made."""
+    `spec*1.5`, `coat*3`, `coatrough*0.5`, `sss*2` (`SHINE`), `roughvar*0.3` (`roughvar`), joined by `+` - each
+    changed everywhere on the skin, to see a change before it is made."""
     def prepare(built: dict) -> None:
         for part in spec.split("+"):
             key, factor = part.split("*")
+            if key == "roughvar":  # adds nodes once per tree
+                roughvar(built, float(factor))
+                continue
             for nt in _skin_trees(built):
                 if key in ("pores", "micro"):
                     node = nt.nodes[_maps().NODE + f"{key.rstrip('s')}_depth"]

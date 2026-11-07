@@ -395,7 +395,8 @@ def _render_views(who, engine, out_dir, names, size, samples, tag, built, scene,
     scene.render.resolution_x = scene.render.resolution_y = size
     scene.render.resolution_percentage = 100
     settings = scene.render.image_settings
-    settings.file_format, settings.color_mode, settings.color_depth = "PNG", "RGB", "8"
+    settings.file_format, settings.color_depth = "PNG", "8"
+    settings.color_mode = "RGBA" if scene.render.film_transparent else "RGB"  # transparent: hair_cover.py's alpha
     settings.color_management = "FOLLOW_SCENE"  # the app's look (AgX), as the live view shows it
     current = "neutral"
     frames_path = out_dir / "frames.json"  # each render's frame width at its target (tools/gate/measure.py's scale)
