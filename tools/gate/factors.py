@@ -201,7 +201,46 @@ def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
         print("HANDS PART in the shader, strength", strength, "colour", colour, flush=True)
 
 
-FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart)}
+def _margin_value(built: dict, key: str, value) -> None:
+    for nt in _skin_trees(built):
+        node = nt.nodes[_maps().NODE + f"margin_{key}"]
+        sock = next(i for i in node.inputs if i.identifier in ("B_Float", "B_Color"))
+        sock.default_value = value
+
+
+def margindry(built: dict) -> None:
+    """The lid margin's wet shine off: its roughness and coat the skin's own (0.5, 0.12) - the eye proof's first
+    factor for the swollen glossy lower rim (plan §19.1 item 6)."""
+    _margin_value(built, "rough", 0.5)
+    _margin_value(built, "coat", 0.12)
+
+
+def margintint0(built: dict) -> None:
+    """The lid margin's pink tint off (the skin's colour there)."""
+    _margin_value(built, "tint", (1.0, 1.0, 1.0, 1.0))
+
+
+def _hide_part(built: dict, part: str) -> None:
+    n = 0
+    for obj in bpy.data.objects:
+        if obj.juststage.part == part:
+            obj.hide_render = True
+            n += 1
+    print("HIDDEN", part, n, flush=True)
+
+
+def tear0(built: dict) -> None:
+    """The tearline (ICT's ring, the wet film along the lid margins) hidden."""
+    _hide_part(built, "eyeEdge")
+
+
+def occl0(built: dict) -> None:
+    """The occlusion film (ICT's strip, the lids' shadow on the white) hidden."""
+    _hide_part(built, "eyeshell")
+
+
+FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart, margindry,
+                                   margintint0, tear0, occl0)}
 
 
 #: the shine trials: a key -> the Principled input it scales on both of the skin's BSDFs (the film's and the live view's)
