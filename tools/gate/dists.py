@@ -54,6 +54,11 @@ def _grid(rows: list[float], cols: list[float], size: float) -> list[tuple[float
 PATCHES = {
     "cheek": _grid([0.06, 0.18, 0.30, 0.42], [0.10, 0.22, 0.34, 0.46, 0.58, 0.70], 0.12),
     "eye": _grid([0.00, 0.06, 0.12], [0.16, 0.26, 0.36, 0.46, 0.56, 0.66, 0.76, 0.86], 0.06),
+    # the body (2026-11-07, looked at on both): the back of the hand (~12 mm patches), the chest and upper belly clear
+    # of the nipples and the navel (~45 mm), the top of the foot (~14 mm)
+    "hand": _grid([0.60, 0.65, 0.70, 0.75], [0.36, 0.41, 0.46, 0.51], 0.05),
+    "torso": _grid([0.20, 0.28, 0.45, 0.53, 0.61, 0.69], [0.36, 0.44, 0.52], 0.08),
+    "foot": _grid([0.30, 0.36, 0.42, 0.48, 0.54], [0.42, 0.48, 0.54], 0.06),
 }
 PERMUTATIONS = 2000
 

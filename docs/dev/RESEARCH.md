@@ -3062,8 +3062,10 @@ before the rec list; measured in Blender 5.3 and read in our code):
   surface; his card vertices, our evaluated strand points; head-centred regions), p50 / p90 mm: top his 13.3 / 22.9,
   ours 5.5 / 11.7; sides 4.3 / 12.2 against 2.0 / 5.8; back 7.8 / 14.9 against 6.1 / 13.1; nape 6.9 / 13.5 against
   4.7 / 12.4 - ours about half his volume on top and at the sides. And 2% of our evaluated hair points (1,154 of a
-  60,000 sample) lie over 20 cm from the head - stray strands, a defect to find (the fill's rest-space trap of commit
-  0b0b736, or guides).
+  60,000 sample) lie over 20 cm from the head - stray strands: 2,018 of 102,137 curves, 3-5 cm long, rooted ~31-34 cm
+  below the hair's centre and ~9 cm behind it (the lower neck / upper back), their surface UVs (0.62-0.63, 0.67-0.68)
+  inside the scalp region's own UV range - the style's region (MakeHuman's `short_hedgehog` roots) or the mask's
+  gap-closing reaches there; the fix: roots below the nape hairline cut in 3D (in the hair proof).
 
 ### 14.15 · The live view against the film
 
