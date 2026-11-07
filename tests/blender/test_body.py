@@ -15,6 +15,9 @@ api = importlib.import_module("bl_ext.system.juststage.api")
 build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
 base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
 
+#: the body's quads: hm08's 13,378 + base v2's lid loops (a loop cut adds one quad per edge it cuts)
+BODY_QUADS = 13378 + len(base.record()["cut"])
+
 
 @pytest.fixture
 def human():
@@ -60,14 +63,14 @@ def test_a_new_human_is_smooth_as_cc5s_default(human):
     levels = obj.modifiers[build.LEVELS]
     assert obj.modifiers[0] == levels  # first, before the helper mask
     assert (levels.total_levels, levels.levels, levels.render_levels) == (2, 1, 2)
-    assert build.visible_face_count(obj) == 13378 * 4  # the body's quads once subdivided; the helpers stay masked
+    assert build.visible_face_count(obj) == BODY_QUADS * 4  # the body's quads once subdivided; the helpers stay masked
 
 
 def test_the_character_has_its_fields(human):
     result, obj = human
     assert uuid.UUID(result.character).version == 4
     assert obj.juststage.kind == "HUMAN"
-    assert obj.juststage.base_version == build.BASE_VERSION
+    assert obj.juststage.base_version == base.VERSION
 
 
 def test_macro_targets_are_weighted_shape_keys(human):
@@ -121,7 +124,7 @@ def test_two_hd_levels_on_the_body_only(human):
     out = api.run("juststage.body.subdivide", character=result.character, levels=2, viewport_level=2)
     assert obj.modifiers[0].name == build.LEVELS  # first, before the helper mask
     assert obj.modifiers[0].total_levels == 2
-    assert out.visible_faces == 13378 * 16  # the body's quads, ×4 per level; the helpers stay masked
+    assert out.visible_faces == BODY_QUADS * 16  # the body's quads, ×4 per level; the helpers stay masked
 
 
 def test_levels_can_go_down(human):
@@ -129,7 +132,7 @@ def test_levels_can_go_down(human):
     api.run("juststage.body.subdivide", character=result.character, levels=2, viewport_level=1)
     out = api.run("juststage.body.subdivide", character=result.character, levels=1, viewport_level=1)
     assert obj.modifiers[build.LEVELS].total_levels == 1
-    assert out.visible_faces == 13378 * 4
+    assert out.visible_faces == BODY_QUADS * 4
 
 
 def _basis(obj):
