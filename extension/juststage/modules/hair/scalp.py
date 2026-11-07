@@ -32,7 +32,14 @@ RADIUS, PROFILE_SHAPE = 0.00004, 0.3  # m at the root (hair ~80 um across), the 
 #: the scalp on top and at the sides (mm), the comb's sideways sweep
 SHORT_COMBED = {"lengths": ((-0.4, 12.0), (0.0, 24.0), (0.35, 45.0), (0.7, 65.0)), "lift": (14.0, 4.0),
                 "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.25}  # fmt: skip
-STYLES = {"short combed": SHORT_COMBED}
+#: SHORT_TAPER (2026-11-07, on trial against HD Aaron's "Classic Slick Back" in EEVEE): his hair stands off the scalp
+#: p50 / p90 13 / 23 mm on top, 4 / 12 at the sides, 8 / 15 at the back, 7 / 13 at the nape, where short combed's stood
+#: 5.5 / 11.7, 2.0 / 5.8, 6.1 / 13.1, 4.7 / 12.4, and hung over the ears (RESEARCH §14.14): more lift on top and at the
+#: sides, more again at the front hairline, shorter at the sides (by how far the root faces sideways) and the nape
+SHORT_TAPER = {"lengths": ((-0.4, 9.0), (0.0, 18.0), (0.35, 42.0), (0.7, 62.0)), "lift": (24.0, 9.0),
+               "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.35,
+               "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.5, "back_lift": 0.6}  # fmt: skip
+STYLES = {"short combed": SHORT_COMBED, "short taper": SHORT_TAPER}
 MASK_SIZE, MASK_BLUR = 1024, 6  # the scalp mask in hm08's UVs: texels, its soft edge (texels)
 MELANIN, MELANIN_SPREAD, REDNESS = 0.82, 0.06, 0.2
 GREY_SHARE, GREY_MELANIN = 0.2, 0.05  # grey: a share of strands nearly without pigment
@@ -80,6 +87,13 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
         heights = np.array([z for z, _ in style["lengths"]])
         length = 0.001 * np.interp(normal[2], heights, [mm for _, mm in style["lengths"]]) * rng.uniform(0.85, 1.15)
         lift = 0.001 * np.interp(abs(normal[0]), [0.2, 0.8], style["lift"])
+        if "side_scale" in style:  # shorter where the root faces sideways (a taper over the ears)
+            lo, hi, scale = style["side_scale"]
+            length *= np.interp(abs(normal[0]), [lo, hi], [1.0, scale])
+        if "front_lift" in style:  # more lift where the root faces forward (the hairline's rise)
+            lift *= 1.0 + (style["front_lift"] - 1.0) * np.clip((-normal[1] - 0.2) / 0.4, 0.0, 1.0)
+        if "back_lift" in style:  # less where it faces back (the back and nape lie closer: his 8 / 7 mm p50)
+            lift *= 1.0 + (style["back_lift"] - 1.0) * np.clip((normal[1] - 0.2) / 0.4, 0.0, 1.0)
         side = np.sign(surface[0] - centre_x)
         p = surface.copy()
         strand = [p - 0.0001 * normal]

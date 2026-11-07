@@ -114,9 +114,11 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
     library = importlib.import_module("bl_ext.system.juststage.core.library")
     root = library.root()
     shown = api.run("juststage.library.add", path=str(root / "Characters" / f"{character or OURS['character']}.blend"))
-    if scalp == "generated":  # JustStage's own (modules/hair/scalp.py, rec 11)
+    if scalp.startswith("generated"):  # JustStage's own (modules/hair/scalp.py, rec 11); "generated:<style>" a style
+        style = scalp.partition(":")[2] or "short combed"
         importlib.import_module("bl_ext.system.juststage.modules.hair.scalp").make(
-            next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of))
+            next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of),
+            style)
     else:
         api.run("juststage.library.add", path=str(root / "Hair" / "Scalp" / f"{OURS['scalp']}.blend"),
                 character=shown.character)
@@ -505,7 +507,7 @@ if __name__ == "__main__":
     p.add_argument("--skin", default="", help="a library skin (.blend) on ours, as the Content panel applies it")
     p.add_argument("--brows", choices=("library", "generated"), default="library")
     p.add_argument("--character", default="", help="another library character for ours")
-    p.add_argument("--scalp", choices=("library", "generated"), default="library")
+    p.add_argument("--scalp", default="library", help='library, generated, or "generated:<style>" (scalp.STYLES)')
     p.add_argument("--lights", choices=("stage", "world"), default="stage", help="world: the image light alone")
     a = p.parse_args(args)
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\

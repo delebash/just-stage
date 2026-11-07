@@ -60,5 +60,8 @@ if __name__ == "__main__":
     p.add_argument("--who", choices=("ours", "cc5"), required=True)
     p.add_argument("--views", default="hair_back,profile,front")
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--scalp", default="library", help='ours: library, generated, "generated:<style>"')
+    p.add_argument("--tag", default="", help="before _cover in the file names (a trial style's)")
     a = p.parse_args(args)
-    pg.render(a.who, "eevee", a.out.resolve(), a.views.split(","), 1024, 1, tag="_cover", prepare=only_hair)
+    pg.render(a.who, "eevee", a.out.resolve(), a.views.split(","), 1024, 1, tag=a.tag + "_cover", prepare=only_hair,
+              scalp=a.scalp)

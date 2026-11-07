@@ -32,10 +32,12 @@ def main() -> None:
     p = argparse.ArgumentParser(prog="hair_measure.py")
     p.add_argument("out_dir", type=Path)
     p.add_argument("--views", default="hair_back,profile,front")
+    p.add_argument("--tag", default="", help="ours' trial tag (hair_cover.py --tag, parts_gate --tag)")
     a = p.parse_args()
     for view in a.views.split(","):
-        renders = {who: a.out_dir / f"eevee_{view}_{who}.png" for who in ("cc5", "ours")}
-        covers = {who: a.out_dir / f"eevee_{view}_{who}_cover.png" for who in ("cc5", "ours")}
+        renders = {"cc5": a.out_dir / f"eevee_{view}_cc5.png", "ours": a.out_dir / f"eevee_{view}_ours{a.tag}.png"}
+        covers = {"cc5": a.out_dir / f"eevee_{view}_cc5_cover.png",
+                  "ours": a.out_dir / f"eevee_{view}_ours{a.tag}_cover.png"}
         if not all(p.exists() for p in [*renders.values(), *covers.values()]):
             print(f"{view}: missing renders")
             continue
