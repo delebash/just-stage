@@ -413,9 +413,27 @@ def microtile(built: dict, stem: str) -> None:
     print("MICRO TILE", stem, "on", n, "nodes", flush=True)
 
 
+#: the eye-open sliders (body_create.EYE_OPEN) one at a time - the lower lid's thick roll at the eye view; shape keys,
+#: so these run alone (`--alone`: a build each - the trials' material reset doesn't undo a shape)
+EYE_SLIDERS = {"eyebag": "bag-decr-incr", "eyeheight2": "height2-decr-incr", "eyefold": "eyefold-concave-convex",
+               "eyefoldup": "eyefold-down-up", "eyeheight1": "height1-decr-incr"}
+
+
+def eye_slider(built: dict, key: str, value: float) -> None:
+    sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
+    catalog = sliders.catalog()
+    for side in ("l", "r"):
+        sliders.apply(built["body"], catalog[f"eyes/{side}-eye-{EYE_SLIDERS[key]}"], value)
+    bpy.context.view_layer.update()
+    print("EYE SLIDER", key, value, flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)
+        key, value = name.split("*")
+        return lambda built: eye_slider(built, key, float(value))
     if name.startswith("microtile"):  # microtile*v2b, microtile*v2b+micro*1.5 (then the depth scaled)
         stem, _, rest = name.split("*", 1)[1].partition("+")
         after = scaled(rest) if rest else None
@@ -451,14 +469,19 @@ if __name__ == "__main__":
     p.add_argument("--out", type=Path, default=pg.OUT / "factors")
     p.add_argument("--lights", choices=("stage", "world"), default="stage")
     p.add_argument("--scalp", default="library", help='our scalp: library, generated, "generated:<style>"')
+    p.add_argument("--alone", action="store_true", help="a build for each factor (shape changes: eyebag*0 ...)")
     a = p.parse_args(args)
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     names = a.factors.split(",")
     tags = ["_f-" + n.replace("*", "x").replace(".", "p").replace("+", "_") + ("_world" if a.lights == "world" else "")
             for n in names]  # fmt: skip
-    # built once, the materials set back before each factor (parts_gate.render's variants)
-    pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, lights=a.lights, scalp=a.scalp,
-              variants=[(t, factor(n)) for t, n in zip(tags, names, strict=True)])
+    if a.alone:  # a build each (a factor that changes the shape)
+        for t, n in zip(tags, names, strict=True):
+            pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=t, prepare=factor(n),
+                      lights=a.lights, scalp=a.scalp)
+    else:  # built once, the materials set back before each factor (parts_gate.render's variants)
+        pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, lights=a.lights,
+                  scalp=a.scalp, variants=[(t, factor(n)) for t, n in zip(tags, names, strict=True)])
     for tag in tags:
         for view in a.views.split(","):
             made = out / f"{a.engine}_{view}_ours{tag}.png"
