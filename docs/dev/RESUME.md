@@ -59,7 +59,12 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   (f) The texture measure corrected: `dists.py --patches` (24 patches, energy excess, permutation band +-0.003); the old
   0.06 floor was the same pixels moved. Excess cheek / forehead: today 0.047 / 0.107; tile t1 0.018 / 0.100; the
   forehead's levers roughness x1.38 (0.076) and microrelief x0.4 (0.074). His roughness 0.66 even, ours 0.37-0.48 flat.
-  Queued (`scratchpad/batch_t1.sh`, when the card is free): ten t1 trials, then our hair views and the hair cover.
+  (g) Kept and shipped (commits 32a65c7, 98e3059): the layered tile t1 as the skin's microrelief (x2.686 depth: the same
+  slope), the forehead at his mask's micro level (x5 -> x1) and roughness 0.50 - excess cheek 0.018, forehead 0.021;
+  the library rebuilt (scan skins, characters; backup `.dev/backup/library_2026-11-07b`). Next: the baseline on the
+  rebuilt library and the body trials (`scratchpad/batch_body.sh`, when JustVoice's "card free" comes); body excess
+  this morning hand 0.085, torso 0.051, foot 0.107. Hair (RESEARCH §14.14): the groom is the gap (about half his
+  stand-off on top and sides; 2% stray strands on the upper back).
 - Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins
   and characters rebuilt (backup `.dev/backup/library_2026-11-07`): ridges x3 like for like (still below Aaron's veins);
   feet - no detailed donor until Thunk3D (§19.2 item 25); torso folds 0.53-0.85.
