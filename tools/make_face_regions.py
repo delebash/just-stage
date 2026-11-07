@@ -42,10 +42,12 @@ RELIEF_SCALE = 8.0  # R = factor / RELIEF_SCALE
 #: flattened the larger bumps. 2026-11-07 evening (plan §0, EEVEE, `dists.py --patches` - the texture's excess over
 #: HD Aaron's own patch-to-patch): the forehead's microrelief x5 read as a crisp honeycomb against his soft forehead,
 #: where his MicroNMask is 1 over the whole face; at x1 (his mask's level) with roughness 0.36 -> 0.50 (his is 0.66;
-#: ours at 0.66 made the cheek too even) the forehead's excess 0.099 -> 0.021 (the layered tile on both)
+#: ours at 0.66 made the cheek too even) the forehead's excess 0.099 -> 0.021 (the layered tile on both). The nose
+#: (a close view of its own, `parts_gate` "nose"): its pores x2 and microrelief x3 read as deep pits against his smooth
+#: nose - microrelief x1 (his mask) and pores x0.6 bring its excess 0.171 -> 0.053
 SCALE = (1.15, 1.35)
 REGIONS = {k: (v[0] * SCALE[0], v[1] * SCALE[1], v[2]) for k, v in {
-    "forehead": (2.0, 1.0, 0.50), "nose": (2.0, 3.0, 0.35), "chin": (1.5, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
+    "forehead": (2.0, 1.0, 0.50), "nose": (0.6, 1.0, 0.35), "chin": (1.5, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
     "cheek": (1.0, 1.0, 0.48)}.items()}  # fmt: skip
 #: the head tile's neck, down to the chest, is body skin (2026-11-06: as "cheek" it took the face's roughness and the
 #: face's coat - a glossy band ending in a line across the chest on dark skin): the body tiles' values, and a face
