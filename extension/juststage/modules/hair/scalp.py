@@ -38,19 +38,21 @@ SHORT_COMBED = {"lengths": ((-0.4, 12.0), (0.0, 24.0), (0.35, 45.0), (0.7, 65.0)
 #: sides, more again at the front hairline, shorter at the sides (by how far the root faces sideways) and the nape
 SHORT_TAPER = {"lengths": ((-0.4, 9.0), (0.0, 18.0), (0.35, 42.0), (0.7, 62.0)), "lift": (24.0, 9.0),
                "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.35,
-               "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.5, "back_lift": 0.6}  # fmt: skip
+               "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.25, "back_lift": 0.6, "side_down": 0.15}  # fmt: skip
 STYLES = {"short combed": SHORT_COMBED, "short taper": SHORT_TAPER}
 MASK_SIZE, MASK_BLUR = 1024, 6  # the scalp mask in hm08's UVs: texels, its soft edge (texels)
 MELANIN, MELANIN_SPREAD, REDNESS = 0.82, 0.06, 0.2
 GREY_SHARE, GREY_MELANIN = 0.2, 0.05  # grey: a share of strands nearly without pigment
 
 
-def _flow(point: np.ndarray, normal: np.ndarray, sweep: float, side: float) -> np.ndarray:
+def _flow(point: np.ndarray, normal: np.ndarray, sweep: float, side: float, side_down: float = 0.6) -> np.ndarray:
     """The comb's direction at a point of the scalp: back (+Y; the character faces -Y) on top, down at the back and the
-    sides, swept a little to the side the point is on - in the skin's tangent plane."""
+    sides (`side_down`: how much the sides turn down - combed straight down they part from the top's backward hair
+    along a bare line above the ear, 2026-11-07), swept a little to the side the point is on - in the skin's tangent
+    plane."""
     back, down = np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, -1.0])
     w = np.clip((normal[1] + 0.1) / 0.6, 0.0, 1.0)  # the crown's back half: down
-    d = (1 - w) * back + w * down + 0.6 * abs(normal[0]) * down + sweep * side * np.array([1.0, 0.0, 0.0])
+    d = (1 - w) * back + w * down + side_down * abs(normal[0]) * down + sweep * side * np.array([1.0, 0.0, 0.0])
     d -= (d @ normal) * normal
     return d / max(np.linalg.norm(d), 1e-9)
 
@@ -100,7 +102,7 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
         jitter = rng.normal(0.0, 0.08, 3)
         for k in range(1, POINTS):
             q, n = nearest(p)
-            d = _flow(q, n, style["sweep"], side) + jitter
+            d = _flow(q, n, style["sweep"], side, style.get("side_down", 0.6)) + jitter
             d -= (d @ n) * n
             d /= max(np.linalg.norm(d), 1e-9)
             step = p + d * length / (POINTS - 1)
