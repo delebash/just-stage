@@ -37,6 +37,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORK_ROOT = ROOT / ".dev" / "facetest" / "body"
 OUT = ROOT / "extension" / "juststage" / "data" / "generated" / "skin"
 SCAN = ROOT / ".dev" / "downloads" / "artec_body_scan" / "x" / "3D body scan" / "Dima_body scan.obj"
+TEN24 = ROOT / ".dev" / "downloads" / "ten24_sample" / "x" / "OBJ Package"
 #: each source: its scan, the scale to metres, the UDIM tiles (index past 1001) it gives, its fit, its credit
 SOURCES = {
     "artec": {"scan": SCAN, "scale": 0.001, "tiles": (1,), "fit": "torso", "work": WORK_ROOT,
@@ -47,6 +48,13 @@ SOURCES = {
                 "scale": 1.0, "tiles": (2, 3), "fit": "anny", "work": WORK_ROOT / "hsr0042",
                 "source": "HSRD-100, HSR0042-Body-045 (huggingface.co/datasets/digitalrealitylab/HSRD-100)",
                 "licence": "CC BY 4.0 (Digital Reality Lab)"},
+    "ten24": {"scan": TEN24 / "OBJ" / "Decimated" / "Ten24_Sample_100k.OBJ", "image": TEN24 / "Colour Maps" / "JPG" / "Colour_8k.jpg",
+              "normal": TEN24 / "Normal Maps" / "Level_01_Normal.PSD", "axes": ("NEGATIVE_Z", "Y"),
+              "scale": 1.0, "tiles": (2,), "fit": "anny", "part": "hands", "work": WORK_ROOT / "ten24",
+              "edge_fade": 24.0,  # texels (~9 mm): a finger is ~160 texels round on this tile - 96 would fade it out
+              "source": "Ten24, the free sample scan (3dscanstore.com - the page saved 2026-11-04)",
+              "licence": "Ten24's grant: 'Feel free to use this scan as you wish for both commercial and personal projects. "
+                         "All we ask is that you provide us with a credit wherever it's used'"},
 }  # fmt: skip
 SIZE = 2048
 RELIEF_HP_MM = 40.0  # the relief kept below this scale (the fit's leftover above it)
@@ -99,7 +107,8 @@ def export(src: str = "artec") -> None:
     work.mkdir(parents=True, exist_ok=True)
     np.savez(work / "ours.npz", co=co, tris=tris, tuv=tuv, tile=tile,
              joint_names=np.array(list(joints)), joint_co=np.array(list(joints.values())))  # fmt: skip
-    bpy.ops.wm.obj_import(filepath=str(spec["scan"]), forward_axis="Y", up_axis="Z")
+    forward, up = spec.get("axes", ("Y", "Z"))  # Ten24's OBJ is Y-up, facing +Z
+    bpy.ops.wm.obj_import(filepath=str(spec["scan"]), forward_axis=forward, up_axis=up)
     scan = bpy.context.selected_objects[0]
     sm = scan.data
     sv = np.empty(len(sm.vertices) * 3, np.float64)
@@ -166,7 +175,8 @@ def _wrap(source_co, source_tris, target_v, target_f, label: str):
     from trimesh import registration
 
     near = trimesh.proximity.ProximityQuery(trimesh.Trimesh(source_co, source_tris, process=False))
-    _, dv, _ = near.on_surface(target_v)
+    # in chunks: one query over a whole scan built a 150M-pair candidate array (3.3 GB, 2026-11-07)
+    dv = np.concatenate([near.on_surface(target_v[i:i + 4000])[1] for i in range(0, len(target_v), 4000)])
     keep_f = np.all((dv < 0.04)[target_f], axis=1)
     target = trimesh.Trimesh(target_v, target_f, process=False).submesh([np.flatnonzero(keep_f)], append=True)
     source = trimesh.Trimesh(source_co, source_tris, process=False)
@@ -276,6 +286,8 @@ def fit_anny(src: str, o, s) -> None:
     posed = co.copy()
     posed[:n_hm08] = fitted_all  # base v2's appended lid vertices stay where they were (not on these tiles)
     limb_tris = tris[np.isin(tile, spec["tiles"])]
+    if spec.get("part") == "hands":  # only the hands are wrapped and baked (Ten24's arms are in a sweater)
+        limb_tris = limb_tris[_hand_vertices(o)[limb_tris].all(axis=1)]
     lv = np.unique(limb_tris)
     d, _ = tgt_tree.query(posed[lv])
     print(f"ANNY limbs: to the scan p50 {np.median(d) * 1000:.1f} / p90 {np.percentile(d, 90) * 1000:.1f} mm")
@@ -316,6 +328,14 @@ def bake(src: str = "artec") -> None:
     tex.image = bpy.data.images.load(str(s["image"]))
     bsdf = next(n for n in smat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
     smat.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    if "normal" in spec:  # the scan's detail is in its normal map (Ten24's 100k mesh + 8K map): the bake reads it there
+        ntex = smat.node_tree.nodes.new("ShaderNodeTexImage")
+        ntex.image = bpy.data.images.load(str(spec["normal"]))
+        ntex.image.colorspace_settings.name = "Non-Color"
+        nmap = smat.node_tree.nodes.new("ShaderNodeNormalMap")
+        nmap.space, nmap.uv_map = "TANGENT", "UV"
+        smat.node_tree.links.new(ntex.outputs["Color"], nmap.inputs["Color"])
+        smat.node_tree.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
     sm.materials.append(smat)
     scan = bpy.data.objects.new("scan", sm)
     scene.collection.objects.link(scan)
@@ -387,6 +407,36 @@ def _mm_per_uv(tile_number: int) -> float:
     return float(table[str(tile_number)])
 
 
+def _hand_vertices(o) -> np.ndarray:
+    """Our vertices on the hands: past each wrist joint along the forearm (elbow -> wrist), from 1 cm before the wrist
+    so a fade lands on the wrist itself."""
+    names = [str(n) for n in o["joint_names"]]
+    jc = dict(zip(names, o["joint_co"], strict=True))
+    co = o["co"]
+    on_hand = np.zeros(len(co), bool)
+    for side in ("l", "r"):
+        elbow, wrist = jc[f"joint-{side}-elbow"], jc[f"joint-{side}-hand"]
+        axis = (wrist - elbow) / np.linalg.norm(wrist - elbow)
+        along = (co - wrist) @ axis
+        near = np.linalg.norm(co - wrist, axis=1) < 0.25
+        on_hand |= near & (along > -0.01)
+    return on_hand
+
+
+def _hand_cover(o, number: int) -> np.ndarray:
+    """The texels of tile `number` on our hands (_hand_vertices)."""
+    import cv2
+
+    tris, tuv, tile = o["tris"], o["tuv"], o["tile"]
+    on_hand = _hand_vertices(o)
+    cover = np.zeros((SIZE, SIZE), np.uint8)
+    sel = (tile == number) & on_hand[tris].all(axis=1)
+    for tri in tuv[sel]:
+        pts = np.round(np.c_[(tri[:, 0] - number) * SIZE, (1 - tri[:, 1]) * SIZE]).astype(np.int32)
+        cv2.fillConvexPoly(cover, pts, 1)
+    return cover
+
+
 def post(src: str = "artec") -> None:
     import cv2
 
@@ -413,6 +463,8 @@ def post(src: str = "artec") -> None:
         fabric = (hsv[..., 2] < FABRIC_VALUE) & (hsv[..., 1] < FABRIC_SATURATION)
         fabric = cv2.dilate(fabric.astype(np.uint8), np.ones((15, 15), np.uint8)) > 0  # the trunks out, their edge too
         baked &= ~fabric
+        if spec.get("part") == "hands":  # only the hands (Ten24's forearms carry hair and a sweater's cuff)
+            baked &= _hand_cover(o, number) > 0
         baked = cv2.erode(baked.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
         px_per_mm = SIZE / _mm_per_uv(name)
         w = baked.astype(np.float32)
@@ -433,7 +485,7 @@ def post(src: str = "artec") -> None:
         hp = (xy - mblur(xy, RELIEF_HP_MM * px_per_mm / 2.0)) * w[..., None]
         # faded out well inside the scan's reach and the tile's own island: no step where the detail ends
         edge = np.clip(np.minimum(cv2.distanceTransform(baked.astype(np.uint8), cv2.DIST_L2, 5),
-                                  cv2.distanceTransform(cover, cv2.DIST_L2, 5)) / EDGE_FADE, 0, 1)  # fmt: skip
+                                  cv2.distanceTransform(cover, cv2.DIST_L2, 5)) / spec.get("edge_fade", EDGE_FADE), 0, 1)  # fmt: skip
         edge = edge * edge * (3 - 2 * edge)
         hp *= edge[..., None]
         debris = hair.relief_debris(hp, 0.3, 8).astype(np.float32)  # rings and arcs at the scan's holes and edges
@@ -448,15 +500,18 @@ def post(src: str = "artec") -> None:
         ratio_log = np.clip(ratio_log, -0.5, 0.3) * w[..., None] * edge[..., None]
         ratio = np.exp(ratio_log)
         OUT.mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(str(OUT / f"body_{name}_relief.png"),
+        stem = f"body_{name}" + (f"_{spec['part']}" if "part" in spec else "")  # a part beside the tile's main source
+        cv2.imwrite(str(OUT / f"{stem}_relief.png"),
                     np.round(np.clip(relief[..., ::-1], 0, 1) * 65535).astype(np.uint16))  # fmt: skip
-        cv2.imwrite(str(OUT / f"body_{name}_colour.png"),
+        if "part" in spec:  # its weight (the edge and fit fades): where build_skins takes this part over the main one
+            cv2.imwrite(str(OUT / f"{stem}_weight.png"), np.round(np.clip(w * edge, 0, 1) * 65535).astype(np.uint16))
+        cv2.imwrite(str(OUT / f"{stem}_colour.png"),
                     np.round(np.clip(ratio[..., ::-1] / 2, 0, 1) * 65535).astype(np.uint16))  # fmt: skip
         info = {"tile": name, "size": SIZE, "source": spec["source"], "licence": spec["licence"],
                 "relief_hp_mm": RELIEF_HP_MM, "colour_hp_mm": COLOUR_HP_MM,
                 "colour": "a ratio around 1, stored halved (0.5 = 1)", "strands_filled": int(found.sum()),
                 "fabric_out": int(fabric.sum()), "covered": float(baked.mean())}  # fmt: skip
-        (OUT / f"body_{name}.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
+        (OUT / f"{stem}.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
         print(f"POST {name}: relief and colour written; {found.sum()} strand texels filled; {fabric.sum()} fabric "
               f"texels out; tile covered {baked.mean():.1%}")
 

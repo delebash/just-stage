@@ -133,6 +133,10 @@ if __name__ == "__main__":
     p.add_argument("--engine", choices=("eevee", "cycles"), default="eevee")
     p.add_argument("--out", type=Path, default=pg.OUT / "factors")
     a = p.parse_args(args)
+    out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     for name in a.factors.split(","):
-        pg.render("ours", a.engine, a.out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=f"_f-{name}",
+        pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=f"_f-{name}",
                   prepare=FACTORS[name])
+        for view in a.views.split(","):
+            made = out / f"{a.engine}_{view}_ours_f-{name}.png"
+            print("WRITTEN" if made.exists() else "MISSING", made, flush=True)

@@ -261,6 +261,10 @@ def _blur(mask: np.ndarray, px: int) -> np.ndarray:
 BODY_SCAN_SIZE = 2048
 
 
+#: parts with a donor of their own over a body tile's main one (tools/body_scan.py SOURCES' "part")
+BODY_PARTS = ("hands",)
+
+
 def _body_scan() -> dict | None:
     """The body tiles' detail from bare-body scans (tools/body_scan.py: the torso's from Artec's, CC BY 3.0; the arms',
     hands', legs' and feet's from HSRD-100's HSR0042-Body-045, CC BY 4.0) - by tile number, its colour ratio around 1
@@ -276,8 +280,15 @@ def _body_scan() -> dict | None:
     for number in maps.TILES[1:4]:
         if (folder / f"body_{number}_relief.png").exists():
             colour = read(f"body_{number}_colour.png") * 2.0
-            found[number] = {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3,
-                             "relief": read(f"body_{number}_relief.png")}  # fmt: skip
+            relief = read(f"body_{number}_relief.png")
+            for part in BODY_PARTS:  # a part's own donor over the tile's main one (Ten24's hands on the arms' tile)
+                if (folder / f"body_{number}_{part}_relief.png").exists():
+                    w = read(f"body_{number}_{part}_weight.png")[..., :1]
+                    xy = relief[..., :2] * (1 - w) + read(f"body_{number}_{part}_relief.png")[..., :2] * w
+                    z = np.sqrt(np.clip(1 - ((xy * 2 - 1) ** 2).sum(-1, keepdims=True), 0, 1))  # as body_scan.post stores it
+                    relief = np.concatenate([xy, z], -1)
+                    colour = colour * (1 - w) + read(f"body_{number}_{part}_colour.png") * 2.0 * w
+            found[number] = {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3, "relief": relief}
     return found or None
 
 

@@ -40,11 +40,11 @@ from skimage.color import rgb2lab
 from skimage.filters import frangi
 
 #: windows by view: name -> (row0, row1, col0, col1) as fractions of the frame. The eye view's forehead strip and the
-#: cheek view's centre are the proof log's (2026-11-05); the rest the central skin of their view
+#: cheek view's centre are the proof log's (2026-11-05); the rest the central skin of their view. The face view has none: its
+#: centre takes in stubble, lips and nostrils (2026-11-07: its "pores 1.45 above" was not skin alone) - judged by eye
 WINDOWS = {
     "eye": {"forehead": (0.02, 0.17, 0.30, 0.75)},  # above both brows (HD Aaron's sit lower in the frame)
     "cheek": {"cheek": (0.15, 0.48, 0.25, 0.58)},  # above the stubble (its lower edge caught hairs when moved)
-    "face": {"face": (0.30, 0.70, 0.30, 0.70)},
     "torso": {"chest": (0.25, 0.55, 0.30, 0.70)},
     "hand": {"back of hand": (0.58, 0.80, 0.33, 0.58)},  # below the knuckles (the fingers point up the frame)
     "foot": {"top of foot": (0.30, 0.60, 0.35, 0.65)},

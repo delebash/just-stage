@@ -36,6 +36,23 @@ outlines (`windows_<engine>_<view>_<who>.png`): the cheek above the stubble, the
   far below (25-47%: flat, as run 11 saw).
 - **Hands, by eye** (`windows_eevee_hand_*.png`): ours flat and pale; Aaron's tendons, veins and knuckle creases.
 
+## Cycles (the film, the live view's oracle)
+
+| View / window | Ours L* a* b* | Aaron's | micro | pores | folds | form |
+|---|---|---|---|---|---|---|
+| cheek / cheek | 74.7 11.9 14.2 | 72.7 14.3 13.3 | 0.44 < (7%) | 0.55 < (6%) | 0.51 < (8%) | 0.74 < (13%) |
+| eye / forehead | 76.4 11.1 13.6 | 73.7 13.1 12.5 | - | 0.68 < (13%) | 0.61 < (17%) | - |
+| face / face | (Aaron's window cover 0.875 - his face view frames lower; window to move) | | | | | |
+| hand / back of hand | 76.5 10.4 14.1 | 67.1 15.7 17.9 | - | 0.29 < (15%) | 0.35 < (20%) | 0.53 < (18%) |
+| foot / top of foot | 68.0 12.9 18.0 | 54.7 16.8 21.2 | - | 0.29 < (28%) | 0.17 < (15%) | 0.20 < (20%) |
+| torso / chest | 64.0 14.1 19.5 | 57.6 15.2 21.6 | - | - | 0.53 < (2%) | 0.57 < (16%) |
+
+**Read:** in the film, ours is about half of Aaron's detail at the cheek and 0.6-0.7 at the forehead - the face proof
+is **not proved in either renderer**, and the gap is larger in Cycles. Aaron's own detail reads ~1.6x stronger in
+Cycles than in EEVEE (cheek pores 2.69 against 1.73), ours the same in both (1.47 / 1.49). Why is not yet known - a
+hypothesis to test one factor at a time: his maps (normal + micro normal) gain from Cycles' many samples per pixel
+where EEVEE's texture filtering softens them, and our bump-node relief behaves differently. Hands and feet: a third of his or less.
+
 ## Next
 
 The cheek's gap one factor at a time (`tools/gate/factors.py`: relief0, pores0, micro0, colourpores0, colourflat), then
