@@ -56,6 +56,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   cheek's (`make_face_regions.py`, set on voided inputs 11-05) where his MicroNMask is ~1 everywhere - it reads as a
   crisp honeycomb against his soft forehead. (e) `tools/gate/shine_probe.py` reads each BSDF's roughness / specular as
   emission, his and ours. Factor trials now build once (`parts_gate.render` variants).
+  (f) The texture measure corrected: `dists.py --patches` (24 patches, energy excess, permutation band +-0.003); the old
+  0.06 floor was the same pixels moved. Excess cheek / forehead: today 0.047 / 0.107; tile t1 0.018 / 0.100; the
+  forehead's levers roughness x1.38 (0.076) and microrelief x0.4 (0.074). His roughness 0.66 even, ours 0.37-0.48 flat.
+  Queued (`scratchpad/batch_t1.sh`, when the card is free): ten t1 trials, then our hair views and the hair cover.
 - Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins
   and characters rebuilt (backup `.dev/backup/library_2026-11-07`): ridges x3 like for like (still below Aaron's veins);
   feet - no detailed donor until Thunk3D (§19.2 item 25); torso folds 0.53-0.85.
