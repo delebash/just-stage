@@ -375,6 +375,34 @@ def hairthrough(built: dict, share: float) -> None:
     print("HAIR LIGHT THROUGH", share, "on", n, "nodes", flush=True)
 
 
+def hairtip(built: dict, k: float) -> None:
+    """Each strand lighter toward its tip: its melanin x (1 - k t²), t the Hair Info's Intercept (0 at the root, 1 at
+    the tip) - the plan's carried "root-to-tip by Intercept" (RR rec 7); HD Aaron's hair is dark at the roots (back
+    L* 20) with light tips (highlights p95 60), ours even (25 / 43), and the hair model's shares only trade the two."""
+    n = 0
+    for nt in _hair_trees():
+        attr = next((x for x in nt.nodes if x.type == "ATTRIBUTE" and x.attribute_name == "melanin"), None)
+        if attr is None:
+            continue
+        info = nt.nodes.new("ShaderNodeHairInfo")
+        sq = nt.nodes.new("ShaderNodeMath")
+        sq.operation = "POWER"
+        nt.links.new(info.outputs["Intercept"], sq.inputs[0])
+        sq.inputs[1].default_value = 2.0
+        gain = nt.nodes.new("ShaderNodeMath")  # 1 - k t²
+        gain.operation = "MULTIPLY_ADD"
+        nt.links.new(sq.outputs[0], gain.inputs[0])
+        gain.inputs[1].default_value, gain.inputs[2].default_value = -k, 1.0
+        times = nt.nodes.new("ShaderNodeMath")
+        times.operation = "MULTIPLY"
+        for link in list(attr.outputs["Fac"].links):
+            nt.links.new(times.outputs[0], link.to_socket)
+        nt.links.new(attr.outputs["Fac"], times.inputs[0])
+        nt.links.new(gain.outputs[0], times.inputs[1])
+        n += 1
+    print("HAIR TIPS lighter, k", k, "on", n, "materials", flush=True)
+
+
 def hairmodel(built: dict, diffuse: float, glossy: float, ambient: float) -> None:
     """The live-view hair model's shares set (`hair_shading.DIFFUSE`, `GLOSSY`, `AMBIENT`) and every groom's material
     built again with them (`groom.hair_material`) - calibrating against Cycles on more than one view."""
@@ -446,6 +474,8 @@ def factor(name: str):
     if name.startswith("hairmodel"):  # hairmodel*0.4*1.0*0.45 (diffuse, glossy, ambient)
         d, g, amb = (float(x) for x in name.split("*")[1:4])
         return lambda built: hairmodel(built, d, g, amb)
+    if name.startswith("hairtip"):  # hairtip*0.4 (tips' melanin 1 - k)
+        return lambda built: hairtip(built, float(name.split("*")[1]))
     if name.startswith("hairambient"):  # hairambient*0.45
         return lambda built: hairambient(built, float(name.split("*")[1]))
     if name.startswith("hairthrough"):  # hairthrough*0.15 (the share, not a scale)

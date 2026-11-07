@@ -2624,8 +2624,9 @@ re-check before the rec list; nothing run on skin here):
   face, 0.03 body - `maps.BODY_COAT_WEIGHT`), its roughness 0.33 cheek, 0.36 torso, 0.37 foot (ours 0.44). So his
   shiny, crumpled-looking foot is his coat over a rough base, not a smooth base: lowering our base roughness x0.5 did
   bring the torso's and the foot's texture excess down (0.055 -> 0.046, 0.102 -> 0.076) but against his own values -
-  rejected, not shipped (the hand at x0.5 rose 0.047 -> 0.075). His set (coat 0.10 at 0.35, specular 0.40, base 0.72)
-  is on trial.
+  rejected, not shipped (the hand at x0.5 rose 0.047 -> 0.075). His set on our skin changes nothing: coat 0.10 at
+  0.35 with specular 0.40 - hand 0.047, torso 0.055, foot 0.099; with his base 0.72 too, hand 0.065, foot 0.114. The
+  body's gap is not its shine but its relief (the foot has no scan relief at all).
 
 ### 14.11 · Body skin and fitting a scan
 
