@@ -736,6 +736,8 @@ def _transplant(built: dict, stem: str, tile: int, material: str, near_m: float 
     loop_v = np.empty(len(me.loops), np.int64)
     me.loops.foreach_get("vertex_index", loop_v)
     out_uv = np.zeros((len(me.loops), 2), np.float32)
+    if layer_name in me.uv_layers:  # a transplant before this one (head, then body): keep its corners
+        me.uv_layers[layer_name].data.foreach_get("uv", out_uv.ravel())
     head_polys = []
     for p in me.polygons:
         ls = list(p.loop_indices)

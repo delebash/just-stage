@@ -280,15 +280,16 @@ if __name__ == "__main__":
         b = [float(v) for v in a[5:11]]
         shift = [float(v) for v in a[11:14]] if len(a) >= 14 else (0.0, 0.0, 0.0)
         carry_region(Path(a[1]), Path(a[2]), Path(a[3]), int(a[4]), ((b[0], b[1]), (b[2], b[3]), (b[4], b[5])), shift)
-    elif a[0] == "hand":  # hand OURS.npz SKIN_SOURCE.npz OUT.npz OURS_ANCHORS.json HIS_ANCHORS.json (the right hand)
-        import json
+    elif a[0] in ("hand", "nails"):  # hand|nails OURS.npz SKIN_SOURCE.npz OUT.npz OURS_ANCHORS.json HIS_ANCHORS.json
+        import json  # the right hand: his arm skin (slot 2) onto our arm tile, or his nails (slot 4) onto our nail tile
 
         keys = ("wrist", "index1", "pinky1", "middle_tip")
         ours_a, his_a = (json.loads(Path(x).read_text()) for x in (a[4], a[5]))
         oa = np.array([ours_a[k] for k in keys])
         lo, hi = oa.min(0) - 0.05, oa.max(0) + 0.05
-        carry_region(Path(a[1]), Path(a[2]), Path(a[3]), 2, ((lo[0], hi[0]), (lo[1], hi[1]), (lo[2], hi[2])),
-                     anchors=(np.array([his_a[k] for k in keys]), oa), tile=1003)
+        material, tile = (2, 1003) if a[0] == "hand" else (4, 1005)
+        carry_region(Path(a[1]), Path(a[2]), Path(a[3]), material, ((lo[0], hi[0]), (lo[1], hi[1]), (lo[2], hi[2])),
+                     anchors=(np.array([his_a[k] for k in keys]), oa), tile=tile)
     elif a[0] == "skin":  # skin OURS.npz SKIN_SOURCE.npz OUT.npz [EYES.npz] (his eyeballs: the eye rims pinned)
         carry_skin(Path(a[1]), Path(a[2]), Path(a[3]), Path(a[4]) if len(a) > 4 else None)
     else:  # usc OURS.npz hairstyles.zip ID OUT.npz
