@@ -33,6 +33,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 
 ### Where it stands (update after every step)
 
+- **THE USER, 2026-11-08 (TASKS "UNTIL A VERDICT ON EVERY PART"): no stopping - after turns and compactions - until
+  every part and the whole body has a verdict (meets HD Aaron or provably can't); then on to the app's other features.
+  Decisions attacked to consensus and kept (changed only on a new measured fact, shown). After a compaction: read this
+  file, the plan's §18a and §19.3 and `docs/gate/2026-11-07/report.md` first; keep a background job running.**
+
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
   "why do you keep missing everything").

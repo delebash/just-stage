@@ -4,6 +4,21 @@
 > Decisions are recorded as the exact text the user approved. A tracker line is a claim, not
 > evidence. Facts live in [`RESEARCH.md`](RESEARCH.md).
 
+## UNTIL A VERDICT ON EVERY PART [2026-11-08] — active, governs the work
+
+The user, 2026-11-08, verbatim: "just to confirm do not stop coding even after a turn complete your testing so you
+will either let me know that we have meet the quality bar for each part and whole body or not. You will think
+adverserily on each decision until you reach consensus and dont change your mind. You will not stop coding and testing
+until you find that either we cant meet cc5 quality or that you can and if you can you will continmue with the rest of
+the features of the app. Do not stop coding after autocompact and make sure you continue to think adversierly so you
+dont flip your answer after autocompact, dont trust autocompact so you need ot read your docs and session info to
+conture and rusem docs, confirm you understand you will not stop coding or testing until you have a verdict."
+
+How it is kept: the plan's §18a checklist (every part and the whole body) drives every step; each decision is attacked
+in passes and written with its reasons in the plan's §19.3 - it changes only on a new measured fact, shown with the old
+and new side by side; after a compaction RESUME, §18a, §19.3 and the gate report are read before any action; a
+background job is always running so the work is woken again (a turn ends only on a wake-up, never on a report).
+
 ## THE DEEP READ, THEN ONE PLAN [2026-11-06] — active
 
 The user, 2026-11-06: "i think you should look at all the reserach finish anything that should be finished,
