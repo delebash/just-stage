@@ -168,7 +168,13 @@ if "hair" in WANTED:
     print("LIBRARY", out.path, flush=True)
     scalp.make(bpy.data.objects[man.object])  # rec 11: guides combed back, filled by Blender's interpolation
     out = api.run("juststage.library.save", character=man.character, catalog="Hair/Scalp", name="JustStage short combed",
-                  description="Short hair combed back, ~100,000 strands, a fifth of them grey", licence="CC0-1.0",
+                  description="Short hair combed back, ~185,000 strands, a fifth of them grey", licence="CC0-1.0",
+                  provenance="JustStage modules/hair/scalp.py (region from MakeHuman's CC0 short_hedgehog)",
+                  part="scalp")  # fmt: skip
+    print("LIBRARY", out.path, flush=True)
+    scalp.make(bpy.data.objects[man.object], "short taper")  # its sides and nape short, volume on top (HD Aaron's)
+    out = api.run("juststage.library.save", character=man.character, catalog="Hair/Scalp", name="JustStage short taper",
+                  description="Short tapered hair combed back, full on top, ~185,000 strands", licence="CC0-1.0",
                   provenance="JustStage modules/hair/scalp.py (region from MakeHuman's CC0 short_hedgehog)",
                   part="scalp")  # fmt: skip
     print("LIBRARY", out.path, flush=True)

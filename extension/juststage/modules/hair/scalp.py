@@ -25,21 +25,24 @@ REGION_STYLE = "short_hedgehog"
 GUIDES = 1600
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
 #: strands per square metre of scalp (an adult has ~100,000 hairs on ~600 cm2: ~1.7M; the live view's budget below it)
-DENSITY = 1_300_000.0
+DENSITY = 2_200_000.0  # 2026-11-07: 1.3M (130 a cm2) let the scalp show through - HD Aaron's hair read darker at
+#: the back (L* 20 against our 27); the real ~223 a cm2 (Barman 1965) brings ours to 23
 INTERPOLATION_GUIDES = 5
 RADIUS, PROFILE_SHAPE = 0.00004, 0.3  # m at the root (hair ~80 um across), the taper toward the tip
 #: a style: lengths (mm) by how far up the head the root sits (the normal's z: -0.3 nape to 0.7 crown), the lift off
 #: the scalp on top and at the sides (mm), the comb's sideways sweep
 SHORT_COMBED = {"lengths": ((-0.4, 12.0), (0.0, 24.0), (0.35, 45.0), (0.7, 65.0)), "lift": (14.0, 4.0),
-                "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.25}  # fmt: skip
+                "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.1}  # fmt: skip
 #: SHORT_TAPER (2026-11-07, on trial against HD Aaron's "Classic Slick Back" in EEVEE): his hair stands off the scalp
 #: p50 / p90 13 / 23 mm on top, 4 / 12 at the sides, 8 / 15 at the back, 7 / 13 at the nape, where short combed's stood
 #: 5.5 / 11.7, 2.0 / 5.8, 6.1 / 13.1, 4.7 / 12.4, and hung over the ears (RESEARCH §14.14): more lift on top and at the
 #: sides, more again at the front hairline, shorter at the sides (by how far the root faces sideways) and the nape
 SHORT_TAPER = {"lengths": ((-0.4, 9.0), (0.0, 18.0), (0.35, 42.0), (0.7, 62.0)), "lift": (24.0, 9.0),
-               "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.35,
+               "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.1,
                "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.25, "back_lift": 0.6, "side_down": 0.15,
                "flow_down": 0.35}  # fmt: skip
+#: clump 0.1 (was 0.25 / 0.35): Blender's Clump Hair Curves parted the strands along fixed bare lines over the head
+#: (2026-11-07, the gate's hair views; at 0 / 0.1 they are gone)
 STYLES = {"short combed": SHORT_COMBED, "short taper": SHORT_TAPER}
 MASK_SIZE = 1024  # the scalp mask in hm08's UVs, texels
 MELANIN, MELANIN_SPREAD, REDNESS = 0.82, 0.06, 0.2
