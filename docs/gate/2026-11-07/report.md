@@ -283,3 +283,26 @@ The hair's highlights and style (the nape too long, the front taller than his); 
 the gate's rule (inside his band). Tests: unit 45 and tools 30 passed. The Blender suite ran 143: 141 passed, and the 2
 failures were tonight's lid change. Fixed: the opening detector looks from in front, and the ledge test now checks
 measured values. Rerun after web-4c's turn on the card.
+
+## The deciding tests (late night): HD Aaron's own content on our body, rendered our way (local tests only)
+
+The user, 2026-11-07: "focus on can we meet quality 1st if anyone cant meet quality we stop". One test per part: put
+his own content on our body. If it matches him, our body and renderer carry CC5 there, and what is left is making
+equal content - feasible. If it can't match even with his content, that part fails.
+
+| Part | The deciding test | Result | Verdict |
+|---|---|---|---|
+| Face skin | his head material on our head (`factors aaronskin`) | cheek and forehead read as his by eye; excess cheek 0.0123, forehead 0.0139, nose 0.0475 (a seam on the nose's tip from the wrap) | **feasible** - our head and renderer carry CC5's skin; ours is above that floor by 0.006 / 0.022 / 0.031 (content: colour mottling, the forehead's pore pattern and lines, the nose) |
+| Scalp hair | his cut as our strands; then our own generator along his cut's measured field | both follow his outline; our generator matches the converted cut | **feasible** - our render and generator carry his cut; left: the quiff's lift (fix queued), colour, locks |
+| Eyes | his skin on our lids; his eyeballs (scaled wrong - void); our head on his shape (tears - void) | the lid's shape decides the look; our eyeball is 12% larger than his | **not disproved** - the gap is lid geometry we control (the lower-rim turn moved it); escalation if needed: a new head topology |
+| Smile | ICT's scanned smile on our head | corners 0.91 of his, cheeks lift; his crease is his face's fold and normal map, not mesh resolution | **not disproved** - routes: a fold in the neutral face, a crease map |
+| Hand, torso, foot | not tested by transplant tonight | hand 0.047, torso 0.049, foot 0.10 | foot needs the user's download |
+
+**The measure, found by the transplant:** even his own skin on our head doesn't land in his band (cheek 0.012 against
++-0.002), because the measure also carries the face's shape and how it takes the light. As written, the gate's skin
+rule can't be met by any other face. Proposed (the user's decision): skin counts as equal when ours lands within his
+band of the transplant's score on our head.
+
+**Still to render** (when the card frees): every part beside his as it stands now (contact sheets,
+`.dev/gate/parts/2026-11-07all`), the quiff with the stand-off profile, the cheek's red mottling, the forehead's Ten24
+tile; then the code's own tests.
