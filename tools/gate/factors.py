@@ -1758,6 +1758,19 @@ def nailshine(built: dict, coat: float, specular: float, roughness: float) -> No
     print("NAIL SHINE", coat, specular, roughness, done, "mixes", flush=True)
 
 
+def nailluna(built: dict, share: float) -> None:
+    """Item 7, one factor: with the plate matte (`nailshine`), our lunula's crescent still reads white beside HD
+    Aaron's faint one - its share of the pale lunula colour (`maps.NAIL_LUNULA_SHARE`, 0.35) set on the shader's mix."""
+    maps = _maps()
+    done = 0
+    for nt in _skin_trees(built):
+        node = nt.nodes.get(maps.NODE + "nail_lunula_share")
+        if node is not None:
+            node.inputs[1].default_value = share
+            done += 1
+    print("NAIL LUNULA", share, done, "trees", flush=True)
+
+
 def mouthnoshadow(built: dict) -> None:
     """Item 5's inner mouth, narrowed: the body casting no shadow lit our tongue (`bodynoshadow`) - is it the mouth's
     own inner skin? Where our mouth-lining mask is (`maps._mouth_layer`'s `mouth_in`: the mask on the head's tile), the
@@ -2136,6 +2149,8 @@ def factor(name: str):
         return {"headnoshadow": headnoshadow, "cavitynoshadow": cavitynoshadow}[name]
     if name == "bodynoshadow":  # the body casts no shadow (does its mouth shadow the tongue?)
         return bodynoshadow
+    if name.startswith("nailluna*"):  # nailluna*0.12 (the lunula's share of its pale colour)
+        return lambda built: nailluna(built, float(name.split("*")[1]))
     if name.startswith("nailshine*"):  # nailshine*0.1*0.4*0.4 (the nail plate's coat, specular level, roughness)
         _k, coat, spec, rough = name.split("*")
         return lambda built: nailshine(built, float(coat), float(spec), float(rough))
