@@ -48,13 +48,17 @@ def gaze(eye):
     return float(az[0]), float(el[0])
 
 
-def eye_opening(eye_points, verts, polys, seed, inside, reach):
-    """An eye's opening by what shows: rays out from `inside` under the eyeball's surface on a 1 x 0.5 deg grid; the
-    eyeball shows where no skin crosses within `reach` outside it; the opening is the shown patch around `seed` (the
-    gaze's azimuth and elevation). Not a search for skin touching the eyeball: the skin is watertight - it folds into
-    the socket - so that search also finds the socket and the lids' backs; it put our opening at +-2..7 deg where it
-    really runs from -4 to -30 deg at the iris (rays, 2026-10-31). Returns the eyeball's centre and radius, the
-    opening's azimuths with its upper and lower edge at each, and the outer and inner corners' azimuths."""
+def eye_opening(eye_points, verts, polys, seed, lift, reach):
+    """An eye's opening by what shows from in front: on a 1 x 0.5 deg grid of the eyeball's surface, a ray from each
+    point (`lift` off the surface) along the gaze, toward a viewer in front; the point shows where no skin crosses
+    within `reach`; the opening is the shown patch around `seed` (the gaze's azimuth and elevation). Not a search for
+    skin touching the eyeball: the skin is watertight - it folds into the socket - so that search also finds the
+    socket and the lids' backs; it put our opening at +-2..7 deg where it really runs from -4 to -30 deg at the iris
+    (rays, 2026-10-31). Not rays out from the eye's centre either (until 2026-11-07): a lower margin that stands
+    forward as a ledge at its rim's height crosses those rays just above the rim and read as lid - 4-5 deg (~1 mm) of
+    the lower lid's inner half - where from in front it is seen edge-on and covers nothing. Returns the eyeball's
+    centre and radius, the opening's azimuths with its upper and lower edge at each, and the outer and inner
+    corners' azimuths."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
@@ -63,9 +67,10 @@ def eye_opening(eye_points, verts, polys, seed, inside, reach):
     tree = BVHTree.FromPolygons([Vector(v) for v in verts], polys)
     azs, els = np.arange(-80.0, 80.5, 1.0), np.arange(-50.0, 50.25, 0.5)
     shown = np.zeros((len(azs), len(els)), bool)
+    look = Vector(direction(np.array([seed[0]]), np.array([seed[1]]))[0])  # toward a viewer in front of the eye
     for i, a in enumerate(azs):
         for k, d in enumerate(direction(np.full(len(els), a), els)):
-            shown[i, k] = tree.ray_cast(Vector(centre + (radius - inside) * d), Vector(d), inside + reach)[0] is None
+            shown[i, k] = tree.ray_cast(Vector(centre + (radius + lift) * d), look, reach)[0] is None
     # from the shown cell nearest the gaze: the lid's edge stands 1-1.5 mm off the eyeball, so a ray straight out
     # through the iris' middle can meet it while the camera still sees the iris' middle below it (round 51's lids)
     ai, ek = np.meshgrid(azs, els, indexing="ij")
@@ -108,7 +113,7 @@ def openings(body: bpy.types.Object) -> dict[str, Opening]:
             from ...core.commands import CommandError
 
             raise CommandError(f"{body.name} has no {part}; run juststage.head.add_parts first")
-        found[eye.name] = eye_opening(world_points(eye), skin, polys, gaze(eye), 0.003, 0.008)
+        found[eye.name] = eye_opening(world_points(eye), skin, polys, gaze(eye), 0.0001, 0.02)
     return found
 
 

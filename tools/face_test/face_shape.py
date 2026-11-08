@@ -77,7 +77,7 @@ def lower_lids(body, upper=UPPER_LID, lower=LOWER_LID):
     moved = 0
     for name in ("Face.eyeLeft", "Face.eyeRight"):
         eye = bpy.data.objects[name]
-        o = eye_opening(world_points(eye), skin, polys, gaze(eye), 0.003, 0.008)
+        o = eye_opening(world_points(eye), skin, polys, gaze(eye), 0.0001, 0.02)
         az, el, dist = angles(co, o.centre)
         lo_az, hi_az = o.centres.min(), o.centres.max()
         near = (dist > o.radius * 0.9) & (dist < o.radius + 0.012) & (co[:, 1] < o.centre[1]) & (az >= lo_az) & (az <= hi_az)

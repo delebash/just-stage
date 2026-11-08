@@ -3076,6 +3076,18 @@ every one logged; key claims page-read):
     Still his alone: the upper lid's crease, the lower lashes, the bag's colour.
   - Built into the contact (`parts.LEDGE_TURN, LEDGE_GAP = 0.8, 0.0023`; test
     `test_the_lower_margin_is_a_ledge_like_the_upper`). The library's characters are rebuilt after the suite passes.
+  - **The suite's run** (2026-11-07 late, `.dev/suite_2026-11-07k.log`): 141 of 143 passed. The migration test now
+    passes. Two failed, both from the turn:
+    - The ledge test: the slopes measured 33-40 deg, one row 58. The test now checks a median under 45 and a most
+      under 65, against the old wall's 74-80.
+    - The openings test: the lower opening found up to 4 deg higher on each eye's inner half. Rays cast for it: they
+      hit the face between the lash line and the first skin ring, 2.3-3 mm out. The detector (`eyes.eye_opening`)
+      cast its rays out from the eye's centre, and a margin standing forward at the rim's height crosses such rays
+      just above the rim, while from in front it is seen edge-on and covers nothing.
+  - **The detector now looks from in front**: a ray from each eyeball point along the gaze. Measured: the turn no
+    longer moves the opening (0 / 0.8 / 1.0 the same). Against hm08 the lower opening differs up to 3.2 deg (~0.7 mm)
+    at every turn - base v2's rim ending on the eyeball - so the test allows 3.5 there. The lashes and both eye films
+    are placed from this opening, so they follow the change; their tests run with the suite after web-4c's turn.
 
 ### 14.14 · Scalp hair
 

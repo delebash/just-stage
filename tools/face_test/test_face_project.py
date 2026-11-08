@@ -386,7 +386,7 @@ def _tearline(o, skin, name):
     faces, ict_points, _ = _ict_part(*ICT_TEAR)
     ict_v = _ict()[0]
     ict_polys = [[c[0] for c in f] for f in _ict()[2][:ICT_SKIN_POLYGONS]]
-    i = face_shape.eye_opening(ict_v[slice(*ICT_EYE)], ict_v[slice(*ICT_SKIN)], ict_polys, (0.0, 0.0), 0.3, 0.8)  # cm
+    i = face_shape.eye_opening(ict_v[slice(*ICT_EYE)], ict_v[slice(*ICT_SKIN)], ict_polys, (0.0, 0.0), 0.01, 2.0)  # cm
     az, el, dist = face_shape.angles(ict_points, i.centre)
     off = (dist - i.radius) * o.radius / i.radius
     a = o.outer + (az - i.outer) / (i.inner - i.outer) * (o.inner - o.outer)
@@ -707,7 +707,7 @@ def test_face_project():
     openings = {}
     for eye_name in ("Face.eyeLeft", "Face.eyeRight"):
         eye = bpy.data.objects[eye_name]
-        openings[eye_name] = face_shape.eye_opening(face_shape.world_points(eye), skin, polys, face_shape.gaze(eye), 0.003, 0.008)
+        openings[eye_name] = face_shape.eye_opening(face_shape.world_points(eye), skin, polys, face_shape.gaze(eye), 0.0001, 0.02)
     # lashes: rec 7's strands - MakeHuman's lash cards (until round 54) were sparse thick black spikes beside the painting
     _strand_lashes(body, openings)
     _head_tile(body)

@@ -82,7 +82,7 @@ def _ict_opening():
 
     v, _, faces = _ict()
     polys = [[c[0] for c in f] for f in faces[:ICT_SKIN_POLYGONS]]
-    return eyes.eye_opening(v[slice(*ICT_EYE)], v[slice(*ICT_SKIN)], polys, (0.0, 0.0), 0.3, 0.8)
+    return eyes.eye_opening(v[slice(*ICT_EYE)], v[slice(*ICT_SKIN)], polys, (0.0, 0.0), 0.01, 2.0)  # cm
 
 
 def occlusion_shape(o) -> tuple[list, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
