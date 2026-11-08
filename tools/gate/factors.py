@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -510,6 +511,35 @@ def microtile(built: dict, stem: str) -> None:
     print("MICRO TILE", stem, "on", n, "nodes", flush=True)
 
 
+PORE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "pores"
+
+
+def poretile(built: dict, stem: str) -> None:
+    """The pore tile swapped for a candidate (`.dev/gate/pores/<stem>.png` with its `.json` size in mm) on every skin,
+    its tiling scale set to the candidate's own size (`pore_scale_*` x old / new mm): the pores' pattern alone changed
+    - the cheek's excess sits at the pores' scale and their size and depth are already at their best (2026-11-07
+    late). `aaron_cheek`: HD Aaron's own head normals on the upper cheek, a LOCAL TEST of whether his pattern closes
+    the gap."""
+    maps = _maps()
+    image = bpy.data.images.load(str(PORE_TRIALS / f"{stem}.png"), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    new_mm = float(json.loads((PORE_TRIALS / f"{stem}.json").read_text(encoding="utf-8"))["size_mm"])
+    _, old_mm = maps.pore_relief()
+    n = 0
+    for nt in _skin_trees(built):
+        for node in nt.nodes:
+            if node.type == "TEX_IMAGE" and node.image and node.image.name.startswith("pores"):
+                node.image = image
+                n += 1
+            elif node.name == maps.NODE + "pore_scale_1001":
+                node.outputs[0].default_value *= old_mm / new_mm
+            elif node.name.startswith(maps.NODE + "pore_scale_"):
+                node.inputs[1].default_value *= old_mm / new_mm
+    if not n:
+        raise RuntimeError("no pore image node found on the skin")
+    print("PORE TILE", stem, f"{new_mm:.1f} mm (was {old_mm:.1f}) on", n, "nodes", flush=True)
+
+
 #: the eye-open sliders (body_create.EYE_OPEN) one at a time - the lower lid's thick roll at the eye view; shape keys,
 #: so these run alone (`--alone`: a build each - the trials' material reset doesn't undo a shape)
 EYE_SLIDERS = {"eyebag": "bag-decr-incr", "eyeheight2": "height2-decr-incr", "eyefold": "eyefold-concave-convex",
@@ -774,6 +804,8 @@ def factor(name: str):
     if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)
         key, value = name.split("*")
         return lambda built: eye_slider(built, key, float(value))
+    if name.startswith("poretile"):  # poretile*aaron_cheek (the candidate tile's stem)
+        return lambda built: poretile(built, name.split("*", 1)[1])
     if name.startswith("microtile"):  # microtile*v2b, microtile*v2b+micro*1.5 (then the depth scaled)
         stem, _, rest = name.split("*", 1)[1].partition("+")
         after = scaled(rest) if rest else None

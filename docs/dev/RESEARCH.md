@@ -3235,7 +3235,12 @@ before the rec list; measured in Blender 5.3 and read in our code):
   - The like-for-like test (`tools/gate/groom_transfer.py cards`): his cards as three strands each (5,910),
     wrapped onto our head (skull to skin 0.65 / 1.79 mm p50 / p90; roots 1.40 mm off at the median), as our
     scalp's guides (`factors guidefile*aaron_cards`). It asks: on his exact cut, does our fill and shading reach
-    his look? Queued.
+    his look? **Measured by eye** (`.dev/gate/parts/2026-11-07e/*_f-guidefilexaaron_cards`; 5,910 guides,
+    158,165 strands): on his cut our strands and shading follow his outline - the tapered back and nape, the short
+    sides, the swept top - in all three views. So the hair's gap was the comb's cut, not our strand render. Still
+    his alone: clumped locks with light highlight bands (ours finer and even), the front quiff standing up and back
+    (ours falls forward on one side), a lighter brown with grey at the sides. Next: clumping again on dense guides
+    (`guidefile*aaron_cards+hairclump*0.35 / 0.6`).
   - VOID, not evidence: `factors hairgrey*0.25 / *0.4` on the library style (2026-11-07 late; L* back 43 / 51,
     p95 62 / 65) were read through "taper5"'s cover mask, copied onto renders of another style, so skin and
     background are in the numbers. Re-measure with the style's own cover before using them.
