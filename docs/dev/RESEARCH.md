@@ -3211,6 +3211,22 @@ every one logged; key claims page-read):
   Right stayed on and pushed his lower teeth 16 mm forward (2.7 mm out through our lip at rest). With them at 0 his
   lower front sits at 143.0 mm as ours, 14 mm behind the lip, within ~2 mm of ours at jawOpen 0.4 and 1.
 
+- **Where a brow sits (2026-11-08, for the build queue's item 1; queries: "where should eyebrows sit relative to the
+  orbital rim men women distance from pupil to brow mm", "how do Character Creator and MetaHuman place eyebrows on
+  custom face shapes"):**
+  - *Read* (Weill Cornell's record of "Desired position, shape, and dynamic range of the normal adult eyebrow", Arch
+    Facial Plast Surg 2010): women want the brow's lower border just below the orbital rim at the inner corner, at the
+    rim over the mid-pupil, several mm above it at the outer corner; men want "a lower brow with a lower tail"; no mm.
+  - *Snippets, not read* (the paper behind a login - PubMed 16052142, "The male eyebrow: a topographic anatomic
+    analysis"; cosmetic-practice pages): a man's brow lies along the supraorbital ridge, over the rim, flat; raising it
+    above the rim reads surprised or feminine; women's sit ~2.5 mm higher; a 25 mm mid-pupil-to-brow guideline (no
+    study named).
+  - Neither CC5's nor MetaHuman's docs found say how they place brows on a custom face (CC5: brows in the skin's RGB
+    mask with a transform tool, plus card grooms; MetaHuman: a solved standard head).
+  - So, against our own ridge, our brows (roots from +6 at the lid's top over the ridge's lower part) sit roughly where
+    a man's should; the fault is our face's ridge, 8 mm above the eye's centre against his 16, with no fold under it.
+    Lifting the brows above our own ridge would put them on the forehead.
+
 ### 14.14 · Scalp hair
 
 - **Cycles' hair colour from melanin** (source read 2026-11-03: `intern/cycles/kernel/svm/closure.h`,
