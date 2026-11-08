@@ -2664,6 +2664,17 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
     (A first try in texture space picked the wrong skin - the nearest-triangle pick landed on lid and fold lines - so
     it was dropped for the renders' own patches.)
 
+- **THE TRANSPLANT - his own skin on our head** (*measured, 2026-11-07 late*, `factors aaronskin`, local test,
+  `.dev/gate/parts/2026-11-07t`): HD Aaron's head material on our head through the wrap (0.94 / 3.41 mm), rendered
+  our way. Excess against him (his band): cheek 0.0123 (+-0.0023), forehead 0.0139 (+-0.0017), nose 0.0475
+  (+-0.0028); ours 0.0179, 0.0359, 0.0785.
+  - So even his own skin on another face doesn't land in his band: the measure carries the face's shape and how it
+    takes the light. The reachable target for our skin is this floor, not his band.
+  - By eye, his skin on our cheek and forehead reads as his (texture, redness, forehead lines): our head and our
+    renderer carry CC5's skin; what is left is our maps. The nose shows a square seam on its tip where his nose's
+    UVs stretched over ours (the wrap, not a limit).
+  - Our content against the floor: cheek +0.006, forehead +0.022, nose +0.031.
+
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
 - **Skin lightness by melanin** (`core/skin_optics.py`, eumelanin 0.6, blood 0.016; CIE L* of the albedo):
