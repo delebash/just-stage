@@ -276,7 +276,7 @@ The hair's highlights and style (the nape too long, the front taller than his); 
 | Hand, torso | 0.047, 0.049 (not re-run tonight) | not proved | As the night table |
 | Foot | 0.10 | not proved | Needs a scanned foot (Thunk3D, the user's download) |
 | Eyes, lower lid | the roll was its margin's tilt - built: the lower margin turned into a ledge; eye DISTS 0.267 -> 0.258 | not proved | The upper lid's crease, the lower lashes, the bag's colour |
-| Smile | ICT's scanned smile on our head: corners 0.91 of his, the cheeks lift; his smile line is shape, not wrinkle maps | not proved | His crease is sharper: his HD mesh. Routes: the HD subdivision level, or a crease map blended with the smile - untested |
+| Smile | ICT's scanned smile on our head: corners 0.91 of his, the cheeks lift; his smile line is shape, not wrinkle maps | not proved | His crease is sharper - not mesh resolution (smile-line edges 2.31 mm his, 2.53 ours): his face's own fold and his normal map. Routes: the fold in our neutral face, or a crease map blended with the smile - untested |
 | Scalp hair | his own cut as our strands follows his outline in every view - the comb's cut was the gap, not our render | not proved | A route to authored cuts (his cards are a local test only); colour, light bands, the crown's whorl, the temples |
 
 **No part is disproved.** Each gap has a measured cause and a route that hasn't been tried yet. **No part is proved equal** by

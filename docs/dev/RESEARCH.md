@@ -2118,11 +2118,12 @@ every one logged; key claims page-read):
       - x1.3 / x1.3: corners up 12.6 | 15.1 and out 6.9 | 10.0 (past his), eye opening -0.4 | -1.9.
       - x1 / x1.6: corners 11.8, eye opening -2.0.
       By eye, his smile line beside the nose is a sharp, deep crease and ours stays a soft broad shading at every
-      depth. So the gap is the crease's sharpness, not the amount of movement. His head is the HD mesh, with the crease
-      already in his neutral face; ours is hm08's coarser face, which can't hold a sharp crease. Our cheekSquint also
-      closes the eyes about 4x his.
-    - The routes in the plan: the HD subdivision level with the fold carried at that resolution (§7 "HD detail at
-      level 2"), or a crease normal map blended in with the smile (the wrinkle row, Q-RIG-3). Not yet tried.
+      depth. So the gap is the crease's sharpness, not the amount of movement. Our cheekSquint also closes the eyes
+      about 4x his.
+    - **Not mesh resolution** (measured right after, correcting what was first written here): edges along the smile
+      line's middle are 2.53 mm on ours, 2.73 on ICT's face, 2.31 on his exported mesh (base level). So his crease is
+      his face's own shape - a defined fold already in neutral - and his normal map's detail. Routes: the fold in our
+      neutral face (a character's age and shape), and a crease map blended in with the smile (the wrinkle row, Q-RIG-3).
 - GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
   and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
   landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
