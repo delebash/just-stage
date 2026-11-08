@@ -76,6 +76,13 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   stubble). The smile: CC5's Mouth_Corner_Pull carries his cheek raise and eye squint, our ARKit mouthSmile only the
   mouth - the expression sets' scoring (plan §19.2 item 9). The card: JustVoice (justvioce-0f) lets us use it
   whenever idle - send "card free" when done.
+- Latest (2026-11-07 night): the nose 0.171 -> 0.053 (pores 0.6, micro 1 - shipped; library rebuilt with it); torso
+  0.049 with the spots unreddened; his body shine set is not the lever (relief is). Eyes: the lower roll survives the
+  sliders and a 1.2-1.6 mm margin - the lid's own skin shape; next the plan's escalation (the head on a new topology)
+  or a lid-shape fix - not started. Hair: strays and the island partings fixed (`Part by Mesh Islands` off; render
+  check `.dev/gate/parts/2026-11-07e/*_taper4*`), the mask chosen in faces; contrast: shading trials can't darken the
+  mean (L* 28-30 against his 20) - density on trial (`factors hairdensity`, 130 -> 220 / 300 a cm2). The library's
+  scalp asset is short combed rebuilt with the fixes; "short taper" not yet the default.
 - Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins
   and characters rebuilt (backup `.dev/backup/library_2026-11-07`): ridges x3 like for like (still below Aaron's veins);
   feet - no detailed donor until Thunk3D (§19.2 item 25); torso folds 0.53-0.85.
