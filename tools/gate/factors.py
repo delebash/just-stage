@@ -1693,15 +1693,23 @@ def eyedark(built: dict, k: float) -> None:
         split = nt.nodes.get(maps.NODE + "face_regions_split")
         if split is None or not bsdf.inputs["Base Color"].is_linked:
             continue
-        lo_r, lo_b = nt.nodes.new("ShaderNodeMath"), nt.nodes.new("ShaderNodeMath")
-        for node, out, edge in ((lo_r, "Red", 0.10), (lo_b, "Blue", 0.13)):
-            node.operation = "LESS_THAN"
-            nt.links.new(split.outputs[out], node.inputs[0])
-            node.inputs[1].default_value = edge
+        # a fade, not a cut (17:3x: LESS_THAN drew a hard ring round the eye): the microrelief channel is 0.101 in the
+        # eyes region and 0.169 on the cheek, nose and forehead around it (chin 0.27), softened over the mesh by the
+        # map's own passes - its ramp from 0.168 down to 0.105 is the mask
+        # times the pores' channel's ramp (eyes 0.086, the nose too, the neck 0.125, cheek 0.144): the neck's microrelief
+        # (0.125) sits inside the first ramp, its pores keep it out
+        ramps = []
+        for out, lo, hi in (("Blue", 0.168, 0.105), ("Red", 0.13, 0.09)):
+            ramp = nt.nodes.new("ShaderNodeMapRange")
+            ramp.clamp = True
+            nt.links.new(split.outputs[out], ramp.inputs["Value"])
+            ramp.inputs["From Min"].default_value, ramp.inputs["From Max"].default_value = lo, hi
+            ramp.inputs["To Min"].default_value, ramp.inputs["To Max"].default_value = 0.0, 1.0
+            ramps.append(ramp)
         mask = nt.nodes.new("ShaderNodeMath")
         mask.operation = "MULTIPLY"
-        nt.links.new(lo_r.outputs[0], mask.inputs[0])
-        nt.links.new(lo_b.outputs[0], mask.inputs[1])
+        nt.links.new(ramps[0].outputs["Result"], mask.inputs[0])
+        nt.links.new(ramps[1].outputs["Result"], mask.inputs[1])
         mix = nt.nodes.new("ShaderNodeMix")
         mix.data_type = "RGBA"
         nt.links.new(mask.outputs[0], mix.inputs["Factor"])
@@ -1717,7 +1725,37 @@ def eyedark(built: dict, k: float) -> None:
     print("EYE DARK tint", tint, "on", n, "skins (film and live)", flush=True)
 
 
-def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25, distortion: float = 6.0) -> None:
+def aoshade(built: dict, strength: float, distance_mm: float = 15.0) -> None:
+    """The skin darkened in its creases by Blender's Ambient Occlusion shader node (EEVEE's horizon scan, Cycles' AO) -
+    the plan's §10 "Cavity: TO BUILD (flat 1.0 on every composed skin today)" and CC5's own AO map. 2026-11-08: with the
+    face's shape changed (sliders, two real scans' shapes) ours still reads as a doll at the face view, where his face
+    is dark in every crease - the eye sockets, beside the nose, under the lip; ours lit flat. Base colour x mix(1, AO,
+    strength); `distance_mm` the occlusion's reach."""
+    n = 0
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        if not bsdf.inputs["Base Color"].is_linked:
+            continue
+        ao = nt.nodes.new("ShaderNodeAmbientOcclusion")
+        ao.inputs["Distance"].default_value = distance_mm / 1000.0
+        ao.samples = 16
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "FLOAT"
+        mix.inputs["Factor"].default_value = strength
+        next(i for i in mix.inputs if i.identifier == "A_Float").default_value = 1.0
+        nt.links.new(ao.outputs["AO"], next(i for i in mix.inputs if i.identifier == "B_Float"))
+        times = nt.nodes.new("ShaderNodeVectorMath")
+        times.operation = "SCALE"
+        nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, times.inputs[0])
+        nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Float"), times.inputs["Scale"])
+        nt.links.new(times.outputs["Vector"], bsdf.inputs["Base Color"])
+        mod.sync_live(mat)
+        n += 1
+    print("AO SHADE strength", strength, "reach", distance_mm, "mm on", n, "skins (film and live)", flush=True)
+
+
+def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25, distortion: float = 6.0,
+             vary: float = 0.0) -> None:
     """Vertical lip lines made in the shader (our own asset, the user's "making your own assets"; no free scan resolves
     them - Ten24's lips are ~220 texels across): Blender's Wave Texture in bands across the lips (the object's X, a
     line every `period_mm`, its distortion by noise for irregular furrows), masked by the lips' share, as a bump on top of
@@ -1737,9 +1775,25 @@ def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25, distor
         wave.inputs["Detail"].default_value = 3.0
         wave.inputs["Detail Scale"].default_value = 1.5
         nt.links.new(coord.outputs["Position"], wave.inputs["Vector"])
+        lines = wave.outputs["Fac"]
+        if vary > 0:  # irregular lines (17:3x: an even wave read as a comb): each line's strength varied by a noise
+            # of ~4 mm cells, so some furrows are deep, some fade - as his
+            noise = nt.nodes.new("ShaderNodeTexNoise")
+            noise.inputs["Scale"].default_value = 1000.0 / 4.0
+            noise.inputs["Detail"].default_value = 2.0
+            nt.links.new(coord.outputs["Position"], noise.inputs["Vector"])
+            gain = nt.nodes.new("ShaderNodeMath")
+            gain.operation = "MULTIPLY_ADD"  # 1 - vary + vary * noise
+            nt.links.new(noise.outputs["Fac"], gain.inputs[0])
+            gain.inputs[1].default_value, gain.inputs[2].default_value = vary, 1.0 - vary
+            varied = nt.nodes.new("ShaderNodeMath")
+            varied.operation = "MULTIPLY"
+            nt.links.new(lines, varied.inputs[0])
+            nt.links.new(gain.outputs[0], varied.inputs[1])
+            lines = varied.outputs[0]
         height = nt.nodes.new("ShaderNodeMath")
         height.operation = "MULTIPLY"
-        nt.links.new(wave.outputs["Fac"], height.inputs[0])
+        nt.links.new(lines, height.inputs[0])
         nt.links.new(share.outputs[0], height.inputs[1])
         bump = nt.nodes.new("ShaderNodeBump")
         bump.inputs["Distance"].default_value = depth_mm / 1000.0
@@ -2469,10 +2523,12 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("aoshade*"):  # aoshade*0.6[*15] (strength, reach in mm)
+        return lambda built: aoshade(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("eyedark*"):  # eyedark*0.8 (the tint's level round the eyes)
         return lambda built: eyedark(built, float(name.split("*")[1]))
     if name.startswith("liplines"):  # liplines, liplines*1.2*0.25[*6] (period, depth in mm, distortion)
-        return lambda built: liplines(built, *(float(x) for x in name.split("*")[1:4]))
+        return lambda built: liplines(built, *(float(x) for x in name.split("*")[1:5]))
     if name.startswith("faceshape*"):  # faceshape*lean, faceshape*lean&brow (FACE_PRESETS) - --alone
         return lambda built: faceshape(built, name.split("*", 1)[1])
     if name.startswith("lipshine*"):  # lipshine*0.5*0.1 (roughness, coat)

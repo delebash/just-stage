@@ -203,6 +203,17 @@ the lips read as lip skin; too dense and crinkly against his fewer, finer, uprig
 next** (sparser and upright: distortion 2-3, period 1.6, depth 0.3-0.4). The eyes' surround at 0.8 - a slight gain;
 his lids and under-eyes are much darker - 0.65 next. Both, and face round 3, in the rebooked slot after family-release's
 "CPU free" (~17:20; `batch_slot2.sh`).
+
+**17:3x, the rebooked slot (rows `row_slot2_{lips,eye,face}.png`):** lip lines sparser and upright (1.6 mm, 0.3-0.4,
+distortion 2-3) read as a regular comb of stripes - worse than the dense crinkle (1.2 / 0.5 / 6), which reads more like
+lips; his lines irregular and subtle - the lines need irregular spacing and strength, not a wave. The eyes' surround at
+0.65 shows - as a hard ring round the eye (the region map's threshold gives a cut, not a fade) - not kept as is. **Two
+real scans' face shapes (`mix*hsr0040`, `hsr0042` at full strength) change the features but still read as a doll - so
+the face's shape is not the doll look's main cause.** Read off the sheets: his face is dark in every crease (the eye
+sockets, beside the nose, under the lip), ours lit flat; our skins' cavity is flat 1.0 (the plan's §10 "Cavity: TO
+BUILD"), CC5 ships an AO map. Next trial: `aoshade` (Blender's Ambient Occlusion node into the base colour, 15 / 30 mm
+reach, strength 0.5 / 0.8) - `batch_ao.sh`. A third scan (`mix*hsr0161`, `row_slot2_face2.png`): a broader face,
+still a doll - confirmed. On the card ~18:15 (after just-voice's card work).
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
