@@ -1831,6 +1831,13 @@ def _no_shadow_faces(built: dict, faces, label: str) -> None:
     print("NO SHADOW", label, int(mask.sum()), "faces on", done, "skin materials", flush=True)
 
 
+def allnoshadow(built: dict) -> None:
+    """The check on the method itself: every face of the body transparent to shadow rays by the material - if the tongue
+    stays dark here while `bodynoshadow` (the object's own shadow switch) lit it, EEVEE doesn't take the material's
+    shadow-ray transparency and the narrowed trials (mouth lining, head tile, cavity) say nothing."""
+    _no_shadow_faces(built, range(len(built["body"].data.polygons)), "every face")
+
+
 def headnoshadow(built: dict) -> None:
     """Item 5's inner mouth, narrowed again: the head's tile (UDIM 1001) casts no shadow - is the tongue's shadow from
     the head at all (the mouth lining alone was not it, `mouthnoshadow`)?"""
@@ -2145,6 +2152,8 @@ def factor(name: str):
         return lambda built: naildisp(built, float(dome), float(groove), float(lip))
     if name == "mouthnoshadow":  # the mouth's inner skin casts no shadow (does it darken the tongue?)
         return mouthnoshadow
+    if name == "allnoshadow":  # every face by the material route (does the route work in EEVEE?)
+        return allnoshadow
     if name in ("headnoshadow", "cavitynoshadow"):  # the head's tile / the mouth's interior casts no shadow
         return {"headnoshadow": headnoshadow, "cavitynoshadow": cavitynoshadow}[name]
     if name == "bodynoshadow":  # the body casts no shadow (does its mouth shadow the tongue?)
