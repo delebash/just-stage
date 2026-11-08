@@ -1315,56 +1315,33 @@ def aaronteeth(built: dict) -> None:
     for obj in dst.objects:
         obj.matrix_world = move @ obj.matrix_world
     bpy.context.view_layer.update()
-    # his lower teeth and tongue ride our jaw: for each jaw key on our teeth, the rigid motion of our moving vertices
-    # (Kabsch), given to his lower teeth (their own material) and his whole tongue as a key of the same name - the
-    # gate's expressions then set his with ours (built["keyed"]). Surface Deform would not bind to our teeth.
-    keys = ours.data.shape_keys
-    mw_o = np.array(ours.matrix_world)
-    n_o = len(ours.data.vertices)
-    base = np.empty(n_o * 3)
-    keys.reference_key.data.foreach_get("co", base)
-    base_w = base.reshape(-1, 3) @ mw_o[:3, :3].T + mw_o[:3, 3]
+    # his lower teeth and tongue ride our jaw joint (`FACIAL_C_Jaw`, the face rig's - since 2026-11-08 the jaw is a
+    # joint, not keys on our teeth), the rest of his teeth our head bone - skinned as ours are (`skeleton.attach`)
+    skeleton = importlib.import_module("bl_ext.system.juststage.modules.rig.skeleton")
+    arm = skeleton.skeleton_of(built["body"])
     made = []
-    for kb in keys.key_blocks[1:]:
-        k = np.empty(n_o * 3)
-        kb.data.foreach_get("co", k)
-        k_w = k.reshape(-1, 3) @ mw_o[:3, :3].T + mw_o[:3, 3]
-        moving = np.linalg.norm(k_w - base_w, axis=1) > 1e-6
-        if moving.sum() < 3:
-            continue
-        a_, b_ = base_w[moving], k_w[moving]
-        ca, cb = a_.mean(0), b_.mean(0)
-        u, _s, vt = np.linalg.svd((b_ - cb).T @ (a_ - ca))
-        d = np.diag([1.0, 1.0, np.sign(np.linalg.det(u @ vt))])
-        rot = u @ d @ vt
-        for obj in dst.objects:
-            me = obj.data
-            mw = np.array(obj.matrix_world)
-            co = np.empty(len(me.vertices) * 3)
-            me.vertices.foreach_get("co", co)
-            w = co.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3]
-            if obj.name.startswith("CC_Base_Teeth"):
-                names = [s.material.name if s.material else "" for s in obj.material_slots]
-                lower = np.zeros(len(w), bool)
-                for p in me.polygons:
-                    if names[p.material_index].startswith("Std_Lower_Teeth"):
-                        lower[list(p.vertices)] = True
-            else:
-                lower = np.ones(len(w), bool)
-            moved = w.copy()
-            moved[lower] = (w[lower] - ca) @ rot.T + cb
-            if not me.shape_keys:
-                obj.shape_key_add(name="Basis", from_mix=False)
-            key = obj.shape_key_add(name=kb.name, from_mix=False)
-            local = (moved - mw[:3, 3]) @ np.linalg.inv(mw[:3, :3]).T
-            key.data.foreach_set("co", local.ravel())
-            key.value = 0.0  # a new key starts at 1.0: jawForward / jawLeft / jawRight (in no gate expression, so
-            # never reset) pushed his lower teeth 16 mm forward and through our lip in every view (2026-11-08)
-            made.append(kb.name)
+    for obj in dst.objects:
+        me = obj.data
+        if obj.name.startswith("CC_Base_Teeth"):
+            names = [s.material.name if s.material else "" for s in obj.material_slots]
+            lower = np.zeros(len(me.vertices), bool)
+            for p in me.polygons:
+                if names[p.material_index].startswith("Std_Lower_Teeth"):
+                    lower[list(p.vertices)] = True
+        else:
+            lower = np.ones(len(me.vertices), bool)
+        for group, rows in ((skeleton.JAW, lower), (skeleton.HEAD, ~lower)):
+            if rows.any():
+                vg = obj.vertex_groups.get(group) or obj.vertex_groups.new(name=group)
+                vg.add(np.flatnonzero(rows).tolist(), 1.0, "REPLACE")
+        mod = obj.modifiers.new("JustStage skeleton", "ARMATURE")
+        mod.object = arm
+        obj.modifiers.move(len(obj.modifiers) - 1, 0)
+        made.append(obj.name)
     built["keyed"] = [*built["keyed"], *dst.objects]
     ours.hide_render = True
     print("AARON TEETH: scale", round(scale, 3), "front teeth moved", round(float(np.linalg.norm(b - a)) * 1000, 1),
-          "mm; jaw keys copied:", sorted(set(made)), flush=True)
+          "mm; riding our jaw and head bones:", sorted(made), flush=True)
 
 
 def aaroncards(built: dict, stem: str = "aaron_skin_pinned", shaped: bool = False) -> None:
