@@ -1173,7 +1173,10 @@ saved in `../plans/2026-10-29-spec-evidence/ue5-mannequin-bones.json`:
   body joint (`calf_l_UERBFSolver`, `clavicle_l_UERBFSolver`, `foot_l_UERBFSolver`, `hand_l_UERBFSolver`,
   `index_l_01_UERBFSolver`, `index_l_01_half_UERBFSolver`, …) and the UE corrective bones — *measured* (names read from
   the file).
-- **MetaHuman's face vocabulary** in `SKM_Face.dna` (UE 5.8): about 420 GUI control channels named `CTRL_<C|L|R>_<area>_
+- **MetaHuman's face vocabulary** in `SKM_Face.dna` (UE 5.8): about 420 GUI control channels (a byte scan's estimate;
+  read by OpenRigLogic's own reader 2026-11-08: 174 GUI controls, 263 raw - 251 `CTRL_expressions.*` and 12 neck and
+  head rotation inputs - 870 joints (843 `FACIAL_*`), 82 animated maps, 50 meshes, no blend-shape channels in the
+  archetype; `../plans/2026-10-29-spec-evidence/skm-face-definition-names.json`) named `CTRL_<C|L|R>_<area>_
   <action>.<tx|ty>` (`CTRL_C_jaw.ty`, `CTRL_L_mouth_cornerPull.ty`, `CTRL_L_brow_lateral.ty`, `CTRL_C_mouth_stickyU.ty`,
   `CTRL_C_tongue_roll.ty`, `CTRL_L_eye_blink.ty`, …), `FACIAL_*` joint names, and part names `head`, `teeth`, `eyeLeft`,
   `eyeRight`, `eyeshell`, `eyelashes`, `eyeEdge` — *measured* (names read from the file).
@@ -2050,6 +2053,17 @@ every one logged; key claims page-read):
 
 ### 14.7 · Face rig, expressions, body rig, capture
 
+- **Poly Hammer's Character DNA add-on, weighed first (the plan's §7 "Rig runtime"; read 2026-11-08 at its source -
+  `github.com/poly-hammer/character-dna-addon`, GPL-3.0, pushed 2026-11-08, 313 stars; README and
+  `src/addons/character_dna/bindings/__init__.py` read; queries "Poly Hammer MetaHuman DNA addon Blender RigLogic
+  GitHub", "evaluate RigLogic in Blender DNA face rig custom character without MetaHuman"):** it imports and exports
+  MetaHuman `.dna` files and evaluates them with OpenRigLogic in Blender ("a fast 1-to-1 integration of both the
+  MetaHuman head and body components"), through a compiled module (`load_module("_riglogic_blender")`) whose source is
+  not in the repository; the free version installs "from our extension server when you create an account"; its support
+  table lists Blender 4.5 and 5.2 (not 5.3); a pro version sells DNA editors, and custom meshes reach a DNA through its
+  paid auto-fitting. Not adopted as a dependency (no account; a runtime we can't build; not 5.3; MetaHuman's topology).
+  Its method is ours: control values in, RigLogic's joint and blend-shape outputs written to Blender each frame - with
+  our own shipped bindings (`test_openriglogic`).
 - **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
   runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
   (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065

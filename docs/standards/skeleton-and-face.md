@@ -200,8 +200,10 @@ Standard: [Meta viseme reference](https://developers.meta.com/vr/documentation/u
   (wrinkle) weights. Standard: [OpenRigLogic](https://github.com/EpicGames/OpenRigLogic); its trademark file bars Epic's
   marks in our product name only — our rig is "based on OpenRigLogic".
 - **Names are MetaHuman's** (the user: "your rec on all 1-6 … go" — item 10, an exception to AGENTS.md's clean-room
-  rule, names only): the GUI controls by the names in MetaHuman's archetype `SKM_Face.dna` in the user's UE 5.8 (about
-  420 channels, e.g. `CTRL_C_jaw`, `CTRL_L_mouth_cornerPull`, `CTRL_L_brow_lateral`, `CTRL_C_mouth_stickyU`,
+  rule, names only): the GUI controls by the names in MetaHuman's archetype `SKM_Face.dna` in the user's UE 5.8 (174 GUI
+  controls and 263 raw - 251 `CTRL_expressions.*` and 12 joint-rotation inputs - read by OpenRigLogic's own reader
+  2026-11-08, `../plans/2026-10-29-spec-evidence/skm-face-definition-names.json`; "about 420" was a byte scan's
+  estimate; e.g. `CTRL_C_jaw`, `CTRL_L_mouth_cornerPull`, `CTRL_L_brow_lateral`, `CTRL_C_mouth_stickyU`,
   `CTRL_C_tongue_roll`), the face joints by its 373 `FACIAL_*` names where our rig has the same joint (§1.1), and the
   face meshes by its names where the part matches (`eyeLeft`, `eyeRight`, `eyeshell`, `eyelashes`, `eyeEdge`, `teeth`,
   `saliva`; MetaHuman's `head` region is part of our one body mesh). So MetaHuman Animator's curves and MetaHuman's
