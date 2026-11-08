@@ -2064,6 +2064,15 @@ every one logged; key claims page-read):
   paid auto-fitting. Not adopted as a dependency (no account; a runtime we can't build; not 5.3; MetaHuman's topology).
   Its method is ours: control values in, RigLogic's joint and blend-shape outputs written to Blender each frame - with
   our own shipped bindings (`test_openriglogic`).
+- **MetaHuman's GUI control directions** (*measured 2026-11-08*: the archetype `SKM_Face.dna`'s GUI -> raw table read
+  by our bindings for which raw control each half moves - directions only, no values; `scratchpad/read_gui_raw.py`):
+  `CTRL_L_eye.tx` + `eyeLookLeftL` / - `eyeLookRightL`; `.ty` + `eyeLookUp` / - `eyeLookDown`; `CTRL_C_jaw.tx` +
+  `jawRight` / - `jawLeft`; `CTRL_C_jaw_fwdBack.ty` + `jawBack` / - `jawFwd`; `CTRL_C_mouth.tx` + `mouthLeft` / -
+  `mouthRight`; `.ty` + `mouthUp` / - `mouthDown`; `CTRL_L_mouth_corner.tx` + `mouthCornerWideL` / - `NarrowL`; `.ty` +
+  `mouthCornerUpL` / - `DownL`; `CTRL_L_mouth_suckBlow.ty` + `mouthCheekBlowL` / - `SuckL`; `CTRL_L_nose.ty` +
+  `noseWrinkleL` / - `noseNostrilDepressL`; `.tx` + `noseNostrilDilateL` / - `CompressL`; `CTRL_C_tongue_inOut.ty` +
+  `tongueIn` / - `tongueOut`; `CTRL_C_tongue_move` and `tipMove` `.tx` + Left / - Right, `.ty` + Up / - Down; teeth `.tx`
+  + Left / - Right. 259 GUI -> raw entries in all. Our `face.dna` keeps the directions, its ramps are ours.
 - **OpenRigLogic and SWIG's version** (measured 2026-11-04): at ea253d5 its `python/riglogic/RigLogic.i` calls SWIG's
   runtime macro `SWIG_EXPAND_AND_QUOTE_STRING(PYDNA_SWIG_TYPE_TABLE)`. SWIG 4.5.1's `swigrun.swg` no longer defines it
   (`SWIG_TYPE_TABLE_NAME` is `SWIG_STRINGIFY(SWIG_TYPE_TABLE)` there), so MSVC failed on the generated wrapper (C2065
