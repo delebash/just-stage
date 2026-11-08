@@ -514,18 +514,19 @@ def lashcap(built: dict, mm: float) -> None:
     print("LASH CAP", mm, "mm on", rows, "rows", flush=True)
 
 
-def lidcarry(built: dict, inner: float, outer: float) -> None:
+def lidcarry(built: dict, *shares: float) -> None:
     """The lid contact's carry (`parts.CARRY`, 0.6 / 0.25: each lash-line move carried into the next two rings of lid
-    skin) set, the contact made again - whether the carry puffs the lower lid into its roll. A shape: --alone."""
+    skin) set to `shares` (one a ring), the contact made again - the lash line pulled in while the skin past the second
+    ring stays out leaves a step: the lower lid's roll. A shape: --alone."""
     parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
     kept = parts.CARRY
-    parts.CARRY = (inner, outer)
+    parts.CARRY = tuple(shares)
     try:
         rows = parts.eyelid_contact(built["body"])
     finally:
         parts.CARRY = kept
     bpy.context.view_layer.update()
-    print("LID CARRY", inner, outer, "on", rows, "rows", flush=True)
+    print("LID CARRY", shares, "on", rows, "rows", flush=True)
 
 
 def eye_slider(built: dict, key: str, value: float) -> None:
@@ -557,9 +558,9 @@ def factor(name: str):
         return lambda built: hairdensity(built, float(name.split("*")[1]))
     if name.startswith("hairmelanin"):  # hairmelanin*1.0
         return lambda built: hairmelanin(built, float(name.split("*")[1]))
-    if name.startswith("lidcarry"):  # lidcarry*0*0 (the two rings' shares)
-        _, inner, outer = name.split("*")
-        return lambda built: lidcarry(built, float(inner), float(outer))
+    if name.startswith("lidcarry"):  # lidcarry*0.85*0.7*0.55 (a share a ring)
+        shares = [float(x) for x in name.split("*")[1:]]
+        return lambda built: lidcarry(built, *shares)
     if name.startswith("lashcap"):  # lashcap*1.6 (mm)
         return lambda built: lashcap(built, float(name.split("*")[1]))
     if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)
