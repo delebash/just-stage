@@ -2638,6 +2638,14 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
     our skin under ours, because our brow sits nearer the eye, so the two samples were different skin. In build k
     our brow's lower hairs reach those rows (0.042). The gate now has a forehead view (`parts_gate` "forehead",
     4.5 cm above the pupils, frontal, 6 cm wide); its patches are set on both renders before any number.
+  - **His own pore pattern** (`factors poretile*aaron_cheek`: his head normals' upper cheek as our pore tile, a local
+    test, 31 mm at 4.0 px/mm): cheek 0.0179 -> 0.0172 (chance +-0.0020), the same split by layer; nose 0.0785 ->
+    0.0756. So the pores are ruled out - their size, depth and pattern. The cheek's 0.5-2 mm gap comes from something
+    else at that scale. Left to try, one at a time: the scan's relief (`relief0`, `relief*k`), the colour's mottling
+    (`colourflat`), the light's scatter under the skin (`sss*k`), the microrelief (`micro0`).
+  - The forehead view at 4.5 cm: our forehead is mostly under the library style's fringe (his is bare, with forehead
+    lines), so it is measured with the scalp hidden (`nohair`). The patch grid: rows 0.15-0.75, columns 0.10-0.70,
+    12% squares, clear of his frown line.
 
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
