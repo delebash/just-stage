@@ -3164,6 +3164,29 @@ every one logged; key claims page-read):
     at every turn - base v2's rim ending on the eyeball - so the test allows 3.5 there. The lashes and both eye films
     are placed from this opening, so they follow the change; their tests run with the suite after web-4c's turn.
 
+- **The brows' height and the blink, measured 2026-11-08** (CPU probes in background Blender, the library's Average man
+  against HD Aaron's gate .blend; heights in mm above each eye's centre, in its column):
+  - Under our blink (MakeHuman Faceunits' eyeBlinkLeft), 10% of the 4,400 brow strands' roots move 9.8-12 mm; every
+    strand whose tip moves > 2 mm has a moving root. The 11-07 reading (2 of 44 sample points moving, the hairs
+    turning with their root triangles) was wrong: the binding is right, the roots are on the lid.
+  - Our brow roots: 0-12.5 (median 8.5), the brow 30 mm across. His brow cards: 13.7-28.5 (median 17.5), 50 mm across.
+    His blink moves skin 9.6 mm at +9, 5.2 at +12, 1.2 at +15, ~1 at +18-24: his brow barely moves.
+  - The skin's side profile (front-most depth ahead of the eye's centre): his lid +4-6 at 23-24, a fold +8-14 down to
+    9.5 at +12, the brow ridge from +16-18 at 20-21. Ours: lid +2-6 at 16-17, flat ridge from +8 at 19.5-20.8, no
+    fold. (His eye mesh's centre sits ~4.5 mm further back from the cornea than ours - depths compare after aligning
+    the cornea's front.)
+  - MakeHuman's sliders: eyebrows-trans-up moves 529 vertices up to 7.1 mm; l-eye-trans-down 2.9 mm. Both together
+    lift our ridge to start at +10-14: half the gap.
+  - `factors aaronshape*upper` (his depth projected front-to-back onto our vertices from +6 to +50, full from +12;
+    his eyes set on ours by centre and cornea - 1.3 / 0.7 mm across, 4.5 / 3.8 mm in depth, 0.2 / 0.9 mm up; 248
+    vertices): our profile becomes his - fold at +12-14 (15.1 after the cornea alignment), ridge from +18 at
+    20.6-22. The wrap's own correspondence (the first try) flattened his fold onto our flat lid (+12 at 15.3, the
+    ridge sinking to 17-18.8). His brow cards on the shaped face: 13.6-28.1 (median 17.7).
+- **The teeth transplant's fault, 2026-11-08:** Blender 5.3's `Object.shape_key_add` makes a key at value 1.0. The
+  copied jaw keys on his teeth all stood at 1; the gate resets only keys some expression names, so jawForward / Left /
+  Right stayed on and pushed his lower teeth 16 mm forward (2.7 mm out through our lip at rest). With them at 0 his
+  lower front sits at 143.0 mm as ours, 14 mm behind the lip, within ~2 mm of ours at jawOpen 0.4 and 1.
+
 ### 14.14 · Scalp hair
 
 - **Cycles' hair colour from melanin** (source read 2026-11-03: `intern/cycles/kernel/svm/closure.h`,

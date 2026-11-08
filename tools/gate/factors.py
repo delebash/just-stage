@@ -562,7 +562,8 @@ def poretile(built: dict, stem: str) -> None:
 #: the eye-open sliders (body_create.EYE_OPEN) one at a time - the lower lid's thick roll at the eye view; shape keys,
 #: so these run alone (`--alone`: a build each - the trials' material reset doesn't undo a shape)
 EYE_SLIDERS = {"eyebag": "bag-decr-incr", "eyeheight2": "height2-decr-incr", "eyefold": "eyefold-concave-convex",
-               "eyefoldup": "eyefold-down-up", "eyeheight1": "height1-decr-incr"}
+               "eyefoldup": "eyefold-down-up", "eyeheight1": "height1-decr-incr",
+               "eyetrans": "trans-down-up"}  # eyetrans*-1: the eye 2.9 mm down (with browup*1's 7.1 mm: his brow height)
 
 
 def lashcap(built: dict, mm: float) -> None:
@@ -861,6 +862,9 @@ def eye_slider(built: dict, key: str, value: float) -> None:
     for side in ("l", "r"):
         sliders.apply(built["body"], catalog[f"eyes/{side}-eye-{EYE_SLIDERS[key]}"], value)
     bpy.context.view_layer.update()
+    if key == "eyetrans":  # the socket moves: the eyeballs and films follow it (the lid sliders leave them be)
+        importlib.import_module("bl_ext.system.juststage.modules.head.parts").refit(built["body"])
+        bpy.context.view_layer.update()
     print("EYE SLIDER", key, value, flush=True)
 
 
@@ -884,14 +888,19 @@ def _transplant(built: dict, stem: str, tile: int, material: str, near_m: float 
     maps = _maps()
     data = np.load(HAIR_TRIALS / f"{stem}.npz")
     src, stris, stuv, layer_name = data["co"].astype(np.float64), data["tris"], data["tuv"], str(data["uv_name"])
-    keys = built["body"].data.shape_keys
-    if keys and "aaron shape" in keys.key_blocks and keys.key_blocks["aaron shape"].value > 0:
-        src = data["placed"].astype(np.float64)  # our face moved onto his own (`aaronshape`): his texture there
     tree = BVHTree.FromPolygons([Vector(v) for v in src], [list(t) for t in stris])
     body = built["body"]
     me = body.data
     mw = np.array(body.matrix_world)
+    # our face moved toward his (`aaronshape`): each corner reads his texture where its vertex sat before the move, on
+    # the wrap (the texture moves with our skin; regions moved or not alike)
+    shape = me.shape_keys.key_blocks.get("aaron shape") if me.shape_keys else None
+    kept = shape.value if shape else 0.0
+    if shape:
+        shape.value = 0.0
     co = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]
+    if shape:
+        shape.value = kept
     udim = np.empty(len(me.loops) * 2, np.float32)
     me.uv_layers[maps.UV].data.foreach_get("uv", udim)
     udim = udim.reshape(-1, 2)
@@ -1002,7 +1011,8 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours", region: str = "") 
     guides) moved as their nearest skin; then the parts refitted (eyes, the lid contact, the films). With `aaronskin`
     the eye view asks: can our lids, shaped as his, give his eye? `region` "lower": only the face below the eyes and
     above the jaw, at the front, faded over 15 mm - his cheeks and smile-line fold on our mesh (the lids, where the
-    transplant tears, untouched): with `ictsmile` the smile's deciding test (checklist row 9). A shape: --alone."""
+    transplant tears, untouched): with `ictsmile` the smile's deciding test (checklist row 9). "upper": his brow and
+    the fold under it above our eyes (`_upper_region`, row 5a). A shape: --alone."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
     from mathutils.kdtree import KDTree
@@ -1021,10 +1031,12 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours", region: str = "") 
     top = co[skin, 2].max()
     head = co[:, 2] > top - 0.30
     delta = np.zeros_like(co)
+    found = np.zeros(len(co), bool)
     for v in np.flatnonzero(head & skin):
         hit, _n, ti, dist = tree.find_nearest(Vector(co[v]))
         if hit is None or dist > 0.01:
             continue
+        found[v] = True
         a, b, c = wrapped[tris[ti]]
         v0, v1, v2 = b - a, c - a, np.array(hit) - a
         d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
@@ -1041,6 +1053,8 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours", region: str = "") 
                           np.clip((co[:, 2] - (mouth[2] - 0.045)) / 0.015, 0, 1))
         front = np.clip(((pupils[1] + 0.03) - co[:, 1]) / 0.015, 0, 1) * np.clip((0.075 - np.abs(co[:, 0])) / 0.015, 0, 1)
         fade = fade * band * front
+    if region == "upper":  # above the lid's margin: his brow ridge and the fold under it, set round OUR eyes
+        fade = fade * _upper_region(built, co, delta, found, placed, tris)
     delta *= fade[:, None]
     moved = np.flatnonzero(head & skin & (np.linalg.norm(delta, axis=1) > 0))
     kd = KDTree(len(moved))
@@ -1064,6 +1078,59 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours", region: str = "") 
     size = np.linalg.norm(delta[head & skin], axis=1)
     print("AARON SHAPE:", len(moved), "skin vertices moved, p50 / p90 / max", np.percentile(size, [50, 90]).round(4) * 1000,
           round(float(size.max()) * 1000, 1), "mm; parts refitted", flush=True)
+
+
+def _upper_region(built: dict, co: np.ndarray, delta: np.ndarray, found: np.ndarray, placed: np.ndarray,
+                  tris: np.ndarray) -> np.ndarray:
+    """`aaronshape`'s "upper" region (checklist row 5a): the skin from 6 mm above each eye's centre (the lid's margin
+    stays, where the full transplant tore) to the forehead, full from 12 mm, given HIS depth there - each of our
+    vertices moved front-to-back onto his surface (the brow ridge and the fold under it are a height field seen from
+    the front; the wrap's own correspondence flattened his fold onto our flat lid, measured 2026-11-08). His surface is
+    first set on our eyes: his eyes' centres (his eye mesh's Std_Eye_L / R faces, through the wrap's alignment) onto
+    ours across and up, his cornea's front onto ours in depth. Replaces `delta` in the region; returns its weights."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    st_spec = importlib.util.spec_from_file_location("smile_transfer", HERE / "smile_transfer.py")
+    st = importlib.util.module_from_spec(st_spec)
+    st_spec.loader.exec_module(st)
+    src = np.load(HAIR_TRIALS / "aaron_skin_src.npz")["co"].astype(np.float64)
+    original = src[src[:, 2] > src[:, 2].max() - 0.30]  # groom_transfer.head_region's vertices, in its order
+    align = st._similarity(original, placed)
+    with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (_src, dst):
+        dst.objects = ["CC_Base_Eye"]
+    eye = dst.objects[0]
+    bpy.context.scene.collection.objects.link(eye)
+    bpy.context.view_layer.update()
+    ours = parts.parts_of(built["body"])
+    shift = {}
+    for side, name in (("L", "eyeLeft"), ("R", "eyeRight")):
+        pts = st._apply(align, pg._faces_of(eye, (f"Std_Eye_{side}",))[f"Std_Eye_{side}"])
+        his_c, his_front = (pts.min(0) + pts.max(0)) / 2, pts[:, 1].min()
+        mine_pts = pg._world(ours[name], evaluated=False)
+        mine_c = np.array(eye_layers._eye_sphere(ours[name])[0])
+        across, up = mine_c[0] - his_c[0], mine_c[2] - his_c[2]
+        shift[np.sign(mine_c[0])] = np.array([across, mine_pts[:, 1].min() - his_front, up])
+        eye_z, eye_y = mine_c[2], mine_c[1]
+    bpy.data.objects.remove(eye)
+    built["aaron_shift"] = shift  # aaroncards*shaped sets his cards the same way
+    left_of = np.clip(0.5 + placed[:, 0] / 0.02, 0.0, 1.0)[:, None]  # blended across the nose's bridge
+    his = placed + left_of * shift[1.0] + (1.0 - left_of) * shift[-1.0]
+    tree = BVHTree.FromPolygons([Vector(v) for v in his], [list(t) for t in tris])
+    band = np.clip((co[:, 2] - (eye_z + 0.006)) / 0.006, 0, 1) * np.clip(((eye_z + 0.050) - co[:, 2]) / 0.015, 0, 1)
+    front = np.clip(((eye_y + 0.01) - co[:, 1]) / 0.01, 0, 1) * np.clip((0.075 - np.abs(co[:, 0])) / 0.015, 0, 1)
+    weight = band * front
+    hits = 0
+    for v in np.flatnonzero((weight > 0) & found):
+        start = Vector((co[v, 0], co[v, 1] - 0.05, co[v, 2]))  # from 5 cm in front, back along the depth
+        hit, _n, _i, dist = tree.ray_cast(start, Vector((0.0, 1.0, 0.0)), 0.08)
+        delta[v] = (0.0, hit[1] - co[v, 1], 0.0) if hit is not None else (0.0, 0.0, 0.0)
+        hits += hit is not None
+    print("AARON SHAPE upper: his eyes onto ours by", {k: np.round(v * 1000, 1).tolist() for k, v in shift.items()},
+          "mm (across, depth, up);", hits, "vertices given his depth", flush=True)
+    return weight
 
 
 def aaronteeth(built: dict) -> None:
@@ -1147,6 +1214,8 @@ def aaronteeth(built: dict) -> None:
             key = obj.shape_key_add(name=kb.name, from_mix=False)
             local = (moved - mw[:3, 3]) @ np.linalg.inv(mw[:3, :3]).T
             key.data.foreach_set("co", local.ravel())
+            key.value = 0.0  # a new key starts at 1.0: jawForward / jawLeft / jawRight (in no gate expression, so
+            # never reset) pushed his lower teeth 16 mm forward and through our lip in every view (2026-11-08)
             made.append(kb.name)
     built["keyed"] = [*built["keyed"], *dst.objects]
     ours.hide_render = True
@@ -1154,7 +1223,7 @@ def aaronteeth(built: dict) -> None:
           "mm; jaw keys copied:", sorted(set(made)), flush=True)
 
 
-def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
+def aaroncards(built: dict, stem: str = "aaron_skin_pinned", shaped: bool = False) -> None:
     """THE TRANSPLANT for brows, lashes and stubble (checklist rows 6-7, a LOCAL TEST): HD Aaron's own card meshes
     (Brows, Eyelash_Up, Eyelash_Low, Stubble, appended from the gate's .blend) carried onto our face by the head wrap
     with the eye rims pinned (`groom_transfer.py skin ... aaron_eyes.npz`): his alignment, then each card vertex moved as
@@ -1178,7 +1247,8 @@ def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
     kd.balance()
     body = built["body"]
     with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (_src, dst):
-        dst.objects = ["Brows", "Eyelash_Up", "Eyelash_Low", "Stubble"]
+        # shaped: his brows only - his lashes and stubble sit on skin `aaronshape*upper` leaves ours
+        dst.objects = ["Brows"] if shaped else ["Brows", "Eyelash_Up", "Eyelash_Low", "Stubble"]
     lib_dir = pg.CC5_BLEND["eevee"].parent
     for img in bpy.data.images:
         if img.filepath.startswith("//") and not Path(bpy.path.abspath(img.filepath)).exists():
@@ -1195,7 +1265,11 @@ def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
         co = np.empty(len(obj.data.vertices) * 3)
         obj.data.vertices.foreach_get("co", co)
         world = st._apply(align, co.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3])
-        for i, p in enumerate(world):
+        if shaped:  # on `aaronshape*upper`'s face: his cards set on our eyes as his surface there was, no wrap move
+            shift = built["aaron_shift"]
+            left = np.clip(0.5 + world[:, 0] / 0.02, 0.0, 1.0)[:, None]
+            world = world + left * shift[1.0] + (1.0 - left) * shift[-1.0]
+        for i, p in enumerate(() if shaped else world):
             found = kd.find_n(p, 4)
             w = np.array([1.0 / max(d, 1e-5) for _, _, d in found])
             world[i] = p + (move[[j for _, j, _ in found]] * w[:, None]).sum(0) / w.sum()
@@ -1207,10 +1281,11 @@ def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
     # static on the neutral face: a Surface Deform bound to the body broke them into shards (the body renders through
     # its helper mask, so the bound and the rendered target differ) - the blink view can't show them
     cid = body.juststage.character_id
+    replaced = ("eyebrows",) if shaped else ("eyebrows", "eyelashes", "beard")
     for o in bpy.context.scene.objects:
-        if o.juststage.part_of == cid and o.juststage.part in ("eyebrows", "eyelashes", "beard"):
+        if o.juststage.part_of == cid and o.juststage.part in replaced:
             o.hide_render = True
-    print("AARON CARDS:", [o.name for o in dst.objects], "placed, static", flush=True)
+    print("AARON CARDS:", [o.name for o in dst.objects], "placed, static", "(shaped face)" * shaped, flush=True)
 
 
 def aaroneyes(built: dict) -> None:
@@ -1400,6 +1475,8 @@ def factor(name: str):
         return aaronteeth
     if name == "aaroncards":  # his brow, lash and stubble cards on our face, riding it
         return aaroncards
+    if name == "aaroncards*shaped":  # his cards on aaronshape*upper's face (after it in the same trial)
+        return lambda built: aaroncards(built, shaped=True)
     if name == "aaroneyes":  # his eyeballs and eye films in our sockets
         return aaroneyes
     if name.startswith("aaronbody"):  # aaronbody[*aaron_hand] (his body skin on our torso, or the carried region)
