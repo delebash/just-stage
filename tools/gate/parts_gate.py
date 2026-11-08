@@ -65,6 +65,13 @@ EXPRESSIONS = {
                             "cheekSquintRight": 1.0},
                    "cc5": {"Mouth_Corner_Pull_L": 1.0, "Mouth_Corner_Pull_R": 1.0}},
     "browInnerUp": {"ours": {"browInnerUp": 1.0}, "cc5": {"Brow_Raise_In_L": 1.0, "Brow_Raise_In_R": 1.0}},
+    # 2026-11-07 late (the user: "do you need to prove that everything stays together when blinking talking, the
+    # tongue inner mouth"): a blink and three speech shapes, each against his nearest - the pairings are mine (plan
+    # §19.3): "aa" his V_Open, "oo" his V_Tight_O, "ee" his V_Wide
+    "blink": {"ours": {"eyeBlinkLeft": 1.0, "eyeBlinkRight": 1.0}, "cc5": {"Eye_Blink_L": 1.0, "Eye_Blink_R": 1.0}},
+    "talk_aa": {"ours": {"jawOpen": 0.4}, "cc5": {"V_Open": 1.0}},
+    "talk_oo": {"ours": {"mouthFunnel": 0.6, "mouthPucker": 0.5, "jawOpen": 0.15}, "cc5": {"V_Tight_O": 1.0}},
+    "talk_ee": {"ours": {"mouthStretchLeft": 0.5, "mouthStretchRight": 0.5, "jawOpen": 0.1}, "cc5": {"V_Wide": 1.0}},
 }  # fmt: skip
 
 #: the parts each view shows (quality-gate.md §5's list plus the user's 2026-11-05 "all body parts", toenails too)
@@ -96,6 +103,12 @@ VIEWS = {
     "face_smile_full": ("expression", "smile_full"),
     "mouth_smile": ("teeth and gums, lips", "smile"),
     "face_browInnerUp": ("expression, brows", "browInnerUp"),
+    "eye_blink": ("lids closed: no gap, no clip, lashes", "blink"),
+    "face_blink": ("expression, lids", "blink"),
+    "face_talk_aa": ("speech, jaw", "talk_aa"),
+    "mouth_talk_aa": ("teeth, tongue, the inner mouth", "talk_aa"),
+    "face_talk_oo": ("speech, lips", "talk_oo"),
+    "face_talk_ee": ("speech, lips", "talk_ee"),
 }
 
 
@@ -331,9 +344,9 @@ def view(name: str, a: dict[str, Vector]):
         return m + _v(0, 0, -0.035), _v(0, -1, 0), z, face
     if name == "hair_back":
         return m + _v(0, 0.08, 0.03), _v(-0.5, 0.85, 0.25), z, 0.34
-    if name == "eye":
+    if name in ("eye", "eye_blink"):
         return a["pupil_r"] + _v(0, 0, 0.004), _v(-0.17, -0.985, 0), z, 0.075
-    if name in ("lips", "mouth_jawOpen", "mouth_smile"):
+    if name in ("lips", "mouth_jawOpen", "mouth_smile", "mouth_talk_aa"):
         return a["mouth"] + _v(0, 0, -0.008), _v(0, -1, 0.08), z, 0.09
     if name == "lip_corner":
         return a["mouth"] + _v(-0.022, 0, -0.006), _v(-0.42, -0.906, 0), z, 0.05
