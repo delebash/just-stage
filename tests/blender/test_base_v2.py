@@ -187,3 +187,25 @@ def test_the_lash_line_keeps_the_margins_width(opened):
     # the first ring of skin beyond the lash line lies within 2.5 mm of it (a step would leave it standing off)
     near = [min(np.linalg.norm(co[v] - co[a]) for a in lash) for v in beyond]
     assert max(near) < 0.0035
+
+
+def test_the_lower_margin_is_a_ledge_like_the_upper(opened):
+    """The gate's eye view (2026-11-07 late): moved only along its own line from the eye's centre, hm08's lower lash
+    line sat 2.4 mm straight below its rim at the rim's depth - a margin 74-80 deg below horizontal, a wall facing the
+    camera, the thick roll under the eye. The contact turns it (parts.LEDGE_TURN, LEDGE_GAP): on the lower lid's
+    middle the lash line lies in front of its rim and the margin slopes less than 45 deg."""
+    _, body = opened
+    co = build.shaped_coords(body)
+    spheres = [eye_layers._eye_sphere(parts.parts_of(body)[p]) for p in ("eyeLeft", "eyeRight")]
+    rows = base.rows()
+    rows = rows[(rows >= 0).all(1)]
+    for c, _r in spheres:
+        mine = rows[np.linalg.norm(co[rows[:, 2]] - c, axis=1) < 0.02]
+        lower = mine[co[mine[:, 2], 2] < c[2]]
+        x = co[lower[:, 2], 0]
+        lo, hi = np.percentile(x, [33, 67])
+        middle = lower[(x >= lo) & (x <= hi)]
+        d = co[middle[:, 0]] - co[middle[:, 2]]  # rim to lash line
+        assert (d[:, 1] < -0.001).all(), d[:, 1]  # in front (the character faces -Y)
+        slope = np.degrees(np.arctan2(-d[:, 2], -d[:, 1]))
+        assert slope.max() < 45.0, slope

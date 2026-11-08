@@ -119,6 +119,13 @@ LASH_MIN = 0.001
 #: iris (the next row 0.8 mm), the margin a swollen glossy roll with a kink beside HD Aaron's ledge (1.0-2.3 mm seen);
 #: the lash line's move is carried into the next two rings of lid skin (CARRY) so no step is left
 CARRY = (0.6, 0.25)
+#: the lower lid's margin a ledge, as the upper's is: the lower lash line turned LEDGE_TURN of the way from its own line
+#: from the eye's centre onto its rim's, LEDGE_GAP off the eyeball. Along its own line hm08's lower lash line sat 2.4 mm
+#: straight below its rim at the rim's depth - a margin 74-80 deg below horizontal, a wall facing the camera: the
+#: thick roll under the eye (the upper lash line 2.2 mm in front of its rim, 5-7 deg). Measured on the gate's eye view
+#: (2026-11-07 late, factors lidledge): 0.8 / 2.3 mm DISTS 0.258 against 0.264-0.267, the roll gone by eye; 1.0 / 2.3
+#: 0.259; 1.0 / 1.6 0.264
+LEDGE_TURN, LEDGE_GAP = 0.8, 0.0023
 
 
 def eyelid_contact(character: bpy.types.Object) -> int:
@@ -156,6 +163,15 @@ def eyelid_contact(character: bpy.types.Object) -> int:
 
         if rim >= 0:
             push[rim] = to(rim, RIM_GAP)
+        if lash >= 0 and rim >= 0 and co[rim][2] < centre[2]:  # the lower lid: its margin turned into a ledge
+            d_rim = (co[rim] - centre) / np.linalg.norm(co[rim] - centre)
+            d_lash = (co[lash] - centre) / np.linalg.norm(co[lash] - centre)
+            d = (1 - LEDGE_TURN) * d_lash + LEDGE_TURN * d_rim
+            d /= np.linalg.norm(d)
+            push[lash] = centre + d * (radius + LEDGE_GAP) - co[lash]
+            mid = (d + d_rim) / np.linalg.norm(d + d_rim)
+            push[margin] = centre + mid * (radius + (LEDGE_GAP + RIM_GAP) / 2) - co[margin]
+            continue
         if lash >= 0:  # a lid pressed onto the eyeball or pushed off it keeps its margin's width
             lash_gap = min(max(off(lash), LASH_MIN), base.record()["radii_mm"]["lash"] / 1000)
             push[lash] = to(lash, lash_gap)

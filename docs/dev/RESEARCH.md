@@ -3060,6 +3060,12 @@ every one logged; key claims page-read):
     and the tube stays.
   - On trial: `factors lidledge*k*gap` turns each lower lash vertex k of the way onto its rim's line, gap mm off
     the eyeball, carried into the skin below.
+  - **Measured** (`.dev/gate/parts/2026-11-07f`, eye DISTS; ours as built 0.267): 0.8 / 2.3 mm 0.258, 1.0 / 2.3 mm
+    0.259, 1.0 / 1.6 mm 0.264. By eye, 0.8 / 2.3 removes most of the tube: the lower lid ends in a thin wet edge, like
+    his ledge. Bright specks along the edge are the tearline film, not refitted after the trial moved the lid.
+    Still his alone: the upper lid's crease, the lower lashes, the bag's colour.
+  - Built into the contact (`parts.LEDGE_TURN, LEDGE_GAP = 0.8, 0.0023`; test
+    `test_the_lower_margin_is_a_ledge_like_the_upper`). The library's characters are rebuilt after the suite passes.
 
 ### 14.14 · Scalp hair
 
