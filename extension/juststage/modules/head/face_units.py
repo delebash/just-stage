@@ -33,9 +33,13 @@ def unit_path(name: str):
     return paths.makehuman("targets", "faceunits", f"{name}.target")
 
 
-#: units taken from ICT-FaceKit's scanned shapes instead of Faceunits (Q-RIG-1's per-shape pick, 2026-11-08: the
-#: closed lid - Faceunits' eyeBlink folds the skin above the lashes, ICT's closes smooth; `tools/make_ict_units.py`)
-ICT_UNITS = ("eyeBlinkLeft", "eyeBlinkRight")
+#: units taken from ICT-FaceKit's scanned shapes instead of Faceunits (Q-RIG-1's per-shape pick, 2026-11-08;
+#: `tools/make_ict_units.py`): the closed lid - Faceunits' eyeBlink folds the skin above the lashes, ICT's closes
+#: smooth; the smile - ICT's mouthSmile + cheekSquint lift the corners and the cheeks as HD Aaron's do (MediaPipe's
+#: Face Landmarker scores the smile 0.83 / 0.84 against his 0.86 / 0.85; Faceunits' 0.72 / 0.79, the mouth alone
+#: bent - RESEARCH 14.7)
+ICT_UNITS = ("eyeBlinkLeft", "eyeBlinkRight", "mouthSmileLeft", "mouthSmileRight", "cheekSquintLeft",
+             "cheekSquintRight")  # fmt: skip
 
 
 def _offsets(name: str) -> tuple[np.ndarray, np.ndarray] | None:

@@ -58,8 +58,10 @@ SOURCES = {
         "strip": "FaceXModel/",
         "licence": "MIT (ICT-FaceKit's LICENSE)",
         # its neutral face: the eye occlusion and lacrimal-fluid strips the app's eye layers are made from; its scanned
-        # blink, our blink units (tools/make_ict_units.py, 2026-11-08)
-        "include": ["FaceXModel/generic_neutral_mesh.obj", "FaceXModel/eyeBlink_L.obj", "FaceXModel/eyeBlink_R.obj"],
+        # blink and smile, our blink and smile units (tools/make_ict_units.py, 2026-11-08)
+        "include": ["FaceXModel/generic_neutral_mesh.obj", "FaceXModel/eyeBlink_L.obj", "FaceXModel/eyeBlink_R.obj",
+                    "FaceXModel/mouthSmile_L.obj", "FaceXModel/mouthSmile_R.obj", "FaceXModel/cheekSquint_L.obj",
+                    "FaceXModel/cheekSquint_R.obj"],
         "extra": {"LICENSE": "LICENSE"},
     },
 }

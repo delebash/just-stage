@@ -49,9 +49,10 @@ def test_a_character_gets_the_52_keys_at_rest(human):
     assert all(keys[name].value == 0.0 for name in face_units.ARKIT)
 
 
-def test_the_blink_units_are_icts_scanned_blink(human):
-    """2026-11-08 (Q-RIG-1's per-shape pick): Faceunits' eyeBlink folded the closed lid's skin; ICT-FaceKit's scanned
-    blink, carried onto our base (`tools/make_ict_units.py`), closes it smooth - the two blink keys are ICT's."""
+def test_the_blink_and_smile_units_are_icts_scanned_shapes(human):
+    """2026-11-08 (Q-RIG-1's per-shape pick): Faceunits' eyeBlink folded the closed lid's skin and its smile bent the
+    mouth alone; ICT-FaceKit's scanned blink and smile, carried onto our base (`tools/make_ict_units.py`), close the
+    lid smooth and lift the cheeks - those keys are ICT's, each on its own side."""
     result, obj = human
     api.run("juststage.head.add_face_units", character=result.character)
     for name in face_units.ICT_UNITS:
