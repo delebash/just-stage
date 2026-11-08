@@ -63,8 +63,14 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   `scratchpad/batch_{D_skel,E,F,G}.log`. Item 5 found: the teeth's size is arch form, the tongue sits like his
   (RESEARCH 14.5). After: look at each sheet, the narrowed skeleton test run, the library rebuild (backup first).
 - **2026-11-08 07:08: the skeleton job done (library rebuilt with it, backup `library_2026-11-08b`); the card given back.
-  Active job: THE FACE RIG - working doc `docs/plans/2026-11-08-face-rig.md` (steps 1, 2, 3a, 3b done: the wheel,
-  the reading, our `face.dna`, the runtime; next 3c the jaw joint - its design and blast radius in the doc). Open from the queue: item 7's nail (displacement into the product, the lunula's white, the spike faces),
+  Active job: THE FACE RIG - working doc `docs/plans/2026-11-08-face-rig.md`: steps 1-3f done (the wheel; the
+  reading; our `face.dna` - MetaHuman's names, our values, 69 channels incl. 28 split parts; the runtime; the jaw, eye
+  and tongue joints with measured motions; the stand-in teeth keys removed); a clean full suite 08:14 (178 passed);
+  next: correctives / wrinkles (Q-RIG-3 / Q-RIG-4, research first). Item 7 (nails): matte plate, faint lunula, the
+  displacement nail bed - all in the product; left the spike faces' white block (round the plate's tip corners in
+  `maps._nail_layer`). Item 5 (the dark tongue): our body's own shadow - EEVEE ignores a material's shadow-ray
+  transparency, so `factors shadowsplit*cavity|head` (batch P) narrows it by objects. The library needs a rebuild for
+  the nail bed, the matte plate and the faint lunula (backup first). Card: web-4c lent it - send "card free" after P. Open from the queue: item 7's nail (displacement into the product, the lunula's white, the spike faces),
   item 5's tongue (our body's shadow in the mouth - narrow it to the mouth's inner skin; card), the full Blender suite
   for today's later changes (card).**
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
