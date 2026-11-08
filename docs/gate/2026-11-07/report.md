@@ -334,7 +334,7 @@ him (local only). Reads as his -> our body and renderer carry CC5 there, and wha
 | 17 | Body rig | feasible (bends) | our mesh with MPFB2's weights bends cleanly at elbow, knee, hip, shoulder like his; a twist untested | twist bones, correctives, definition (maps, build) |
 | 18 | Whole body | feasible | every transplant at once: our body reads as a real man; differs by build (sliders), hair cut and the test's region seams | the parts' content; the build |
 | 19 | Any character | feasible | his skin on our Average woman reads natural; her chin patch is her map's fault; cheek 0.0144 against the floor 0.0109 | HD Ariana to compare; the women's hair; her chin map |
-| 20 | Live view speed | pending | today's gate scene's fps (block C) | - |
+| 20 | Live view speed | feasible | his card grooms on our character: 54 fps (18.4 ms); our strands 9 fps; no grooms 60 fps | cards from our strands for the live view (approved rule) |
 
-No part has failed. Two faults found and fixed in the tests themselves today: the teeth transplant's keys, his posed
+**Every row has a verdict: no part fails CC5's bar; what is left is content we make (the last column).** No part has failed. Faults found and fixed in the tests themselves today: the teeth transplant's keys, his posed
 views (bone tails, his import action) - each set of renders made before its fix is kept aside as void.
