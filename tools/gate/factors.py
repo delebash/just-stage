@@ -51,6 +51,19 @@ def _skin_trees(built: dict):
             yield mat.node_tree
 
 
+def _skin_materials(built: dict):
+    """The skin materials of `_skin_trees`, with the product's own film BSDF (`skin.material.principled`) - a trial
+    that rewires that BSDF calls `skin.material.sync_live` after, or EEVEE (the live view's own copy) never sees it
+    (2026-11-08: `eyedark` and `liplines` changed the film's alone - void in EEVEE)."""
+    mod = importlib.import_module("bl_ext.system.juststage.modules.skin.material")
+    seen = set()
+    for slot in built["body"].material_slots:
+        mat = slot.material
+        if mat and mat.node_tree and mat.name not in seen and _maps().NODE + "gain" in mat.node_tree.nodes:
+            seen.add(mat.name)
+            yield mat, mod.principled(mat), mod
+
+
 def _depth(built: dict, key: str) -> None:
     for nt in _skin_trees(built):
         nt.nodes[_maps().NODE + f"{key}_depth"].inputs[1].default_value = 0.0
@@ -1675,10 +1688,10 @@ def eyedark(built: dict, k: float) -> None:
     maps = _maps()
     tint = (k, k * 0.9, k * 0.85)
     n = 0
-    for nt in _skin_trees(built):
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
         split = nt.nodes.get(maps.NODE + "face_regions_split")
-        bsdf = next((x for x in nt.nodes if x.type == "BSDF_PRINCIPLED"), None)
-        if split is None or bsdf is None or not bsdf.inputs["Base Color"].is_linked:
+        if split is None or not bsdf.inputs["Base Color"].is_linked:
             continue
         lo_r, lo_b = nt.nodes.new("ShaderNodeMath"), nt.nodes.new("ShaderNodeMath")
         for node, out, edge in ((lo_r, "Red", 0.10), (lo_b, "Blue", 0.13)):
@@ -1699,8 +1712,9 @@ def eyedark(built: dict, k: float) -> None:
         nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, times.inputs[0])
         nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Color"), times.inputs[1])
         nt.links.new(times.outputs["Vector"], bsdf.inputs["Base Color"])
+        mod.sync_live(mat)  # the live view's own BSDF takes the same inputs
         n += 1
-    print("EYE DARK tint", tint, "on", n, "skins", flush=True)
+    print("EYE DARK tint", tint, "on", n, "skins (film and live)", flush=True)
 
 
 def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25) -> None:
@@ -1710,10 +1724,10 @@ def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25) -> Non
     the skin's relief - step 1's fault: our lips read as smooth rubber, his show fine vertical lines."""
     maps = _maps()
     n = 0
-    for nt in _skin_trees(built):
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
         share = nt.nodes.get(maps.NODE + "lips_share")
-        bsdf = next((x for x in nt.nodes if x.type == "BSDF_PRINCIPLED"), None)
-        if share is None or bsdf is None:
+        if share is None:
             continue
         coord = nt.nodes.new("ShaderNodeNewGeometry")  # world position in metres (the object's own units may not be)
         wave = nt.nodes.new("ShaderNodeTexWave")
@@ -1734,8 +1748,9 @@ def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25) -> Non
         if bsdf.inputs["Normal"].is_linked:
             nt.links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
         nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+        mod.sync_live(mat)  # the live view's own BSDF takes the same inputs
         n += 1
-    print("LIP LINES every", period_mm, "mm, depth", depth_mm, "mm on", n, "skins", flush=True)
+    print("LIP LINES every", period_mm, "mm, depth", depth_mm, "mm on", n, "skins (film and live)", flush=True)
 
 
 def faceshape(built: dict, presets: str) -> None:

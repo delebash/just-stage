@@ -179,7 +179,14 @@ pile up; killed at once (free RAM back to 18 GB). Since: one Blender process per
 | Teeth, ears, torso and neck patches, nails, feet | not tested this hour | - | - |
 
 Kept changes go into the app once: the region map regenerated and the library rebuilt (backup first), booked with the
-peers.
+peers (after family-release's e2e).
+
+**16:3x, found: two of the hour's trials were VOID - `eyedark` and `liplines` rewired the film BSDF alone; the skin has
+a live-view copy (`skin.material.LIVE_BSDF`, an EEVEE-only output) that `sync_live` must refresh, so EEVEE never saw
+them.** Fixed (`factors._skin_materials`: the product's `principled()` and `sync_live` after); both rerun in the next
+card slot (`batch_slot.sh`, after just-voice's piece), with face round 3: a real scan's face shape on our man
+(`mix*hsr0040`, `hsr0042`, `hsr0161` - HSRD-100's scan identities, CC BY 4.0, through the mixer's own command; a local
+proof that a scan shape reads real, not the mixer's feature work). The lips' and eyes' verdicts above wait on them.
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
