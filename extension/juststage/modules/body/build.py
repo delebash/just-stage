@@ -132,7 +132,8 @@ def create_human(name: str, values: dict, base_version: int | None = None) -> bp
 
     maps.add_layout(obj)  # the body's UDIM layout: a skin's maps fit every character
     if (base_version or base.VERSION) >= 2:
-        base.upgrade(obj)  # base v2: the lid anatomy appended - after the layout, so its faces share their old faces' UVs
+        # base v2: the lid anatomy appended - after the layout, so its faces share their old faces' UVs
+        base.upgrade(obj)
     set_levels(obj, DEFAULT_LEVELS, DEFAULT_VIEW_LEVEL)
     return obj
 

@@ -83,5 +83,9 @@ class JUSTSTAGE_OT_body_set_mix(CommandOperator, bpy.types.Operator):
     strength: bpy.props.FloatProperty(name="Strength", default=1.0, min=0.0, max=1.0)
 
 
-CLASSES = (JUSTSTAGE_OT_body_create, JUSTSTAGE_OT_body_subdivide, JUSTSTAGE_OT_body_set_slider,
-           JUSTSTAGE_OT_body_set_mix)
+CLASSES = (
+    JUSTSTAGE_OT_body_create,
+    JUSTSTAGE_OT_body_subdivide,
+    JUSTSTAGE_OT_body_set_slider,
+    JUSTSTAGE_OT_body_set_mix,
+)

@@ -3,14 +3,16 @@
 
 """`juststage.body.set_slider` — one body slider (commands-and-api.md §2's own declaration): MakeHuman's macros
 (`macro.json`: gender, age, muscle, weight, proportions, height, cupsize, firmness), the three race mixes (kept summing
-to 1 the way MakeHuman's EthnicModifier does) and target.json's detail sliders (`<group>/<category>`, sliders.py)."""
+to 1 the way MakeHuman's EthnicModifier does), target.json's detail sliders (`<group>/<category>`, sliders.py) and the
+mixer's (`scans.<identity>.<region>`, 0..1, mixer.py)."""
 
 from typing import NamedTuple
 
 
 class Params(NamedTuple):
     character: str  # the character's assetInfo identifier
-    slider: str  # a slider id from macro.json (or a race: asian, caucasian, african) or target.json (`nose/...`)
+    slider: str  # a macro.json id (or a race: asian, caucasian, african), a target.json one (`nose/...`) or the
+    # mixer's (`scans.<identity>.<region>`)
     value: float
 
 
@@ -34,13 +36,25 @@ def main(params: Params) -> Result:
     from ... import character
     from ...core import makehuman
     from ...core.commands import CommandError
-    from . import build
+    from . import build, mixer
     from . import sliders as detail
 
     sliders = (*makehuman.MACROS, *makehuman.RACES)
     found = detail.catalog().get(params.slider)
+    mixed = mixer.parse(params.slider) if params.slider.startswith(mixer.SPACE + ".") else None
+    if mixed is not None:
+        if not 0.0 <= params.value <= 1.0:
+            raise CommandError(f"value: expected 0.0–1.0, got {params.value}")
+        obj = character.find(params.character)
+        mixer.set_value(obj, *mixed, float(params.value))
+        build.keep_on_floor(obj)
+        _refit(obj)
+        return Result(status="ok", value=float(params.value))
     if params.slider not in sliders and found is None:
-        raise CommandError(f"slider: {params.slider!r} is not a macro ({', '.join(sliders)}) nor a target.json slider")
+        raise CommandError(
+            f"slider: {params.slider!r} is not a macro ({', '.join(sliders)}), a target.json slider nor a mixer one"
+            f" ({mixer.SPACE}.<identity>.<region>)"
+        )
     low = found.low if found else 0.0
     if not low <= params.value <= 1.0:
         raise CommandError(f"value: expected {low:.1f}–1.0, got {params.value}")
