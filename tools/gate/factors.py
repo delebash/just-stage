@@ -229,6 +229,11 @@ def _hide_part(built: dict, part: str) -> None:
     print("HIDDEN", part, n, flush=True)
 
 
+def nohair(built: dict) -> None:
+    """The scalp hair hidden: what the scalp's own skin shows under it."""
+    _hide_part(built, "scalp")
+
+
 def tear0(built: dict) -> None:
     """The tearline (ICT's ring, the wet film along the lid margins) hidden."""
     _hide_part(built, "eyeEdge")
@@ -240,7 +245,7 @@ def occl0(built: dict) -> None:
 
 
 FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart, margindry,
-                                   margintint0, tear0, occl0)}
+                                   margintint0, tear0, occl0, nohair)}
 
 
 #: the shine trials: a key -> the Principled input it scales on both of the skin's BSDFs (the film's and the live view's)
