@@ -779,9 +779,17 @@ def browlift(built: dict, mm: float) -> None:
     points = lashes.surface_points
     lashes.surface_points = lambda body, uvs: points(body, uvs) + np.array([0.0, 0.0, mm / 1000.0])
     try:
-        brows.make(built["body"])
+        made = brows.make(built["body"])
     finally:
         lashes.surface_points = points
+    alive = []
+    for o in built["objects"]:  # the old brows were removed: the gate reads this list for its anchors
+        try:
+            o.name
+        except ReferenceError:
+            continue
+        alive.append(o)
+    built["objects"] = [*alive, made]
     bpy.context.view_layer.update()
     print("BROW LIFT", mm, "mm", flush=True)
 
