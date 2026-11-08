@@ -22,6 +22,72 @@ TOOL = "python tools/dev.py blender -b --python tools/make_face_dna.py"
 _STATE: dict[str, dict] = {}  # character id -> its RigLogic instance and last control values
 
 
+#: MetaHuman's expressions finer than one ARKit unit (the job's doc, step 3d): each a part of our unit - its side
+#: (L / R) and / or its lip (U the upper, D the lower) - as a shape key of its own the rig drives: expression -> channel
+_QUAD = {f"{lip}{side}": f"_{lip}{side}" for lip in "UD" for side in "LR"}
+SPLIT_EXPRESSIONS = {
+    "browRaiseInL": "browInnerUp_L", "browRaiseInR": "browInnerUp_R",
+    "mouthCheekBlowL": "cheekPuff_L", "mouthCheekBlowR": "cheekPuff_R",
+    "mouthPressUL": "mouthPressLeft_U", "mouthPressDL": "mouthPressLeft_D",
+    "mouthPressUR": "mouthPressRight_U", "mouthPressDR": "mouthPressRight_D",
+    "mouthUpperLipRollInL": "mouthRollUpper_L", "mouthUpperLipRollInR": "mouthRollUpper_R",
+    "mouthLowerLipRollInL": "mouthRollLower_L", "mouthLowerLipRollInR": "mouthRollLower_R",
+    "jawChinRaiseDL": "mouthShrugLower_L", "jawChinRaiseDR": "mouthShrugLower_R",
+    "jawChinRaiseUL": "mouthShrugUpper_L", "jawChinRaiseUR": "mouthShrugUpper_R",
+    **{f"mouthLipsPurse{q}": f"mouthPucker{c}" for q, c in _QUAD.items()},
+    **{f"mouthFunnel{q}": f"mouthFunnel{c}" for q, c in _QUAD.items()},
+    **{f"mouthLipsTogether{q}": f"mouthClose{c}" for q, c in _QUAD.items()},
+}  # fmt: skip
+SIDE_MM = 6.0  # the left / right parts cross over within this of the face's middle (a smoothstep)
+LIP_SHARE = 0.5  # the lower lip: skin jawOpen moves by at least this share of its largest move (what the jaw carries)
+
+
+def _split(channel: str) -> tuple[str, str, str]:
+    """A split channel's (unit, side, lip): 'mouthPucker_UL' -> ('mouthPucker', 'L', 'U')."""
+    unit, part = channel.rsplit("_", 1)
+    return unit, "".join(c for c in part if c in "LR"), "".join(c for c in part if c in "UD")
+
+
+def split_keys(character: bpy.types.Object) -> list[str]:
+    """The split channels' shape keys (replacing any of the same name): each its unit's offsets times its part's
+    weight - left / right by a smoothstep across the face's middle, upper / lower by how much our jawOpen unit moves the
+    skin (the jaw carries the lower lip); the parts of a unit sum to it. Returns the keys made."""
+    import numpy as np
+
+    keys = character.data.shape_keys
+    if keys is None or "jawOpen" not in keys.key_blocks:
+        return []
+    n = len(character.data.vertices)
+    basis = np.empty(n * 3, np.float32)
+    keys.reference_key.data.foreach_get("co", basis)
+    basis = basis.reshape(-1, 3)
+
+    def offsets(name):
+        co = np.empty(n * 3, np.float32)
+        keys.key_blocks[name].data.foreach_get("co", co)
+        return co.reshape(-1, 3) - basis
+
+    jaw = np.linalg.norm(offsets("jawOpen"), axis=1)
+    lower = np.clip(jaw / max(LIP_SHARE * jaw.max(), 1e-9), 0.0, 1.0)
+    t = np.clip((basis[:, 0] * 1000.0 + SIDE_MM) / (2 * SIDE_MM), 0.0, 1.0)
+    left = t * t * (3.0 - 2.0 * t)  # +x is the face's left
+    made = []
+    for channel in SPLIT_EXPRESSIONS.values():
+        unit, side, lip = _split(channel)
+        if unit not in keys.key_blocks:
+            continue
+        w = np.ones(n, np.float32)
+        if side:
+            w *= left if side == "L" else 1.0 - left
+        if lip:
+            w *= 1.0 - lower if lip == "U" else lower
+        key = keys.key_blocks.get(channel) or character.shape_key_add(name=channel, from_mix=False)
+        key.data.foreach_set("co", (basis + offsets(unit) * w[:, None]).astype(np.float32).ravel())
+        key.value, key.slider_min, key.slider_max = 0.0, 0.0, 1.0
+        made.append(channel)
+    return made
+
+
 def _dna():
     """The face DNA's reader and RigLogic, loaded once."""
     if "dna" not in _STATE:
@@ -69,6 +135,7 @@ def attach(character: bpy.types.Object, drive: bool = True) -> int:
     character[MARK] = 1 if drive else 0
     _STATE.pop(character.juststage.character_id, None)
     _drop_stand_in(character)
+    split_keys(character)  # MetaHuman's finer expressions as parts of our units
     evaluate(character)
     return len(rig["gui"])
 

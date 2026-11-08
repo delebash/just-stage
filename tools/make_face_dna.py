@@ -102,6 +102,14 @@ def jaw_motions() -> dict[str, list[float]]:
         bpy.data.objects.remove(bpy.data.objects[made.object])
 
 
+def _splits() -> dict[str, str]:
+    """MetaHuman's finer expressions -> our split channels (`face_rig.SPLIT_EXPRESSIONS`: the shapes and the DNA share
+    one table)."""
+    import importlib
+
+    return importlib.import_module("bl_ext.system.juststage.modules.head.face_rig").SPLIT_EXPRESSIONS
+
+
 def _read(path: Path, layer):
     stream = dna.FileStream(str(path), dna.FileStream.AccessMode_Read, dna.FileStream.OpenMode_Binary)
     reader = dna.BinaryStreamReader(stream, layer)
@@ -127,7 +135,8 @@ def archetype(path: Path) -> tuple[list[str], list[str], list[tuple[str, str, in
 
 def write(path: Path, gui: list[str], raw: list[str], links: list[tuple[str, str, int]],
           jaw: dict[str, list[float]]) -> dict:
-    channels = sorted(set(CHANNELS.values()))
+    table = {**CHANNELS, **_splits()}  # expression -> channel: one-to-one onto our units, or a part of one
+    channels = sorted(set(table.values()))
     path.parent.mkdir(parents=True, exist_ok=True)
     stream = dna.FileStream(str(path), dna.FileStream.AccessMode_Write, dna.FileStream.OpenMode_Binary)
     w = dna.BinaryStreamWriter(stream)
@@ -172,14 +181,14 @@ def write(path: Path, gui: list[str], raw: list[str], links: list[tuple[str, str
     w.setJointGroupLODs(0, [len(attributes)])
     # raw -> channel, one input each
     ci = {n: i for i, n in enumerate(channels)}
-    pairs = [(ri[EXPRESSION + e], ci[c]) for e, c in sorted(CHANNELS.items()) if EXPRESSION + e in ri]
+    pairs = [(ri[EXPRESSION + e], ci[c]) for e, c in sorted(table.items()) if EXPRESSION + e in ri]
     w.setBlendShapeChannelLODs([len(pairs)])
     w.setBlendShapeChannelInputIndices([i for i, _ in pairs])
     w.setBlendShapeChannelOutputIndices([o for _, o in pairs])
     w.write()
     if not dna.Status.isOk():
         raise RuntimeError(f"writing {path}: {dna.Status.get().message}")
-    missing = sorted(e for e in CHANNELS if EXPRESSION + e not in ri)
+    missing = sorted(e for e in table if EXPRESSION + e not in ri)
     return {"gui": len(gui), "raw": len(raw), "gui_to_raw": len(rows), "channels": len(channels),
             "linked": len(pairs), "names_missing": missing,
             "jaw": {e: [round(v, 3) for v in m] for e, m in jaw.items()}}  # fmt: skip
