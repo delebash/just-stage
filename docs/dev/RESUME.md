@@ -66,11 +66,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   Active job: THE FACE RIG - working doc `docs/plans/2026-11-08-face-rig.md`: steps 1-3f done (the wheel; the
   reading; our `face.dna` - MetaHuman's names, our values, 69 channels incl. 28 split parts; the runtime; the jaw, eye
   and tongue joints with measured motions; the stand-in teeth keys removed); a clean full suite 08:14 (178 passed);
-  next: correctives / wrinkles (Q-RIG-3 / Q-RIG-4, research first). Item 7 (nails): matte plate, faint lunula, the
-  displacement nail bed - all in the product; left the spike faces' white block (round the plate's tip corners in
-  `maps._nail_layer`). Item 5 (the dark tongue): our body's own shadow - EEVEE ignores a material's shadow-ray
-  transparency, so `factors shadowsplit*cavity|head` (batch P) narrows it by objects. The library needs a rebuild for
-  the nail bed, the matte plate and the faint lunula (backup first). Card: web-4c lent it - send "card free" after P. Open from the queue: item 7's nail (displacement into the product, the lunula's white, the spike faces),
+  next: wrinkles / correctives (Q-RIG-3 / Q-RIG-4 - research: Blender Studio's procedural wrinkles read, micro only;
+  the expression folds' source still open, RESEARCH §14.7). Item 7 (nails) DONE in the product and the library (sheet
+  `scratchpad/sheet_D24_nails_product.png`; skin tests 17 passed). Item 5's inner mouth: our mouth's own skin shadows
+  the tongue, and both tongues see none of the stage's lights - his pink is bounce or material; `factors mouthlining`
+  queued (batch R, waits for web-4c's "card yours" -> touch `scratchpad/card_back.R_go`, then send "card free"). Open from the queue: item 7's nail (displacement into the product, the lunula's white, the spike faces),
   item 5's tongue (our body's shadow in the mouth - narrow it to the mouth's inner skin; card), the full Blender suite
   for today's later changes (card).**
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
