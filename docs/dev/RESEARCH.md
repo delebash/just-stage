@@ -2075,6 +2075,13 @@ every one logged; key claims page-read):
   from the deformed face against its rest, the shader turns them into a wrinkle bump - no scanned maps. A candidate for
   our content once read at its source and checked against the two patents read (Disney's orientation bins, granted to
   2044; Microsoft's tension-weighted map blends, US 12,062,140 claim 17 - plan §3 rule 8).
+  Blender Studio's page read 2026-11-08: compression `1 - 2^(-A_deformed / A_base)`; a directional stretch map from edge
+  length changes (shortened edges wrinkle across, lengthened along; angles doubled so opposites don't cancel; the mesh
+  triangulated two ways); the shader squashes Perlin noise along that direction in UV cells (four offset copies) as a
+  bump - no wrinkle texture; limits: "only works with meshes that fully consist only of quads" (hm08 is all quads),
+  "cannot create longer wrinkles that continue through multiple cells", only the micro-detail level used in the film,
+  the effect subtle; the example file's licence not stated. So: a candidate for fine stretch wrinkles, not the
+  expression folds (crow's feet, forehead lines) - those stay Q-RIG-4's open content.
 - **Poly Hammer's Character DNA add-on, weighed first (the plan's §7 "Rig runtime"; read 2026-11-08 at its source -
   `github.com/poly-hammer/character-dna-addon`, GPL-3.0, pushed 2026-11-08, 313 stars; README and
   `src/addons/character_dna/bindings/__init__.py` read; queries "Poly Hammer MetaHuman DNA addon Blender RigLogic
