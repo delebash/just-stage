@@ -745,6 +745,23 @@ def blinkfix(built: dict) -> None:
     bpy.context.view_layer.update()
 
 
+def browlift(built: dict, mm: float) -> None:
+    """Checklist row 12's fix, tried: our brows grown again (`brows.make`) with their band lifted `mm` before the hairs
+    are rooted on the skin - our roots sit 0-12.5 mm above the eye's centre (median 8.5), on the lid the blink moves
+    9.8-12 mm; his 13.7-28.5 (median 17.5), where his blink moves skin ~1 mm (2026-11-08). Do lifted brows read as
+    his, and stay put in the blink? A new groom: --alone."""
+    brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
+    lashes = brows.lashes
+    points = lashes.surface_points
+    lashes.surface_points = lambda body, uvs: points(body, uvs) + np.array([0.0, 0.0, mm / 1000.0])
+    try:
+        brows.make(built["body"])
+    finally:
+        lashes.surface_points = points
+    bpy.context.view_layer.update()
+    print("BROW LIFT", mm, "mm", flush=True)
+
+
 def setkey(built: dict, name: str, value: float) -> None:
     """One of the body's shape keys set and held (one the gate's expressions don't name, so they leave it): row 3's
     seal test - hm08's neutral leaves a see-through slit 0.3-0.9 mm wide across the mouth's middle (rays from the
@@ -1617,6 +1634,8 @@ def factor(name: str):
         return lambda built: aaronshape(built, "aaron_skin_pinned", region)
     if name.startswith("aaronwrinkles*"):  # aaronwrinkles*smile (after aaronskin: his wrinkle maps as his smile sets them)
         return lambda built: aaronwrinkles(built, name.split("*")[1])
+    if name.startswith("browlift*"):  # browlift*9 (the brows grown again, their band lifted 9 mm)
+        return lambda built: browlift(built, float(name.split("*")[1]))
     if name.startswith("setkey*"):  # setkey*mouthClose*0.1 (a body shape key held at a value)
         _k, key, value = name.split("*")
         return lambda built: setkey(built, key, float(value))
