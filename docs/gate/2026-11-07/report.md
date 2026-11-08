@@ -306,3 +306,35 @@ band of the transplant's score on our head.
 **Still to render** (when the card frees): every part beside his as it stands now (contact sheets,
 `.dev/gate/parts/2026-11-07all`), the quiff with the stand-off profile, the cheek's red mottling, the forehead's Ten24
 tile; then the code's own tests.
+
+## 2026-11-08: the verdict per part (the plan's §18a holds each row's numbers and sheets)
+
+The user's rule (TASKS "UNTIL A VERDICT ON EVERY PART"): every part and the whole body gets a verdict - meets HD
+Aaron's quality, or provably can't. The deciding test per part: his own content on our body, rendered in EEVEE beside
+him (local only). Reads as his -> our body and renderer carry CC5 there, and what is left is content we make.
+
+| # | Part | Verdict | The deciding render (sheets in the scratchpad, renders in `.dev/gate/parts/`) | Ours to make |
+|---|---|---|---|---|
+| 1 | Face skin | feasible | his head material on our head reads as his (11-07) | the cheek, forehead, nose maps to his floor |
+| 2 | Ears | feasible | his skin on our ear | ear maps, translucency |
+| 3 | Lips (seal) | feasible | Faceunits' mouthClose 0.1 closes the 0.3-0.9 mm slit; with his skin our mouth reads as his | the seal in the neutral; lips' fullness and colour |
+| 4 | Teeth, mouth | feasible | his teeth ride our jaw through jawOpen and "aa" and read as his (once the jaw keys stopped starting at 1.0) | teeth material and size, the inner mouth, the tongue |
+| 5 | Eyeball | feasible | his eyes at his own size in our sockets read as his eye | eyeball 12% smaller, the iris |
+| 5a | Eye region | feasible | with his brow shape, skin and brows at his height our eye reads close to his | the brows' band set from the ridge; a brow-region shape |
+| 6-7 | Brows, lashes, stubble | feasible | his cards on our face read as his (11-08 night) | our grooms' shape, density, colour |
+| 8 | Scalp hair | feasible | his cut as our strands, our generator along his field | colour, the quiff, locks |
+| 10 | Blink | feasible | ICT's scanned blink closed by snap-and-relax: a smooth closed lid like his | a scanned blink set, the closing step built in |
+| 11 | Speech | feasible | our and ICT's speech shapes with his teeth read as speech; his visemes differ in amount | a viseme set |
+| 12 | Grooms in the blink | feasible | brows grown at his height stay put through the blink (the sweep was placement) | the brows' band from the ridge |
+| 13 | Wrinkles | feasible | his wrinkle maps on our smile give his crow's feet | our wrinkle maps and weights |
+| 14 | Body skin | feasible | his skin on our torso and hand (11-07 night) | body maps to the floor |
+| 15 | Feet | feasible | his leg skin on our foot measures inside his band (excess 0.0023, p 0.21) | a scanned foot's maps |
+| 16 | Nails | feasible as modelling | his nail plate's own geometry and material read as a real nail on our finger; our fingertip round it doesn't fit | the nail bed and cuticle fold (loops), the colour |
+| 9 | Smile | pending | his lower-face shape plus ICT's smile (block C) | - |
+| 17 | Body rig | pending | his posed views re-rendering (two faults in the test fixed) | - |
+| 18 | Whole body | pending | all his content on our body at once (queued) | - |
+| 19 | Any character | pending | his skin on our Average woman (queued); HD Ariana not exported | - |
+| 20 | Live view speed | pending | today's gate scene's fps (block C) | - |
+
+No part has failed. Two faults found and fixed in the tests themselves today: the teeth transplant's keys, his posed
+views (bone tails, his import action) - each set of renders made before its fix is kept aside as void.
