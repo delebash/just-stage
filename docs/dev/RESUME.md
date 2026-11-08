@@ -83,6 +83,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   check `.dev/gate/parts/2026-11-07e/*_taper4*`), the mask chosen in faces; contrast: shading trials can't darken the
   mean (L* 28-30 against his 20) - density on trial (`factors hairdensity`, 130 -> 220 / 300 a cm2). The library's
   scalp asset is short combed rebuilt with the fixes; "short taper" not yet the default.
+- Night end (2026-11-07): the hair's bare lines were Blender's Clump Hair Curves (clump 0.25 / 0.35 -> 0.1); the scalp
+  at its real density (2.2M a m2, 183,604 strands): back L* 27 -> 23 (his 20.4); "JustStage short taper" a library
+  style and the gate's (the library rebuilt, backup `.dev/backup/library_2026-11-07g`). The gate report's night table
+  (`docs/gate/2026-11-07/report.md`) holds every part's number. Open: the hair's highlights and style, the lower lid's
+  shape, the smile (§19.2 item 9), the foot (its download).
 - Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins
   and characters rebuilt (backup `.dev/backup/library_2026-11-07`): ridges x3 like for like (still below Aaron's veins);
   feet - no detailed donor until Thunk3D (§19.2 item 25); torso folds 0.53-0.85.
