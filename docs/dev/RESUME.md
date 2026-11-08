@@ -73,6 +73,8 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   queued (batch R, waits for web-4c's "card yours" -> touch `scratchpad/card_back.R_go`, then send "card free"). Open from the queue: item 7's nail (displacement into the product, the lunula's white, the spike faces),
   item 5's tongue (our body's shadow in the mouth - narrow it to the mouth's inner skin; card), the full Blender suite
   for today's later changes (card).**
+- **2026-11-08 ~08:45: the mixer job opened - `docs/plans/2026-11-08-mixer.md` (read it first): step 1 the patent claims
+  for the features mode and the per-band skin blend; the face rig's wrinkles wait on research.**
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
   "why do you keep missing everything").
