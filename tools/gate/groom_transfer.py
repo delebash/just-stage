@@ -376,10 +376,12 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     if a[0] == "cards":  # cards OURS.npz SOURCE.npz OUT.npz
         carry_cards(Path(a[1]), Path(a[2]), Path(a[3]))
-    elif a[0] == "region":  # region OURS.npz SKIN_SOURCE.npz OUT.npz MATERIAL x0 x1 y0 y1 z0 z1
+    elif a[0] == "region":  # region OURS.npz SKIN_SOURCE.npz OUT.npz MATERIAL x0 x1 y0 y1 z0 z1 [sx sy sz [TILE]]
         b = [float(v) for v in a[5:11]]
         shift = [float(v) for v in a[11:14]] if len(a) >= 14 else (0.0, 0.0, 0.0)
-        carry_region(Path(a[1]), Path(a[2]), Path(a[3]), int(a[4]), ((b[0], b[1]), (b[2], b[3]), (b[4], b[5])), shift)
+        tile = int(a[14]) if len(a) >= 15 else 1002  # our UDIM tile it covers: 1004 for a leg or foot
+        carry_region(Path(a[1]), Path(a[2]), Path(a[3]), int(a[4]), ((b[0], b[1]), (b[2], b[3]), (b[4], b[5])), shift,
+                     tile=tile)
     elif a[0] in ("hand", "nails"):  # hand|nails OURS.npz SKIN_SOURCE.npz OUT.npz OURS_ANCHORS.json HIS_ANCHORS.json
         import json  # the right hand: his arm skin (slot 2) onto our arm tile, or his nails (slot 4) onto our nail tile
 

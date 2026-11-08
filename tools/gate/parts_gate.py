@@ -23,6 +23,7 @@ Brow_Raise_In_L + _R)."""
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -109,6 +110,24 @@ VIEWS = {
     "mouth_talk_aa": ("teeth, tongue, the inner mouth", "talk_aa"),
     "face_talk_oo": ("speech, lips", "talk_oo"),
     "face_talk_ee": ("speech, lips", "talk_ee"),
+    # 2026-11-08, the body rig's deciding test (checklist row 17): posed views, both men turned alike from their own
+    # rests (`body_rig.py`) - a joint's crease, volume and silhouette against his
+    "pose_elbow": ("elbow bent 110 deg: the crease, the forearm's volume", "p_elbow"),
+    "pose_elbow_side": ("elbow bent 110 deg: its point and the upper arm", "p_elbow"),
+    "pose_knee": ("knee bent 90 deg: its front and the back's fold", "p_knee"),
+    "pose_sit": ("thigh raised 90 deg: the hip, the groin and the buttock", "p_sit"),
+    "pose_arm_up": ("upper arm raised to 30 deg above level: the shoulder, the armpit", "p_arm_up"),
+}
+
+#: the poses: each bone of a role aimed at a world direction, parents first (the minimal turn from where it points) -
+#: both men end with the same bone directions whatever their rest stances (a turn by angle from each rest left our
+#: forearm pointing inward and his forward, 2026-11-08). The right side; -x is his right, -y his front. Roles:
+#: `body_rig.ROLES`
+POSES = {
+    "p_elbow": [("upperarm", (-0.5, 0.0, -0.866)), ("lowerarm", (0.0, -0.94, 0.34))],  # elbow ~107 deg
+    "p_knee": [("thigh", (-0.05, 0.0, -1.0)), ("calf", (0.0, 1.0, -0.05))],  # knee 90 deg, bent back
+    "p_sit": [("thigh", (-0.08, -1.0, 0.0)), ("calf", (0.0, 0.0, -1.0))],  # hip and knee 90 deg
+    "p_arm_up": [("upperarm", (-0.866, 0.0, 0.5)), ("lowerarm", (-0.866, 0.0, 0.5))],  # 30 deg above level, straight
 }
 
 
@@ -208,7 +227,9 @@ def build_cc5(scene, engine: str, inputs: dict[str, float] | None = None) -> dic
 
 
 def set_expression(who: str, built: dict, name: str) -> None:
-    values = EXPRESSIONS[name][who]
+    """A shape-key expression, or a pose (POSES: the face neutral, the rig turned; its joints into built["posed"])."""
+    _pose(who, built, name if name in POSES else None)
+    values = EXPRESSIONS.get(name, EXPRESSIONS["neutral"])[who]
     every = {k for expr in EXPRESSIONS.values() for k in expr[who]}
     for obj in built["keyed"]:
         blocks = obj.data.shape_keys.key_blocks
@@ -216,6 +237,39 @@ def set_expression(who: str, built: dict, name: str) -> None:
             if key in blocks:
                 blocks[key].value = values.get(key, 0.0)
     bpy.context.view_layer.update()
+
+
+def _pose(who: str, built: dict, name: str | None) -> None:
+    """The rig back to its starting pose, then `name`'s turns (none for a shape-key expression). Ours gets the body
+    rig on its first pose (`body_rig.build`); his starting pose is kept as he came, not reset to his rest."""
+    if name is None and "rig_start" not in built:
+        return
+    spec = importlib.util.spec_from_file_location("body_rig", Path(__file__).with_name("body_rig.py"))
+    body_rig = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(body_rig)
+    if "rig_start" not in built:
+        arm = built["armature"] if who == "cc5" else body_rig.build(built["body"])
+        built["rig"] = arm
+        built["rig_start"] = {pb.name: pb.matrix_basis.copy() for pb in arm.pose.bones}
+    arm = built["rig"]
+    for pb in arm.pose.bones:
+        pb.matrix_basis = built["rig_start"][pb.name]
+    bpy.context.view_layer.update()
+    if name is None:
+        built.pop("posed", None)
+        return
+    roles = body_rig.ROLES[who]
+    for role, aim in POSES[name]:
+        bone = roles[role]
+        u = body_rig.direction(arm, bone)
+        want = np.asarray(aim) / np.linalg.norm(aim)
+        axis = np.cross(u, want)
+        if np.linalg.norm(axis) > 1e-6:
+            angle = np.degrees(np.arccos(np.clip(u @ want, -1.0, 1.0)))
+            body_rig.turn(arm, bone, axis / np.linalg.norm(axis), angle)
+    built["posed"] = {k: body_rig.joint(arm, roles[k]) for k in ("upperarm", "lowerarm", "hand", "thigh", "calf")}
+    print("POSED", who, name, {r: np.round(body_rig.direction(arm, roles[r]), 3).tolist() for r, _ in POSES[name]},
+          flush=True)
 
 
 # ---- anatomy -------------------------------------------------------------------------------------------------------
@@ -333,6 +387,12 @@ def _v(x: float, y: float, z: float) -> Vector:
 def view(name: str, a: dict[str, Vector]):
     """(target, direction from the target to the camera, up, frame width in metres) for one view."""
     m, z = a["pupils"], _v(0, 0, 1)
+    if name.startswith("pose_"):  # at the posed joint (`_pose`'s built["posed"], merged into the anchors)
+        return {"pose_elbow": (a.get("lowerarm"), _v(-0.4, -1, 0.15).normalized(), z, 0.32),
+                "pose_elbow_side": (a.get("lowerarm"), _v(-1, 0.3, 0.1).normalized(), z, 0.36),
+                "pose_knee": (a.get("calf"), _v(-1, -0.15, 0.1).normalized(), z, 0.45),
+                "pose_sit": (a.get("thigh"), _v(-1, -0.2, 0.1).normalized(), z, 0.6),
+                "pose_arm_up": (a.get("upperarm"), _v(-0.6, -1, 0.1).normalized(), z, 0.42)}[name]
     face, front34 = 0.30, _v(-0.7071, -0.7071, 0)
     if name == "front":
         return m + _v(0, 0, -0.12), _v(0, -1, 0), z, 0.56
@@ -449,7 +509,7 @@ def _render_views(who, engine, out_dir, names, size, samples, tag, built, scene,
         if expression != current:
             set_expression(who, built, expression)
             current = expression
-        placed = view(name, a)
+        placed = view(name, {**a, **built.get("posed", {})})
         place(cam, *placed)
         stem = f"{engine}_{name}_{who}{tag}"
         scene.render.filepath = str(out_dir / f"{stem}.png")
