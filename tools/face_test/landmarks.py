@@ -26,16 +26,24 @@ VIEWS = ("front", "left40", "right40", "left90", "right90", "above", "below", "f
 def points(detector, path: Path):
     """MediaPipe's 478 points in the picture's own pixels; None if there's no picture (a view a character's face test
     doesn't paint) or no face in it."""
+    return detect(detector, path)[0]
+
+
+def detect(detector, path: Path):
+    """(MediaPipe's 478 points in the picture's own pixels, its 52 ARKit expression scores by name - empty unless the
+    detector was made with output_face_blendshapes); (None, {}) if there's no picture or no face in it."""
     if not path.exists():
-        return None
+        return None, {}
     img = cv2.imread(str(path))
     h, w = img.shape[:2]
     for pad in (0, w // 8):  # again with a margin when no face is found (align_paintings.landmarks: the close view)
         x = cv2.copyMakeBorder(img, pad, pad, pad, pad, cv2.BORDER_REPLICATE) if pad else img
         result = detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=np.ascontiguousarray(x[..., ::-1])))
         if result.face_landmarks:
-            return [[p.x * (w + 2 * pad) - pad - 0.5, p.y * (h + 2 * pad) - pad - 0.5] for p in result.face_landmarks[0]]
-    return None
+            pts = [[p.x * (w + 2 * pad) - pad - 0.5, p.y * (h + 2 * pad) - pad - 0.5] for p in result.face_landmarks[0]]
+            scores = {c.category_name: c.score for c in result.face_blendshapes[0]} if result.face_blendshapes else {}
+            return pts, scores
+    return None, {}
 
 
 def main() -> int:

@@ -2086,6 +2086,16 @@ every one logged; key claims page-read):
   - **CPU preview** (flat shaded, not a render): the smile carries its smile line beside the nose and the cheeks' lift,
     with no tears. The EEVEE render against HD Aaron is queued for the card's next free turn (the gate's own man
     exported, then `factors ictsmile`).
+  - **The smile's numbers** (`tools/gate/smile_measure.py`): MediaPipe's Face Landmarker (our `face_test/
+    landmarks.py`) on the neutral `face` view and the smile view (one camera, 0.30 m wide: pixels to mm). On the
+    2026-11-06 renders (ours: Faceunits' mouthSmile only; his: the corner pull), his | ours in mm:
+    - corners up 12.6 | 11.4, corners out 6.8 | 6.0, cheek point up 4.8 | 4.1, lower lid up 0.5 | 0.8.
+    - The Landmarker's own ARKit scores: mouthSmile 0.86 / 0.85 | 0.72 / 0.77; cheekSquint 0 for both.
+    - Its points sit right (checked with `--overlay`).
+  - **The numbers miss the gap; the pictures show it.** His smile has a deep smile line beside the nose, the cheek
+    mass bulging up, narrowed eyes and crow's feet. Ours only bends the mouth. The landmark model moves its cheek
+    point with the mouth whatever the skin does, so the cheek's lift and the line are judged on the pictures. His
+    crow's feet are wrinkle maps (plan §7's wrinkles row, TO BUILD), not shape.
 - GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
   and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
   landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
