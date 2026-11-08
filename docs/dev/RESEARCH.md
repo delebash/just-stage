@@ -2189,6 +2189,11 @@ every one logged; key claims page-read):
     the twists at exact thirds, `spine_05` at 5/8 (Manny 0.62), `neck_02` at 1/2 (Manny 0.51). Manny's parents
     (measured) differ from the game-engine rig's at `pelvis` (root), `clavicle_*` and `neck_01` (spine_05), `head`
     (neck_02), the fingers' `_01` (their metacarpals).
+  - The forearm twist on the product skeleton (`pose_twist`, 2026-11-08): the hand turned 90 deg about the forearm,
+    each twist bone by its weights' centroid along the forearm at rest (ours `lowerarm_twist_02` 0.32,
+    `lowerarm_twist_01` 0.83; his `ForearmTwist01` 0.41, `ForearmTwist02` 0.86): both forearms twist smoothly, no
+    candy-wrapping (`scratchpad/sheet_D8_twist.png`). A first render was void: the weights' places were read from the
+    base mesh (our shape is in its shape keys) against the posed elbow - 0.0 / 0.22.
   - HD Aaron's forearm (his blend, 2026-11-08): `CC_Base_R_Forearm` doesn't deform; `CC_Base_R_ForearmTwist01` (head
     at the elbow) and its child `ForearmTwist02` (head half way, 0.106 of 0.213 m) carry the forearm, the hand a child
     of the forearm; his upper arm, thigh and calf the same (Twist01 at the joint, Twist02 its child half way), plus
