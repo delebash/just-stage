@@ -333,7 +333,7 @@ him (local only). Reads as his -> our body and renderer carry CC5 there, and wha
 | 9 | Smile | pending | his lower-face shape plus ICT's smile (block C) | - |
 | 17 | Body rig | feasible (bends) | our mesh with MPFB2's weights bends cleanly at elbow, knee, hip, shoulder like his; a twist untested | twist bones, correctives, definition (maps, build) |
 | 18 | Whole body | pending | all his content on our body at once (queued) | - |
-| 19 | Any character | pending | his skin on our Average woman (queued); HD Ariana not exported | - |
+| 19 | Any character | feasible | his skin on our Average woman reads natural; her chin patch is her map's fault; cheek 0.0144 against the floor 0.0109 | HD Ariana to compare; the women's hair; her chin map |
 | 20 | Live view speed | pending | today's gate scene's fps (block C) | - |
 
 No part has failed. Two faults found and fixed in the tests themselves today: the teeth transplant's keys, his posed
