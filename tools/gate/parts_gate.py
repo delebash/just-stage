@@ -161,6 +161,12 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
     `skin` (a library skin's .blend) put on him as the Content panel does."""
     api = importlib.import_module("bl_ext.system.juststage.api")
     library = importlib.import_module("bl_ext.system.juststage.core.library")
+    if character == "new":  # the app's New human exactly as the panel's button makes it (dressed: eyes, teeth, the
+        # skeleton, lashes, brows and the default skin) - nothing added: what a user sees first (the user, 2026-11-08)
+        made = api.run("juststage.body.create", name="New human", dressed=True)
+        objects = [o for o in scene.objects if made.character in (o.juststage.character_id, o.juststage.part_of)]
+        body = bpy.data.objects[made.object]
+        return {"body": body, "objects": objects, "keyed": [body]}
     root = library.root()
     shown = api.run("juststage.library.add", path=str(root / "Characters" / f"{character or OURS['character']}.blend"))
     if scalp.startswith("generated"):  # JustStage's own (modules/hair/scalp.py, rec 11); "generated:<style>" a style
@@ -493,6 +499,12 @@ def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, sa
     _render_views(who, engine, out_dir, names, size, samples, tag, built, scene, cam, lights)
 
 
+#: render passes saved beside each PNG as a linear multilayer EXR (`--passes glossy_direct,diffuse_direct,...`: the view
+#: layer's `use_pass_<name>`, Blender's own) - the shine a face shows apart from its colour (the user's 2026-11-08 plan:
+#: ours against HD Aaron, shine first); `tools/gate/sheen.py` reads them
+PASSES: tuple[str, ...] = ()
+
+
 def _render_views(who, engine, out_dir, names, size, samples, tag, built, scene, cam, lights) -> None:
     if lights == "world":  # the image light alone (rec 1's bound: hair within 10% of Cycles under both lights)
         for obj in scene.objects:
@@ -525,7 +537,13 @@ def _render_views(who, engine, out_dir, names, size, samples, tag, built, scene,
         place(cam, *placed)
         stem = f"{engine}_{name}_{who}{tag}"
         scene.render.filepath = str(out_dir / f"{stem}.png")
+        for pass_name in PASSES:
+            setattr(scene.view_layers[0], f"use_pass_{pass_name}", True)
         bpy.ops.render.render(write_still=True)
+        if PASSES:  # the same render once more as linear multilayer EXR, every pass in it
+            settings.file_format, settings.color_depth = "OPEN_EXR_MULTILAYER", "32"
+            bpy.data.images["Render Result"].save_render(filepath=str(out_dir / f"{stem}.exr"), scene=scene)
+            settings.file_format, settings.color_depth = "PNG", "8"
         frames[stem] = {"width_m": placed[3], "size": size}
         frames_path.write_text(json.dumps(frames, indent=1))
         print("RENDERED", scene.render.filepath, flush=True)
@@ -623,7 +641,9 @@ if __name__ == "__main__":
     p.add_argument("--character", default="", help="another library character for ours")
     p.add_argument("--scalp", default="library", help='library, generated, or "generated:<style>" (scalp.STYLES)')
     p.add_argument("--lights", choices=("stage", "world"), default="stage", help="world: the image light alone")
+    p.add_argument("--passes", default="", help="view-layer passes into an EXR beside each PNG (glossy_direct,...)")
     a = p.parse_args(args)
+    PASSES = tuple(x for x in a.passes.split(",") if x)
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\
     if a.command == "render":
         inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}

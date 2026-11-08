@@ -14,10 +14,42 @@ the features of the app. Do not stop coding after autocompact and make sure you 
 dont flip your answer after autocompact, dont trust autocompact so you need ot read your docs and session info to
 conture and rusem docs, confirm you understand you will not stop coding or testing until you have a verdict."
 
+**The user, 2026-11-08 ~09:55, verbatim (on my moving to the mixer after the transplant verdicts): "The mixer , i dont
+understnak you have asimpel job prove if we can meet quality that means with our texstures, otherwise it doenst
+work".** So a part meets CC5's bar only when OUR OWN textures and content, rendered our way, match HD Aaron in EEVEE.
+A transplant (his content on our body) proves only that our mesh and renderer can carry his quality - it is a
+diagnostic, never a verdict. No feature work (the mixer included) until every part has that verdict.
+
+**OUR ASSETS TO HD AARON - the plan the user approved 2026-11-08 ~10:40 ("go and dont stop and each new or exisitn
+decisision as you are coding think adverserily on it again"), its text as shown:** "The goal, stated plainly: make our
+own assets look like HD Aaron in EEVEE, part by part, or prove a part can't with what we have." Fixing is the work;
+measuring only checks each fix; the face starts with a fix, not a fresh test. Guards: a transplant only when a fix
+stalls, to find which layer is wrong - never a verdict; every step names the part and the number it should move, or it
+doesn't happen; when the card is busy, prepare the next variant of the same part, or wait - no other jobs. A part
+passes only when the face and three-quarter views also match him (colour, contrast, sheen), not just the close-ups,
+with a side-by-side sheet for each kept fix. Skin is compared on the same areas (cheek, forehead, nose); face shape is
+its own row - the skin is not tweaked to fake shading from shape. A fix counts only when it is in our real assets (the
+skin shader, the rebuilt library skins) and a freshly made New human shows it. Right after a part passes on the default
+man, it is checked on the other characters. Each part starts with its list of candidate fixes written down; when the
+list is spent and the gap remains, the verdict is "can't", with the number and the missing asset named. After every
+fix, one line: part, change, number before and after, kept or undone. Status per part only "matches", "doesn't match
+yet" or "can't, X missing". Order: face skin (shine, colour, waxiness, texture) -> lips -> body skin -> eyes -> hair,
+brows, lashes, stubble -> teeth and mouth -> expressions -> nails and ears -> whole body and four characters.
+Working doc: `../plans/2026-11-08-own-content-proof.md`.
+
 How it is kept: the plan's §18a checklist (every part and the whole body) drives every step; each decision is attacked
 in passes and written with its reasons in the plan's §19.3 - it changes only on a new measured fact, shown with the old
 and new side by side; after a compaction RESUME, §18a, §19.3 and the gate report are read before any action; a
 background job is always running so the work is woken again (a turn ends only on a wake-up, never on a report).
+
+## THE MIXER [2026-11-08] — STOPPED by the user's word of 09:55 (above) until every part meets the bar with our own content (detail: `../plans/2026-11-08-mixer.md`)
+
+Built and tested: masks, identities, the mix as sliders, Blend type, the helpers following, the Mixer panel. Open:
+the mix's skin (the approved "skins blend per detail layer" - `tools/face_test/skin_base.py compose` already blends
+pores from one scan and blotchiness and regional colour from several; the mix's identities and weights into it, in the
+app); the wheel's picture; body identities (none - the body's bone-length mode with them); a slider step's refit
+~1.3 s (the skeleton's placement 0.59 s, the eye openings 0.50 s - cProfile 2026-11-08), too slow for a drag; the 9
+identities are LOCAL test data (each scan's licence read before any ships, >= 2 identities a part).
 
 ## THE DEEP READ, THEN ONE PLAN [2026-11-06] — active
 

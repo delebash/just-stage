@@ -2360,7 +2360,9 @@ if __name__ == "__main__":
     p.add_argument("--scalp", default="library", help='our scalp: library, generated, "generated:<style>"')
     p.add_argument("--alone", action="store_true", help="a build for each factor (shape changes: eyebag*0 ...)")
     p.add_argument("--character", default="", help="another library character for ours (parts_gate's --character)")
+    p.add_argument("--passes", default="", help="view-layer passes into an EXR beside each PNG (parts_gate's --passes)")
     a = p.parse_args(args)
+    pg.PASSES = tuple(x for x in a.passes.split(",") if x)
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     names = a.factors.split(",")
     tags = ["_f-" + n.replace("*", "x").replace(".", "p").replace("+", "_") + ("_world" if a.lights == "world" else "")

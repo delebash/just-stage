@@ -79,6 +79,16 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   source, the helpers following the mixed skin (eyes, teeth, joints), the Mixer panel (`ui/mixer_panel.py`). Next: the
   panel seen in the real window (asked web-4c for the card), a gate render of a mix (seams at the neck and part
   borders), the per-band skin blend, user docs (none exist), then the full suite.
+- **The user, 2026-11-08 ~09:50, seeing the Mixer window check: "the default character skin is plastic is this just
+  because you havent transfter your fixs to the app or is this actaully the best quality you have proven?"** Checked:
+  the default skin (`Scan man A skin`, the app's library, built 2026-11-07 18:59) has the face-skin fixes; the gate
+  builds its stage with the app's own code (`parts_gate._stage` -> `startup.new_stage`: the same key, rim and image
+  light), so the light isn't the difference; the window showed the live view of a fresh New human seconds after it
+  appeared, the proofs are F12 EEVEE renders of the library's man; and "feasible" was proved by transplants (HD Aaron's
+  content on our body) - our own content still measures above him (§18a row 1). Running: `scratchpad/batch_new.sh` -
+  the New human through the gate (`parts_gate --character new`) beside the gate's man and HD Aaron
+  (`.dev/gate/parts/2026-11-08new`); then find the factor if the New human is worse. Mistake made and caught: I first
+  assumed the gate had its own CC5-matched lights - read the code before saying what a test used.
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
   "why do you keep missing everything").
