@@ -62,19 +62,23 @@ def _flow(point: np.ndarray, normal: np.ndarray, sweep: float, side: float, side
 
 
 def guides(body: bpy.types.Object, style: dict, seed: int = 5):
-    """The style's guide curves on the body's current shape, world space: (strands, roots' scalp UVs)."""
+    """The style's guide curves on the body's current shape, world space: (strands, roots' scalp UVs). A style with a
+    "field" (an object with length(p), lift(p) and direction(p) at a world point - a cut measured or designed as a
+    field over the scalp) takes each root's length and lift and each step's direction from it, and "guides" sets
+    how many roots."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
     rng = np.random.default_rng(seed)
     uvs = brows.region_uvs(REGION_STYLE)
-    pick = rng.choice(len(uvs), min(GUIDES * 3, len(uvs)), replace=False)
+    count = style.get("guides", GUIDES)
+    pick = rng.choice(len(uvs), min(count * 3, len(uvs)), replace=False)
     roots = lashes.surface_points(body, uvs[pick])
     # thin to an even spread: one root per cell of a grid the guides' spacing wide
     area = 0.06  # m2 of scalp, about
-    cell = np.sqrt(area / GUIDES)
+    cell = np.sqrt(area / count)
     _, first = np.unique(np.floor(roots / cell).astype(np.int64), axis=0, return_index=True)
-    roots = roots[np.sort(first)][:GUIDES]
+    roots = roots[np.sort(first)][:count]
     to_local = np.array(body.matrix_world.inverted())
     to_world = np.array(body.matrix_world)
     tree = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get())
@@ -90,6 +94,11 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
     t = np.linspace(0.0, 1.0, POINTS)
     for root in roots:
         surface, normal = nearest(root)
+        field = style.get("field")
+        if field is not None:
+            length, lift = field.length(surface), field.lift(surface)
+            out.append(_grow(nearest, surface, normal, length, lift, field.direction, rng, t))
+            continue
         heights = np.array([z for z, _ in style["lengths"]])
         length = 0.001 * np.interp(normal[2], heights, [mm for _, mm in style["lengths"]]) * rng.uniform(0.85, 1.15)
         lift = 0.001 * np.interp(abs(normal[0]), [0.2, 0.8], style["lift"])
@@ -344,6 +353,23 @@ def _colour_group() -> bpy.types.NodeTree:
     links.new(own_red.outputs[0], red.inputs["Value"])
     links.new(red.outputs["Geometry"], out.inputs["Geometry"])
     return group
+
+
+def _grow(nearest, surface, normal, length, lift, direction, rng, t):
+    """One guide from its root along a field's directions: each step on the scalp, laid onto it, then lifted off it by
+    the lift profile - as `guides` grows a combed one."""
+    p = surface.copy()
+    strand = [p - 0.0001 * normal]
+    jitter = rng.normal(0.0, 0.05, 3)
+    for k in range(1, len(t)):
+        q, n = nearest(p)
+        d = np.asarray(direction(q), dtype=np.float64) + jitter
+        d -= (d @ n) * n
+        d /= max(np.linalg.norm(d), 1e-9)
+        q2, n2 = nearest(p + d * length / (len(t) - 1))
+        p = q2 + n2 * (0.0003 + lift * (1 - (1 - t[k]) ** 2))
+        strand.append(p)
+    return np.array(strand)
 
 
 def make(character: bpy.types.Object, style: str = "short combed", seed: int = 5) -> bpy.types.Object:

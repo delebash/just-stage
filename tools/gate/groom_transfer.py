@@ -73,14 +73,12 @@ def to_blender(p: np.ndarray) -> np.ndarray:
     return np.c_[p[:, 0], -p[:, 2], p[:, 1]]
 
 
-def carry_strands(co: np.ndarray, tris: np.ndarray, hv: np.ndarray, hf: np.ndarray, strands: list[np.ndarray],
-                  out: Path, label: str) -> None:
-    """Strands grown on a source head (hv, hf: Blender's axes, metres) moved onto our head (co, tris: our skin, world):
-    the source's skull aligned to ours (the top of the head and the head's middle together, then a scaled ICP on the
-    vertices within 10 cm of the top - the hair's region; the necks and faces differ), wrapped onto our skin (NICP),
-    and every strand point moved as its NEAREST source vertices moved (inverse distance)."""
+def wrap_head(co: np.ndarray, tris: np.ndarray, hv: np.ndarray, hf: np.ndarray):
+    """A source head (hv, hf: Blender's axes, metres) onto our head (co, tris: our skin, world): the source's skull
+    aligned to ours (the top of the head and the head's middle together, then a scaled ICP on the vertices within 10 cm
+    of the top - the hair's region; the necks and faces differ), wrapped onto our skin (NICP). Returns the alignment,
+    the source placed by it, and the source wrapped."""
     import trimesh
-    from scipy.spatial import cKDTree
     from trimesh import registration
 
     top = co[:, 2].max()
@@ -96,10 +94,21 @@ def carry_strands(co: np.ndarray, tris: np.ndarray, hv: np.ndarray, hf: np.ndarr
     print(f"ALIGNED: ICP mean {cost * 1000:.2f} mm, scale {np.cbrt(np.linalg.det(matrix[:3, :3])):.4f}", flush=True)
     wrapped = registration.nricp_amberg(trimesh.Trimesh(placed, hf, process=False), target, steps=WRAP_STEPS,
                                         distance_threshold=0.02, use_faces=True, use_vertex_normals=True)  # fmt: skip
-    gap = trimesh.proximity.closest_point(target, wrapped[upper])[1]
+    gap = trimesh.proximity.closest_point(target, wrapped)[1]
+    print(f"WRAPPED: to our skin p50 {np.median(gap) * 1000:.2f} / p90 {np.percentile(gap, 90) * 1000:.2f} mm; moved "
+          f"p50 {np.median(np.linalg.norm(wrapped - placed, axis=1)) * 1000:.1f} mm", flush=True)
+    return matrix, placed, wrapped, target
+
+
+def carry_strands(co: np.ndarray, tris: np.ndarray, hv: np.ndarray, hf: np.ndarray, strands: list[np.ndarray],
+                  out: Path, label: str) -> None:
+    """Strands grown on a source head moved onto our head (`wrap_head`): every strand point moved as its NEAREST source
+    vertices moved (inverse distance)."""
+    import trimesh
+    from scipy.spatial import cKDTree
+
+    matrix, placed, wrapped, target = wrap_head(co, tris, hv, hf)
     move = wrapped - placed
-    print(f"WRAPPED: the skull to our skin p50 {np.median(gap) * 1000:.2f} / p90 {np.percentile(gap, 90) * 1000:.2f} mm;"
-          f" moved p50 {np.median(np.linalg.norm(move[upper], axis=1)) * 1000:.1f} mm", flush=True)
     pts = st._apply(matrix, np.concatenate(strands))
     dist, idx = cKDTree(placed).query(pts, NEAREST)
     w = 1.0 / np.maximum(dist, 1e-6)
@@ -121,6 +130,22 @@ def head_region(co: np.ndarray, tris: np.ndarray, depth: float = 0.30) -> tuple[
     new[keep] = np.arange(int(keep.sum()))
     t = tris[keep[tris].all(1)]
     return co[keep], new[t]
+
+
+def carry_skin(ours_npz: Path, source_npz: Path, out: Path) -> None:
+    """HD Aaron's head skin onto our head (a LOCAL TEST - the transplant: does our head, rendered our way, reach his
+    look in his own skin?): his head wrapped onto ours (`wrap_head`), kept with his head material's triangles and their
+    corner UVs, for `factors aaronskin` to read his UV at each of our face corners."""
+    o, s = np.load(ours_npz), np.load(source_npz)
+    keep = s["co"][:, 2] > s["co"][:, 2].max() - 0.30
+    tri_keep = keep[s["tris"]].all(1)
+    hv, hf = head_region(s["co"], s["tris"])
+    _, _, wrapped, _ = wrap_head(o["co"], o["tris"], hv, hf)
+    head_mat = tri_keep.nonzero()[0][s["tmat"][tri_keep] == 0]  # his Std_Skin_Head's triangles in the head region
+    rows = np.searchsorted(tri_keep.nonzero()[0], head_mat)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(out, co=wrapped.astype(np.float32), tris=hf[rows], tuv=s["tuv"][head_mat], uv_name=s["uv_name"])
+    print(f"SKIN: {len(rows)} of his head triangles on our head -> {out}", flush=True)
 
 
 def card_strands(co: np.ndarray, tris: np.ndarray, uv: np.ndarray, scalp: np.ndarray) -> list[np.ndarray]:
@@ -182,5 +207,7 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     if a[0] == "cards":  # cards OURS.npz SOURCE.npz OUT.npz
         carry_cards(Path(a[1]), Path(a[2]), Path(a[3]))
+    elif a[0] == "skin":  # skin OURS.npz SKIN_SOURCE.npz OUT.npz (aaron_skin_src.npz: his body with corner UVs)
+        carry_skin(Path(a[1]), Path(a[2]), Path(a[3]))
     else:  # usc OURS.npz hairstyles.zip ID OUT.npz
         carry(Path(a[1]), Path(a[2]), a[3], Path(a[4]))

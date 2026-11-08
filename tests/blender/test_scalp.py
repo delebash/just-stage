@@ -50,3 +50,37 @@ def test_a_combed_groom_covers_the_scalp_and_takes_the_groom_colour():
         for obj in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
             bpy.data.objects.remove(obj)
         bpy.data.objects.remove(body)
+
+
+class _BackField:
+    """A constant cut: 30 mm long, tips 5 mm off, every strand combed straight back (+Y)."""
+
+    def length(self, p):
+        return 0.03
+
+    def lift(self, p):
+        return 0.005
+
+    def direction(self, p):
+        return np.array([0.0, 1.0, 0.0])
+
+
+def test_a_style_with_a_field_grows_its_guides_along_it():
+    """A cut measured or designed as a field (scalp.guides' "field", 2026-11-07 late): each guide takes the field's
+    length and runs its way - the feasibility test grows our own guides along a reference cut's field."""
+    made = api.run("juststage.body.create", name="Scalp field test", gender=1.0)
+    body = bpy.data.objects[made.object]
+    try:
+        style = {**scalp.SHORT_TAPER, "field": _BackField(), "guides": 400}
+        found = scalp.guides(body, style)
+        assert 300 <= len(found) <= 400
+        length = np.array([np.linalg.norm(np.diff(s, axis=0), axis=1).sum() for s in found])
+        assert 0.025 < np.median(length) < 0.045, np.median(length)  # 30 mm along the scalp, its lift added
+        run = np.array([s[-1] - s[0] for s in found])
+        on_top = np.array([s[0][2] for s in found]) > np.median([s[0][2] for s in found])
+        assert np.median(run[on_top, 1]) > 0.01  # on top, combed back (+Y)
+    finally:
+        cid = body.juststage.character_id
+        for o in [o for o in bpy.data.objects if o.juststage.part_of == cid]:
+            bpy.data.objects.remove(o)
+        bpy.data.objects.remove(body)

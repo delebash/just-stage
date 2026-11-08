@@ -705,6 +705,84 @@ def eye_slider(built: dict, key: str, value: float) -> None:
 HAIR_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "hair"
 
 
+def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
+    """THE TRANSPLANT (a LOCAL TEST - nothing of his ships): HD Aaron's own head material on our head, rendered our
+    way. His head wrapped onto ours (`groom_transfer.py skin`, `.dev/gate/hair/<stem>.npz`); each corner of our
+    head tile's faces reads his texture coordinate at its nearest point on his wrapped head, into a layer named as his
+    material reads it; his material (appended from the gate's .blend) then goes on those faces with every texture
+    lookup pointed at that layer. If our head reaches his look in his own skin, our head and renderer carry CC5's
+    skin and what is left is content; if not, the gap is ours to find in the head or the render (the user,
+    2026-11-07: "if anyone cant meet quality we stop")."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    maps = _maps()
+    data = np.load(HAIR_TRIALS / f"{stem}.npz")
+    src, stris, stuv, layer_name = data["co"].astype(np.float64), data["tris"], data["tuv"], str(data["uv_name"])
+    tree = BVHTree.FromPolygons([Vector(v) for v in src], [list(t) for t in stris])
+    body = built["body"]
+    me = body.data
+    mw = np.array(body.matrix_world)
+    co = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]
+    udim = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", udim)
+    udim = udim.reshape(-1, 2)
+    loop_v = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_v)
+    out_uv = np.zeros((len(me.loops), 2), np.float32)
+    head_polys = []
+    for p in me.polygons:
+        ls = list(p.loop_indices)
+        if not (0.0 <= udim[ls, 0].mean() < 1.0):  # the head tile, 1001
+            continue
+        head_polys.append(p.index)
+        for li in ls:
+            hit, _n, ti, _d = tree.find_nearest(Vector(co[loop_v[li]]))
+            a, b, c = src[stris[ti]]
+            v0, v1, v2 = b - a, c - a, np.array(hit) - a
+            d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
+            den = d00 * d11 - d01 * d01
+            w1 = (d11 * d20 - d01 * d21) / den if den else 0.0
+            w2 = (d00 * d21 - d01 * d20) / den if den else 0.0
+            out_uv[li] = (1 - w1 - w2) * stuv[ti, 0] + w1 * stuv[ti, 1] + w2 * stuv[ti, 2]
+    layer = me.uv_layers.get(layer_name) or me.uv_layers.new(name=layer_name, do_init=False)
+    layer.data.foreach_set("uv", out_uv.ravel())
+    with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (lib_src, dst):
+        dst.materials = ["Std_Skin_Head"]
+    mat = dst.materials[0]
+    lib_dir = pg.CC5_BLEND["eevee"].parent
+    for img in bpy.data.images:  # appended images: their paths made absolute against his file's folder
+        if img.filepath.startswith("//") and not Path(bpy.path.abspath(img.filepath)).exists():
+            img.filepath = str(lib_dir / img.filepath[2:])
+
+    def point_at_layer(nt, seen):
+        if nt in seen:
+            return
+        seen.add(nt)
+        for node in list(nt.nodes):
+            if node.type == "UVMAP":
+                node.uv_map = layer_name
+            elif node.type == "TEX_IMAGE" and not node.inputs["Vector"].is_linked:
+                uvn = nt.nodes.new("ShaderNodeUVMap")
+                uvn.uv_map = layer_name
+                nt.links.new(uvn.outputs["UV"], node.inputs["Vector"])
+            elif node.type == "GROUP" and node.node_tree:
+                point_at_layer(node.node_tree, seen)
+
+    point_at_layer(mat.node_tree, set())
+    body.data.materials.append(mat)
+    slot = len(body.data.materials) - 1
+    idx = np.empty(len(me.polygons), np.int64)
+    me.polygons.foreach_get("material_index", idx)
+    idx[head_polys] = slot
+    me.polygons.foreach_set("material_index", idx)
+    me.update()
+    loaded = sum(1 for i in bpy.data.images if i.has_data or (i.filepath and Path(bpy.path.abspath(i.filepath)).exists()))
+    print("AARON SKIN on", len(head_polys), "of our head faces; his material", mat.name, "; images found", loaded,
+          flush=True)
+
+
 def guidefile(built: dict, stem: str) -> None:
     """An authored groom's strands (`tools/gate/groom_transfer.py`, `.dev/gate/hair/<stem>.npz` - USC-HairSalon's or
     HD Aaron's own cards, LOCAL TESTS ONLY) as our scalp's guides: `scalp.make` with its own fill, shape and colour, so only the guides differ
@@ -731,6 +809,56 @@ def guidefile(built: dict, stem: str) -> None:
     cid = body.juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("GUIDE FILE", stem, len(found), "guides", flush=True)
+
+
+class _HairField:
+    """A cut measured as a field (`tools/gate/hair_field.py`): length and tip stand-off by the nearest roots' median,
+    direction by the nearest field points' mean."""
+
+    def __init__(self, path: Path):
+        from mathutils.kdtree import KDTree
+
+        d = np.load(path)
+        self.tan, self.length_v, self.lift_v = d["tan"], d["length"], d["lift"]
+        self.points = KDTree(len(d["pos"]))
+        for i, p in enumerate(d["pos"]):
+            self.points.insert(p, i)
+        self.points.balance()
+        self.roots = KDTree(len(d["roots"]))
+        for i, p in enumerate(d["roots"]):
+            self.roots.insert(p, i)
+        self.roots.balance()
+
+    def _near_roots(self, p):
+        return [i for _, i, _ in self.roots.find_n(p, 8)]
+
+    def length(self, p):
+        return float(np.median(self.length_v[self._near_roots(p)]))
+
+    def lift(self, p):
+        return float(np.median(self.lift_v[self._near_roots(p)]))
+
+    def direction(self, p):
+        found = self.points.find_n(p, 6)
+        w = np.array([1.0 / max(dist, 1e-4) for _, _, dist in found])
+        return (self.tan[[i for _, i, _ in found]] * w[:, None]).sum(0) / w.sum()
+
+
+def fieldcut(built: dict, stem: str, guides: int = 3000) -> None:
+    """The scalp hair's feasibility, part 2: OUR generator grows its own guides from its own roots along a cut measured
+    as a field (`.dev/gate/hair/<stem>.npz`, `tools/gate/hair_field.py` - HD Aaron's cut on our head, a LOCAL TEST),
+    then our own fill, shape and colour (`scalp.make`). Does our generator make an artist's cut? A new groom: --alone."""
+    scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
+    name = "field test"
+    scalp.STYLES[name] = {**scalp.SHORT_TAPER, "field": _HairField(HAIR_TRIALS / f"{stem}.npz"), "guides": guides}
+    try:
+        groom = scalp.make(built["body"], name)
+    finally:
+        scalp.STYLES.pop(name, None)
+    pg.colour_scalp(groom)
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("FIELD CUT", stem, guides, "guides", flush=True)
 
 
 SMILE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "smile"
@@ -803,6 +931,11 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("fieldcut"):  # fieldcut*field_aaron[*3000] (the field's stem, the guides)
+        stem, *n = name.split("*")[1:]
+        return lambda built: fieldcut(built, stem, *(int(x) for x in n))
+    if name.startswith("aaronskin"):  # aaronskin (the transplant: his head material on our head)
+        return lambda built: aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
         return lambda built: guidefile(built, name.split("*", 1)[1])
     if name.startswith("lidledge"):  # lidledge*1*2.3 (the share toward the rim's line, the lash line's gap in mm)
