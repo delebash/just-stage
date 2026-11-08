@@ -1953,6 +1953,18 @@ re-check before the rec list; nothing run on skin here):
     **US 11,354,844 B2** (to 2039-10-25) needs masks from muscle action units + "demographic prediction modifications"
     + a modified eyeball / cornea / teeth / tongue / skull asset together (R2) - the approved mixer (a weighted blend of
     whole identities per mask) holds none of the first and not all of the second's elements as R2 reads them.
+  - **Both read again 2026-11-08 for the mixer's two unread pieces** (Google Patents' claims text, independent claims;
+    not legal advice): **US 8,922,553 B1** claims 1 and 14 - "a plurality of linear models", "each ... corresponding to
+    a region of the surface", and "a solution globally applicable to the surface" that "satisfies each continuity
+    constraint" and "reduces one or more error metrics", "performed in parallel for each of the plurality of linear
+    models". A weighted blend of whole identities per soft mask - and the features mode, each identity's local offsets
+    placed at the mixed positions - has no such constrained solve. **US 11,354,844 B2** claims 1, 6, 11 - models with
+    "muscle deformation descriptors", masks "based on the region of influence" of those groups, "demographic prediction
+    modifications" (its description: PLSR from age, gender, ethnicity, physique) blended "at a respective region mask",
+    and a modified "eyeball ... cornea ... teeth ... tongue ... skull asset". Our identity blend over CC5's part list
+    holds no muscle descriptors and no demographic prediction modifications; no claim recites textures, so the per-band
+    skin blend is outside them. Design guards: never a global constrained solve across per-region models; ordinary
+    sliders (age, gender, ...) stay outside the mix (CC5's rule, already the design).
 - **Licences read at their sources** (*page read, 2026-11-06*, R2 Q2-Q5): CC BY 4.0 credit: creator, notices, a link,
   a change notice, the licence URI, "in any reasonable manner" (a linked credits page is CC's own example); CC BY 3.0:
   the licence URI with every copy, the title, a credit "at least as prominent" as others; BY-SA -> GPLv3 is one-way, BY-SA
