@@ -811,6 +811,60 @@ def guidefile(built: dict, stem: str) -> None:
     print("GUIDE FILE", stem, len(found), "guides", flush=True)
 
 
+def aaroneyes(built: dict) -> None:
+    """THE TRANSPLANT for the eyes (a LOCAL TEST): HD Aaron's own eyeballs, eye occlusion and tearline (appended from
+    the gate's .blend) in our sockets - each of his eyes moved and scaled onto ours (his eyeball's centre and radius
+    onto our eye part's, `eye_layers._eye_sphere`), our eyes and films hidden. With `aaronskin` the eye view then asks:
+    do our lids carry CC5's eye? A new set of objects: --alone."""
+    eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    body = built["body"]
+    ours = parts.parts_of(body)
+    target = {side: eye_layers._eye_sphere(ours[name]) for side, name in (("L", "eyeLeft"), ("R", "eyeRight"))}
+    with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (_src, dst):
+        dst.objects = ["CC_Base_Eye", "CC_Base_EyeOcclusion", "CC_Base_TearLine"]
+    for obj in dst.objects:  # in the scene, his armature's modifiers and keys off: his rest shape
+        bpy.context.scene.collection.objects.link(obj)
+        for m in list(obj.modifiers):
+            obj.modifiers.remove(m)
+        if obj.data.shape_keys:
+            obj.shape_key_clear()
+    bpy.context.view_layer.update()
+    eye = next(o for o in dst.objects if o.name.startswith("CC_Base_Eye") and "Occlusion" not in o.name)
+    his = {}
+    for side in ("L", "R"):  # his eyeballs from their own faces (Std_Eye_L / Std_Eye_R), as parts_gate.anchors reads them
+        pts = pg._faces_of(eye, (f"Std_Eye_{side}",))[f"Std_Eye_{side}"]
+        his[side] = ((pts.min(0) + pts.max(0)) / 2, float((pts.max(0) - pts.min(0))[[0, 2]].mean() / 2))
+    lib_dir = pg.CC5_BLEND["eevee"].parent
+    for img in bpy.data.images:
+        if img.filepath.startswith("//") and not Path(bpy.path.abspath(img.filepath)).exists():
+            img.filepath = str(lib_dir / img.filepath[2:])
+    for obj in dst.objects:
+        mw = np.array(obj.matrix_world)
+        obj.parent = None
+        co = np.empty(len(obj.data.vertices) * 3)
+        obj.data.vertices.foreach_get("co", co)
+        world = co.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3]
+        side_of = np.where(world[:, 0] > (his["L"][0][0] + his["R"][0][0]) / 2,
+                           "L" if his["L"][0][0] > his["R"][0][0] else "R",
+                           "R" if his["L"][0][0] > his["R"][0][0] else "L")  # fmt: skip
+        moved = world.copy()
+        for side in ("L", "R"):
+            sel = side_of == side
+            (hc, hr), (oc, orad) = his[side], target[side]
+            moved[sel] = oc + (world[sel] - hc) * (orad / hr)
+        obj.matrix_world = __import__("mathutils").Matrix.Identity(4)
+        obj.data.vertices.foreach_set("co", moved.astype(np.float64).ravel())
+        obj.data.update()
+    for name in ("eyeLeft", "eyeRight"):
+        ours[name].hide_render = True
+    for o in bpy.context.scene.objects:
+        if o.juststage.part_of == body.juststage.character_id and o.juststage.part in ("eyeshell", "eyeEdge"):
+            o.hide_render = True
+    print("AARON EYES: his radius", round(his["L"][1] * 1000, 2), "mm onto ours", round(target["L"][1] * 1000, 2),
+          "mm", flush=True)
+
+
 class _HairField:
     """A cut measured as a field (`tools/gate/hair_field.py`): length and tip stand-off by the nearest roots' median,
     direction by the nearest field points' mean."""
@@ -934,6 +988,8 @@ def factor(name: str):
     if name.startswith("fieldcut"):  # fieldcut*field_aaron[*3000] (the field's stem, the guides)
         stem, *n = name.split("*")[1:]
         return lambda built: fieldcut(built, stem, *(int(x) for x in n))
+    if name == "aaroneyes":  # his eyeballs and eye films in our sockets
+        return aaroneyes
     if name.startswith("aaronskin"):  # aaronskin (the transplant: his head material on our head)
         return lambda built: aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
