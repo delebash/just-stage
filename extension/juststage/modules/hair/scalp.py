@@ -39,7 +39,7 @@ SHORT_COMBED = {"lengths": ((-0.4, 12.0), (0.0, 24.0), (0.35, 45.0), (0.7, 65.0)
 #: sides, more again at the front hairline, shorter at the sides (by how far the root faces sideways) and the nape
 SHORT_TAPER = {"lengths": ((-0.4, 9.0), (0.0, 18.0), (0.35, 42.0), (0.7, 62.0)), "lift": (24.0, 9.0),
                "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.1,
-               "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.25, "back_lift": 0.6, "side_down": 0.15,
+               "side_scale": (0.4, 0.85, 0.55), "front_lift": 0.8, "back_lift": 0.6, "side_down": 0.15,
                "flow_down": 0.35}  # fmt: skip
 #: clump 0.1 (was 0.25 / 0.35): Blender's Clump Hair Curves parted the strands along fixed bare lines over the head
 #: (2026-11-07, the gate's hair views; at 0 / 0.1 they are gone)
@@ -124,20 +124,23 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
 
 
 MASK_RINGS = 2  # the style's root faces grown this many rings over the mesh (the gaps between its roots closed)
+#: the nape's hairline: the faces above MakeHuman's head joint less this (m) - cut at the neck joint, the hair ran down
+#: the neck past HD Aaron's short, clean nape (the gate's hair views, 2026-11-07)
+NAPE_JOINT, NAPE_BELOW = "joint-head", -0.01
 
 
 def _head_faces(character: bpy.types.Object):
-    """The faces above the neck joint (MakeHuman's `joint-neck` cube) on the base shape - the same faces on every
-    character - with every face's UV polygon (hm08's, in mask texels) and its vertices."""
+    """The faces above the nape's hairline (NAPE_JOINT's cube less NAPE_BELOW) on the base shape - the same faces on
+    every character - with every face's UV polygon (hm08's, in mask texels) and its vertices."""
     from . import groom
 
     me = character.data
     co = np.empty(len(me.vertices) * 3, np.float32)
     me.vertices.foreach_get("co", co)  # the base shape
     co = co.reshape(-1, 3)
-    neck = character.vertex_groups["joint-neck"].index
-    cube = [v.index for v in me.vertices if any(g.group == neck and g.weight > 0.5 for g in v.groups)]
-    neck_z = float(co[cube, 2].mean())
+    head = character.vertex_groups[NAPE_JOINT].index
+    cube = [v.index for v in me.vertices if any(g.group == head and g.weight > 0.5 for g in v.groups)]
+    neck_z = float(co[cube, 2].mean()) + NAPE_BELOW
     uv = me.uv_layers[groom.SURFACE_UV].data
     loop_uv = np.empty(len(uv) * 2, np.float32)
     uv.foreach_get("uv", loop_uv)
