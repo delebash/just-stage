@@ -3011,6 +3011,19 @@ re-check before the rec list; nothing run on skin here):
   features only, no colour - drop it from the download list; Edwards 2012's tables paywalled; the only open numbers
   reached: Korean dark-brown irises L* ~22, a* ~22, b* ~29 (CC BY-NC). No open per-category table found.
 
+- **The eye's transplant tests** (*2026-11-07 late*, local tests).
+  - His skin on our head (`factors aaronskin`): the eye view's DISTS 0.2395 (ours 0.258 with the ledge). By eye the
+    lids carry his pink margins, but our lid's shape decides the look: the almond opening, no upper crease.
+  - His eyeballs in our sockets (`aaroneyes`) were scaled to our eyeball (x1.12) - invalid. His eyeball measures
+    13.23 mm by a sphere fit (`.dev/gate/hair/aaron_eyes.npz`), ours 14.8 mm: ours is 12% larger, and our iris shows
+    ~10% wider in the eye view. ICT's scanned eye is 15.2 mm, so ours is no outlier.
+  - Our head moved onto his face shape (`aaronshape`) tears in the eye region, with or without eye-rim landmarks (48
+    pins, median 1.37 mm): nearest-point matching pulls our lids' backs, folded into the socket, onto his lids'
+    fronts. A real shape transplant needs deformation transfer with the lid backs following their fronts - not built.
+  - So the eye is not disproved: its gap is the lid's shape, which is geometry under our control (tonight's lower-rim
+    turn moved it toward his); if hm08's lid can't hold his upper crease, the plan's escalation is a new head
+    topology (§4).
+
 ### 14.13 · Lids, lashes, brows, facial and body hair
 
 - **MakeHuman's pack lashes** (`basic_lashes_upper`, attached to our Average woman): 99 strands for both eyes, radius

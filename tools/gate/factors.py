@@ -720,6 +720,9 @@ def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     maps = _maps()
     data = np.load(HAIR_TRIALS / f"{stem}.npz")
     src, stris, stuv, layer_name = data["co"].astype(np.float64), data["tris"], data["tuv"], str(data["uv_name"])
+    keys = built["body"].data.shape_keys
+    if keys and "aaron shape" in keys.key_blocks and keys.key_blocks["aaron shape"].value > 0:
+        src = data["placed"].astype(np.float64)  # our face moved onto his own (`aaronshape`): his texture there
     tree = BVHTree.FromPolygons([Vector(v) for v in src], [list(t) for t in stris])
     body = built["body"]
     me = body.data
@@ -809,6 +812,68 @@ def guidefile(built: dict, stem: str) -> None:
     cid = body.juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("GUIDE FILE", stem, len(found), "guides", flush=True)
+
+
+def aaronshape(built: dict, stem: str = "aaron_skin_on_ours") -> None:
+    """THE SHAPE TRANSPLANT for the eye region (a LOCAL TEST): our head moved onto HD Aaron's own face shape, on our own
+    topology - each skin vertex of our head to its point on his surface (the wrap's correspondence:
+    `groom_transfer.py skin`'s `placed`), fading out down the neck; our helper points (the eye sockets' fitting
+    guides) moved as their nearest skin; then the parts refitted (eyes, the lid contact, the films). With `aaronskin`
+    the eye view asks: can our lids, shaped as his, give his eye? A shape: --alone."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+    from mathutils.kdtree import KDTree
+
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    makehuman = importlib.import_module("bl_ext.system.juststage.core.makehuman")
+    data = np.load(HAIR_TRIALS / f"{stem}.npz")
+    wrapped, placed, tris = data["co"].astype(np.float64), data["placed"].astype(np.float64), data["all_tris"]
+    tree = BVHTree.FromPolygons([Vector(v) for v in wrapped], [list(t) for t in tris])
+    body = built["body"]
+    me = body.data
+    mw = np.array(body.matrix_world)
+    co = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]
+    skin = makehuman.skin_mask(len(co))
+    top = co[skin, 2].max()
+    head = co[:, 2] > top - 0.30
+    delta = np.zeros_like(co)
+    for v in np.flatnonzero(head & skin):
+        hit, _n, ti, dist = tree.find_nearest(Vector(co[v]))
+        if hit is None or dist > 0.01:
+            continue
+        a, b, c = wrapped[tris[ti]]
+        v0, v1, v2 = b - a, c - a, np.array(hit) - a
+        d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
+        den = d00 * d11 - d01 * d01
+        w1 = (d11 * d20 - d01 * d21) / den if den else 0.0
+        w2 = (d00 * d21 - d01 * d20) / den if den else 0.0
+        his = (1 - w1 - w2) * placed[tris[ti][0]] + w1 * placed[tris[ti][1]] + w2 * placed[tris[ti][2]]
+        delta[v] = his - co[v]
+    fade = np.clip((co[:, 2] - (top - 0.27)) / 0.05, 0.0, 1.0)  # none at the neck's base, full above the jaw
+    delta *= fade[:, None]
+    moved = np.flatnonzero(head & skin & (np.linalg.norm(delta, axis=1) > 0))
+    kd = KDTree(len(moved))
+    for i, v in enumerate(moved):
+        kd.insert(co[v], i)
+    kd.balance()
+    for v in np.flatnonzero(head & ~skin):  # the helpers (the eye sockets' fitting guides) move as their nearest skin
+        found = kd.find_n(co[v], 6)
+        w = np.array([1.0 / max(d, 1e-4) for _, _, d in found])
+        delta[v] = (delta[moved[[i for _, i, _ in found]]] * w[:, None]).sum(0) / w.sum()
+    local = delta @ np.linalg.inv(mw[:3, :3]).T
+    keys = me.shape_keys
+    basis = np.empty(len(me.vertices) * 3, np.float32)
+    keys.reference_key.data.foreach_get("co", basis)
+    key = body.shape_key_add(name="aaron shape", from_mix=False)
+    key.data.foreach_set("co", (basis.reshape(-1, 3) + local).astype(np.float32).ravel())
+    key.value = 1.0
+    me.update()
+    parts.refit(body)
+    bpy.context.view_layer.update()
+    size = np.linalg.norm(delta[head & skin], axis=1)
+    print("AARON SHAPE:", len(moved), "skin vertices moved, p50 / p90 / max", np.percentile(size, [50, 90]).round(4) * 1000,
+          round(float(size.max()) * 1000, 1), "mm; parts refitted", flush=True)
 
 
 def aaroneyes(built: dict) -> None:
@@ -991,6 +1056,8 @@ def factor(name: str):
     if name.startswith("fieldcut"):  # fieldcut*field_aaron[*3000] (the field's stem, the guides)
         stem, *n = name.split("*")[1:]
         return lambda built: fieldcut(built, stem, *(int(x) for x in n))
+    if name == "aaronshape":  # our head moved onto his face shape (eye region test)
+        return aaronshape
     if name == "aaroneyes":  # his eyeballs and eye films in our sockets
         return aaroneyes
     if name.startswith("aaronskin"):  # aaronskin (the transplant: his head material on our head)
