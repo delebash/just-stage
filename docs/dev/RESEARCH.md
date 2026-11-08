@@ -1150,6 +1150,18 @@ saved in `../plans/2026-10-29-spec-evidence/ue5-mannequin-bones.json`:
   `upperarm_fwd/bck/in/out/bicep/tricep_l/r`, `lowerarm_fwd/bck/in/out_l/r`, `wrist_inner/outer_l/r`, `ankle_fwd/bck_l/r`,
   `clavicle_pec/out/scap_l/r`, `spine_04_latissimus_l/r`, `weapon_l/r`.
 - **Neither has `metatarsal_*` or `pectoral_*`** — Daz's bridge adds those on its side. The calf twists exist.
+- **Manny's rest pose, read 2026-11-08** (*measured*: `SKM_Manny_Simple.uasset`'s reference skeleton parsed - its bone
+  table, 89 entries of name, parent and export name, ends at the pose array's count; 89 FTransforms of 10 doubles,
+  scale 1; composed to world; saved `../plans/2026-10-29-spec-evidence/ue5-manny-rest-pose.json`). Queries before it
+  ("UE5 Manny mannequin upperarm_twist_01 ... placement", "Blender twist bones copy rotation ...") found no stated
+  placement; Epic drives the twists in a post-process control rig (CR_procedural in ABP_Manny_postprocess, a forum
+  answer):
+  - every twist bone is a child of its limb's main bone, on its axis, at a third: `upperarm_twist_01` at 1/3 of
+    upperarm -> lowerarm, `_02` at 2/3; `lowerarm_twist_01` at **2/3** (toward the wrist), `_02` at 1/3; thigh like the
+    upper arm (1/3, 2/3); calf like the forearm (01 at 2/3, 02 at 1/3);
+  - the spine's five bones at 99.6, 106.2, 113.4, 121.9, 141.1 cm (spine_05 the long one), neck_01 152.8, neck_02
+    157.8, head 162.6;
+  - metacarpals children of the hand, each finger's _01 a child of its metacarpal; the thumb's chain from the hand.
 
 *web and measured, 2026-10-29* — read by the Opus review of the standards spec:
 
