@@ -2169,9 +2169,36 @@ def nailmat(built: dict) -> None:
     print("NAIL MATERIAL on", pieces, "nails", flush=True)
 
 
+def mix(built: dict, first: str, second: str = "", strength: float = 1.0) -> None:
+    """The mixer on our character (`juststage.body.set_mix`, the product's command): `first` in every part, or - with
+    `second` - the two alternating part by part (head shape, nose, mouth and ears the first's; forehead, eyes and chin
+    the second's), the most part borders a face can have: do the borders, the neck and the riders (eyes, teeth) hold in
+    a render? Identities by index into the library (`mixer.identities()`) or name. A shape: --alone."""
+    api = importlib.import_module("bl_ext.system.juststage.api")
+    mixer = importlib.import_module("bl_ext.system.juststage.modules.body.mixer")
+    names = mixer.identities()
+
+    def pick(token: str) -> str:
+        return names[int(token)] if token.isdigit() else token
+
+    body = built["body"]
+    a, b = pick(first), pick(second) if second else ""
+    takes = {"head shape": a, "nose": a, "mouth": a, "ears": a, "forehead": b or a, "eyes": b or a, "chin": b or a}
+    for region, name in takes.items():
+        api.run("juststage.body.set_mix", character=body.juststage.character_id, region=region, identities=name,
+                weights=[1.0], strength=strength)  # fmt: skip
+    bpy.context.view_layer.update()
+    print("MIX", {r: n for r, n in takes.items()}, "strength", strength, flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("mix*"):  # mix*0, mix*0*3, mix*0*3*0.7 (identities by index or name, the strength)
+        first, *rest = name.split("*")[1:]
+        second = rest[0] if rest else ""
+        strength = float(rest[1]) if len(rest) > 1 else 1.0
+        return lambda built: mix(built, first, second, strength)
     parts = name.split("+")
     if len(parts) > 1 and parts[0].split("*")[0] not in SCALED_KEYS:  # a chain of named factors: hairmelanin*1+hairtip*0.8
         steps = [factor(part) for part in parts]

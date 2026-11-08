@@ -47,6 +47,7 @@ def main(params: Params) -> Result:
             raise CommandError(f"value: expected 0.0–1.0, got {params.value}")
         obj = character.find(params.character)
         mixer.set_value(obj, *mixed, float(params.value))
+        mixer.follow(obj)  # the helpers (the eyes', teeth's and skeleton's carriers) with the mixed skin
         build.keep_on_floor(obj)
         _refit(obj)
         return Result(status="ok", value=float(params.value))

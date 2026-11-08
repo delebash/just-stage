@@ -60,10 +60,10 @@ def test_one_identity_in_every_region_is_that_identity(human):
         _mix(made, region, [name], [1.0])
     moved = build.shaped_coords(body) - before
     index, delta = mixer._identity(name)
-    hm = makehuman.HM08_VERTICES
-    want = np.zeros((hm, 3))
+    skin = makehuman.BODY_VERTICES  # the helpers follow the skin (the test below)
+    want = np.zeros((skin, 3))
     want[index] = delta
-    assert np.abs(moved[:hm] - want).max() < 1e-4  # the masks sum to 1, the parts to the identity
+    assert np.abs(moved[:skin] - want).max() < 1e-4  # the masks sum to 1, the parts to the identity
 
 
 def test_a_regions_mix_moves_that_region_alone_and_is_kept_as_sliders(human):
@@ -71,8 +71,8 @@ def test_a_regions_mix_moves_that_region_alone_and_is_kept_as_sliders(human):
     (name,) = _identities()
     before = build.shaped_coords(body)
     result = _mix(made, "nose", [name], [1.0], strength=0.5)
-    moved = np.linalg.norm(build.shaped_coords(body) - before, axis=1)[: makehuman.HM08_VERTICES]
-    outside = mixer._regions()["nose"] < 1e-6
+    moved = np.linalg.norm(build.shaped_coords(body) - before, axis=1)[: makehuman.BODY_VERTICES]
+    outside = mixer._regions()["nose"][: makehuman.BODY_VERTICES] < 1e-6  # the skin: helpers follow it
     assert moved[outside].max() < 1e-6 and moved.max() > 0.0005
     ids = [mixer.slider_id(name, "nose", part) for part in mixer.PARTS]
     assert result.sliders == ids
@@ -88,10 +88,12 @@ def test_features_keep_the_regions_place_proportions_are_a_similarity_and_both_s
     before = build.shaped_coords(body)
     _mix(made, "nose", [name], [1.0], mode="features")
     features = build.shaped_coords(body) - before
-    mask = mixer._mask_weights(body, "nose")
+    skin = np.zeros(len(body.data.vertices), bool)  # the helpers follow the skin (their own test)
+    skin[: makehuman.BODY_VERTICES] = skin[makehuman.HM08_VERTICES :] = True
+    mask = mixer._mask_weights(body, "nose") * skin
     inside = mask > 0.0
     assert np.abs(features[inside].sum(0)).max() < 1e-4  # no shift: the fit's residual sums to nothing
-    assert np.abs(features[~inside]).max() < 1e-6
+    assert np.abs(features[skin & ~inside]).max() < 1e-6
     _mix(made, "nose", [name], [1.0], mode="proportions")  # the features stay
     both = build.shaped_coords(body) - before
     proportions = both - features
@@ -106,7 +108,7 @@ def test_features_keep_the_regions_place_proportions_are_a_similarity_and_both_s
     offsets = np.zeros_like(both)
     index, delta = base.extend(body, *mixer._identity(name))
     offsets[index] = delta
-    assert np.abs(both - mask[:, None] * offsets).max() < 1e-5  # features + proportions = the identity, masked
+    assert np.abs((both - mask[:, None] * offsets)[skin]).max() < 1e-5  # features + proportions = the identity
 
 
 def test_the_wheels_weights_are_normalised_and_a_new_mix_replaces_the_last(human):
@@ -120,6 +122,55 @@ def test_the_wheels_weights_are_normalised_and_a_new_mix_replaces_the_last(human
     assert _sliders(body) == {a[1]: pytest.approx(0.6), b[0]: pytest.approx(0.8), b[1]: pytest.approx(0.2)}
     assert a[0] not in body.data.shape_keys.key_blocks  # at 0 the key goes with its slider: keys only for those in use
     assert mixer.region_mix(body, "chin", "features") == {second: pytest.approx(0.8)}
+
+
+def _centre(obj):
+    co = np.array([v.co for v in obj.data.vertices])
+    m = np.array(obj.matrix_world)
+    co = co @ m[:3, :3].T + m[:3, 3]
+    return (co.min(0) + co.max(0)) / 2
+
+
+def test_the_eyes_teeth_and_face_joints_follow_a_mix(human):
+    """They ride MakeHuman's helpers (the parts' MHCLO bindings, the skeleton's joint cubes), which the identities
+    don't hold: the helpers follow the mixed skin around them (mixer.follow)."""
+    made, body = human
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    skeleton = importlib.import_module("bl_ext.system.juststage.modules.rig.skeleton")
+    api.run("juststage.head.add_parts", character=made.character)
+    api.run("juststage.rig.add_skeleton", character=made.character)
+    (name,) = _identities()
+    found = parts.parts_of(body)
+    eye, teeth = found["eyeLeft"], found["teeth"]
+    skin_before = build.shaped_coords(body)[: makehuman.BODY_VERTICES]
+    eye_before, teeth_before = _centre(eye), _centre(teeth)
+    joint_before = np.array(skeleton.joints(body)["FACIAL_L_Eye"][0])
+    for region in mixer.regions():
+        _mix(made, region, [name], [1.0])
+    skin_moved = build.shaped_coords(body)[: makehuman.BODY_VERTICES] - skin_before
+    around_eye = np.linalg.norm(skin_before - eye_before, axis=1) < mixer.FOLLOW_M
+    want = skin_moved[around_eye].mean(0)
+    assert np.linalg.norm(want) > 0.001  # the identity moves the eye's skin
+    got = _centre(eye) - eye_before
+    assert np.linalg.norm(got - want) < 0.2 * np.linalg.norm(want) + 0.0003
+    joint = np.array(skeleton.joints(body)["FACIAL_L_Eye"][0]) - joint_before
+    assert np.linalg.norm(joint - got) < 0.2 * np.linalg.norm(got) + 0.0003  # the eye bone with its eyeball
+    around_teeth = np.linalg.norm(skin_before - teeth_before, axis=1) < 2 * mixer.FOLLOW_M
+    lips = skin_moved[around_teeth].mean(0)
+    moved = _centre(teeth) - teeth_before
+    assert np.dot(moved, lips) / (np.linalg.norm(moved) * np.linalg.norm(lips)) > 0.8  # the teeth go with the mouth
+
+
+def test_no_identities_clears_the_modes_parts(human):
+    made, body = human
+    (name,) = _identities()
+    before = build.shaped_coords(body)
+    _mix(made, "nose", [name], [1.0], strength=0.6)
+    _mix(made, "nose", [], [], mode="features")  # CC5's Reset, in Features only
+    assert _sliders(body) == {mixer.slider_id(name, "nose", "proportions"): pytest.approx(0.6)}
+    _mix(made, "nose", [], [])
+    assert _sliders(body) == {}
+    assert np.abs(build.shaped_coords(body) - before).max() < 1e-6
 
 
 def test_set_slider_on_the_mixers_ids_is_the_same_shape(human):

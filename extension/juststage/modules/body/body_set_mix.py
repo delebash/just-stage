@@ -6,8 +6,8 @@ ears, torso, arms, legs): a weighted blend of identities in that region at a str
 MetaHuman's Blend Types: "both", "features" (the region's shape, its place, turn and size kept) or "proportions" (its
 place, turn and size, its shape kept) - mixer.py. It sets the region's mixer sliders of the mode's parts
 (`scans.<identity>.<region>.<part>` = weight / sum of weights x strength; the region's other identities in those parts
-to 0, the other part untouched), the values `juststage.body.set_slider` takes one at a time; ordinary sliders
-untouched."""
+to 0, the other part untouched), the values `juststage.body.set_slider` takes one at a time; no identities clears
+the mode's parts in the region (CC5's Reset: the character's own shape there); ordinary sliders untouched."""
 
 from typing import Literal, NamedTuple
 
@@ -55,9 +55,9 @@ def main(params: Params) -> Result:
         raise CommandError(f"no identity {', '.join(unknown)}; the identities: {', '.join(mixer.identities())}")
     if len(names) != len(params.weights) or len(set(names)) != len(names):
         raise CommandError("weights: one a named identity, each identity once")
-    if any(w < 0.0 for w in params.weights) or sum(params.weights) <= 0.0:
+    if names and (any(w < 0.0 for w in params.weights) or sum(params.weights) <= 0.0):
         raise CommandError("weights: none below 0, their sum above 0")
-    total = sum(params.weights)
+    total = sum(params.weights) or 1.0  # no identities: the part cleared
     parts = mixer.PARTS if params.mode == "both" else (params.mode,)
     now = []
     for part in parts:
@@ -66,6 +66,7 @@ def main(params: Params) -> Result:
         for name, value in values.items():
             mixer.set_value(obj, name, params.region, part, value)
         now += [mixer.slider_id(n, params.region, part) for n, v in values.items() if v > 0.0]
+    mixer.follow(obj)  # the helpers (the eyes', teeth's and skeleton's carriers) with the mixed skin
     build.keep_on_floor(obj)
     build.refit_riders(obj)  # the head's parts and the skeleton follow the new shape, as after a slider
     return Result(region=params.region, sliders=now)

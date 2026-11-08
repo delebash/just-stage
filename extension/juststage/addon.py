@@ -9,7 +9,7 @@ from . import api, character, migrations
 from .commands import api_status
 from .core import usd_hooks
 from .modules import body, hair, head, io, rig, skin
-from .ui import ai_jobs, ai_panel, character_panel, content, menus, operators, viewport_header
+from .ui import ai_jobs, ai_panel, character_panel, content, menus, mixer_panel, operators, viewport_header
 
 CORE = "core"
 _CORE_COMMANDS = (api_status,)
@@ -33,6 +33,7 @@ def register():
         module.register(_api_range())
     menus.register()
     character_panel.register()
+    mixer_panel.register()
     content.register()
     migrations.register()
 
@@ -40,6 +41,7 @@ def register():
 def unregister():
     migrations.unregister()
     content.unregister()
+    mixer_panel.unregister()
     character_panel.unregister()
     menus.unregister()
     for module in reversed(MODULES):

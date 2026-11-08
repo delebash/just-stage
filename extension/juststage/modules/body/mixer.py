@@ -39,6 +39,20 @@ PARTS = ("features", "proportions")  # MetaHuman's two layers; with "both" they 
 #: ears 0, arms 0, legs 0.007 against forehead 0.21, nose 0.21, mouth 0.18, chin 0.11, torso 0.09, head shape 0.07)
 SIDED_SHARE = 0.01
 MIDLINE_M = 0.005
+REACH_M = 1e-4  # an identity moves a vertex when it moves it by over this...
+REACH_SHARE = 0.25  # ...and reaches a region when those vertices hold this share of its mask (measured 2026-11-08 on
+#                     the filled identities: the head's parts 0.52-1.0, the torso 0.06 - the neck - and arms 0.004)
+#: the helpers' key: MakeHuman's helpers (eyeballs, teeth, tongue, joint cubes, ...) carry the eyes, the teeth and the
+#: skeleton, and the identities hold none, so each helper vertex moves by the mean of the mixed skin's offsets within
+#: FOLLOW_M of it (the face test's rule for its eyeballs, tools/face_test/face_shape.py), or within FOLLOW_REACH times
+#: its distance to the skin when that is further (a joint deep in the neck); an island of helpers no wider than
+#: RIGID_M (an eyeball, the teeth, a joint cube) moves as one, by its vertices' mean - its shape kept
+HELPERS_KEY = "JustStage mix helpers"
+FOLLOW_M = 0.020
+FOLLOW_REACH = 1.5
+FOLLOW_MAX = 200  # a wide neighbourhood thinned evenly to this many skin vertices (its mean kept, the cost bounded)
+RIGID_M = 0.030
+_FOLLOW: dict[int, tuple[np.ndarray, np.ndarray, np.ndarray]] = {}  # vertex count -> (rows, cols, weights)
 MASK_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_region_masks.py"
 IDENTITY_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_identities.py"
 
@@ -55,11 +69,28 @@ def regions() -> list[str]:
     return sorted(_regions())
 
 
-def identities() -> list[str]:
+@cache
+def identities() -> tuple[str, ...]:
+    """The identity library's names (generated data: fixed for a session - read once)."""
     from ... import paths
 
     folder = paths.GENERATED / "mixer" / "identities"
-    return sorted(p.stem for p in folder.glob("*.npz")) if folder.is_dir() else []
+    return tuple(sorted(p.stem for p in folder.glob("*.npz"))) if folder.is_dir() else ()
+
+
+@cache
+def reach() -> dict[str, tuple[str, ...]]:
+    """Per region, the identities that move it - over REACH_M where its mask is over 0.01 (a head scan reaches no body
+    part): the parts the mixer can change today."""
+    found = {}
+    data = {name: _identity(name) for name in identities()}
+    for region, mask in _regions().items():
+        found[region] = tuple(
+            name
+            for name, (index, delta) in data.items()
+            if mask[index[np.linalg.norm(delta, axis=1) > REACH_M]].sum() >= REACH_SHARE * mask.sum()
+        )
+    return found
 
 
 def _identity(name: str) -> tuple[np.ndarray, np.ndarray]:
@@ -142,7 +173,9 @@ def sides(co: np.ndarray, weights: np.ndarray) -> list[np.ndarray]:
 
 
 def split(character: bpy.types.Object, identity: str, region: str) -> dict[str, np.ndarray]:
-    """The identity's offsets on the character's vertices, split in the region into its proportions and features."""
+    """The identity's offsets on the character's vertices, split in the region into its proportions and features - on
+    the skin alone (the helpers follow the mixed skin: `follow`)."""
+    from ...core import makehuman
     from . import base
 
     n = len(character.data.vertices)
@@ -153,7 +186,9 @@ def split(character: bpy.types.Object, identity: str, region: str) -> dict[str, 
     index, delta = base.extend(character, *_identity(identity))
     offsets[index] = delta
     proportions = np.zeros((n, 3))
-    for weights in sides(co, _mask_weights(character, region)):
+    mask = _mask_weights(character, region)
+    mask[makehuman.BODY_VERTICES : makehuman.HM08_VERTICES] = 0.0  # no helper in the fit, none moved by it
+    for weights in sides(co, mask):
         if weights.sum() > 0.0:
             proportions += (weights > 0.0)[:, None] * similarity(co, offsets, weights)
     return {"proportions": proportions, "features": offsets - proportions}
@@ -219,6 +254,96 @@ def set_value(character: bpy.types.Object, identity: str, region: str, part: str
         item.value = value
     finally:
         characters.APPLYING["macros"] = False
+
+
+def _follow_weights(character: bpy.types.Object) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Which skin vertices each helper vertex follows, and how much (rows: helper vertices, cols: skin vertices) - on
+    the basis, the same for every character of a base version: made once a session."""
+    n = len(character.data.vertices)
+    if n in _FOLLOW:
+        return _FOLLOW[n]
+    from mathutils.kdtree import KDTree
+
+    from ...core import makehuman
+
+    skin, end = makehuman.BODY_VERTICES, makehuman.HM08_VERTICES
+    basis = np.empty(n * 3, np.float32)
+    character.data.shape_keys.reference_key.data.foreach_get("co", basis)
+    co = basis.reshape(-1, 3).astype(np.float64)
+    kd = KDTree(skin)
+    for i in range(skin):
+        kd.insert(co[i], i)
+    kd.balance()
+
+    def near(point: np.ndarray) -> list[int]:  # the skin around a point, thinned evenly to FOLLOW_MAX
+        hits = [i for _co, i, _d in kd.find_range(point, max(FOLLOW_M, FOLLOW_REACH * kd.find(point)[2]))]
+        return hits[:: max(1, len(hits) // FOLLOW_MAX)]
+
+    # the helpers' islands (their own edges), each no wider than RIGID_M moved as one
+    edges = np.empty(len(character.data.edges) * 2, np.int64)
+    character.data.edges.foreach_get("vertices", edges)
+    parent = np.arange(end)
+
+    def root(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for a, b in edges.reshape(-1, 2):
+        if skin <= a < end and skin <= b < end:
+            parent[root(a)] = root(b)
+    islands: dict[int, list[int]] = {}
+    for h in range(skin, end):
+        islands.setdefault(root(h), []).append(h)
+    rows, cols, weights = [], [], []
+    for members in islands.values():
+        pts = co[members]
+        centre = pts.mean(0)
+        shared = near(centre) if np.linalg.norm(pts - centre, axis=1).max() <= RIGID_M else None  # rigid: one row
+        for h in members:
+            hits = shared if shared is not None else near(co[h])
+            rows += [h - skin] * len(hits)
+            cols += hits
+            weights += [1.0 / len(hits)] * len(hits)
+    _FOLLOW[n] = (np.array(rows, np.int64), np.array(cols, np.int64), np.array(weights))
+    return _FOLLOW[n]
+
+
+def follow(character: bpy.types.Object) -> None:
+    """The helpers' key on the character's current mix (HELPERS_KEY): each helper vertex moved by the mixed skin around
+    it, the skin's offsets as Blender draws the mixer's keys (value x the key's vertex group)."""
+    from ...core import makehuman
+    from . import build
+
+    keys = character.data.shape_keys
+    if not keys:
+        return
+    mixed = [k for k in keys.key_blocks if k.name.startswith(SPACE + ".") and k.value != 0.0 and not k.mute]
+    key = keys.key_blocks.get(HELPERS_KEY)
+    if not mixed and key is None:
+        return
+    n = len(character.data.vertices)
+    skin, end = makehuman.BODY_VERTICES, makehuman.HM08_VERTICES
+    basis = np.empty(n * 3, np.float32)
+    keys.reference_key.data.foreach_get("co", basis)
+    basis = basis.reshape(-1, 3)
+    offsets = np.zeros((skin, 3))
+    co = np.empty(n * 3, np.float32)
+    groups: dict[str, np.ndarray] = {}
+    for k in mixed:
+        k.data.foreach_get("co", co)
+        if k.vertex_group not in groups:
+            groups[k.vertex_group] = build._group_weights(character, k.vertex_group, n)[:skin]
+        offsets += (co.reshape(-1, 3)[:skin] - basis[:skin]) * k.value * groups[k.vertex_group][:, None]
+    rows, cols, weights = _follow_weights(character)
+    helpers = np.stack([np.bincount(rows, weights * offsets[cols, a], minlength=end - skin) for a in range(3)], 1)
+    if key is None:
+        key = character.shape_key_add(name=HELPERS_KEY, from_mix=False)
+    out = basis.copy()
+    out[skin:end] += helpers.astype(np.float32)
+    key.data.foreach_set("co", out.ravel())
+    key.value = 1.0
 
 
 def region_mix(character: bpy.types.Object, region: str, part: str) -> dict[str, float]:
