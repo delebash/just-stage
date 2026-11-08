@@ -745,6 +745,17 @@ def blinkfix(built: dict) -> None:
     bpy.context.view_layer.update()
 
 
+def setkey(built: dict, name: str, value: float) -> None:
+    """One of the body's shape keys set and held (one the gate's expressions don't name, so they leave it): row 3's
+    seal test - hm08's neutral leaves a see-through slit 0.3-0.9 mm wide across the mouth's middle (rays from the
+    front to the front teeth's depth, 2026-11-08); Faceunits' own mouthClose at 0.1 closes it everywhere, at 0.3 too.
+    (A snap of nearest lip-edge pairs across the slit, tried first, left 0.15-0.75 mm: the pairs it found weren't the
+    slit's.) A shape: --alone."""
+    built["body"].data.shape_keys.key_blocks[name].value = value
+    bpy.context.view_layer.update()
+    print("KEY", name, value, flush=True)
+
+
 def lidcrease(built: dict, ring: int, mm: float) -> None:
     """The eye's deciding test (checklist row 6): can our lid's mesh hold HD Aaron's upper-lid crease? The ring of upper
     lid skin `ring` rings above the upper lash line pushed `mm` toward its eye's centre, the rings either side half as
@@ -1576,6 +1587,9 @@ def factor(name: str):
     if name.startswith("aaronshape"):  # aaronshape[*lower] (our head moved onto his face shape; "lower": below the eyes)
         region = name.split("*", 1)[1] if "*" in name else ""
         return lambda built: aaronshape(built, "aaron_skin_pinned", region)
+    if name.startswith("setkey*"):  # setkey*mouthClose*0.1 (a body shape key held at a value)
+        _k, key, value = name.split("*")
+        return lambda built: setkey(built, key, float(value))
     if name == "nailmat":  # our nails coloured along their length (lunula, his plate colour, a subtle free edge)
         return nailmat
     if name == "aaronteeth":  # his teeth, gums and tongue in our mouth, riding our jaw
