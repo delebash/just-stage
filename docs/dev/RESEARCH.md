@@ -2987,7 +2987,12 @@ every one logged; key claims page-read):
   / 0.267 - the roll a little thinner, still a puffy ~3-4 mm tube where his lower lid is a thin pink ledge over flat
   skin. So the lower lid's own skin shape (MakeHuman's lid with base v2's carried rows) is the cause - the plan's
   escalation for a failed lid is the head on a new topology (§4). Also seen: a clump of 4-5 long straight upper
-  lashes standing up at the lid's middle on every render (his curl) - a lash defect to find.
+  lashes standing up at the lid's middle on every render (his curl) - a lash defect to find (the lead: the lashes'
+  collision pass carries the rest of a lash out along the skin's normal where the fold bulges). The contact's carry
+  into the next lid rings off (0 / 0) or lighter (0.3 / 0.1): 0.261 / 0.260 - the roll a little thinner, still there.
+  So no contact setting fixes it: the lower lid needs its shape - its skin rings below the lash line laid in a smooth
+  slope off the eyeball (an extension of the approved contact key), or the plan's escalation (the head on a new
+  topology, §4).
 
 ### 14.14 · Scalp hair
 
