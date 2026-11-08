@@ -769,6 +769,28 @@ def rigsmooth(built: dict, iterations: int) -> None:
         print("RIG SMOOTH 0: the plain rig", flush=True)
 
 
+def teethcolour(built: dict, r: float, g: float, b: float) -> None:
+    """Item 5's teeth (row 4: ours read too white beside HD Aaron's ivory; his enamel's texture median, linear, upper
+    (0.43, 0.35, 0.30), lower (0.60, 0.48, 0.42) against our base (0.80, 0.75, 0.65)): our enamel's base colour set to
+    (r, g, b) linear, the gum-line-to-edge ramp (part_materials.TOOTH_RATIOS) kept in proportion."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    pm = importlib.import_module("bl_ext.system.juststage.modules.head.part_materials")
+    teeth = parts.parts_of(built["body"])["teeth"]
+    old = pm.REGIONS["teeth"][0]
+    scale = (r / old[0], g / old[1], b / old[2])
+    done = 0
+    for slot in teeth.material_slots:
+        mat = slot.material
+        if not mat or not mat.name.startswith("JustStage Teeth"):
+            continue
+        for node in mat.node_tree.nodes:
+            if node.type == "VALTORGB":
+                for el in node.color_ramp.elements:
+                    el.color = (*(c * s for c, s in zip(el.color[:3], scale, strict=True)), 1.0)
+                done += 1
+    print("TEETH COLOUR", (r, g, b), "on", done, "ramps", flush=True)
+
+
 def eyescale(built: dict, k: float) -> None:
     """Build queue item 5 (row 5: our eyeball 14.5-14.8 mm in radius on three characters, HD Aaron's 13.2 - his at his
     own size in our sockets read as his eye): both eye parts scaled by `k` about their own centres, then refit's eye
@@ -1847,6 +1869,9 @@ def factor(name: str):
         return lambda built: ictsmile(built, name.split("*")[1])
     if name.startswith("aaronwrinkles*"):  # aaronwrinkles*smile (after aaronskin: his wrinkle maps as his smile sets them)
         return lambda built: aaronwrinkles(built, name.split("*")[1])
+    if name.startswith("teethcolour*"):  # teethcolour*0.52*0.42*0.36 (our enamel's base colour, linear)
+        _k, r, g, b = name.split("*")
+        return lambda built: teethcolour(built, float(r), float(g), float(b))
     if name.startswith("eyescale*"):  # eyescale*0.89 (both eyeballs scaled about their centres, the lids refitted)
         return lambda built: eyescale(built, float(name.split("*")[1]))
     if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)
