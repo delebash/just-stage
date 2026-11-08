@@ -5,6 +5,7 @@
 
 import bpy
 
+from ...character import JustStageFloat
 from ...ui.command_operator import CommandOperator
 
 
@@ -67,4 +68,20 @@ class JUSTSTAGE_OT_body_set_slider(CommandOperator, bpy.types.Operator):
     value: bpy.props.FloatProperty(name="Value", default=0.0)
 
 
-CLASSES = (JUSTSTAGE_OT_body_create, JUSTSTAGE_OT_body_subdivide, JUSTSTAGE_OT_body_set_slider)
+class JUSTSTAGE_OT_body_set_mix(CommandOperator, bpy.types.Operator):
+    """One region of the mixer: a weighted blend of identities at a strength"""
+
+    bl_idname = "juststage.body_set_mix"
+    bl_label = "Mix identities (a region)"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.body.set_mix"
+
+    character: bpy.props.StringProperty(name="Character")
+    region: bpy.props.StringProperty(name="Region")
+    identities: bpy.props.StringProperty(name="Identities", description="Comma-separated identity names")
+    weights: bpy.props.CollectionProperty(name="Weights", type=JustStageFloat)
+    strength: bpy.props.FloatProperty(name="Strength", default=1.0, min=0.0, max=1.0)
+
+
+CLASSES = (JUSTSTAGE_OT_body_create, JUSTSTAGE_OT_body_subdivide, JUSTSTAGE_OT_body_set_slider,
+           JUSTSTAGE_OT_body_set_mix)

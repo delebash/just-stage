@@ -284,5 +284,21 @@ def shaped_coords(obj: bpy.types.Object) -> np.ndarray:
         if key.mute or key.value == 0.0:
             continue
         key.data.foreach_get("co", co)
-        mix += (co.reshape(-1, 3) - basis) * key.value
+        move = (co.reshape(-1, 3) - basis) * key.value
+        if key.vertex_group:  # a key limited to a vertex group moves by its weights, as Blender mixes it (the mixer)
+            move *= _group_weights(obj, key.vertex_group, n)[:, None]
+        mix += move
     return mix
+
+
+def _group_weights(obj: bpy.types.Object, name: str, n: int) -> np.ndarray:
+    """A vertex group's weight at every vertex (0 outside it)."""
+    weights = np.zeros(n)
+    vg = obj.vertex_groups.get(name)
+    if vg is None:
+        return weights
+    for v in obj.data.vertices:
+        for g in v.groups:
+            if g.group == vg.index:
+                weights[v.index] = g.weight
+    return weights
