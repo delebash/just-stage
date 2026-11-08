@@ -1299,7 +1299,7 @@ def aaroncards(built: dict, stem: str = "aaron_skin_pinned", shaped: bool = Fals
     print("AARON CARDS:", [o.name for o in dst.objects], "placed, static", "(shaped face)" * shaped, flush=True)
 
 
-def aaroneyes(built: dict) -> None:
+def aaroneyes(built: dict, own: bool = False) -> None:
     """THE TRANSPLANT for the eyes (a LOCAL TEST): HD Aaron's own eyeballs, eye occlusion and tearline (appended from
     the gate's .blend) in our sockets - each of his eyes moved and scaled onto ours (his eyeball's centre and radius
     onto our eye part's, `eye_layers._eye_sphere`), our eyes and films hidden. With `aaronskin` the eye view then asks:
@@ -1320,9 +1320,13 @@ def aaroneyes(built: dict) -> None:
     bpy.context.view_layer.update()
     eye = next(o for o in dst.objects if o.name.startswith("CC_Base_Eye") and "Occlusion" not in o.name)
     his = {}
+    shift_own = {}
     for side in ("L", "R"):  # his eyeballs from their own faces (Std_Eye_L / Std_Eye_R), as parts_gate.anchors reads them
         pts = pg._faces_of(eye, (f"Std_Eye_{side}",))[f"Std_Eye_{side}"]
         his[side] = ((pts.min(0) + pts.max(0)) / 2, float((pts.max(0) - pts.min(0))[[0, 2]].mean() / 2))
+        oc = np.asarray(target[side][0])
+        front = pg._world(ours["eyeLeft" if side == "L" else "eyeRight"], evaluated=False)[:, 1].min()
+        shift_own[side] = np.array([oc[0] - his[side][0][0], front - pts[:, 1].min(), oc[2] - his[side][0][2]])
     lib_dir = pg.CC5_BLEND["eevee"].parent
     for img in bpy.data.images:
         if img.filepath.startswith("//") and not Path(bpy.path.abspath(img.filepath)).exists():
@@ -1340,7 +1344,10 @@ def aaroneyes(built: dict) -> None:
         for side in ("L", "R"):
             sel = side_of == side
             (hc, hr), (oc, orad) = his[side], target[side]
-            moved[sel] = oc + (world[sel] - hc) * (orad / hr)
+            if own:  # his size kept (x1.12 onto ours voided the first try): his cornea's front onto ours, centred across
+                moved[sel] = world[sel] + shift_own[side]
+            else:
+                moved[sel] = oc + (world[sel] - hc) * (orad / hr)
         obj.matrix_world = __import__("mathutils").Matrix.Identity(4)
         obj.data.vertices.foreach_set("co", moved.astype(np.float64).ravel())
         obj.data.update()
@@ -1349,8 +1356,8 @@ def aaroneyes(built: dict) -> None:
     for o in bpy.context.scene.objects:
         if o.juststage.part_of == body.juststage.character_id and o.juststage.part in ("eyeshell", "eyeEdge"):
             o.hide_render = True
-    print("AARON EYES: his radius", round(his["L"][1] * 1000, 2), "mm onto ours", round(target["L"][1] * 1000, 2),
-          "mm", flush=True)
+    print("AARON EYES: his radius", round(his["L"][1] * 1000, 2), "mm", "kept, his cornea's front on ours" if own else
+          f"onto ours {round(target['L'][1] * 1000, 2)} mm", flush=True)
 
 
 class _HairField:
@@ -1600,6 +1607,8 @@ def factor(name: str):
         return lambda built: aaroncards(built, shaped=True)
     if name == "aaroneyes":  # his eyeballs and eye films in our sockets
         return aaroneyes
+    if name == "aaroneyes*own":  # at his own size, his cornea's front on ours
+        return lambda built: aaroneyes(built, own=True)
     if name.startswith("aaronbody"):  # aaronbody[*aaron_hand] (his body skin on our torso, or the carried region)
         stem = name.split("*", 1)[1] if "*" in name else "aaron_torso"
         return lambda built: aaronbody(built, stem)
