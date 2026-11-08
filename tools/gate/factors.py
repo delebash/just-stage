@@ -1831,6 +1831,56 @@ def _no_shadow_faces(built: dict, faces, label: str) -> None:
     print("NO SHADOW", label, int(mask.sum()), "faces on", done, "skin materials", flush=True)
 
 
+def _cavity_faces(built: dict) -> list[int]:
+    """The body's faces inside the mouth: behind the front teeth's front, within the teeth part's box widened 5 mm."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    body = built["body"]
+    teeth = pg._world(parts.parts_of(body)["teeth"], evaluated=False)
+    lo, hi = teeth.min(0) - 0.005, teeth.max(0) + 0.005
+    front = float(teeth[:, 1].min())
+    mw = np.array(body.matrix_world)
+    co = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]
+    return [p.index for p in body.data.polygons
+            if (c := co[list(p.vertices)].mean(0))[1] > front and lo[0] < c[0] < hi[0] and lo[2] < c[2] < hi[2]]
+
+
+def shadowsplit(built: dict, region: str) -> None:
+    """Which skin shadows our tongue, by objects (EEVEE ignores a material's shadow-ray transparency - `allnoshadow`):
+    the body casts no shadow; a copy of it, unseen by the camera, casts it instead - without `region`'s faces ("cavity":
+    inside the mouth; "head": the head's tile). The visible body, its grooms and its rig stay as they are."""
+    import bmesh
+
+    body = built["body"]
+    if region == "cavity":
+        drop = set(_cavity_faces(built))
+    else:
+        me = body.data
+        uv = np.empty(len(me.loops) * 2, np.float32)
+        me.uv_layers[_maps().UV].data.foreach_get("uv", uv)
+        uv = uv.reshape(-1, 2)
+        drop = {p.index for p in me.polygons if uv[list(p.loop_indices), 0].mean() < 1.0}
+    proxy = body.copy()
+    proxy.data = body.data.copy()
+    proxy.name = f"{body.name} (shadow, without the {region})"
+    for collection in body.users_collection:
+        collection.objects.link(proxy)
+    bm = bmesh.new()
+    bm.from_mesh(proxy.data)
+    bm.faces.ensure_lookup_table()
+    bmesh.ops.delete(bm, geom=[bm.faces[i] for i in sorted(drop)], context="FACES_ONLY")
+    bm.to_mesh(proxy.data)
+    bm.free()
+    proxy.juststage.character_id = ""  # not the character: `character.find` and the face rig's handler pass it by
+    if "JustStage face rig" in proxy.keys():  # (its keys are set with the body's - built["keyed"]; the jaw is the
+        del proxy["JustStage face rig"]  # same armature)
+    proxy.visible_camera = proxy.visible_diffuse = proxy.visible_glossy = False
+    proxy.visible_transmission = proxy.visible_volume_scatter = False
+    body.visible_shadow = False
+    built["keyed"] = [*built["keyed"], proxy]
+    print("SHADOW SPLIT", region, len(drop), "faces left out of the caster", flush=True)
+
+
 def allnoshadow(built: dict) -> None:
     """The check on the method itself: every face of the body transparent to shadow rays by the material - if the tongue
     stays dark here while `bodynoshadow` (the object's own shadow switch) lit it, EEVEE doesn't take the material's
@@ -2152,6 +2202,8 @@ def factor(name: str):
         return lambda built: naildisp(built, float(dome), float(groove), float(lip))
     if name == "mouthnoshadow":  # the mouth's inner skin casts no shadow (does it darken the tongue?)
         return mouthnoshadow
+    if name.startswith("shadowsplit*"):  # shadowsplit*cavity / *head (a shadow-only copy without those faces)
+        return lambda built: shadowsplit(built, name.split("*")[1])
     if name == "allnoshadow":  # every face by the material route (does the route work in EEVEE?)
         return allnoshadow
     if name in ("headnoshadow", "cavitynoshadow"):  # the head's tile / the mouth's interior casts no shadow
