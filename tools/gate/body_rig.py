@@ -26,10 +26,14 @@ NAME = "JustStage gate rig"
 #: the gate's bone roles in each rig (ours MPFB2's game-engine names, his CC5's) - the right side, as the gate's views
 ROLES = {
     "ours": {"upperarm": "upperarm_r", "lowerarm": "lowerarm_r", "hand": "hand_r", "thigh": "thigh_r",
-             "calf": "calf_r", "spine": "spine_02"},
+             "calf": "calf_r", "foot": "foot_r", "spine": "spine_02"},
     "cc5": {"upperarm": "CC_Base_R_Upperarm", "lowerarm": "CC_Base_R_Forearm", "hand": "CC_Base_R_Hand",
-            "thigh": "CC_Base_R_Thigh", "calf": "CC_Base_R_Calf", "spine": "CC_Base_Spine02"},
+            "thigh": "CC_Base_R_Thigh", "calf": "CC_Base_R_Calf", "foot": "CC_Base_R_Foot", "spine": "CC_Base_Spine02"},
 }  # fmt: skip
+#: a limb's direction is joint to joint - its bone's head to the next joint's: a CC5 bone's tail, set on FBX import by
+#: convention, doesn't lie along the limb (aimed by head-to-tail, his forearm, calf and thigh barely turned,
+#: 2026-11-08); MPFB2's tails sit on the next joint, so ours is unchanged
+NEXT = {"upperarm": "lowerarm", "lowerarm": "hand", "thigh": "calf", "calf": "foot"}
 
 
 def _ext(name: str):
@@ -131,6 +135,14 @@ def direction(arm: bpy.types.Object, bone: str) -> np.ndarray:
     pb = arm.pose.bones[bone]
     d = arm.matrix_world.to_3x3() @ (pb.tail - pb.head)
     return np.array(d.normalized())
+
+
+def limb(arm: bpy.types.Object, roles: dict, role: str) -> np.ndarray:
+    """A posed limb's world direction, joint to joint (`NEXT`); a role with no next joint, its bone's head to tail."""
+    if role not in NEXT:
+        return direction(arm, roles[role])
+    d = np.array(joint(arm, roles[NEXT[role]]) - joint(arm, roles[role]))
+    return d / np.linalg.norm(d)
 
 
 def joint(arm: bpy.types.Object, bone: str) -> Vector:

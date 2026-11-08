@@ -262,14 +262,14 @@ def _pose(who: str, built: dict, name: str | None) -> None:
     roles = body_rig.ROLES[who]
     for role, aim in POSES[name]:
         bone = roles[role]
-        u = body_rig.direction(arm, bone)
+        u = body_rig.limb(arm, roles, role)
         want = np.asarray(aim) / np.linalg.norm(aim)
         axis = np.cross(u, want)
         if np.linalg.norm(axis) > 1e-6:
             angle = np.degrees(np.arccos(np.clip(u @ want, -1.0, 1.0)))
             body_rig.turn(arm, bone, axis / np.linalg.norm(axis), angle)
     built["posed"] = {k: body_rig.joint(arm, roles[k]) for k in ("upperarm", "lowerarm", "hand", "thigh", "calf")}
-    print("POSED", who, name, {r: np.round(body_rig.direction(arm, roles[r]), 3).tolist() for r, _ in POSES[name]},
+    print("POSED", who, name, {r: np.round(body_rig.limb(arm, roles, r), 3).tolist() for r, _ in POSES[name]},
           flush=True)
 
 

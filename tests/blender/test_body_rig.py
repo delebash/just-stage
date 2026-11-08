@@ -63,5 +63,7 @@ def test_a_bone_turned_in_world_space_points_where_it_was_aimed(rigged):
     axis = np.cross(u, want)
     body_rig.turn(arm, "lowerarm_r", axis / np.linalg.norm(axis), np.degrees(np.arccos(u @ want)))
     assert np.allclose(body_rig.direction(arm, "lowerarm_r"), want, atol=1e-3)
+    # ours: the bone's tail is on the next joint, so the limb points the same way (the gate aims limbs, joint to joint)
+    assert np.allclose(body_rig.limb(arm, body_rig.ROLES["ours"], "lowerarm"), want, atol=1e-3)
     body_rig.rest(arm)
     assert np.allclose(body_rig.direction(arm, "lowerarm_r"), u, atol=1e-6)
