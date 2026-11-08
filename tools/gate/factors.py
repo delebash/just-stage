@@ -1831,6 +1831,20 @@ def _no_shadow_faces(built: dict, faces, label: str) -> None:
     print("NO SHADOW", label, int(mask.sum()), "faces on", done, "skin materials", flush=True)
 
 
+def mouthlining(built: dict, r: float, g: float, b: float) -> None:
+    """Item 5's inner mouth, one factor: both tongues see none of the stage's lights (RESEARCH 14.5), so what lights
+    his is bounce or his material; ours sits in a mouth lined dark red (`maps.MOUTH_COLOUR` (0.42, 0.11, 0.11)) - the
+    lining's colour (linear) set lighter on the shader's mix."""
+    maps = _maps()
+    done = 0
+    for nt in _skin_trees(built):
+        node = nt.nodes.get(maps.NODE + "mouth_colour")
+        if node is not None:
+            next(i for i in node.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+            done += 1
+    print("MOUTH LINING", (r, g, b), done, "trees", flush=True)
+
+
 def _cavity_faces(built: dict) -> list[int]:
     """The body's faces inside the mouth: behind the front teeth's front, within the teeth part's box widened 5 mm."""
     parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
@@ -2202,6 +2216,9 @@ def factor(name: str):
         return lambda built: naildisp(built, float(dome), float(groove), float(lip))
     if name == "mouthnoshadow":  # the mouth's inner skin casts no shadow (does it darken the tongue?)
         return mouthnoshadow
+    if name.startswith("mouthlining*"):  # mouthlining*0.6*0.25*0.25 (the inner mouth's lining colour, linear)
+        _k, r, g, b = name.split("*")
+        return lambda built: mouthlining(built, float(r), float(g), float(b))
     if name.startswith("shadowsplit*"):  # shadowsplit*cavity / *head (a shadow-only copy without those faces)
         return lambda built: shadowsplit(built, name.split("*")[1])
     if name == "allnoshadow":  # every face by the material route (does the route work in EEVEE?)
