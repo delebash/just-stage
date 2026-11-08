@@ -175,6 +175,9 @@ def test_the_teeth_shade_from_gum_line_to_biting_edge():
         for name in ("JustStage Teeth", "JustStage Gums"):
             bsdf = next(n for n in mats[name].node_tree.nodes if n.type == "BSDF_PRINCIPLED")
             assert bsdf.inputs["Coat Weight"].default_value == pytest.approx(pm.WET_COAT)
+        # ivory, not white: the enamel between HD Aaron's upper and lower teeth's texture medians (linear, 2026-11-08)
+        enamel = np.array(pm.REGIONS["teeth"][0])
+        assert (np.array([0.43, 0.35, 0.30]) <= enamel).all() and (enamel <= np.array([0.60, 0.48, 0.42])).all()
     finally:
         for o in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
             bpy.data.objects.remove(o)
