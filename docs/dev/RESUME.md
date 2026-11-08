@@ -88,8 +88,8 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   style and the gate's (the library rebuilt, backup `.dev/backup/library_2026-11-07g`). The gate report's night table
   (`docs/gate/2026-11-07/report.md`) holds every part's number. Open: the hair's highlights and style, the lower lid's
   shape, the smile (§19.2 item 9), the foot (its download).
-- Queued for the card's next free turn (`scratchpad/batch_next.sh`; JustVoice holds the card for the user's audiobook
-  until it sends "card free" - no Blender at all meanwhile): the library's hair (the nape at the head joint, quiff
+- Running since JustVoice's "card free" (2026-11-07 late; web-4c told; send "card free" to both when it ends):
+  `scratchpad/batch_next.sh`, log `scratchpad/batch_next.log`: the library's hair (the nape at the head joint, quiff
   0.8), `factors lidsmooth` on the lower lid, the full smile (`face_smile_full`: mouthSmile + cheekSquint), the hair
   with the library's style, the smile's feasibility (ICT-FaceKit's scanned smile carried onto the gate's man by
   `tools/gate/smile_transfer.py`, rendered with `factors ictsmile` beside HD Aaron's - CPU dry run good, RESEARCH

@@ -45,5 +45,19 @@ def test_the_permutation_band_holds_the_same_texture_and_rejects_another():
         assert (p > 0.05) if expect_p == "high" else (p < 0.01)
 
 
+def test_the_layers_shares_add_up_to_the_distance():
+    import piq
+    import torch
+
+    metric = piq.DISTS(reduction="none")
+    gen = torch.Generator().manual_seed(2)
+    a = dists._features(metric, [torch.rand(1, 3, 96, 96, generator=gen) for _ in range(3)])
+    b = dists._features(metric, [torch.rand(1, 3, 96, 96, generator=gen) * 0.5 for _ in range(2)])
+    whole = dists._matrix(metric, a, b)
+    shares = dists._matrix(metric, a, b, by_layer=True)
+    assert shares.shape == (len(dists.LAYER_NAMES), 3, 2)
+    assert np.allclose(shares.sum(0), whole, atol=1e-9)
+
+
 def _energy_of(a, b, first):
     return dists._energy(_pooled(a, b), first)

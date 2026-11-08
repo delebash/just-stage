@@ -63,6 +63,9 @@ PATCHES = {
     "nose": _grid([0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48], [0.26, 0.32, 0.38, 0.44], 0.06),
 }
 PERMUTATIONS = 2000
+#: DISTS' six layers (piq: the input, then VGG16's five stages; a 256 px patch: 256, 256, 128, 64, 32, 16 px maps)
+LAYER_NAMES = ("0 pixels (colour, tone)", "1 VGG stage 1 (finest edges)", "2 VGG stage 2", "3 VGG stage 3",
+               "4 VGG stage 4", "5 VGG stage 5 (coarsest)")
 
 
 def patch(path: Path, box: tuple[float, float, float, float]) -> torch.Tensor:
@@ -79,14 +82,16 @@ def _features(metric, patches_: list[torch.Tensor]) -> list[list[torch.Tensor]]:
         return [metric.get_features(x) for x in patches_]
 
 
-def _matrix(metric, fa: list[list[torch.Tensor]], fb: list[list[torch.Tensor]]) -> np.ndarray:
+def _matrix(metric, fa: list[list[torch.Tensor]], fb: list[list[torch.Tensor]], by_layer: bool = False) -> np.ndarray:
     """DISTS between every patch of `fa` and every patch of `fb` from their cached features - piq's own formula
     (`DISTS.compute_distance`, `ContentLoss.forward`'s weights; 1 - the weighted sum): per layer and channel the means'
     similarity (2 mx my + c) / (mx^2 + my^2 + c) and the covariance's (2 cov + c) / (vx + vy + c), every pair's
-    covariance from one matrix product per layer instead of VGG once per pair."""
+    covariance from one matrix product per layer instead of VGG once per pair. `by_layer`: each layer's share of the
+    distance (its weights' sum less its weighted terms; layers x n x m) - they add up to the distance."""
     eps = 1e-6
     n_layers = len(fa[0])
     loss = torch.zeros(len(fa), len(fb), dtype=torch.float64)
+    shares = []
     with torch.no_grad():
         for layer in range(n_layers):
             x = torch.cat([f[layer] for f in fa]).flatten(2).double()  # n, C, P
@@ -99,8 +104,10 @@ def _matrix(metric, fa: list[list[torch.Tensor]], fb: list[list[torch.Tensor]]) 
             texture = (2 * cov + eps) / (vx[:, None, :] + vy[None, :, :] + eps)
             ws = metric.weights[layer].flatten().double()
             wt = metric.weights[n_layers + layer].flatten().double()
-            loss += (structure * ws).sum(2) + (texture * wt).sum(2)
-    return (1 - loss).numpy()
+            part = (structure * ws).sum(2) + (texture * wt).sum(2)
+            loss += part
+            shares.append((ws.sum() + wt.sum() - part).numpy())
+    return np.stack(shares) if by_layer else (1 - loss).numpy()
 
 
 def _energy(pooled: np.ndarray, first: np.ndarray) -> float:
@@ -119,7 +126,7 @@ def _flatten(patches_: list[torch.Tensor], to: torch.Tensor) -> list[torch.Tenso
 
 
 def patches(out_dir: Path, engine: str, views: list[str], tags: list[str], tone: bool = False,
-            flat: bool = False) -> None:
+            flat: bool = False, by_layer: bool = False) -> None:
     """The texture measured as two samples of skin, not one window against itself moved: Aaron's patches against each
     other (how much his own skin differs from place to place), ours against his, ours against ours. The excess - the
     mean ours-against-his less the two within-means' average (half Székely & Rizzo's energy statistic) - is ~0 when
@@ -159,6 +166,12 @@ def patches(out_dir: Path, engine: str, views: list[str], tags: list[str], tone:
             p = float((null >= excess).mean())
             print(f"  ours{tag}: against his {oh.mean():.4f}, ours against ours {oo[off].mean():.4f} -> excess "
                   f"{excess:.4f} (by chance {null.mean():.4f} +- {null.std():.4f}; p {p:.3f})")
+            if by_layer:  # the excess split by VGG layer (they add up): at which scale ours differs from his
+                hl, ol, ool = (_matrix(metric, fa, fb, by_layer=True) for fa, fb in
+                               ((f_his, f_his), (f_ours, f_his), (f_ours, f_ours)))
+                for k, name in enumerate(LAYER_NAMES):
+                    part = _energy(np.block([[hl[k], ol[k].T], [ol[k], ool[k]]]), first)
+                    print(f"    {name:28s} {part:+.4f} ({part / excess:4.0%})" if excess else f"    {name} {part:+.4f}")
 
 
 def main() -> None:
@@ -170,9 +183,10 @@ def main() -> None:
     p.add_argument("--tone", action="store_true", help="each crop's channel means set to Aaron's first: structure only")
     p.add_argument("--patches", action="store_true", help="two samples of skin (`patches`): the excess over his own")
     p.add_argument("--flat", action="store_true", help="--patches: each patch's light level out (`_flatten`)")
+    p.add_argument("--by-layer", action="store_true", help="--patches: the excess split by DISTS' layers")
     a = p.parse_args()
     if a.patches:
-        patches(a.out_dir, a.engine, a.views.split(","), a.tags, a.tone, a.flat)
+        patches(a.out_dir, a.engine, a.views.split(","), a.tags, a.tone, a.flat, a.by_layer)
         return
     metric = piq.DISTS(reduction="none")
     for view in a.views.split(","):

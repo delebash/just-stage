@@ -296,8 +296,9 @@ def roughvar(built: dict, k: float) -> None:
 
 def scaled(spec: str):
     """A trial setting: `pores*1.15`, `micro*1.35`, `relief*2` (the scan relief's normal-map strength), `rough*0.75`,
-    `spec*1.5`, `coat*3`, `coatrough*0.5`, `sss*2` (`SHINE`), `roughvar*0.3` (`roughvar`), joined by `+` - each
-    changed everywhere on the skin, to see a change before it is made."""
+    `spec*1.5`, `coat*3`, `coatrough*0.5`, `sss*2` (`SHINE`), `roughvar*0.3` (`roughvar`), `poresize*1.25` (the pore
+    tile k times as big on the skin: its tiling scale, `maps._tiled_coords`' `pore_scale_*` values, / k), joined by
+    `+` - each changed everywhere on the skin, to see a change before it is made."""
     def prepare(built: dict) -> None:
         for part in spec.split("+"):
             key, factor = part.split("*")
@@ -308,6 +309,12 @@ def scaled(spec: str):
                 if key in ("pores", "micro"):
                     node = nt.nodes[_maps().NODE + f"{key.rstrip('s')}_depth"]
                     node.inputs[1].default_value *= float(factor)
+                elif key == "poresize":  # the first tile's scale and every later tile's step, all / k
+                    for node in nt.nodes:
+                        if node.name == _maps().NODE + "pore_scale_1001":
+                            node.outputs[0].default_value /= float(factor)
+                        elif node.name.startswith(_maps().NODE + "pore_scale_"):
+                            node.inputs[1].default_value /= float(factor)
                 elif key == "relief":
                     nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"].default_value *= float(factor)
                 elif key in SHINE:
@@ -648,7 +655,7 @@ def ictsmile(built: dict, stem: str) -> None:
     bpy.context.view_layer.update()
 
 
-SCALED_KEYS = {"pores", "micro", "relief", "roughvar", *SHINE}
+SCALED_KEYS = {"pores", "micro", "relief", "roughvar", "poresize", *SHINE}
 
 
 def factor(name: str):
