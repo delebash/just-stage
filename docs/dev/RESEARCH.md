@@ -3298,6 +3298,15 @@ before the rec list; measured in Blender 5.3 and read in our code):
     his alone: clumped locks with light highlight bands (ours finer and even), the front quiff standing up and back
     (ours falls forward on one side), a lighter brown with grey at the sides. Next: clumping again on dense guides
     (`guidefile*aaron_cards+hairclump*0.35 / 0.6`).
+    - Clumping on his cut (by eye): 0.35 gives lock structure without harm; 0.6 heavy locks with bare partings on top
+      and at the temples.
+  - **Our own generator along his cut's field** (*measured by eye*, `factors fieldcut*field_aaron`; the field: his
+    cut on our head smoothed over 15 mm - lengths p50 53 mm, tip stand-off p50 10.7 mm; 2,918 of our own guides,
+    158,165 strands): its outline matches his cards-as-strands in the back and profile views, and fills the temple
+    where the converted cards left a bare patch. So our generator makes an artist's cut when given its field; styles
+    are fields we design. Still his alone: the front quiff lifting back (ours falls forward on one side - our growth
+    lays strands onto the scalp and lifts only toward the tip), the warm brown with light and grey streaks, the
+    clumped locks.
   - VOID, not evidence: `factors hairgrey*0.25 / *0.4` on the library style (2026-11-07 late; L* back 43 / 51,
     p95 62 / 65) were read through "taper5"'s cover mask, copied onto renders of another style, so skin and
     background are in the numbers. Re-measure with the style's own cover before using them.
