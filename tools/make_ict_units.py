@@ -12,7 +12,8 @@ every character applies it as it applies a Faceunits target (`face_units.add`; b
     1. python tools/dev.py blender -b --python tools/gate/smile_transfer.py -- export
            .dev/gate/smile/ours_average_man.npz
     2. .dev/venv-tools/Scripts/python -I tools/gate/smile_transfer.py carry .dev/gate/smile/ours_average_man.npz
-           .dev/downloads/ict_facekit_2026-11-07 .dev/gate/smile/ict_units.npz eyeBlink_L,eyeBlink_R
+           extension/juststage/data/fetched/ict .dev/gate/smile/ict_units.npz eyeBlink_L,eyeBlink_R
+       (ICT's files from `python tools/fetch_data.py`)
     3. .dev/venv-tools/Scripts/python -I tools/make_ict_units.py .dev/gate/smile/ict_units.npz
 
 Writes `extension/juststage/data/generated/faceunits_ict/<ARKit name>.npz` (index, delta in metres)."""
