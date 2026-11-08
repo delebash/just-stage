@@ -331,7 +331,7 @@ him (local only). Reads as his -> our body and renderer carry CC5 there, and wha
 | 15 | Feet | feasible | his leg skin on our foot measures inside his band (excess 0.0023, p 0.21) | a scanned foot's maps |
 | 16 | Nails | feasible as modelling | his nail plate's own geometry and material read as a real nail on our finger; our fingertip round it doesn't fit | the nail bed and cuticle fold (loops), the colour |
 | 9 | Smile | pending | his lower-face shape plus ICT's smile (block C) | - |
-| 17 | Body rig | pending | his posed views re-rendering (two faults in the test fixed) | - |
+| 17 | Body rig | feasible (bends) | our mesh with MPFB2's weights bends cleanly at elbow, knee, hip, shoulder like his; a twist untested | twist bones, correctives, definition (maps, build) |
 | 18 | Whole body | pending | all his content on our body at once (queued) | - |
 | 19 | Any character | pending | his skin on our Average woman (queued); HD Ariana not exported | - |
 | 20 | Live view speed | pending | today's gate scene's fps (block C) | - |
