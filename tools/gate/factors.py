@@ -926,7 +926,8 @@ def aaronteeth(built: dict) -> None:
     our_pts = pg._world(ours, evaluated=False)
     his_teeth = next(o for o in dst.objects if o.name.startswith("CC_Base_Teeth"))
     his_pts = pg._world(his_teeth, evaluated=False)
-    scale = float(np.ptp(our_pts[:, 0]) / np.ptp(his_pts[:, 0]))
+    scale = 1.0  # his teeth at their own size: our teeth part's width holds its tongue and gums (x1.19 pushed his
+    # lower teeth out through our lip, 2026-11-08)
     a, b = np.array(pg._front_teeth(his_pts)), np.array(pg._front_teeth(our_pts))
     move = Matrix.Translation(b) @ Matrix.Scale(scale, 4) @ Matrix.Translation(-a)
     for obj in dst.objects:
@@ -1032,17 +1033,13 @@ def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
         obj.data.vertices.foreach_set("co", world.ravel())
         obj.data.update()
     bpy.context.view_layer.update()
-    for obj in dst.objects:
-        mod = obj.modifiers.new("Rides our face", "SURFACE_DEFORM")
-        mod.target = body
-        with bpy.context.temp_override(object=obj, active_object=obj):
-            bpy.ops.object.surfacedeform_bind(modifier=mod.name)
+    # static on the neutral face: a Surface Deform bound to the body broke them into shards (the body renders through
+    # its helper mask, so the bound and the rendered target differ) - the blink view can't show them
     cid = body.juststage.character_id
     for o in bpy.context.scene.objects:
         if o.juststage.part_of == cid and o.juststage.part in ("eyebrows", "eyelashes", "beard"):
             o.hide_render = True
-    print("AARON CARDS:", [o.name for o in dst.objects], "bound", [o.modifiers[0].is_bound for o in dst.objects],
-          flush=True)
+    print("AARON CARDS:", [o.name for o in dst.objects], "placed, static", flush=True)
 
 
 def aaroneyes(built: dict) -> None:
