@@ -408,20 +408,20 @@ def hairclump(built: dict, factor: float) -> None:
 
 
 def hairgrey(built: dict, share: float) -> None:
-    """The scalp grooms' share of near-unpigmented strands (`scalp.GREY_SHARE`, the strand colour group's "Grey Share",
-    set on each groom's modifier) - HD Aaron's highlights (p95 60 at the back) come from light strands among dark."""
+    """The scalp grooms' share of near-unpigmented strands (`scalp.GREY_SHARE`) set inside the strand colour group: its
+    random pick's Probability unhooked from the group's "Grey Share" input and set (Blender 5.3 refuses a modifier's
+    input set as an ID property) - HD Aaron's highlights (p95 60 at the back) come from light strands among dark."""
     group = bpy.data.node_groups.get("JustStage strand colour")
-    ident = next(i.identifier for i in group.interface.items_tree if getattr(i, "name", "") == "Grey Share")
-    n = 0
+    pick = next(n for n in group.nodes if n.type == "RANDOM_VALUE" and n.data_type == "BOOLEAN")
+    socket = pick.inputs["Probability"]
+    for link in list(socket.links):
+        group.links.remove(link)
+    socket.default_value = share
     for obj in bpy.data.objects:
-        if obj.type == "CURVES" and obj.juststage.part == "scalp":
-            for m in obj.modifiers:
-                if m.type == "NODES" and m.node_group == group:
-                    m[ident] = share
-                    n += 1
+        if obj.type == "CURVES":
             obj.data.update_tag()
     bpy.context.view_layer.update()
-    print("HAIR GREY", share, "on", n, "modifiers", flush=True)
+    print("HAIR GREY", share, flush=True)
 
 
 def hairmelanin(built: dict, melanin: float) -> None:
@@ -547,6 +547,55 @@ def lidcarry(built: dict, *shares: float) -> None:
     print("LID CARRY", shares, "on", rows, "rows", flush=True)
 
 
+def lidsmooth(built: dict, rings: int, iterations: int) -> None:
+    """The lower lid's skin past its lash line relaxed (Laplacian smoothing, the lash line and the outermost ring held):
+    `rings` rings of lid skin below the lower lash line, `iterations` passes, on the shaped character (every key
+    mixed), the change added to the contact key (base.CONTACT) - the lower lid's thick roll is its skin bulging between
+    the lash line the contact pulls onto the eyeball and the skin beyond that the eye-open sliders pushed out (no film,
+    shine, slider, margin width or carry setting removed it, 2026-11-07). A shape: --alone."""
+    base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    body = built["body"]
+    me = body.data
+    shaped = build.shaped_coords(body)
+    rows = base.rows()
+    edges = np.empty(len(me.edges) * 2, np.int64)
+    me.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    nbr: dict[int, set[int]] = {}
+    for a, b in edges:
+        nbr.setdefault(int(a), set()).add(int(b))
+        nbr.setdefault(int(b), set()).add(int(a))
+    lash = rows[:, 0][rows[:, 0] >= 0]
+    lid = set(int(v) for v in rows[rows >= 0])
+    lower = [int(v) for v in lash if shaped[v, 2] < np.median(shaped[lash, 2])]  # the lash line's lower half
+    top = shaped[lower, 2].max() + 0.001
+    ring_sets, seen, frontier = [], set(lid), set(lower)
+    for _ in range(rings + 1):
+        nxt = {u for v in frontier for u in nbr[v]} - seen
+        nxt = {u for u in nxt if shaped[u, 2] < top}  # the lid's skin below the lash line, not the eye's opening
+        ring_sets.append(nxt)
+        seen |= nxt
+        frontier = nxt
+    free = sorted(set().union(*ring_sets[:-1]))  # the last ring held
+    co = shaped.copy()
+    for _ in range(iterations):
+        new = co.copy()
+        for v in free:
+            new[v] = co[list(nbr[v])].mean(0)
+        co = new
+    delta = (co - shaped).astype(np.float32)
+    key = me.shape_keys.key_blocks[base.CONTACT]
+    kco = np.empty(len(me.vertices) * 3, np.float32)
+    key.data.foreach_get("co", kco)
+    key.data.foreach_set("co", (kco.reshape(-1, 3) + delta / max(key.value, 1e-6)).ravel())
+    me.update()
+    bpy.context.view_layer.update()
+    moved = np.linalg.norm(delta, axis=1)
+    print("LID SMOOTH", rings, "rings,", iterations, "passes,", len(free), "vertices, most moved",
+          round(float(moved.max()) * 1000, 2), "mm", flush=True)
+
+
 def eye_slider(built: dict, key: str, value: float) -> None:
     sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
     catalog = sliders.catalog()
@@ -578,6 +627,9 @@ def factor(name: str):
         return lambda built: hairdensity(built, float(name.split("*")[1]))
     if name.startswith("hairmelanin"):  # hairmelanin*1.0
         return lambda built: hairmelanin(built, float(name.split("*")[1]))
+    if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
+        _, rings, passes = name.split("*")
+        return lambda built: lidsmooth(built, int(rings), int(passes))
     if name.startswith("lidcarry"):  # lidcarry*0.85*0.7*0.55 (a share a ring)
         shares = [float(x) for x in name.split("*")[1:]]
         return lambda built: lidcarry(built, *shares)
