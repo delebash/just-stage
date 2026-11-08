@@ -559,6 +559,27 @@ def poretile(built: dict, stem: str) -> None:
     print("PORE TILE", stem, f"{new_mm:.1f} mm (was {old_mm:.1f}) on", n, "nodes", flush=True)
 
 
+REGION_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "regions"
+
+
+def regions(built: dict, stem: str) -> None:
+    """The face's region map swapped for a variant (`.dev/gate/regions/<stem>/face_regions.png`, made by
+    `tools/make_face_regions.py -- --out ... --pores forehead=1.2`): one region's relief depth changed, the rest as
+    shipped (2026-11-08: round 1's `pores*0.6` helped the forehead and hurt the cheek - the forehead alone)."""
+    maps = _maps()
+    image = bpy.data.images.load(str(REGION_TRIALS / stem / "face_regions.png"), check_existing=False)
+    image.colorspace_settings.name = "Non-Color"
+    n = 0
+    for nt in _skin_trees(built):
+        node = nt.nodes.get(maps.NODE + "face_regions")
+        if node is not None:
+            node.image = image
+            n += 1
+    if not n:
+        raise RuntimeError("no region map node found on the skin")
+    print("REGIONS", stem, "on", n, "skins", flush=True)
+
+
 #: the eye-open sliders (body_create.EYE_OPEN) one at a time - the lower lid's thick roll at the eye view; shape keys,
 #: so these run alone (`--alone`: a build each - the trials' material reset doesn't undo a shape)
 EYE_SLIDERS = {"eyebag": "bag-decr-incr", "eyeheight2": "height2-decr-incr", "eyefold": "eyefold-concave-convex",
@@ -2194,6 +2215,8 @@ def mix(built: dict, first: str, second: str = "", strength: float = 1.0) -> Non
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("regions*"):  # regions*fh1p2 (a region-map variant's folder under .dev/gate/regions)
+        return lambda built: regions(built, name.split("*", 1)[1])
     if name.startswith("mix*"):  # mix*0, mix*0*3, mix*0*3*0.7 (identities by index or name, the strength)
         first, *rest = name.split("*")[1:]
         second = rest[0] if rest else ""

@@ -152,9 +152,23 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   in `.dev/backup/pores_2026-11-08`. Not repeated: red mottling (row 1 says it doesn't move the cheek).
 - **2a** (`scratchpad/batch_r2a.sh`, out `.dev/gate/parts/2026-11-08r2a`): the tile regenerated and checked equal to the
   trial's; our man with it as built, and with the scans' fold relief x1.5 and x2 (the fold band 1.01 against 1.35).
-- **2b** after 2a's numbers: the forehead's own pore depth (`make_face_regions.py` REGIONS forehead 2.0 -> 1.2, round
-  1's `pores*0.6` helped the forehead and hurt the cheek - so the forehead alone), the regions image backed up first.
-- Waiting: the release's CPU pause (its e2e), then just voice's card piece (~25 min).
+- **2b in the same build:** the forehead's own pore depth as region-map variants (round 1's `pores*0.6` helped the
+  forehead and hurt the cheek - so the forehead alone): `make_face_regions.py -- --out .dev/gate/regions/<name>
+  --pores forehead=1.2` (x0.6) and `=1.5` (x0.75), swapped in by `factors.py regions*<name>`; the shipped map is
+  changed only if a variant wins. Each is one change against the as-built baseline in the same build.
+- 12:5x: the tile regenerating (CPU); the variants generating (CPU); just voice has the card (~25-30 min); then 2a.
+- 13:08: the tile regenerated, equal to the trial's (`r2a_tile.log` "TILE SAME AS TRIAL") - our shipped pore tile now;
+  both variants written (`regions_variants.log`).
+- **14:05: the computer locked up and restarted** (round 2a not yet started - it waited on just voice's card; nothing
+  lost). This job's scratchpad is the previous session's:
+  `F:/ClaudeCode/tmp/claude/bff537e12af9b769/5a1c3314-77f3-4a60-8d1a-9d80b40bc2f8/scratchpad`.
+- **14:2x, found before rendering:** the variants differ from the shipped map not only in the forehead's pores but at
+  region borders in every channel (R, G, B: 287k / 45k / 51k pixels, up to 8 levels in G and B) - the map is made on
+  today's New human, whose default shape has changed since the shipped map (2026-11-07 18:57). So today's map unchanged
+  (`--out .dev/gate/regions/base`, no `--pores`) is in the round as `regions*base`: it differs from the shipped map at
+  81,213 border pixels (max 8 levels), and the two variants differ from it in R alone (the forehead's pores; ratio
+  down to 0.603 / 0.750 at the region's core). Each forehead variant is judged against `regions*base`, not against
+  `micro*1`. 14:2x: both peers gave the card; round 2a running (`batch_r2a.log`).
 
 ## Mistakes to avoid
 

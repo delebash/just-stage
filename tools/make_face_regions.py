@@ -57,7 +57,26 @@ NECK_BELOW = 0.065  # m below the mouth: the chin's underside and down
 SOFTEN = 4  # passes over the mesh's neighbours
 
 
+def _options() -> tuple[dict, object]:
+    """`-- --out DIR --pores REGION=FACTOR[,...]`: a trial's variant (tools/gate/factors.py `regions*<name>` swaps it
+    in) - the region table with those pore factors (before SCALE), written into DIR; none: the shipped file."""
+    import argparse
+    import sys
+    from pathlib import Path
+
+    p = argparse.ArgumentParser(prog="make_face_regions.py --")
+    p.add_argument("--out", type=Path, default=None)
+    p.add_argument("--pores", default="")
+    a = p.parse_args(sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else [])
+    table = dict(REGIONS)
+    for pair in filter(None, a.pores.split(",")):
+        name, factor = pair.split("=")
+        table[name] = (float(factor) * SCALE[0], *table[name][1:])
+    return table, a.out
+
+
 def main() -> None:
+    regions, out_dir = _options()
     made = api.run("juststage.body.create", name="Face regions")
     api.run("juststage.head.add_parts", character=made.character)
     body = bpy.data.objects[made.object]
@@ -77,7 +96,7 @@ def main() -> None:
     near_eye = np.min(np.linalg.norm(co[:, None, :] - pupils[None, :, :], axis=2), axis=1) < 0.017
     region[front & near_eye] = "eyes"
     region[z < mouth_z - NECK_BELOW] = "neck"
-    table = {**{k: (*v, 1.0) for k, v in REGIONS.items()}, "neck": (1.0, 1.0, material.ROUGHNESS, 0.0)}
+    table = {**{k: (*v, 1.0) for k, v in regions.items()}, "neck": (1.0, 1.0, material.ROUGHNESS, 0.0)}
     values = np.array([table[r] for r in region], np.float32)
     me = body.data
     edges = np.array([e.vertices for e in me.edges])
@@ -90,8 +109,8 @@ def main() -> None:
         values = acc / cnt[:, None]
     uv_layer = me.uv_layers[maps.UV].data
     image = np.zeros((SIZE, SIZE, 4), np.float32)
-    image[..., 0], image[..., 2] = (REGIONS["cheek"][k] / RELIEF_SCALE for k in (0, 1))
-    image[..., 1] = REGIONS["cheek"][2]
+    image[..., 0], image[..., 2] = (regions["cheek"][k] / RELIEF_SCALE for k in (0, 1))
+    image[..., 1] = regions["cheek"][2]
     image[..., 3] = 1.0
     for p in me.polygons:
         uvs = np.array([[uv_layer[i].uv.x - (HEAD_TILE - 1001), uv_layer[i].uv.y] for i in p.loop_indices])
@@ -117,7 +136,8 @@ def main() -> None:
             image[rows, cols, 2] = v[:, 1] / RELIEF_SCALE
             image[rows, cols, 1] = v[:, 2]
             image[rows, cols, 3] = v[:, 3]
-    out = paths.GENERATED / "skin" / "face_regions.png"
+    out = (out_dir or paths.GENERATED / "skin") / "face_regions.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
     maps.write_png(out, image[..., :3])
     # the face's share in a map of its own (packed in the region map's alpha, the live view divided R, G, B by it)
     maps.write_png(out.with_name("face_share.png"), np.repeat(image[..., 3:4], 3, axis=2))

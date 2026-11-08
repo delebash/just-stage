@@ -22,13 +22,21 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - `docs/standards/README.md` §1 and §3: a job's governing standard is read before its plan.
 - Memory: the index (loaded automatically) and `search-mistakes` before any search, rec or plan.
 
-## The active job: THE PLAN - read in full
+## The active job: OUR ASSETS TO HD AARON (the own-content proof), under THE PLAN - read both in full
 
+- **`docs/plans/2026-11-08-own-content-proof.md` - the working doc, read FIRST** (the user, 2026-11-08 ~09:55: "prove
+  if we can meet quality that means with our texstures"; the plan approved ~10:40, TASKS "UNTIL A VERDICT ON EVERY
+  PART" -> "OUR ASSETS TO HD AARON"): part by part, our own content against HD Aaron in EEVEE, fixing it; its status
+  table, candidate fixes, rounds and run log. The transplant verdicts further down are diagnostics, not verdicts. Its
+  batch scripts and logs live in the scratchpad of the session before the 2026-11-08 14:05 lock-up,
+  `F:/ClaudeCode/tmp/claude/bff537e12af9b769/5a1c3314-77f3-4a60-8d1a-9d80b40bc2f8/scratchpad` ("scratchpad/" in the
+  doc).
 - **`docs/plans/2026-11-06-the-plan.md`** - the final method per part, its status and its gate measure; §19 the
   decisions (19.1 taken under the user's go of 2026-11-07, 19.2 waiting for the user - nothing stops for them); §20
   the build order. Checked claim by claim by four independent readers 2026-11-07 (`.dev/audit/2026-11-07/CHECK-A.md`
   to `CHECK-D.md`).
-- TASKS' first entry (THE DEEP READ, THEN ONE PLAN - with the user's words of 2026-11-07).
+- TASKS' first entry (UNTIL A VERDICT ON EVERY PART, with OUR ASSETS TO HD AARON - the user's words of 2026-11-08)
+  and THE DEEP READ, THEN ONE PLAN (the user's words of 2026-11-07).
 - RESEARCH.md §14 (the character, part by part: 14.N = the plan's §N) for the part being worked on.
 
 ### Where it stands (update after every step)
@@ -37,9 +45,13 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   every part and the whole body has a verdict (meets HD Aaron or provably can't); then on to the app's other features.
   Decisions attacked to consensus and kept (changed only on a new measured fact, shown). After a compaction: read this
   file, the plan's §18a and §19.3 and `docs/gate/2026-11-07/report.md` first; keep a background job running.**
-- **Wake-ups (session-only, set 2026-11-08 ~00:40, expire after 7 days or with the session - set them again with
-  CronCreate):** every 20 min when idle, resume the verdict work from these docs; every 3 h, remind every peer session
-  of the shared rules (the user: "they can help keep you on task").
+- **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
+  2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
+  every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-08 14:05: the computer locked up and restarted.** Lost: nothing on disk - round 2a (face skin) had not
+  started (it waited for just voice's card). 14:2x: found the forehead region-map variants also differed from the
+  shipped map at region borders (the map is made on today's New human), so `regions*base` (today's map, unchanged) was
+  added as their one-change baseline; round 2a running (`batch_r2a.sh`, log `batch_r2a.log`).
 
 - **2026-11-08 ~02:00 (read the plan's §18a for each row's numbers):** block B ended; suites: unit 45 passed, tools
   33 passed, Blender ~143 passed / 1 failed (test_lashes: the ledge turn put one lash on the nose - fixed by
