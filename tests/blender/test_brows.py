@@ -45,7 +45,7 @@ def _evaluated(obj) -> np.ndarray:
 
 def test_brows_are_single_hairs_flowing_from_head_to_tail(man):
     made, body = man
-    made_strands, _radii, _melanin = brows.strands(body)
+    made_strands, _radii, _melanin = brows.rimmed(body)
     groom = brows.make(body)
     assert len(made_strands) == 2 * (brows.COUNT + brows.FINE)  # both brows, coarse and fine hairs, one a follicle
     assert groom.parent == body and groom.data.surface == body and groom.juststage.part == "eyebrows"
@@ -116,3 +116,31 @@ def test_brows_have_hd_aarons_grey_hairs_soft_head_and_arched_hairs(man):
     assert np.mean(turned[at_head]) > 0.15  # outward (toward the tail) by the tip
     assert np.mean(turned) > 0.0  # never away from it
     assert max(r[0] for r in radii) <= 0.00004  # finer than 0.08 mm at the root
+
+
+@pytest.mark.parametrize("gender", [1.0, 0.0])
+def test_the_brows_lower_edge_sits_on_the_rim_out_of_the_blinks_reach(gender):
+    """2026-11-08: MakeHuman's region put the roots on the lid's top, which the blink moves 5-12 mm, so the hairs swept
+    over the closing lid. On the rim (RIM_RADII eyeball radii above each eye's centre) they stay put."""
+    made, body = _human(f"Brow rim {gender}", gender=gender)
+    try:
+        api.run("juststage.head.add_parts", character=made.character)
+        api.run("juststage.head.add_face_units", character=made.character)
+        eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+        parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+        found, _r, _m = brows.rimmed(body)
+        roots = np.array([s[0] for s in found])
+        for name in ("eyeLeft", "eyeRight"):
+            centre, radius = eye_layers._eye_sphere(parts.parts_of(body)[name])
+            heights = roots[np.sign(roots[:, 0]) == np.sign(centre[0]), 2] - centre[2]
+            assert np.percentile(heights, 10) >= brows.RIM_RADII * radius - brows.RIM_TOLERANCE - 1e-4, (name, radius)
+        groom = brows.make(body)
+        before = _evaluated(groom).reshape(len(found), brows.POINTS, 3)
+        keys = body.data.shape_keys.key_blocks
+        keys["eyeBlinkLeft"].value = keys["eyeBlinkRight"].value = 1.0
+        bpy.context.view_layer.update()
+        after = _evaluated(groom).reshape(len(found), brows.POINTS, 3)
+        swept = np.linalg.norm(after[:, -1] - before[:, -1], axis=1) > 0.002
+        assert swept.mean() < 0.02, swept.mean()  # the blink leaves the brows: a few hairs at most
+    finally:
+        _remove(made)

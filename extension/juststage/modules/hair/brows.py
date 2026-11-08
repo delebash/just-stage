@@ -49,6 +49,12 @@ MELANIN, REDNESS, MELANIN_SPREAD = 0.92, 0.12, 0.05
 #: alone read thin beside HD Aaron's
 FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 1400, 0.5, 0.000022, 0.8
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
+#: the band's lower edge (its roots' 10th percentile) at least this many eyeball radii above the eye's centre - about
+#: the orbital rim, where a man's brow lies (RESEARCH 14.13 "Where a brow sits"). MakeHuman's region put our roots
+#: 6-12.5 mm up (median 8.5) on the lid's top, which the blink moves 5-12 mm, so the hairs swept over the closing lid;
+#: HD Aaron's brow starts 13.7 mm above a 13.2 mm eye (1.04 radii). Measured 2026-11-08 on the default man: lifted to
+#: the rule (~9 mm) his roots sit 15-22 mm up and the blink moves 4 of 4,400 hairs (1,817 before)
+RIM_RADII, RIM_TOLERANCE = 1.0, 0.0005  # m: a band within half a millimetre of the rule is left
 
 
 def region_uvs(style: str = STYLE) -> np.ndarray:
@@ -72,8 +78,9 @@ def region_uvs(style: str = STYLE) -> np.ndarray:
     return uv.reshape(-1, 2).astype(np.float64)
 
 
-def strands(body: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHARE):
-    """Both brows' hairs on the body's current shape, in world space: (strands, radii, melanin per strand)."""
+def strands(body: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHARE, lift: dict | None = None):
+    """Both brows' hairs on the body's current shape, in world space: (strands, radii, melanin per strand). `lift`:
+    metres to raise each side's band ({-1.0: right, 1.0: left}) before the hairs are rooted on the skin."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
@@ -92,7 +99,7 @@ def strands(body: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHA
     found, radii, melanin = [], [], []
     t_points = np.linspace(0.0, 1.0, POINTS)
     for side in (-1.0, 1.0):  # the character's right (-X), left
-        roots = region[np.sign(region[:, 0]) == side]
+        roots = region[np.sign(region[:, 0]) == side] + np.array([0.0, 0.0, (lift or {}).get(side, 0.0)])
         if len(roots) < 10:
             continue
         lateral = np.abs(roots[:, 0])
@@ -158,12 +165,48 @@ def strands(body: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHA
     return found, radii, melanin
 
 
+def rim_lift(character: bpy.types.Object, found: list) -> dict:
+    """Per side, how far the band must rise so its roots' 10th percentile sits RIM_RADII eyeball radii above that
+    side's eye centre (the eye parts' spheres); empty when both already do."""
+    from ..head import eye_layers, parts
+
+    eyes = parts.parts_of(character)
+    roots = np.array([s[0] for s in found])
+    lift = {}
+    for name in ("eyeLeft", "eyeRight"):
+        if name not in eyes:
+            continue
+        centre, radius = eye_layers._eye_sphere(eyes[name])
+        side = float(np.sign(centre[0]))
+        heights = roots[np.sign(roots[:, 0]) == side, 2] - centre[2]
+        if len(heights):
+            short = RIM_RADII * radius - float(np.percentile(heights, 10))
+            if short > 0:
+                lift[side] = short
+    return lift
+
+
+def rimmed(character: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHARE):
+    """`strands` with each band lifted onto the rim (RIM_RADII): grown, measured, grown again - up to three times, as
+    rooting on the skin's curve can land a little short. What `make` places."""
+    found, radii, melanin = strands(character, seed, grey_share)
+    total: dict = {}
+    for _ in range(3):
+        lift = {side: dz for side, dz in rim_lift(character, found).items() if dz > RIM_TOLERANCE}
+        if not lift:
+            break
+        for side, dz in lift.items():
+            total[side] = total.get(side, 0.0) + dz
+        found, radii, melanin = strands(character, seed, grey_share, total)
+    return found, radii, melanin
+
+
 def make(character: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHARE) -> bpy.types.Object:
     """JustStage's brows on the character, replacing its brows: one groom for both (part "eyebrows")."""
     from . import groom
 
     groom._check_surface(character)
-    found, radii, melanin = strands(character, seed, grey_share)
+    found, radii, melanin = rimmed(character, seed, grey_share)
     rest, uvs = lashes.to_rest(character, found)
     curves = bpy.data.hair_curves.new(NAME)
     curves.add_curves([POINTS] * len(rest))
