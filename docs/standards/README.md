@@ -31,7 +31,13 @@
 
 Every piece names the **standard** it follows with its doc link (an official spec, a maintained project's documented
 format or code, or our own existing code in the web kit), or is marked **NOT STANDARD** with the standard option and the
-trade-off beside it. A NOT STANDARD piece waits for the user's word on it **by name** (a blanket go never covers it).
+trade-off beside it. Under a go, a NOT STANDARD piece is built once at least two attack passes from different angles,
+against the standard option, show it is the best path and the last pass finds nothing new; it stays marked here and in
+the plan with the standard option, trade-off and evidence, and the report names it; replacing a standard piece the user
+approved still waits for the user (the user, 2026-11-07: "the non standar you can do without stoping and asking for a
+seperate go as long as you have done you multiple adverserily think on it and dtermined this is the best path"; the
+global rules' "Standard first"). Without a go it is a rec like any other. (Until 2026-11-07: "waits for the user's word on
+it by name - a blanket go never covers it".)
 
 | # | Piece | Where | Standard option | Trade-off | State |
 |---|---|---|---|---|---|
