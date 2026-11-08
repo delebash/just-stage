@@ -745,6 +745,30 @@ def blinkfix(built: dict) -> None:
     bpy.context.view_layer.update()
 
 
+def rigsmooth(built: dict, iterations: int) -> None:
+    """Checklist row 17's corrective, tried: the gate's body rig (`body_rig.build`, as the posed views build it) with
+    Blender's Corrective Smooth modifier after the Armature (delta mush - the standard cheap joint corrective; the
+    plan's own is body.dna's RBF, Q-RIG-7), bound at rest; `iterations` 0 leaves the plain rig (the factor's control).
+    The posed views (`pose_*`) then render through it. A new rig: --alone."""
+    spec = importlib.util.spec_from_file_location("body_rig", HERE / "body_rig.py")
+    body_rig = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(body_rig)
+    body = built["body"]
+    arm = body_rig.build(body)
+    built["rig"], built["rig_start"] = arm, {pb.name: pb.matrix_basis.copy() for pb in arm.pose.bones}
+    if iterations:
+        mod = body.modifiers.new("Corrective Smooth", "CORRECTIVE_SMOOTH")
+        body.modifiers.move(len(body.modifiers) - 1, 1)  # right after the Armature
+        mod.iterations, mod.factor, mod.smooth_type, mod.rest_source = iterations, 0.5, "LENGTH_WEIGHTED", "BIND"
+        mod.use_pin_boundary = True
+        with bpy.context.temp_override(object=body, active_object=body):
+            bpy.ops.object.correctivesmooth_bind(modifier=mod.name)
+        bpy.context.view_layer.update()
+        print("RIG SMOOTH", iterations, "iterations, bound:", mod.is_bind, flush=True)
+    else:
+        print("RIG SMOOTH 0: the plain rig", flush=True)
+
+
 def browlift(built: dict, mm: float) -> None:
     """Checklist row 12's fix, tried: our brows grown again (`brows.make`) with their band lifted `mm` before the hairs
     are rooted on the skin - our roots sit 0-12.5 mm above the eye's centre (median 8.5), on the lid the blink moves
@@ -1634,6 +1658,8 @@ def factor(name: str):
         return lambda built: aaronshape(built, "aaron_skin_pinned", region)
     if name.startswith("aaronwrinkles*"):  # aaronwrinkles*smile (after aaronskin: his wrinkle maps as his smile sets them)
         return lambda built: aaronwrinkles(built, name.split("*")[1])
+    if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)
+        return lambda built: rigsmooth(built, int(name.split("*")[1]))
     if name.startswith("browlift*"):  # browlift*9 (the brows grown again, their band lifted 9 mm)
         return lambda built: browlift(built, float(name.split("*")[1]))
     if name.startswith("setkey*"):  # setkey*mouthClose*0.1 (a body shape key held at a value)
