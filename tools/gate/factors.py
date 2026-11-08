@@ -979,6 +979,27 @@ def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     _transplant(built, stem, 1001, "Std_Skin_Head")
 
 
+def aaronwrinkles(built: dict, expression: str) -> None:
+    """Checklist row 13's deciding test (a LOCAL TEST, after `aaronskin`): HD Aaron's own wrinkle maps on our face in
+    our smile. His head material's wrinkle shader (CC Blender Tools' rl_wrinkle_shader) is fed by 46 drivers on his
+    body's keys; in his scene his smile (the gate's: Mouth_Corner_Pull_L/R 1) gives 12 of its inputs 0.6-1.0
+    (`.dev/gate/hair/aaron_wrinkles.json`, read 2026-11-08 by evaluating each driver's expression). Here the appended
+    copy's drivers are dropped and those inputs set: with our smile (`ictsmile`, the smile views) do his crow's feet
+    and smile lines read on our face as on his?"""
+    import json
+
+    values = json.loads((HAIR_TRIALS / "aaron_wrinkles.json").read_text())[expression]
+    mats = [s.material for s in built["body"].material_slots if s.material and s.material.name.startswith("Std_Skin_Head")]
+    for mat in mats:
+        nt = mat.node_tree
+        nt.animation_data_clear()
+        for key, value in values.items():
+            node, idx = key.rsplit("|", 1)
+            nt.nodes[node].inputs[int(idx)].default_value = value
+    print("AARON WRINKLES", expression, "on", [m.name for m in mats], sum(abs(v) > 1e-4 for v in values.values()),
+          "inputs on", flush=True)
+
+
 def aaronbody(built: dict, stem: str = "aaron_torso") -> None:
     """THE TRANSPLANT for the body (checklist row 14, a LOCAL TEST): his body skin (`groom_transfer.py region`) on our
     body tile's faces within 1 cm of it (`_transplant`)."""
@@ -1594,6 +1615,8 @@ def factor(name: str):
     if name.startswith("aaronshape"):  # aaronshape[*lower] (our head moved onto his face shape; "lower": below the eyes)
         region = name.split("*", 1)[1] if "*" in name else ""
         return lambda built: aaronshape(built, "aaron_skin_pinned", region)
+    if name.startswith("aaronwrinkles*"):  # aaronwrinkles*smile (after aaronskin: his wrinkle maps as his smile sets them)
+        return lambda built: aaronwrinkles(built, name.split("*")[1])
     if name.startswith("setkey*"):  # setkey*mouthClose*0.1 (a body shape key held at a value)
         _k, key, value = name.split("*")
         return lambda built: setkey(built, key, float(value))

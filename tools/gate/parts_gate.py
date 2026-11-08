@@ -105,6 +105,7 @@ VIEWS = {
     "mouth_smile": ("teeth and gums, lips", "smile"),
     "face_browInnerUp": ("expression, brows", "browInnerUp"),
     "eye_blink": ("lids closed: no gap, no clip, lashes", "blink"),
+    "eye_smile": ("the crow's feet and the lower lid in the smile (wrinkles, checklist row 13)", "smile_full"),
     "face_blink": ("expression, lids", "blink"),
     "face_talk_aa": ("speech, jaw", "talk_aa"),
     "mouth_talk_aa": ("teeth, tongue, the inner mouth", "talk_aa"),
@@ -404,7 +405,7 @@ def view(name: str, a: dict[str, Vector]):
         return m + _v(0, 0, -0.035), _v(0, -1, 0), z, face
     if name == "hair_back":
         return m + _v(0, 0.08, 0.03), _v(-0.5, 0.85, 0.25), z, 0.34
-    if name in ("eye", "eye_blink"):
+    if name in ("eye", "eye_blink", "eye_smile"):
         return a["pupil_r"] + _v(0, 0, 0.004), _v(-0.17, -0.985, 0), z, 0.075
     if name in ("lips", "mouth_jawOpen", "mouth_smile", "mouth_talk_aa"):
         return a["mouth"] + _v(0, 0, -0.008), _v(0, -1, 0.08), z, 0.09
