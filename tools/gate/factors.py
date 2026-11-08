@@ -1525,6 +1525,17 @@ def ictsmile(built: dict, stem: str, mouth: float = 1.0, cheek: float = 1.0) -> 
             key.data.foreach_set("co", (ref + d).astype(np.float32).ravel())
             print("ICT SMILE", f"{shape}{short}", "->", key.name, "max",
                   round(float(np.linalg.norm(d, axis=1).max()) * 1000, 1), "mm", flush=True)
+    for single in sorted(k for k in deltas.files if k in blocks.keys()):  # one-key shapes (jawOpen, mouthFunnel ...)
+        key = blocks[single]
+        ref = np.empty(n * 3, np.float32)
+        key.relative_key.data.foreach_get("co", ref)
+        d = deltas[single].astype(np.float64)
+        if len(d) != n:
+            raise RuntimeError(f"{stem}: {len(d)} vertices carried, the body has {n} - export him again")
+        d = d @ to_local.T
+        key.data.foreach_set("co", (ref.reshape(-1, 3) + d).astype(np.float32).ravel())
+        print("ICT SHAPE", single, "->", key.name, "max", round(float(np.linalg.norm(d, axis=1).max()) * 1000, 1), "mm",
+              flush=True)
     me.update()
     bpy.context.view_layer.update()
 
