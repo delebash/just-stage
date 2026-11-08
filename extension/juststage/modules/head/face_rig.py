@@ -156,10 +156,11 @@ def _joints(character: bpy.types.Object, rig: dict, out) -> None:
         pb.rotation_euler = (math.radians(rx), math.radians(ry), math.radians(rz))
 
 
+#: runs on frame change and depsgraph update (an edit, or a script's view_layer.update())
 @persistent
 def _on_change(*_args) -> None:
     for obj in bpy.data.objects:
-        if obj.type == "MESH" and obj.get(MARK):
+        if obj.type == "MESH" and MARK in obj.keys():  # present: the rig is on (0 - the keys drive - is on too)
             evaluate(obj)
 
 

@@ -242,7 +242,7 @@ def set_expression(who: str, built: dict, name: str) -> None:
         for key in every:
             if key in blocks:
                 blocks[key].value = values.get(key, 0.0)
-    bpy.context.view_layer.update()
+    bpy.context.view_layer.update()  # our face rig's handler turns the jaw after its keys
 
 
 def _pose(who: str, built: dict, name: str | None) -> None:
