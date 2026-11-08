@@ -218,6 +218,50 @@ def carry(ours_npz: Path, archive: Path, style: str, out: Path) -> None:
     carry_strands(o["co"], o["tris"], hv, hf, strands, out, f"usc {style}")
 
 
+def carry_region(ours_npz: Path, source_npz: Path, out: Path, material: int, box: tuple, shift=(0.0, 0.0, 0.0),
+                 anchors=None, tile: int = 1002) -> None:
+    """HD Aaron's skin on one region of our body (a LOCAL TEST, the body's transplant): his triangles of `material`
+    (his slot index: 1 Std_Skin_Body, 2 Std_Skin_Arm) inside `box` ((x0, x1), (y0, y1), (z0, z1), metres, world)
+    aligned onto ours in the same box (centre to centre, then a scaled ICP) and wrapped onto our skin there (NICP);
+    saved as `carry_skin` saves the head's, for `factors aaronbody`. `shift` moves his body first (the two stand in
+    different places: ours pupils' midpoint less his), so one box holds both; `anchors` (his points, ours) instead
+    move him by the similarity between them (a hand's pose differs from ours). `tile`: our UDIM tile it covers."""
+    import trimesh
+    from trimesh import registration
+
+    o, s = np.load(ours_npz), np.load(source_npz)
+    (x0, x1), (y0, y1), (z0, z1) = box
+
+    def inside(p):
+        return (p[:, 0] > x0) & (p[:, 0] < x1) & (p[:, 1] > y0) & (p[:, 1] < y1) & (p[:, 2] > z0) & (p[:, 2] < z1)
+
+    co, tris = o["co"], o["tris"]
+    ours_in = inside(co)
+    target = trimesh.Trimesh(co, tris[ours_in[tris].all(1)], process=False)
+    sco, stris = s["co"] + np.asarray(shift), s["tris"]
+    if anchors is not None:
+        sco = st._apply(st._similarity(np.asarray(anchors[0]), np.asarray(anchors[1])), s["co"])
+    sel = np.flatnonzero((s["tmat"] == material) & inside(sco)[stris].all(1))
+    used = np.unique(stris[sel])
+    new = -np.ones(len(sco), np.int64)
+    new[used] = np.arange(len(used))
+    sv, sf = sco[used], new[stris[sel]]
+    start = np.eye(4)
+    start[:3, 3] = target.vertices[np.unique(target.faces)].mean(0) - sv.mean(0)
+    matrix, _, cost = registration.icp(sv, target, initial=start, threshold=1e-7, max_iterations=80, reflection=False,
+                                       scale=True)  # fmt: skip
+    placed = st._apply(matrix, sv)
+    print(f"ALIGNED: ICP mean {cost * 1000:.2f} mm, scale {np.cbrt(np.linalg.det(matrix[:3, :3])):.4f}", flush=True)
+    wrapped = registration.nricp_amberg(trimesh.Trimesh(placed, sf, process=False), target, steps=WRAP_STEPS,
+                                        distance_threshold=0.02, use_faces=True, use_vertex_normals=True)  # fmt: skip
+    gap = trimesh.proximity.closest_point(target, wrapped)[1]
+    print(f"WRAPPED: to our skin p50 {np.median(gap) * 1000:.2f} / p90 {np.percentile(gap, 90) * 1000:.2f} mm", flush=True)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(out, co=wrapped.astype(np.float32), tris=sf, tuv=s["tuv"][sel], uv_name=s["uv_name"],
+             placed=placed.astype(np.float32), all_tris=sf, material=str(s["names"][material]), tile=tile)  # fmt: skip
+    print(f"REGION: {len(sel)} of his {s['names'][material]} triangles -> {out}", flush=True)
+
+
 def carry_cards(ours_npz: Path, source_npz: Path, out: Path) -> None:
     """HD Aaron's own hair cards (a gate export of his .blend - LOCAL TEST ONLY, nothing of his ships) as strands on
     our head: his cut exactly, so our strands and shading are judged on the same cut."""
@@ -232,6 +276,19 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     if a[0] == "cards":  # cards OURS.npz SOURCE.npz OUT.npz
         carry_cards(Path(a[1]), Path(a[2]), Path(a[3]))
+    elif a[0] == "region":  # region OURS.npz SKIN_SOURCE.npz OUT.npz MATERIAL x0 x1 y0 y1 z0 z1
+        b = [float(v) for v in a[5:11]]
+        shift = [float(v) for v in a[11:14]] if len(a) >= 14 else (0.0, 0.0, 0.0)
+        carry_region(Path(a[1]), Path(a[2]), Path(a[3]), int(a[4]), ((b[0], b[1]), (b[2], b[3]), (b[4], b[5])), shift)
+    elif a[0] == "hand":  # hand OURS.npz SKIN_SOURCE.npz OUT.npz OURS_ANCHORS.json HIS_ANCHORS.json (the right hand)
+        import json
+
+        keys = ("wrist", "index1", "pinky1", "middle_tip")
+        ours_a, his_a = (json.loads(Path(x).read_text()) for x in (a[4], a[5]))
+        oa = np.array([ours_a[k] for k in keys])
+        lo, hi = oa.min(0) - 0.05, oa.max(0) + 0.05
+        carry_region(Path(a[1]), Path(a[2]), Path(a[3]), 2, ((lo[0], hi[0]), (lo[1], hi[1]), (lo[2], hi[2])),
+                     anchors=(np.array([his_a[k] for k in keys]), oa), tile=1003)
     elif a[0] == "skin":  # skin OURS.npz SKIN_SOURCE.npz OUT.npz [EYES.npz] (his eyeballs: the eye rims pinned)
         carry_skin(Path(a[1]), Path(a[2]), Path(a[3]), Path(a[4]) if len(a) > 4 else None)
     else:  # usc OURS.npz hairstyles.zip ID OUT.npz

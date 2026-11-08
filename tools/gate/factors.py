@@ -705,14 +705,16 @@ def eye_slider(built: dict, key: str, value: float) -> None:
 HAIR_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "hair"
 
 
-def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
+def _transplant(built: dict, stem: str, tile: int, material: str, near_m: float = 1.0) -> None:
     """THE TRANSPLANT (a LOCAL TEST - nothing of his ships): HD Aaron's own head material on our head, rendered our
     way. His head wrapped onto ours (`groom_transfer.py skin`, `.dev/gate/hair/<stem>.npz`); each corner of our
     head tile's faces reads his texture coordinate at its nearest point on his wrapped head, into a layer named as his
     material reads it; his material (appended from the gate's .blend) then goes on those faces with every texture
     lookup pointed at that layer. If our head reaches his look in his own skin, our head and renderer carry CC5's
     skin and what is left is content; if not, the gap is ours to find in the head or the render (the user,
-    2026-11-07: "if anyone cant meet quality we stop")."""
+    2026-11-07: "if anyone cant meet quality we stop"). Shared by `aaronskin` (his head on our head tile) and
+    `aaronbody` (his body skin on a region of another tile): our faces on UDIM tile `tile` within `near_m` metres of
+    his carried skin take his `material`."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
@@ -737,11 +739,13 @@ def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     head_polys = []
     for p in me.polygons:
         ls = list(p.loop_indices)
-        if not (0.0 <= udim[ls, 0].mean() < 1.0):  # the head tile, 1001
+        if not (tile - 1001 <= udim[ls, 0].mean() < tile - 1000):  # the tile asked for
+            continue
+        found = [tree.find_nearest(Vector(co[loop_v[li]])) for li in ls]
+        if any(f[0] is None or f[3] > near_m for f in found):  # off his carried skin
             continue
         head_polys.append(p.index)
-        for li in ls:
-            hit, _n, ti, _d = tree.find_nearest(Vector(co[loop_v[li]]))
+        for li, (hit, _n, ti, _d) in zip(ls, found, strict=True):
             a, b, c = src[stris[ti]]
             v0, v1, v2 = b - a, c - a, np.array(hit) - a
             d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
@@ -752,7 +756,7 @@ def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     layer = me.uv_layers.get(layer_name) or me.uv_layers.new(name=layer_name, do_init=False)
     layer.data.foreach_set("uv", out_uv.ravel())
     with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (lib_src, dst):
-        dst.materials = ["Std_Skin_Head"]
+        dst.materials = [material]
     mat = dst.materials[0]
     lib_dir = pg.CC5_BLEND["eevee"].parent
     for img in bpy.data.images:  # appended images: their paths made absolute against his file's folder
@@ -782,8 +786,21 @@ def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     me.polygons.foreach_set("material_index", idx)
     me.update()
     loaded = sum(1 for i in bpy.data.images if i.has_data or (i.filepath and Path(bpy.path.abspath(i.filepath)).exists()))
-    print("AARON SKIN on", len(head_polys), "of our head faces; his material", mat.name, "; images found", loaded,
-          flush=True)
+    print("AARON SKIN on", len(head_polys), f"of our faces on tile {tile}; his material", mat.name, "; images found",
+          loaded, flush=True)
+
+
+def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
+    """THE TRANSPLANT for the face: his head material on our head tile (`_transplant`)."""
+    _transplant(built, stem, 1001, "Std_Skin_Head")
+
+
+def aaronbody(built: dict, stem: str = "aaron_torso") -> None:
+    """THE TRANSPLANT for the body (checklist row 14, a LOCAL TEST): his body skin (`groom_transfer.py region`) on our
+    body tile's faces within 1 cm of it (`_transplant`)."""
+    data = np.load(HAIR_TRIALS / f"{stem}.npz")
+    tile = int(data["tile"]) if "tile" in data.files else 1002
+    _transplant(built, stem, tile, str(data["material"]), near_m=0.01)
 
 
 def guidefile(built: dict, stem: str) -> None:
@@ -874,6 +891,112 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     size = np.linalg.norm(delta[head & skin], axis=1)
     print("AARON SHAPE:", len(moved), "skin vertices moved, p50 / p90 / max", np.percentile(size, [50, 90]).round(4) * 1000,
           round(float(size.max()) * 1000, 1), "mm; parts refitted", flush=True)
+
+
+def aaronteeth(built: dict) -> None:
+    """THE TRANSPLANT for the mouth (a LOCAL TEST): HD Aaron's own teeth, gums and tongue (appended from the gate's
+    .blend) in our mouth - matched to ours at the front teeth (`parts_gate._front_teeth`) and scaled to our teeth's
+    width, each bound to our teeth part by Blender's Surface Deform so they ride our jaw in every mouth view; ours
+    hidden. With `aaronskin` (his lips) the mouth views ask: does our mouth carry CC5's? A new set of objects: --alone."""
+    from mathutils import Matrix
+
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    body = built["body"]
+    ours = parts.parts_of(body)["teeth"]
+    with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (_src, dst):
+        dst.objects = ["CC_Base_Teeth", "CC_Base_Tongue"]
+    for obj in dst.objects:
+        bpy.context.scene.collection.objects.link(obj)
+        for m in list(obj.modifiers):
+            obj.modifiers.remove(m)
+        if obj.data.shape_keys:
+            obj.shape_key_clear()
+        world = obj.matrix_world.copy()
+        obj.parent = None
+        obj.matrix_world = world
+    bpy.context.view_layer.update()
+    lib_dir = pg.CC5_BLEND["eevee"].parent
+    for img in bpy.data.images:
+        if img.filepath.startswith("//") and not Path(bpy.path.abspath(img.filepath)).exists():
+            img.filepath = str(lib_dir / img.filepath[2:])
+    our_pts = pg._world(ours, evaluated=False)
+    his_teeth = next(o for o in dst.objects if o.name.startswith("CC_Base_Teeth"))
+    his_pts = pg._world(his_teeth, evaluated=False)
+    scale = float(np.ptp(our_pts[:, 0]) / np.ptp(his_pts[:, 0]))
+    a, b = np.array(pg._front_teeth(his_pts)), np.array(pg._front_teeth(our_pts))
+    move = Matrix.Translation(b) @ Matrix.Scale(scale, 4) @ Matrix.Translation(-a)
+    for obj in dst.objects:
+        obj.matrix_world = move @ obj.matrix_world
+    bpy.context.view_layer.update()
+    for obj in dst.objects:
+        mod = obj.modifiers.new("Rides our jaw", "SURFACE_DEFORM")
+        mod.target = ours
+        with bpy.context.temp_override(object=obj, active_object=obj):
+            bpy.ops.object.surfacedeform_bind(modifier=mod.name)
+    ours.hide_render = True
+    print("AARON TEETH: scale", round(scale, 3), "front teeth moved", round(float(np.linalg.norm(b - a)) * 1000, 1),
+          "mm; bound", [o.modifiers[0].is_bound for o in dst.objects], flush=True)
+
+
+def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
+    """THE TRANSPLANT for brows, lashes and stubble (checklist rows 6-7, a LOCAL TEST): HD Aaron's own card meshes
+    (Brows, Eyelash_Up, Eyelash_Low, Stubble, appended from the gate's .blend) carried onto our face by the head wrap
+    with the eye rims pinned (`groom_transfer.py skin ... aaron_eyes.npz`): his alignment, then each card vertex moved as
+    its nearest head vertices moved in the wrap; bound to our body by Surface Deform so they ride blinks and
+    expressions; ours hidden. Does our face carry CC5's brows, lashes and stubble? A new set of objects: --alone."""
+    from mathutils import Matrix
+    from mathutils.kdtree import KDTree
+
+    st_spec = importlib.util.spec_from_file_location("smile_transfer", HERE / "smile_transfer.py")
+    st = importlib.util.module_from_spec(st_spec)
+    st_spec.loader.exec_module(st)
+    data = np.load(HAIR_TRIALS / f"{stem}.npz")
+    placed, wrapped = data["placed"].astype(np.float64), data["co"].astype(np.float64)
+    src = np.load(HAIR_TRIALS / "aaron_skin_src.npz")["co"].astype(np.float64)
+    original = src[src[:, 2] > src[:, 2].max() - 0.30]  # groom_transfer.head_region's vertices, in its order
+    align = st._similarity(original, placed)  # his alignment onto our head (wrap_head's scaled ICP)
+    move = wrapped - placed
+    kd = KDTree(len(placed))
+    for i, p in enumerate(placed):
+        kd.insert(p, i)
+    kd.balance()
+    body = built["body"]
+    with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (_src, dst):
+        dst.objects = ["Brows", "Eyelash_Up", "Eyelash_Low", "Stubble"]
+    lib_dir = pg.CC5_BLEND["eevee"].parent
+    for img in bpy.data.images:
+        if img.filepath.startswith("//") and not Path(bpy.path.abspath(img.filepath)).exists():
+            img.filepath = str(lib_dir / img.filepath[2:])
+    for obj in dst.objects:
+        bpy.context.scene.collection.objects.link(obj)
+        for m in list(obj.modifiers):
+            obj.modifiers.remove(m)
+        if obj.data.shape_keys:
+            obj.shape_key_clear()
+        mw = np.array(obj.matrix_world)
+        co = np.empty(len(obj.data.vertices) * 3)
+        obj.data.vertices.foreach_get("co", co)
+        world = st._apply(align, co.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3])
+        for i, p in enumerate(world):
+            found = kd.find_n(p, 4)
+            w = np.array([1.0 / max(d, 1e-5) for _, _, d in found])
+            world[i] = p + (move[[j for _, j, _ in found]] * w[:, None]).sum(0) / w.sum()
+        obj.parent = None
+        obj.matrix_world = Matrix.Identity(4)
+        obj.data.vertices.foreach_set("co", world.ravel())
+        obj.data.update()
+    bpy.context.view_layer.update()
+    for obj in dst.objects:
+        mod = obj.modifiers.new("Rides our face", "SURFACE_DEFORM")
+        mod.target = body
+        with bpy.context.temp_override(object=obj, active_object=obj):
+            bpy.ops.object.surfacedeform_bind(modifier=mod.name)
+    cid = body.juststage.character_id
+    for o in bpy.context.scene.objects:
+        if o.juststage.part_of == cid and o.juststage.part in ("eyebrows", "eyelashes", "beard"):
+            o.hide_render = True
+    print("AARON CARDS:", [o.name for o in dst.objects], "bound", [o.modifiers[0].is_bound for o in dst.objects],
+          flush=True)
 
 
 def aaroneyes(built: dict) -> None:
@@ -1058,8 +1181,15 @@ def factor(name: str):
         return lambda built: fieldcut(built, stem, *(int(x) for x in n))
     if name == "aaronshape":  # our head moved onto his face shape (eye region test)
         return aaronshape
+    if name == "aaronteeth":  # his teeth, gums and tongue in our mouth, riding our jaw
+        return aaronteeth
+    if name == "aaroncards":  # his brow, lash and stubble cards on our face, riding it
+        return aaroncards
     if name == "aaroneyes":  # his eyeballs and eye films in our sockets
         return aaroneyes
+    if name.startswith("aaronbody"):  # aaronbody[*aaron_hand] (his body skin on our torso, or the carried region)
+        stem = name.split("*", 1)[1] if "*" in name else "aaron_torso"
+        return lambda built: aaronbody(built, stem)
     if name.startswith("aaronskin"):  # aaronskin (the transplant: his head material on our head)
         return lambda built: aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
