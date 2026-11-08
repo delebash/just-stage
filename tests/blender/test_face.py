@@ -134,3 +134,22 @@ def test_a_look_turns_the_eyeball_on_its_joint(human):
     bpy.context.view_layer.update()
     assert turned[front, 0] - rest[front, 0] > 0.001  # the front moved > 1 mm toward the face's left
     assert np.abs(_evaluated(eye) - rest).max() < 1e-5
+
+
+def test_tongue_out_puts_the_tongue_out_on_its_joint(human):
+    """The tongue is a joint (`FACIAL_C_Tongue1`, under the jaw; step 3f): our tongueOut unit moved only MakeHuman's
+    hidden tongue helper (21.7 mm forward) and the visible tongue stayed - now the face rig moves the joint as the helper
+    moves, so the tongue comes forward and the teeth stay."""
+    result, obj = human
+    api.run("juststage.head.add_parts", character=result.character)
+    api.run("juststage.head.add_face_units", character=result.character)
+    teeth = next(o for o in bpy.data.objects if o.juststage.part_of == result.character and o.juststage.part == "teeth")
+    tongue, upper = _teeth_rows(teeth, "tongue"), _teeth_rows(teeth, "upper_teeth_and_gums")
+    rest = _evaluated(teeth)
+    obj.data.shape_keys.key_blocks["tongueOut"].value = 1.0
+    bpy.context.view_layer.update()
+    out = _evaluated(teeth)
+    obj.data.shape_keys.key_blocks["tongueOut"].value = 0.0
+    bpy.context.view_layer.update()
+    assert (out - rest)[tongue, 1].mean() < -0.015  # forward (the face looks down -y) by over 15 mm
+    assert np.abs((out - rest)[upper]).max() < 1e-5

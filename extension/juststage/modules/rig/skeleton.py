@@ -39,12 +39,14 @@ FOLLOWS_BODY = {"SURFACE_DEFORM", "MESH_DEFORM", "SHRINKWRAP"}
 #: the teeth's stand-in keys turned about (face rig job, step 3c)
 FACE_BONES = {"FACIAL_C_Jaw": ("joint-mouth", "joint-jaw", "head"),
               "FACIAL_L_Eye": ("joint-l-eye", "joint-l-eye-target", "head"),  # MPFB2's eye.L / eye.R joints
-              "FACIAL_R_Eye": ("joint-r-eye", "joint-r-eye-target", "head")}  # fmt: skip
+              "FACIAL_R_Eye": ("joint-r-eye", "joint-r-eye-target", "head"),
+              # MPFB2's tongue runs along its tongue joints under its jaw; one joint for now (its bends wait for shapes)
+              "FACIAL_C_Tongue1": ("joint-tongue-1", "joint-tongue-4", "FACIAL_C_Jaw")}  # fmt: skip
 #: the eyes ride their own joints whole (the face rig turns them with the look units)
 EYE_BONES = {"eyeLeft": "FACIAL_L_Eye", "eyeRight": "FACIAL_R_Eye"}
 JAW = "FACIAL_C_Jaw"
-#: the teeth part's groups that ride the jaw (`teeth.groups.json`, tools/bind_parts.py); the rest rides the head
-JAW_GROUPS = ("lower_teeth_and_gums", "tongue")
+#: the teeth part's groups and the joints they ride (`teeth.groups.json`, tools/bind_parts.py); the rest rides the head
+JAW_GROUPS = {"lower_teeth_and_gums": "FACIAL_C_Jaw", "tongue": "FACIAL_C_Tongue1"}
 
 
 @cache
@@ -234,12 +236,11 @@ def riders(character: bpy.types.Object) -> list[bpy.types.Object]:
 
 
 def attach(character: bpy.types.Object, arm: bpy.types.Object) -> list[str]:
-    """Each rigid part skinned whole to the `head` bone - the teeth's lower half (lower teeth, gums, tongue) to the jaw;
-    returns their names."""
+    """Each rigid part skinned whole to the `head` bone - the lower teeth and gums to the jaw, the tongue to its joint,
+    each eyeball to its eye's; returns their names."""
     done = []
     for part in riders(character):
         n = len(part.data.vertices)
-        jaw = np.zeros(n, bool)
         if part.juststage.part in EYE_BONES:  # the eyeball turns on its own joint
             bone = EYE_BONES[part.juststage.part]
             eye = part.vertex_groups.get(bone) or part.vertex_groups.new(name=bone)
@@ -249,18 +250,19 @@ def attach(character: bpy.types.Object, arm: bpy.types.Object) -> list[str]:
             _modifier(part, arm)
             done.append(part.name)
             continue
+        head = part.vertex_groups.get(HEAD) or part.vertex_groups.new(name=HEAD)
+        head.add(list(range(n)), 1.0, "REPLACE")
         if part.juststage.part == "teeth":
             from ..head import parts
 
             groups = parts.groups("teeth")
-            for name in JAW_GROUPS:
-                jaw[groups.get(name, [])] = True
-        head = part.vertex_groups.get(HEAD) or part.vertex_groups.new(name=HEAD)
-        head.add(list(range(n)), 1.0, "REPLACE")
-        if jaw.any():
-            head.remove(np.flatnonzero(jaw).tolist())
-            on_jaw = part.vertex_groups.get(JAW) or part.vertex_groups.new(name=JAW)
-            on_jaw.add(np.flatnonzero(jaw).tolist(), 1.0, "REPLACE")
+            for name, bone in JAW_GROUPS.items():
+                rows = list(groups.get(name, []))
+                if not rows:
+                    continue
+                head.remove(rows)
+                rides = part.vertex_groups.get(bone) or part.vertex_groups.new(name=bone)
+                rides.add(rows, 1.0, "REPLACE")
         _modifier(part, arm)
         done.append(part.name)
     return done

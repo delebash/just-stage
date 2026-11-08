@@ -58,7 +58,9 @@ EYES = {f"eyeLook{d}{s}": (f"FACIAL_{s}_Eye", f"eyeLook{u}{side}")
         for s, side in (("L", "Left"), ("R", "Right"))
         for d, u in (("Up", "Up"), ("Down", "Down"),
                      ("Left", "Out" if s == "L" else "In"), ("Right", "In" if s == "L" else "Out"))}  # fmt: skip
-HELPER = {"FACIAL_L_Eye": "helper-l-eye", "FACIAL_R_Eye": "helper-r-eye"}
+HELPER = {"FACIAL_L_Eye": "helper-l-eye", "FACIAL_R_Eye": "helper-r-eye", "FACIAL_C_Tongue1": "helper-tongue"}
+#: the tongue: its one expression with a unit of ours (the other 18 wait for shapes) -> (joint, our unit)
+TONGUE = {"tongueOut": ("FACIAL_C_Tongue1", "tongueOut")}
 
 
 def _turn(a, b):
@@ -95,13 +97,17 @@ def eye_motions(body, arm) -> dict:
     keys.reference_key.data.foreach_get("co", basis)
     basis = basis.reshape(-1, 3).astype(np.float64)
     out = {}
-    for expression, (joint, unit) in EYES.items():
+    for expression, (joint, unit) in {**EYES, **TONGUE}.items():
         co = np.empty(n * 3, np.float32)
         keys.key_blocks[unit].data.foreach_get("co", co)
         helper = groups[HELPER[joint]]
-        world = _turn(basis[helper], co.reshape(-1, 3)[helper].astype(np.float64))
-        rest = np.array(arm.data.bones[joint].matrix_local)[:3, :3]
-        out[expression] = (joint, [0.0, 0.0, 0.0, *_euler_deg(rest.T @ world @ rest)])
+        a, b = basis[helper], co.reshape(-1, 3)[helper].astype(np.float64)
+        world = _turn(a, b)
+        bone = arm.data.bones[joint]
+        rest, head = np.array(bone.matrix_local)[:3, :3], np.array(bone.head_local)
+        # the helper's rigid move as the joint's: turned about its head, then shifted (p -> R (p - h) + h + t)
+        shift = b.mean(0) - head - world @ (a.mean(0) - head) if joint in TONGUE.get(expression, ("",)) else np.zeros(3)
+        out[expression] = (joint, [*map(float, rest.T @ shift * 100.0), *_euler_deg(rest.T @ world @ rest)])
     return out
 
 

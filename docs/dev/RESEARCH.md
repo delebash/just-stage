@@ -2007,6 +2007,13 @@ the arch's form, which the plan's teeth variety (Poseidon3D arches, GNM's teeth 
 a uniform scale would narrow an arch that is already narrower. (The 2026-11-08 render's "his smaller" is that form
 and his lip covering more of his incisors.)
 
+*measured, 2026-11-08* - the inner mouth's darkness (item 5): our tongue is in view (drawn flat green) and renders
+black-red where HD Aaron's is pink; neither its subsurface nor his shader's front / rear gradient changes it; with the
+body's object shadow off it is pink and lit - our body's own shadow fills the mouth. In EEVEE (Blender 5.3) a material
+made transparent to shadow rays (Light Path "Is Shadow Ray" into a Transparent BSDF, the material's transparent
+shadows on) does not stop its faces casting: every face so treated still left the tongue dark (sheets
+`scratchpad/sheet_D14..D21`). Narrowing which skin casts it needs those faces as an object of their own.
+
 *measured, 2026-11-08* - the tongue in "aa" (ours jawOpen 0.4 on the library's Average man, his V_Open 1; probe
 `scratchpad/tongue_probe.py`, world mm against the lower incisors): the tip ours 5.2 mm behind the incisors' front /
 his 9.5, 4.0 / 5.5 mm below their edge; the dorsum's top 26.3 / 21.3 above it. Ours sits as far forward and as high
