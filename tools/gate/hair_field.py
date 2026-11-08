@@ -46,14 +46,20 @@ def measure(ours_npz: Path, strands_npz: Path, out: Path) -> None:
     roots = np.array([x[0] for x in strands])
     length = np.array([np.linalg.norm(np.diff(x, axis=0), axis=1).sum() for x in strands])
     tip_off = trimesh.proximity.closest_point(skin, np.array([x[-1] for x in strands]))[1]
+    # the stand-off along each strand at a quarter and half its points (the quiff rises from the root, a combed
+    # side lies flat until its tip)
+    quarter = trimesh.proximity.closest_point(skin, np.array([x[len(x) // 4] for x in strands]))[1]
+    half = trimesh.proximity.closest_point(skin, np.array([x[len(x) // 2] for x in strands]))[1]
     rt = cKDTree(roots)
     # per root, the neighbourhood's median (a region's length and stand-off, not one card's)
     near = [rt.query_ball_point(r, radius) for r in roots]
     length_s = np.array([np.median(length[n]) for n in near])
     lift_s = np.array([np.median(tip_off[n]) for n in near])
+    profile = np.array([[np.median(quarter[n]), np.median(half[n]), np.median(tip_off[n])] for n in near])
     out.parent.mkdir(parents=True, exist_ok=True)
     np.savez(out, pos=pos[keep].astype(np.float32), tan=smooth.astype(np.float32), roots=roots.astype(np.float32),
-             length=length_s.astype(np.float32), lift=lift_s.astype(np.float32), radius_mm=FIELD_MM)  # fmt: skip
+             length=length_s.astype(np.float32), lift=lift_s.astype(np.float32), profile=profile.astype(np.float32),
+             radius_mm=FIELD_MM)  # fmt: skip
     print(f"FIELD: {len(keep)} points, {len(roots)} roots; length p10/50/90 "
           f"{np.percentile(length_s, [10, 50, 90]).round(3) * 1000} mm; tip stand-off p10/50/90 "
           f"{np.percentile(lift_s, [10, 50, 90]).round(4) * 1000} mm", flush=True)

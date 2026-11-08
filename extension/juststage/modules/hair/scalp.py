@@ -97,7 +97,8 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
         field = style.get("field")
         if field is not None:
             length, lift = field.length(surface), field.lift(surface)
-            out.append(_grow(nearest, surface, normal, length, lift, field.direction, rng, t))
+            profile = field.profile(surface) if hasattr(field, "profile") else None
+            out.append(_grow(nearest, surface, normal, length, lift, field.direction, rng, t, profile))
             continue
         heights = np.array([z for z, _ in style["lengths"]])
         length = 0.001 * np.interp(normal[2], heights, [mm for _, mm in style["lengths"]]) * rng.uniform(0.85, 1.15)
@@ -355,9 +356,10 @@ def _colour_group() -> bpy.types.NodeTree:
     return group
 
 
-def _grow(nearest, surface, normal, length, lift, direction, rng, t):
+def _grow(nearest, surface, normal, length, lift, direction, rng, t, profile=None):
     """One guide from its root along a field's directions: each step on the scalp, laid onto it, then lifted off it by
-    the lift profile - as `guides` grows a combed one."""
+    the lift profile - as `guides` grows a combed one - or by `profile`, its stand-off at a quarter, half and the whole
+    of its length (a quiff rises from the root, a combed side lies flat until its tip)."""
     p = surface.copy()
     strand = [p - 0.0001 * normal]
     jitter = rng.normal(0.0, 0.05, 3)
@@ -367,7 +369,9 @@ def _grow(nearest, surface, normal, length, lift, direction, rng, t):
         d -= (d @ n) * n
         d /= max(np.linalg.norm(d), 1e-9)
         q2, n2 = nearest(p + d * length / (len(t) - 1))
-        p = q2 + n2 * (0.0003 + lift * (1 - (1 - t[k]) ** 2))
+        height = (np.interp(t[k], (0.0, 0.25, 0.5, 1.0), (0.0003, *profile)) if profile is not None
+                  else 0.0003 + lift * (1 - (1 - t[k]) ** 2))
+        p = q2 + n2 * height
         strand.append(p)
     return np.array(strand)
 

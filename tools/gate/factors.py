@@ -874,6 +874,9 @@ class _HairField:
 
         d = np.load(path)
         self.tan, self.length_v, self.lift_v = d["tan"], d["length"], d["lift"]
+        if "profile" in d.files:  # the stand-off at a quarter, half and the whole of the length
+            self.profile_v = d["profile"]
+            self.profile = lambda p: tuple(np.median(self.profile_v[self._near_roots(p)], axis=0))
         self.points = KDTree(len(d["pos"]))
         for i, p in enumerate(d["pos"]):
             self.points.insert(p, i)
