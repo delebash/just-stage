@@ -12,6 +12,15 @@ Mine under the go, logged in the plan's §19.3.
   units (`tools/make_ict_units.py`), `face_units.ICT_UNITS` widened, the face test widened, ATTRIBUTION widened.
   Rendering the smile views ours / his (`scratchpad/batch_F.sh` -> `.dev/gate/parts/2026-11-08smile`). Unverified.
 
+- Rendered 2026-11-08 (`.dev/gate/parts/2026-11-08smile`, sheet `scratchpad/sheet_D10_smile_units.png`; measured by
+  `tools/gate/smile_measure.py`, his | ours, mm; Faceunits from the 11-07 renders, an older state - brows, seal):
+  the full smile with ICT's units - corners up 10.52 (0.84 of his; Faceunits 0.90), out 6.67 (0.97; 0.80), cheek up
+  4.11 (0.86; 0.85), lower lip up 4.80 (0.59; 0.85), the eye narrowing 1.36 against his 0.40; the Landmarker's
+  mouthSmile 0.79 / 0.81 (Faceunits 0.74 / 0.79; his 0.86 / 0.85). By eye ICT's reads as a smile - the cheeks up,
+  the eyes narrowed, the mouth wide - where Faceunits' bends the lips. **Kept** (the decision stands: the new numbers
+  are mixed, the look and the Landmarker favour ICT). Left, content: the lower lip's rise, the eye narrowing
+  (cheekSquint at 1 - an animator's amount), his smile line (his face's shape, row 9).
+
 ## The pick and why
 
 - Evidence (RESEARCH §14.7, 2026-11-07): MediaPipe's Face Landmarker scores the full smile ours-with-ICT 0.83 / 0.84,
