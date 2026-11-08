@@ -648,6 +648,62 @@ def lidsmooth(built: dict, rings: int, iterations: int) -> None:
           round(float(moved.max()) * 1000, 2), "mm", flush=True)
 
 
+def lidcrease(built: dict, ring: int, mm: float) -> None:
+    """The eye's deciding test (checklist row 6): can our lid's mesh hold HD Aaron's upper-lid crease? The ring of upper
+    lid skin `ring` rings above the upper lash line pushed `mm` toward its eye's centre, the rings either side half as
+    far, as a shape key of its own - a fold where his is (~8-10 mm above his lash line at mid-lid; the ring's height
+    is printed). A shape: --alone."""
+    base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+    body = built["body"]
+    me = body.data
+    shaped = build.shaped_coords(body)
+    rows = base.rows()
+    edges = np.empty(len(me.edges) * 2, np.int64)
+    me.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    nbr: dict[int, set[int]] = {}
+    for a, b in edges:
+        nbr.setdefault(int(a), set()).add(int(b))
+        nbr.setdefault(int(b), set()).add(int(a))
+    lash = rows[:, 0][rows[:, 0] >= 0]
+    lid = set(int(v) for v in rows[rows >= 0])
+    upper = [int(v) for v in lash if shaped[v, 2] > np.median(shaped[lash, 2])]
+    floor = shaped[upper, 2].min() - 0.001
+    rings, seen, frontier = [], set(lid), set(upper)
+    for _ in range(ring + 1):
+        nxt = {u for v in frontier for u in nbr[v]} - seen
+        nxt = {u for u in nxt if shaped[u, 2] > floor}  # the lid's skin above the lash line
+        rings.append(nxt)
+        seen |= nxt
+        frontier = nxt
+    spheres = [eye_layers._eye_sphere(o) for n, o in parts.parts_of(body).items() if n in ("eyeLeft", "eyeRight")]
+    mw = np.array(body.matrix_world)
+    to_local = np.linalg.inv(mw[:3, :3])
+    delta = np.zeros_like(shaped)
+    for idx, share in ((ring - 2, 0.5), (ring - 1, 1.0), (ring, 0.5)):
+        if idx < 0:
+            continue
+        for v in rings[idx]:
+            world = mw[:3, :3] @ shaped[v] + mw[:3, 3]
+            c, _r = min(spheres, key=lambda s: np.linalg.norm(world - s[0]))
+            d = (c - world) / np.linalg.norm(c - world)
+            delta[v] = to_local @ (d * share * mm / 1000)
+    basis = np.empty(len(me.vertices) * 3, np.float32)
+    me.shape_keys.reference_key.data.foreach_get("co", basis)
+    key = body.shape_key_add(name="lid crease", from_mix=False)
+    key.data.foreach_set("co", (basis.reshape(-1, 3) + delta).astype(np.float32).ravel())
+    key.value = 1.0
+    me.update()
+    bpy.context.view_layer.update()
+    lash_z = shaped[upper, 2].mean()
+    height = np.mean([shaped[v, 2] for v in rings[ring - 1]]) - lash_z
+    print("LID CREASE: ring", ring, f"{height * 1000:.1f} mm above the lash line, {len(rings[ring - 1])} vertices,",
+          mm, "mm in", flush=True)
+
+
 def lidledge(built: dict, k: float, gap_mm: float) -> None:
     """The lower lid's margin turned from a wall into a ledge. Measured on the gate's man (2026-11-07 late): the lower
     lash line sits 2.4 mm straight below the rim at its depth (74-80 deg below horizontal - a wall facing the camera,
@@ -1237,6 +1293,9 @@ def factor(name: str):
         return lambda built: aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
         return lambda built: guidefile(built, name.split("*", 1)[1])
+    if name.startswith("lidcrease"):  # lidcrease*3*1.5 (the ring above the lash line, mm inward)
+        _, r, mm = name.split("*")
+        return lambda built: lidcrease(built, int(r), float(mm))
     if name.startswith("lidledge"):  # lidledge*1*2.3 (the share toward the rim's line, the lash line's gap in mm)
         _, k, gap = name.split("*")
         return lambda built: lidledge(built, float(k), float(gap))
