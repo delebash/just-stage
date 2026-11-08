@@ -236,6 +236,9 @@ def refit(character: bpy.types.Object) -> None:
     from . import lip_seal
 
     lip_seal.seal(character)  # the neutral's lips closed (hm08 leaves a see-through slit)
+    from . import blink_contact
+
+    blink_contact.make(character)  # the blink closes onto the lower lid on today's shape (when the units are there)
     teeth = parts_of(character).get("teeth")
     if teeth is not None:
         face_units.add_to_teeth(character, teeth)
