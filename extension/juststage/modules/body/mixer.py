@@ -176,39 +176,42 @@ def parse(slider: str) -> tuple[str, str, str] | None:
 
 
 def _key(character: bpy.types.Object, identity: str, region: str, part: str) -> bpy.types.ShapeKey:
-    """The part's key (made once, its sibling with it): the part's offsets, limited to the region's mask."""
+    """The part's key (made once): the part's offsets, limited to the region's mask."""
     if not character.data.shape_keys:
         character.shape_key_add(name="Basis", from_mix=False)
     keys = character.data.shape_keys
-    key = keys.key_blocks.get(slider_id(identity, region, part))
+    name = slider_id(identity, region, part)
+    key = keys.key_blocks.get(name)
     if key is not None:
         return key
     basis = np.empty(len(character.data.vertices) * 3, np.float32)
     keys.reference_key.data.foreach_get("co", basis)
-    for name, offsets in split(character, identity, region).items():
-        made = keys.key_blocks.get(slider_id(identity, region, name))
-        if made is None:
-            made = character.shape_key_add(name=slider_id(identity, region, name), from_mix=False)
-            made.data.foreach_set("co", (basis.reshape(-1, 3) + offsets).astype(np.float32).ravel())
-            made.vertex_group = _mask(character, region).name
-            made.slider_min, made.slider_max = 0.0, 1.0
-            made.value = 0.0
-    return keys.key_blocks[slider_id(identity, region, part)]
+    offsets = split(character, identity, region)[part]
+    key = character.shape_key_add(name=name, from_mix=False)
+    key.data.foreach_set("co", (basis.reshape(-1, 3) + offsets).astype(np.float32).ravel())
+    key.vertex_group = _mask(character, region).name
+    key.slider_min, key.slider_max = 0.0, 1.0
+    return key
 
 
 def set_value(character: bpy.types.Object, identity: str, region: str, part: str, value: float) -> None:
     """One mixer slider: its key at `value` and the character's slider record (the `.blend`'s and the package's), as
-    `juststage.body.set_slider` keeps every slider. No refit - the command does that once."""
+    `juststage.body.set_slider` keeps every slider; at 0 both go (keys only for the identities in use - the 11-05
+    research's answer to "hundreds of keys (identities x regions)"). No refit - the command does that once."""
     from ... import character as characters
 
     name = slider_id(identity, region, part)
     keys = character.data.shape_keys
-    if value > 0.0 or (keys and name in keys.key_blocks):
-        _key(character, identity, region, part).value = value
-    item = next((s for s in character.juststage.sliders if s.id == name), None)
+    index = next((i for i, s in enumerate(character.juststage.sliders) if s.id == name), None)
+    if value == 0.0:
+        if keys and name in keys.key_blocks:
+            character.shape_key_remove(keys.key_blocks[name])
+        if index is not None:
+            character.juststage.sliders.remove(index)
+        return
+    _key(character, identity, region, part).value = value
+    item = character.juststage.sliders[index] if index is not None else None
     if item is None:
-        if value == 0.0:
-            return
         item = character.juststage.sliders.add()
         item.id, item.label, item.group = name, f"{identity} ({region}, {part})", f"mixer/{region}"
     characters.APPLYING["macros"] = True  # its update callback stays quiet

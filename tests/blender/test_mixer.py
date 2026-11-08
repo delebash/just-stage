@@ -117,8 +117,8 @@ def test_the_wheels_weights_are_normalised_and_a_new_mix_replaces_the_last(human
     b = [mixer.slider_id(second, "chin", part) for part in mixer.PARTS]
     assert _sliders(body) == {**dict.fromkeys(a, pytest.approx(0.6)), **dict.fromkeys(b, pytest.approx(0.2))}
     _mix(made, "chin", [second], [1.0], strength=0.8, mode="features")  # proportions untouched
-    assert _sliders(body) == {a[0]: pytest.approx(0.0), a[1]: pytest.approx(0.6), b[0]: pytest.approx(0.8),
-                              b[1]: pytest.approx(0.2)}  # fmt: skip
+    assert _sliders(body) == {a[1]: pytest.approx(0.6), b[0]: pytest.approx(0.8), b[1]: pytest.approx(0.2)}
+    assert a[0] not in body.data.shape_keys.key_blocks  # at 0 the key goes with its slider: keys only for those in use
     assert mixer.region_mix(body, "chin", "features") == {second: pytest.approx(0.8)}
 
 
