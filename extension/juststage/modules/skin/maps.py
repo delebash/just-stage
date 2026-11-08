@@ -711,6 +711,9 @@ def apply(character: bpy.types.Object, skin: bpy.types.Material) -> bpy.types.Ma
 
     add_layout(character)
     add_texel(character)
+    from . import nail_bed
+
+    nail_bed.add(character)  # the plate set into the finger: shape on the nail tile, after the levels
     old = character.juststage.skin_material
     mine = skin.copy()
     mine.name = f"JustStage Skin ({character.name})"

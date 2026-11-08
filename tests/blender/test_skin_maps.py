@@ -324,6 +324,23 @@ def test_the_nail_plate_is_matte_like_his(human, tmp_path):
     assert plate("rough") >= 0.5 and plate("coat") == 0.0 and plate("spec") <= 0.35
 
 
+def test_a_mapped_skin_sets_the_nail_bed_into_the_finger(human, tmp_path):
+    """hm08 has no nail outline, so the plate's shape follows the shader's plate as a height map on the nail tile, after
+    the levels (modules/skin/nail_bed.py; the gate's `naildisp`, 2026-11-08): the plate domed, a groove at its edge,
+    the fold raised beside it, nothing past the tile's islands."""
+    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    names = [m.name for m in body.modifiers]
+    assert nail_bed.MODIFIER in names and names.index(nail_bed.MODIFIER) == names.index(build.LEVELS) + 1
+    group = body.vertex_groups[nail_bed.GROUP]
+    count = sum(1 for v in body.data.vertices if any(g.group == group.index for g in v.groups))
+    assert 300 < count < 600  # the 20 nails' faces (245) and their corners
+    height = nail_bed.height_mm()
+    assert height.max() == pytest.approx(nail_bed.DOME_MM, abs=0.05) and height.min() < -0.1
+
+
 def test_the_nails_have_no_pores(human, tmp_path):
     """The skin's pores and microrelief tiled onto the nails' tile under their coat read as a bumpy plate with white
     specks (gate run 4's nails view; HD Aaron's plates smooth) - nails have none."""

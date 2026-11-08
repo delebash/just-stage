@@ -1731,81 +1731,13 @@ def _nail_along(built: dict) -> int:
     return len(pieces)
 
 
-def _blur(a: np.ndarray, sigma: float) -> np.ndarray:
-    """A Gaussian blur in numpy (separable, edges clamped)."""
-    r = int(3 * sigma)
-    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
-    k /= k.sum()
-    pad = np.pad(a, r, mode="edge")
-    rows = np.apply_along_axis(lambda x: np.convolve(x, k, mode="valid"), 1, pad)
-    return np.apply_along_axis(lambda x: np.convolve(x, k, mode="valid"), 0, rows)
-
-
-def _inset(mask: np.ndarray, most: int) -> np.ndarray:
-    """Each pixel's distance in from the mask's edge, in whole pixels up to `most` (repeated 4-neighbour erosion)."""
-    dist = np.zeros(mask.shape, np.float32)
-    cur = mask.copy()
-    for step in range(1, most + 1):
-        dist[cur] = step
-        nxt = cur.copy()
-        nxt[1:, :] &= cur[:-1, :]
-        nxt[:-1, :] &= cur[1:, :]
-        nxt[:, 1:] &= cur[:, :-1]
-        nxt[:, :-1] &= cur[:, 1:]
-        cur = nxt
-    return dist
-
-
 def naildisp(built: dict, dome_mm: float, groove_mm: float, lip_mm: float) -> None:
-    """Item 7, the nail bed as detail (hm08 has no nail outline - 187 of the nail tile's 245 faces straddle MPFB2's
-    mask, RESEARCH 14.5 - so the fold goes on the shader's own plate outline, not on faces): a height map in the nail
-    tile's UV from the coordinates map (`data/generated/skin/nails.png`) and the shader's plate model
-    (`maps._nail_layer`: past the curved cuticle, inside the rounded sides) - the plate domed across (`dome_mm` at its
-    middle line), a groove where it meets the skin (`groove_mm`), the skin of the fold raised beside it (`lip_mm`),
-    all faded to 0 within 0.5 mm of the tile's island edge - laid on by Blender's Displace modifier after the levels,
-    limited to the tile's vertices. A shape: --alone."""
-    maps = _maps()
-    body = built["body"]
-    me = body.data
-    img = maps.nail_coords()
-    w, h = img.size
-    px = np.empty(w * h * 4, np.float32)
-    img.pixels.foreach_get(px)
-    px = px.reshape(h, w, 4)
-    along, across, alpha = px[..., 0], px[..., 1] * 2.0 - 1.0, px[..., 3]
-    soft = 1.0 / maps.NAIL_EDGE_SOFT
-    cut = maps.NAIL_CUTICLE + maps.NAIL_CUTICLE_CURVE * across * across
-    plate = np.clip((along - cut) * soft, 0, 1) * np.clip((maps.NAIL_SIDE - np.abs(across)) * soft, 0, 1)
-    plate *= alpha > 0.5
-    band = 4.0 * plate * (1.0 - plate)  # 1 on the plate's edge
-    outside = (1.0 - plate) * (alpha > 0.5)
-    near = _blur(plate.astype(np.float32), 6.0) * outside  # the skin just outside the plate
-    height = dome_mm * plate * (1.0 - np.clip(across * across, 0, 1)) - groove_mm * band + lip_mm * np.clip(near * 3, 0, 1)
-    edge = _inset((alpha > 0.5), 6)  # px to the island's edge, up to 6 (Blender's Python has no OpenCV)
-    height *= np.clip(edge / 6.0, 0.0, 1.0)  # ~0.5 mm in from the edge (an island spans ~120-250 px over ~13 mm)
-    height_m = (height / 1000.0).astype(np.float32)
-    image = bpy.data.images.new("JustStage nail height (trial)", w, h, float_buffer=True, alpha=False)
-    image.colorspace_settings.name = "Non-Color"
-    image.pixels.foreach_set(np.dstack([height_m] * 3 + [np.ones_like(height_m)]).ravel())
-    tex = bpy.data.textures.new("JustStage nail height (trial)", "IMAGE")
-    tex.image, tex.extension = image, "REPEAT"
-    tex.use_interpolation = True
-    udim = np.empty(len(me.loops) * 2, np.float32)
-    me.uv_layers[maps.UV].data.foreach_get("uv", udim)
-    udim = udim.reshape(-1, 2)
-    tile_v = set()
-    for poly in me.polygons:
-        if 4.0 <= udim[list(poly.loop_indices), 0].mean() < 5.0:
-            tile_v.update(poly.vertices)
-    vg = body.vertex_groups.get("JustStage nail tile") or body.vertex_groups.new(name="JustStage nail tile")
-    vg.add(sorted(tile_v), 1.0, "REPLACE")
-    mod = body.modifiers.new("JustStage nail height (trial)", "DISPLACE")
-    mod.texture, mod.texture_coords, mod.uv_layer = tex, "UV", maps.UV
-    mod.vertex_group, mod.direction, mod.mid_level, mod.strength = vg.name, "NORMAL", 0.0, 1.0
-    levels = body.modifiers.find(importlib.import_module("bl_ext.system.juststage.modules.body.build").LEVELS)
-    body.modifiers.move(body.modifiers.find(mod.name), levels + 1)  # on the subdivided mesh, before the rest
-    print("NAIL DISP", dome_mm, groove_mm, lip_mm, f"{len(tile_v)} tile vertices; height {height.min():.2f} to "
-          f"{height.max():.2f} mm; modifiers {[m.name for m in body.modifiers]}", flush=True)
+    """Item 7, the nail bed as detail on the shader's own plate outline (hm08 has no nail outline - RESEARCH 14.5):
+    the product's nail bed (`modules/skin/nail_bed.py`, which this trial chose at 1.0 / 0.6 / 0.4 mm on 2026-11-08)
+    set to other amounts - the plate's dome, the groove at its edge, the fold's lip. A shape: --alone."""
+    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
+    mod = nail_bed.add(built["body"], dome_mm, groove_mm, lip_mm)
+    print("NAIL DISP", dome_mm, groove_mm, lip_mm, [m.name for m in built["body"].modifiers], mod.name, flush=True)
 
 
 def nailshine(built: dict, coat: float, specular: float, roughness: float) -> None:
