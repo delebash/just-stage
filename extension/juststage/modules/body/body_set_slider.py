@@ -4,7 +4,7 @@
 """`juststage.body.set_slider` — one body slider (commands-and-api.md §2's own declaration): MakeHuman's macros
 (`macro.json`: gender, age, muscle, weight, proportions, height, cupsize, firmness), the three race mixes (kept summing
 to 1 the way MakeHuman's EthnicModifier does), target.json's detail sliders (`<group>/<category>`, sliders.py) and the
-mixer's (`scans.<identity>.<region>`, 0..1, mixer.py)."""
+mixer's (`scans.<identity>.<region>.<part>`, 0..1, mixer.py)."""
 
 from typing import NamedTuple
 
@@ -12,7 +12,7 @@ from typing import NamedTuple
 class Params(NamedTuple):
     character: str  # the character's assetInfo identifier
     slider: str  # a macro.json id (or a race: asian, caucasian, african), a target.json one (`nose/...`) or the
-    # mixer's (`scans.<identity>.<region>`)
+    # mixer's (`scans.<identity>.<region>.<features|proportions>`)
     value: float
 
 
@@ -53,7 +53,7 @@ def main(params: Params) -> Result:
     if params.slider not in sliders and found is None:
         raise CommandError(
             f"slider: {params.slider!r} is not a macro ({', '.join(sliders)}), a target.json slider nor a mixer one"
-            f" ({mixer.SPACE}.<identity>.<region>)"
+            f" ({mixer.SPACE}.<identity>.<region>.<{'|'.join(mixer.PARTS)}>)"
         )
     low = found.low if found else 0.0
     if not low <= params.value <= 1.0:

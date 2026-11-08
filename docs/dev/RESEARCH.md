@@ -2069,6 +2069,22 @@ every one logged; key claims page-read):
   `breast/BreastSize`, `/BreastFirmness` - the ids `juststage:sliderIds` carries (character-data-model §0, §1.3).
 - **GNM's wrap onto hm08: max error 29.19 mm** (*file, 2026-11-06*, `data/generated/gnm/REPORT.json`; S3) beside the
   mean 0.87 / p95 2.17 mm recorded above; transfer distance mean 4.49 / max 72.9 mm.
+- **MetaHuman's features / proportions blend, read at its source** (*code, 2026-11-08*: the user's Unreal 5.8,
+  `Engine/Plugins/MetaHuman/MetaHumanCoreTechLib/Source/MetaHumanCoreTechLib/Private/api/MetaHumanCreatorAPI.cpp`
+  `State::Blend`, lines 3524-3672; method only - nothing of it is copied, clean-room). The face is a "patch blend
+  model": per region ("patch") PCA weights plus vertex deltas - the local shape - and a similarity transform, rotation
+  / translation / uniform scale. A blend adds each preset's alpha x (its value - the current one) to each; **Features**
+  sets only the PCA weights and vertex deltas, **Proportions** only the rotation (a weighted quaternion average,
+  slerped by the alphas' sum), translation and scale, **Both** all of them; symmetry blends the mirrored patch too; an
+  option blends a patch's translation relative to its neighbours' centre. The header's two tooltips
+  (`Public/MetaHumanCharacterIdentity.h` lines 70-71) are swapped against the enum names; the code and Epic's Blend
+  tool page agree ("Proportions: only skeletal proportions are blended, while maintaining features / shaping"). So
+  MetaHuman's head "proportions" are each region's place, turn and size - not a joint set. Queries (2026-11-08):
+  "how does MetaHuman blend features vs proportions work technically" (Epic's pages, no maths); "separate face shape
+  into proportions and local features 3D morphable model blend regions landmarks" (ImFace++, part-based 3DMMs - no
+  such split); "transfer facial features onto different head proportions deformation transfer RBF landmarks mesh"
+  (the landmark RBF warp: Noh & Neumann 2001, Orvalho, Dutreve - the alternative, a joint / landmark-driven field).
+  Epic's body blend page returned no text (unread).
 
 ### 14.7 · Face rig, expressions, body rig, capture
 

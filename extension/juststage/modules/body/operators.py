@@ -7,6 +7,7 @@ import bpy
 
 from ...character import JustStageFloat
 from ...ui.command_operator import CommandOperator
+from .body_set_mix import MODES
 
 
 def _macro(name: str, default: float = 0.5):
@@ -81,6 +82,11 @@ class JUSTSTAGE_OT_body_set_mix(CommandOperator, bpy.types.Operator):
     identities: bpy.props.StringProperty(name="Identities", description="Comma-separated identity names", default="")
     weights: bpy.props.CollectionProperty(name="Weights", type=JustStageFloat)
     strength: bpy.props.FloatProperty(name="Strength", default=1.0, min=0.0, max=1.0)
+    mode: bpy.props.EnumProperty(
+        name="Blend type",
+        items=[(m, m.capitalize(), "") for m in MODES],
+        default="both",
+    )
 
 
 CLASSES = (
