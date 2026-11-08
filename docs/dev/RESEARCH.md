@@ -3121,8 +3121,11 @@ before the rec list; measured in Blender 5.3 and read in our code):
   and down coherently (drawn in side view; a few short jagged ones by the ear), and one smooth comb field (back and
   a little down, laid onto the scalp) leaves the lines exactly where they were. Lines fixed in place under every
   change, a Y above the ear and a band across the back: the head's UV islands meet there - the lead is Deform Curves
-  on Surface (which finds each strand's triangle by its surface UV) misplacing strands rooted on a seam. To test: each
-  strand's evaluated root against its surface UV's point on the posed body. The roots also run well down the neck
+  on Surface misplacing strands rooted on a seam - refuted: 20,000 strands' roots against their surface UVs' points on
+  the posed body, 0 off by > 2 mm, 0 UV mismatches. Not the scalp's skin either (hidden hair: a clean scalp), not
+  the highlights (lobes off) nor the light-through (0). **It is the clumping**: Blender's Clump Hair Curves at
+  factor 0.35 (short taper; 0.25 short combed) parts the strands along fixed lines - at 0 the lines are gone and the
+  cover is even, but thin (the scalp shows through: 130 strands a cm2 against the real ~223). The roots also run well down the neck
   (the nape's fringe) and the sideburns toward the jaw. `factors hairgrey` fails in 5.3 (a modifier's input can't
   be set as an ID property) - to rework; density 220 a cm2: back L* 27 -> 24.5, profile 34.7 -> 31.4 (his 20.4 / 28.2). "short taper" (2026-11-07, on trial): its stand-off within ~2 mm of
   his in every region; coverage IoU against his 0.82 (short combed 0.80-0.83). His dark-root / light-tip contrast

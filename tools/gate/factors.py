@@ -394,6 +394,19 @@ def hairdensity(built: dict, per_m2: float) -> None:
     print("HAIR DENSITY", per_m2, flush=True)
 
 
+def hairclump(built: dict, factor: float) -> None:
+    """The scalp shape group's Clump Hair Curves factor set (a node group - run --alone): whether the clumps' partings
+    are the hair's fixed bare lines (not the mask, the comb, island parting, highlights or light-through, 2026-11-07)."""
+    group = bpy.data.node_groups.get("JustStage scalp shape")
+    node = next(n for n in group.nodes if n.type == "GROUP" and n.node_tree and n.node_tree.name.startswith("Clump"))
+    node.inputs["Factor"].default_value = factor
+    for obj in bpy.data.objects:
+        if obj.type == "CURVES":
+            obj.data.update_tag()
+    bpy.context.view_layer.update()
+    print("HAIR CLUMP", factor, flush=True)
+
+
 def hairgrey(built: dict, share: float) -> None:
     """The scalp grooms' share of near-unpigmented strands (`scalp.GREY_SHARE`, the strand colour group's "Grey Share",
     set on each groom's modifier) - HD Aaron's highlights (p95 60 at the back) come from light strands among dark."""
@@ -557,6 +570,8 @@ def factor(name: str):
             for step in steps:
                 step(built)
         return chained
+    if name.startswith("hairclump"):  # hairclump*0 (the Clump group's factor)
+        return lambda built: hairclump(built, float(name.split("*")[1]))
     if name.startswith("hairgrey"):  # hairgrey*0.2 (a share)
         return lambda built: hairgrey(built, float(name.split("*")[1]))
     if name.startswith("hairdensity"):  # hairdensity*2200000 (strands a m2)
