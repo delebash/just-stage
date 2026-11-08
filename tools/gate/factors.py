@@ -1443,6 +1443,111 @@ def ictsmile(built: dict, stem: str, mouth: float = 1.0, cheek: float = 1.0) -> 
 SCALED_KEYS = {"pores", "micro", "relief", "roughvar", "poresize", *SHINE}
 
 
+#: sRGB: HD Aaron's nail texture's median over his nail faces (Std_Nails_Diffuse, 3,576 faces, measured 2026-11-08 -
+#: a local reading), the plate; the lunula and the free edge paler, as a nail's are (ours: a pale plate, a white tip)
+NAIL_PLATE, NAIL_LUNULA, NAIL_EDGE = (0.545, 0.349, 0.267), (0.70, 0.55, 0.50), (0.74, 0.64, 0.55)
+NAIL_LUNULA_TO, NAIL_EDGE_FROM = 0.22, 0.88  # shares of each nail's length, from its base
+
+
+def _nail_along(built: dict) -> int:
+    """Each nail (a connected piece of our nail tile, 1005) given `nail_along` - 0 at its base, 1 at its tip - along
+    its finger: from the skin within 30 mm of it (the finger's end, which lies behind the nail) toward the nail,
+    flattened onto the nail. Returns the pieces found."""
+    from mathutils.kdtree import KDTree
+
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    maps = _maps()
+    body = built["body"]
+    me = body.data
+    mw = np.array(body.matrix_world)
+    co = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]
+    udim = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", udim)
+    udim = udim.reshape(-1, 2)
+    parent = np.arange(len(co))
+
+    def root(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    nail_v, normals = set(), {}
+    for poly in me.polygons:
+        ls = list(poly.loop_indices)
+        if not (4.0 <= udim[ls, 0].mean() < 5.0):
+            continue
+        vs = list(poly.vertices)
+        nail_v.update(vs)
+        a, b, c = co[vs[0]], co[vs[1]], co[vs[2]]
+        n = np.cross(b - a, c - a)
+        for v in vs:
+            normals[v] = normals.get(v, 0) + n
+        for v in vs[1:]:
+            ra, rb = root(vs[0]), root(v)
+            if ra != rb:
+                parent[rb] = ra
+    nail_v = np.array(sorted(nail_v))
+    pieces = {}
+    for v in nail_v:
+        pieces.setdefault(root(v), []).append(v)
+    skin = importlib.import_module("bl_ext.system.juststage.core.makehuman").skin_mask(len(co))
+    others = np.flatnonzero(skin & ~np.isin(np.arange(len(co)), nail_v))
+    kd = KDTree(len(others))
+    for i, v in enumerate(others):
+        kd.insert(co[v], i)
+    kd.balance()
+    along = np.zeros(len(co), np.float32)
+    for vs in pieces.values():
+        vs = np.array(vs)
+        c = co[vs].mean(0)
+        n = sum(normals[v] for v in vs)
+        n = n / np.linalg.norm(n)
+        near = [others[i] for _, i, _ in kd.find_range(c, 0.03)]
+        axis = c - co[near].mean(0)
+        axis -= (axis @ n) * n
+        axis /= np.linalg.norm(axis)
+        s = (co[vs] - c) @ axis
+        along[vs] = (s - s.min()) / max(s.max() - s.min(), 1e-6)
+    attr = me.attributes.get("nail_along") or me.attributes.new("nail_along", "FLOAT", "POINT")
+    attr.data.foreach_set("value", along)
+    return len(pieces)
+
+
+def nailmat(built: dict) -> None:
+    """Checklist row 16 (the nails' transplants were void - his nail piece holds the fingertip's skin): our nails' own
+    colour laid along each nail (`_nail_along`) - a paler lunula at the base, his plate's colour, a subtle free edge -
+    on the nail tile only, our skin shader otherwise as it is. Does our nail, so coloured, read as his? (What is left
+    would be the cuticle fold - geometry, Q-BASE-3's loops.)"""
+    def lin(c):
+        c = np.asarray(c)
+        return tuple(np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)) + (1.0,)
+
+    pieces = _nail_along(built)
+    maps = _maps()
+    for nt in _skin_trees(built):
+        node = nt.nodes[maps.NODE + "base_color"]
+        attr = nt.nodes.new("ShaderNodeAttribute")
+        attr.attribute_name = "nail_along"
+        ramp = nt.nodes.new("ShaderNodeValToRGB")
+        els = ramp.color_ramp.elements
+        els[0].position, els[0].color = 0.0, lin(NAIL_LUNULA)
+        els[1].position, els[1].color = 1.0, lin(NAIL_EDGE)
+        for pos, col in ((NAIL_LUNULA_TO, NAIL_PLATE), (NAIL_EDGE_FROM, NAIL_PLATE)):
+            e = els.new(pos)
+            e.color = lin(col)
+        nt.links.new(attr.outputs["Fac"], ramp.inputs["Fac"])
+        _vec, on = _tile_uv(nt, 1005)
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        nt.links.new(on, mix.inputs["Factor"])
+        for link in list(node.outputs["Color"].links):
+            nt.links.new(mix.outputs["Result"], link.to_socket)
+        nt.links.new(node.outputs["Color"], mix.inputs["A"])
+        nt.links.new(ramp.outputs["Color"], mix.inputs["B"])
+    print("NAIL MATERIAL on", pieces, "nails", flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
@@ -1471,6 +1576,8 @@ def factor(name: str):
     if name.startswith("aaronshape"):  # aaronshape[*lower] (our head moved onto his face shape; "lower": below the eyes)
         region = name.split("*", 1)[1] if "*" in name else ""
         return lambda built: aaronshape(built, "aaron_skin_pinned", region)
+    if name == "nailmat":  # our nails coloured along their length (lunula, his plate colour, a subtle free edge)
+        return nailmat
     if name == "aaronteeth":  # his teeth, gums and tongue in our mouth, riding our jaw
         return aaronteeth
     if name == "aaroncards":  # his brow, lash and stubble cards on our face, riding it
