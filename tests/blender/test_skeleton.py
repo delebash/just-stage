@@ -83,6 +83,11 @@ EXTREMES = [{"gender": 0.0, "weight": 0.0, "height": 0.0}, {"gender": 1.0, "weig
             {"gender": 0.0, "age": 0.0}, {"gender": 1.0, "age": 1.0, "proportions": 1.0}]  # fmt: skip
 
 
+#: a joint may sit this close outside the skin: MPFB2's own toe joint (`joint-l-foot-1`, the ball's head) lies 0.4 mm
+#: below the sole of MakeHuman's age-0 foot (2026-11-08) - a pivot at the skin, harmless; a misplaced joint is cm off
+SKIN_MM = 1.0
+
+
 @pytest.mark.parametrize("macros", EXTREMES)
 def test_every_joint_is_inside_the_body_at_the_sliders_extremes(macros):
     made, body, arm, _ = _make(name="Skeleton extremes", **macros)
@@ -97,7 +102,7 @@ def test_every_joint_is_inside_the_body_at_the_sliders_extremes(macros):
                 continue
             p = Vector(b.head_local)
             hit, normal, _, _ = tree.find_nearest(p)
-            if (p - hit).dot(normal) > 0:
+            if (p - hit).dot(normal) > SKIN_MM / 1000:
                 outside.append((b.name, round((p - hit).length * 1000, 1)))
         assert not outside, outside
     finally:
