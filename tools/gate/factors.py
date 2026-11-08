@@ -985,12 +985,14 @@ def guidefile(built: dict, stem: str) -> None:
     print("GUIDE FILE", stem, len(found), "guides", flush=True)
 
 
-def aaronshape(built: dict, stem: str = "aaron_skin_on_ours") -> None:
+def aaronshape(built: dict, stem: str = "aaron_skin_on_ours", region: str = "") -> None:
     """THE SHAPE TRANSPLANT for the eye region (a LOCAL TEST): our head moved onto HD Aaron's own face shape, on our own
     topology - each skin vertex of our head to its point on his surface (the wrap's correspondence:
     `groom_transfer.py skin`'s `placed`), fading out down the neck; our helper points (the eye sockets' fitting
     guides) moved as their nearest skin; then the parts refitted (eyes, the lid contact, the films). With `aaronskin`
-    the eye view asks: can our lids, shaped as his, give his eye? A shape: --alone."""
+    the eye view asks: can our lids, shaped as his, give his eye? `region` "lower": only the face below the eyes and
+    above the jaw, at the front, faded over 15 mm - his cheeks and smile-line fold on our mesh (the lids, where the
+    transplant tears, untouched): with `ictsmile` the smile's deciding test (checklist row 9). A shape: --alone."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
     from mathutils.kdtree import KDTree
@@ -1022,6 +1024,13 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours") -> None:
         his = (1 - w1 - w2) * placed[tris[ti][0]] + w1 * placed[tris[ti][1]] + w2 * placed[tris[ti][2]]
         delta[v] = his - co[v]
     fade = np.clip((co[:, 2] - (top - 0.27)) / 0.05, 0.0, 1.0)  # none at the neck's base, full above the jaw
+    if region == "lower":  # below the eyes, above the jaw, the front: the cheeks and the smile line
+        a = pg.anchors("ours", built)
+        pupils, mouth = np.array(a["pupils"]), np.array(a["mouth"])
+        band = np.minimum(np.clip(((pupils[2] - 0.015) - co[:, 2]) / 0.015, 0, 1),
+                          np.clip((co[:, 2] - (mouth[2] - 0.045)) / 0.015, 0, 1))
+        front = np.clip(((pupils[1] + 0.03) - co[:, 1]) / 0.015, 0, 1) * np.clip((0.075 - np.abs(co[:, 0])) / 0.015, 0, 1)
+        fade = fade * band * front
     delta *= fade[:, None]
     moved = np.flatnonzero(head & skin & (np.linalg.norm(delta, axis=1) > 0))
     kd = KDTree(len(moved))
@@ -1031,7 +1040,7 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     for v in np.flatnonzero(head & ~skin):  # the helpers (the eye sockets' fitting guides) move as their nearest skin
         found = kd.find_n(co[v], 6)
         w = np.array([1.0 / max(d, 1e-4) for _, _, d in found])
-        delta[v] = (delta[moved[[i for _, i, _ in found]]] * w[:, None]).sum(0) / w.sum()
+        delta[v] = (delta[moved[[i for _, i, _ in found]]] * w[:, None]).sum(0) / w.sum() * fade[v]  # the region too
     local = delta @ np.linalg.inv(mw[:3, :3]).T
     keys = me.shape_keys
     basis = np.empty(len(me.vertices) * 3, np.float32)
@@ -1374,8 +1383,9 @@ def factor(name: str):
     if name.startswith("fieldcut"):  # fieldcut*field_aaron[*3000] (the field's stem, the guides)
         stem, *n = name.split("*")[1:]
         return lambda built: fieldcut(built, stem, *(int(x) for x in n))
-    if name == "aaronshape":  # our head moved onto his face shape (eye region test)
-        return aaronshape
+    if name.startswith("aaronshape"):  # aaronshape[*lower] (our head moved onto his face shape; "lower": below the eyes)
+        region = name.split("*", 1)[1] if "*" in name else ""
+        return lambda built: aaronshape(built, "aaron_skin_pinned", region)
     if name == "aaronteeth":  # his teeth, gums and tongue in our mouth, riding our jaw
         return aaronteeth
     if name == "aaroncards":  # his brow, lash and stubble cards on our face, riding it
