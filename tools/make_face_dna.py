@@ -227,13 +227,13 @@ def write(path: Path, gui: list[str], raw: list[str], links: list[tuple[str, str
     moves = {JAW: dict(jaw)}
     for expression, (joint, move) in eyes.items():
         moves.setdefault(joint, {})[expression] = move
-    for g, (joint, table) in enumerate(moves.items()):
+    for g, (joint, by_expression) in enumerate(moves.items()):
         j = joints.index(joint)
-        attributes = sorted({a for move in table.values() for a, v in enumerate(move) if abs(v) > 1e-9})
+        attributes = sorted({a for move in by_expression.values() for a, v in enumerate(move) if abs(v) > 1e-9})
         w.setJointGroupJointIndices(g, [j])
-        w.setJointGroupInputIndices(g, [ri[EXPRESSION + e] for e in table])
+        w.setJointGroupInputIndices(g, [ri[EXPRESSION + e] for e in by_expression])
         w.setJointGroupOutputIndices(g, [9 * j + a for a in attributes])
-        w.setJointGroupValues(g, [table[e][a] for a in attributes for e in table])
+        w.setJointGroupValues(g, [by_expression[e][a] for a in attributes for e in by_expression])
         w.setJointGroupLODs(g, [len(attributes)])
     # raw -> channel, one input each
     ci = {n: i for i, n in enumerate(channels)}
