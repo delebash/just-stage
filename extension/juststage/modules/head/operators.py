@@ -47,6 +47,17 @@ class JUSTSTAGE_OT_head_add_face_units(CommandOperator, bpy.types.Operator):
     character: bpy.props.StringProperty(name="Character")
 
 
+class JUSTSTAGE_OT_head_add_face_rig(CommandOperator, bpy.types.Operator):
+    """The face rig: MetaHuman's controls on the character, RigLogic driving its face"""
+
+    bl_idname = "juststage.head_add_face_rig"
+    bl_label = "Face rig (MetaHuman controls)"
+    bl_options = {"REGISTER", "UNDO"}
+    command_id = "juststage.head.add_face_rig"
+
+    character: bpy.props.StringProperty(name="Character")
+
+
 class JUSTSTAGE_OT_head_set_eye_colour(CommandOperator, bpy.types.Operator):
     """Both eyes' colour: a preset, or the iris, its accent and the white"""
 
@@ -69,4 +80,5 @@ CLASSES = (
     JUSTSTAGE_OT_head_add_parts,
     JUSTSTAGE_OT_head_add_face_units,
     JUSTSTAGE_OT_head_set_eye_colour,
+    JUSTSTAGE_OT_head_add_face_rig,
 )
