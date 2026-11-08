@@ -111,6 +111,8 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   body, rendered our way (local tests only). Matches him -> our body and renderer carry CC5 there, the rest is content
   (feasible); can't match even with his content -> that part fails, stop. Built: skin (`factors aaronskin`), hair (his
   cut as our strands - done, outline right; `fieldcut`: our own generator along his measured cut).
+- **Block B runs (from 2026-11-08 ~00:30, `scratchpad/batch_B.log`); when it ends send "card free" to BOTH
+  justvioce-e3 (JustVoice, hours of speech tests) and web-4c (its clips retry) - they agree their order.**
 - **Card order, 2026-11-07 late:** our block A (`scratchpad/batch_A.sh`: every transplant - ears, lips, mouth,
   teeth, brows / lashes / stubble cards, torso, hand, nails - and the quiff) runs now; then "card free" to web-4c for its
   clips (30-60 min); after its "card free", our block B (`scratchpad/batch_B.sh`: every part beside his, the other
