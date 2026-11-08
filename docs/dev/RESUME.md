@@ -49,7 +49,7 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   projected), `aaroncards*shaped`, `eyetrans`, `aaroneyes*own`, `nailmat`, `setkey*mouthClose*0.1` (closes the
   slit), `aaronwrinkles*smile`, the foot transplant (`aaron_foot.npz`), the body rig (`tools/gate/body_rig.py`,
   `parts_gate.POSES`, `test_body_rig.py`). **Block C** (`scratchpad/batch_C.sh`, log `batch_C` in batch_B.log) waits
-  for the file `scratchpad/card_back` - the order (07:40 UTC): web-9e's takes, then web-4c's 20-25 min slot (send it "card yours" on web-9e's "card free"), web-4c's slot done 07:48; web-9e has the card (07:5x) for its translation and a ~10 min JustDirect window check, closing JustDirect after; create the file on web-9e's one "card free"; `card_back.lent` pauses it between
+  for the file `scratchpad/card_back` - the order (07:40 UTC): web-9e's takes, then web-4c's 20-25 min slot (send it "card yours" on web-9e's "card free"), web-4c's slot done 07:48; web-9e has the card (07:5x) for its translation and a ~10 min JustDirect window check, closing JustDirect after; create the file on web-9e's one "card free"; web-4c's ~50 min film run is agreed at the boundary after POSE-DONE - when web-4c says it's ready, make `scratchpad/card_back.after_pose` (or `card_back.lent` if POSE is already done); the log then prints PAUSED-FOR-PEER: send web-4c "card yours"; on its "card free" delete `card_back.lent`; `card_back.lent` pauses it between
   steps for a peer. Then review every sheet against his and write each row's verdict.
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
