@@ -2109,6 +2109,11 @@ every one logged; key claims page-read):
     - Next: HD Aaron's smile with his wrinkle maps off. CC Blender Tools drives three sets of wrinkle maps (colour,
       roughness, normal, flow) from his expression keys, scaled by `wrinkle_strength` on CC_Base_Body. Turning that
       to 0 (`parts_gate --cc5-inputs wrinkle_strength=0`) shows how much of his smile line is maps, not shape.
+    - **Measured:** with his wrinkle maps off (`eevee_face_smile_cc5_nowrinkle.png`) only the crow's feet at the outer
+      eye corners go. The two pictures differ by 0.43 / 255 on average, 8.7 at the 99th percentile. His deep smile
+      line and the cheek mass stay: they are shape (his corner pull on a face with a defined smile line in neutral).
+      So the smile's gap is the shapes' depth, and the crow's feet are the wrinkle row's (plan §7). Next: ICT's
+      carried shapes scaled (`ictsmile*stem*mouth*cheek`: x1.3 / x1.3, x1 / x1.6).
 - GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
   and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
   landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
@@ -3215,6 +3220,9 @@ before the rec list; measured in Blender 5.3 and read in our code):
     wrapped onto our head (skull to skin 0.65 / 1.79 mm p50 / p90; roots 1.40 mm off at the median), as our
     scalp's guides (`factors guidefile*aaron_cards`). It asks: on his exact cut, does our fill and shading reach
     his look? Queued.
+  - VOID, not evidence: `factors hairgrey*0.25 / *0.4` on the library style (2026-11-07 late; L* back 43 / 51,
+    p95 62 / 65) were read through "taper5"'s cover mask, copied onto renders of another style, so skin and
+    background are in the numbers. Re-measure with the style's own cover before using them.
 
 ### 14.15 · The live view against the film
 

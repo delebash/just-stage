@@ -691,11 +691,13 @@ def guidefile(built: dict, stem: str) -> None:
 SMILE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "smile"
 
 
-def ictsmile(built: dict, stem: str) -> None:
+def ictsmile(built: dict, stem: str, mouth: float = 1.0, cheek: float = 1.0) -> None:
     """ICT-FaceKit's smile shapes carried onto our head (`tools/gate/smile_transfer.py`, `.dev/gate/smile/<stem>.npz`)
     written into our ARKit keys of the same names (mouthSmile, cheekSquint, eyeSquint), each side to the key that
     moves the same side - the gate's face_smile / face_smile_full views then show ICT's scanned smile on our head
-    against HD Aaron's (the smile proof, plan §7 "Expression shapes"). A shape: --alone."""
+    against HD Aaron's (the smile proof, plan §7 "Expression shapes"). `mouth`, `cheek`: the carried mouthSmile's and
+    cheekSquint's offsets scaled (his smile line and cheek mass are shape, not wrinkle maps - 2026-11-07). A shape:
+    --alone."""
     deltas = np.load(SMILE_TRIALS / f"{stem}.npz")
     body = built["body"]
     me = body.data
@@ -721,7 +723,7 @@ def ictsmile(built: dict, stem: str) -> None:
             d = deltas[f"{shape}{short}"].astype(np.float64)
             if len(d) != n:
                 raise RuntimeError(f"{stem}: {len(d)} vertices carried, the body has {n} - export him again")
-            d = d @ to_local.T
+            d = d @ to_local.T * {"mouthSmile": mouth, "cheekSquint": cheek}.get(shape, 1.0)
             same = [k for k, (_, ref, s) in ours.items() if np.sign(s) == np.sign(side(d, ref))]
             key, ref, _ = ours[same[0] if len(same) == 1 else ("Left" if short == "_L" else "Right")]
             key.data.foreach_set("co", (ref + d).astype(np.float32).ravel())
@@ -761,8 +763,9 @@ def factor(name: str):
     if name.startswith("lidledge"):  # lidledge*1*2.3 (the share toward the rim's line, the lash line's gap in mm)
         _, k, gap = name.split("*")
         return lambda built: lidledge(built, float(k), float(gap))
-    if name.startswith("ictsmile"):  # ictsmile*ict_average_man (the carried deltas' file stem)
-        return lambda built: ictsmile(built, name.split("*", 1)[1])
+    if name.startswith("ictsmile"):  # ictsmile*ict_average_man[*mouth*cheek] (the deltas' file stem, their scales)
+        stem, *scales = name.split("*")[1:]
+        return lambda built: ictsmile(built, stem, *(float(x) for x in scales))
     if name.startswith("lidcarry"):  # lidcarry*0.85*0.7*0.55 (a share a ring)
         shares = [float(x) for x in name.split("*")[1:]]
         return lambda built: lidcarry(built, *shares)
