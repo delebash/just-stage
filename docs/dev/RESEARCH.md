@@ -1986,6 +1986,15 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
 
 ### 14.5 · Mouth, nails, ears
 
+*measured, 2026-11-08* - the nail's outline in our mesh (item 7): of hm08's 245 faces on the nail tile (MPFB2's CC0
+nail masks over 0.5 at the face's UV centre, `tools/make_udim.py`), 58 have every corner inside the mask; 187 straddle
+its edge (their lowest corner's mask value, median 0.11). hm08 has no nail outline - the nail is painted over plain
+fingertip faces, ~12 to a nail - so the islands carry spikes (`scratchpad/nails_coords.png`), the shader paints a skin
+face as plate (the white block at a plate's base), and a groove on the faces' border follows the faces, not the nail.
+A shape on the base faces (`factors nailshape`, sheet `scratchpad/sheet_D11_nailshape.png`) reads closer to his - a
+groove and side folds - but the fold belongs on the plate's own outline: detail at the subdivided level (the approved
+design: nail beds are "sculpted shape and detail, not topology").
+
 *measured, 2026-11-08* - the teeth's size against HD Aaron's (build queue item 5; probe `scratchpad/teeth_size2.py`
 on the library's Average man and his blend; ours `upper_teeth_and_gums`, his `Std_Upper_Teeth` material - both with
 their gums): upper arch width ours 62.4 mm / his 64.9; depth 60.9 / 51.7 (ours 56.1 on the crowns alone); the band
