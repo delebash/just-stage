@@ -69,22 +69,41 @@ def _teeth_rows(teeth, group_name):
     return rows
 
 
-def test_the_lower_teeth_and_tongue_ride_jaw_open_and_survive_a_refit(human):
+def _evaluated(obj) -> np.ndarray:
+    ev = obj.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    mesh = ev.to_mesh()
+    try:
+        co = np.empty(len(mesh.vertices) * 3)
+        mesh.vertices.foreach_get("co", co)
+        return co.reshape(-1, 3)
+    finally:
+        ev.to_mesh_clear()
+
+
+def test_the_lower_teeth_and_tongue_ride_the_jaw_joint_and_survive_a_refit(human):
+    """The jaw is a joint (`FACIAL_C_Jaw`, the face rig job's step 3c): the lower teeth, gums and tongue ride it; with
+    the face units the face rig runs with the keys driving, so the body's jawOpen key turns the jaw and the teeth drop
+    (the gate, 2026-11-05: they stayed); the upper teeth stay with the skull; again after a refit."""
     result, obj = human
     api.run("juststage.head.add_parts", character=result.character)
     api.run("juststage.head.add_face_units", character=result.character)
     teeth = next(o for o in bpy.data.objects if o.juststage.part_of == result.character and o.juststage.part == "teeth")
+    assert teeth.data.shape_keys is None or "jawOpen" not in teeth.data.shape_keys.key_blocks  # no stand-in keys
     lower = _teeth_rows(teeth, "lower_teeth_and_gums") | _teeth_rows(teeth, "tongue")
     upper = _teeth_rows(teeth, "upper_teeth_and_gums")
-    moved = _offsets(teeth, "jawOpen")
-    assert moved[lower, 2].mean() < -0.008  # the lower teeth drop with the chin (the gate: they stayed, 2026-11-05)
-    assert np.abs(moved[upper]).max() < 1e-6  # the upper teeth stay with the skull
-    obj.data.shape_keys.key_blocks["jawOpen"].value = 1.0  # the teeth's key follows the body's (a driver)
-    bpy.context.view_layer.update()
-    assert teeth.data.shape_keys.key_blocks["jawOpen"].value == pytest.approx(1.0)
-    obj.data.shape_keys.key_blocks["jawOpen"].value = 0.0
-    api.run("juststage.head.add_parts", character=result.character)  # a refit rebuilds them on the new fit
-    assert _offsets(teeth, "jawOpen")[lower, 2].mean() < -0.008
+    for refit in (False, True):
+        if refit:
+            api.run("juststage.head.add_parts", character=result.character)  # a refit: the jaw re-placed too
+        rest = _evaluated(teeth)
+        obj.data.shape_keys.key_blocks["jawOpen"].value = 1.0
+        bpy.context.view_layer.update()  # the face rig's handler turns the jaw after the key
+        opened = _evaluated(teeth)
+        obj.data.shape_keys.key_blocks["jawOpen"].value = 0.0
+        bpy.context.view_layer.update()
+        moved = opened - rest
+        assert moved[lower, 2].mean() < -0.008, refit  # the lower teeth drop with the chin
+        assert np.abs(moved[upper]).max() < 1e-5, refit  # the upper teeth stay
+        assert np.abs(_evaluated(teeth) - rest).max() < 1e-5, refit  # and come back
 
 
 def test_jaw_open_drops_the_chin_and_runs_again_in_place(human):

@@ -61,12 +61,16 @@ def man():
 def test_the_skeleton_is_the_specs_82_in_def_with_every_skin_vertex_weighted(man):
     made, body, arm, result = man
     rig = skeleton.definition()
-    assert len(rig) == 82 and result.bones == 82
-    assert {b.name for b in arm.data.bones} == set(rig)
+    face = set(skeleton.FACE_BONES)  # the face's joints mirrored in (the jaw, which the lower teeth ride)
+    assert len(rig) == 82 and result.bones == 82 + len(face)
+    assert {b.name for b in arm.data.bones} == set(rig) | face
     deform = arm.data.collections[skeleton.COLLECTION]
-    assert {b.name for b in deform.bones} == set(rig)
+    assert {b.name for b in deform.bones} == set(rig) | face
     for b in arm.data.bones:
-        assert (b.parent.name if b.parent else "") == rig[b.name]["parent"], b.name
+        parent = skeleton.FACE_BONES[b.name][2] if b.name in face else rig[b.name]["parent"]
+        assert (b.parent.name if b.parent else "") == parent, b.name
+    jaw = arm.data.bones[skeleton.JAW]
+    assert abs(jaw.x_axis.x - 1.0) < 1e-3  # it opens about the face's left-right axis (the DNA's rx)
     assert body.modifiers[0].type == "ARMATURE" and body.modifiers[0].object == arm
     names = {vg.index: vg.name for vg in body.vertex_groups if vg.name in rig}
     skin = makehuman.skin_indices(len(body.data.vertices))

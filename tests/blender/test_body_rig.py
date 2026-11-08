@@ -33,7 +33,7 @@ def rigged():
 
 def test_the_gate_poses_the_products_skeleton(rigged):
     body, arm = rigged
-    assert len(arm.data.bones) == 82 and arm.juststage.part == "skeleton"
+    assert len(arm.data.bones) >= 82 and arm.juststage.part == "skeleton"  # the body's 82 and the face's joints
     assert body_rig.build(body) == arm  # the one it has, not a second
 
 

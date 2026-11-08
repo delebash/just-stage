@@ -32,6 +32,14 @@ HEAD = "head"  # the bone the head's rigid parts ride
 TOOL = "tools/make_skeleton.py"
 #: a part deformed by the body's own surface (a groom, a garment) follows the body, not the head bone
 FOLLOWS_BODY = {"SURFACE_DEFORM", "MESH_DEFORM", "SHRINKWRAP"}
+#: the face's joints mirrored into the armature (the spec §1.1: "mirrored into the body armature where Blender's
+#: animation tools need to key them"), by MetaHuman's names, placed the MPFB2 way: name -> (head cube, tail cube,
+#: parent). The jaw: MakeHuman's jaw bone runs from its mouth joint (the pivot) to its jaw joint (the chin) - the hinge
+#: the teeth's stand-in keys turned about (face rig job, step 3c)
+FACE_BONES = {"FACIAL_C_Jaw": ("joint-mouth", "joint-jaw", "head")}
+JAW = "FACIAL_C_Jaw"
+#: the teeth part's groups that ride the jaw (`teeth.groups.json`, tools/bind_parts.py); the rest rides the head
+JAW_GROUPS = ("lower_teeth_and_gums", "tongue")
 
 
 @cache
@@ -99,7 +107,10 @@ def joints(character: bpy.types.Object) -> dict[str, tuple[Vector, Vector]]:
             return Vector(co[spec["vertex_index"]])
         raise ValueError(f"joint strategy {spec['strategy']} not handled")
 
-    return {name: (at(spec["head"]), at(spec["tail"])) for name, spec in definition().items()}
+    where = {name: (at(spec["head"]), at(spec["tail"])) for name, spec in definition().items()}
+    for name, (head, tail, _parent) in FACE_BONES.items():
+        where[name] = (Vector(co[groups[head]].mean(0)), Vector(co[groups[tail]].mean(0)))
+    return where
 
 
 @cache
@@ -137,6 +148,11 @@ def place(character: bpy.types.Object, arm: bpy.types.Object) -> None:
             eb.use_connect = bool(spec.get("use_connect", False))
             eb.use_inherit_rotation = spec.get("use_inherit_rotation", True)
             eb.use_local_location = spec.get("use_local_location", True)
+        for name, (_head, _tail, parent) in FACE_BONES.items():
+            eb = bones.get(name) or bones.new(name)
+            eb.head, eb.tail = where[name]
+            eb.roll = 0.0  # its local X the face's left-right axis: the jaw opens about it
+            eb.parent = bones[parent]
     finally:
         bpy.ops.object.mode_set(mode="OBJECT")
         view_layer.objects.active = active
@@ -147,6 +163,9 @@ def place(character: bpy.types.Object, arm: bpy.types.Object) -> None:
         bone.inherit_scale = spec.get("inherit_scale", "FULL")
         bone.use_deform = True
         collection.assign(bone)
+    for name in FACE_BONES:  # a deform bone too (the teeth ride it): in DEF, as the spec puts every deform bone
+        data.bones[name].use_deform = True
+        collection.assign(data.bones[name])
 
 
 def bind(character: bpy.types.Object, arm: bpy.types.Object) -> int:
@@ -210,11 +229,24 @@ def riders(character: bpy.types.Object) -> list[bpy.types.Object]:
 
 
 def attach(character: bpy.types.Object, arm: bpy.types.Object) -> list[str]:
-    """Each rigid part skinned whole to the `head` bone; returns their names."""
+    """Each rigid part skinned whole to the `head` bone - the teeth's lower half (lower teeth, gums, tongue) to the jaw;
+    returns their names."""
     done = []
     for part in riders(character):
-        vg = part.vertex_groups.get(HEAD) or part.vertex_groups.new(name=HEAD)
-        vg.add(list(range(len(part.data.vertices))), 1.0, "REPLACE")
+        n = len(part.data.vertices)
+        jaw = np.zeros(n, bool)
+        if part.juststage.part == "teeth":
+            from ..head import parts
+
+            groups = parts.groups("teeth")
+            for name in JAW_GROUPS:
+                jaw[groups.get(name, [])] = True
+        head = part.vertex_groups.get(HEAD) or part.vertex_groups.new(name=HEAD)
+        head.add(list(range(n)), 1.0, "REPLACE")
+        if jaw.any():
+            head.remove(np.flatnonzero(jaw).tolist())
+            on_jaw = part.vertex_groups.get(JAW) or part.vertex_groups.new(name=JAW)
+            on_jaw.add(np.flatnonzero(jaw).tolist(), 1.0, "REPLACE")
         _modifier(part, arm)
         done.append(part.name)
     return done

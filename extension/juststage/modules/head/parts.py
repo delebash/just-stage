@@ -219,13 +219,13 @@ def refit(character: bpy.types.Object) -> None:
     """Move every part to the character's current shape."""
     base = build.shaped_coords(character)
     for part, obj in parts_of(character).items():
-        if part == "teeth" and obj.data.shape_keys:  # its jaw units: rebuilt below on the new fit
-            obj.shape_key_clear()
+        if part == "teeth" and obj.data.shape_keys:  # old jaw keys (the stand-in before the jaw joint): the fit
+            obj.shape_key_clear()  # writes the vertices themselves
         co = mhclo.fit(_binding(part), base).astype(np.float32)
         obj.data.vertices.foreach_set("co", co.ravel())
         obj.data.update()
     from ..body import base
-    from . import eye_layers, face_units
+    from . import eye_layers
 
     keys = character.data.shape_keys
     if keys and base.CONTACT in keys.key_blocks:  # the clearance measures the lids without the last contact
@@ -239,9 +239,6 @@ def refit(character: bpy.types.Object) -> None:
     from . import blink_contact
 
     blink_contact.make(character)  # the blink closes onto the lower lid on today's shape (when the units are there)
-    teeth = parts_of(character).get("teeth")
-    if teeth is not None:
-        face_units.add_to_teeth(character, teeth)
 
 
 def add(character: bpy.types.Object) -> list[str]:
