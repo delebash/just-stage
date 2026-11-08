@@ -1717,7 +1717,7 @@ def eyedark(built: dict, k: float) -> None:
     print("EYE DARK tint", tint, "on", n, "skins (film and live)", flush=True)
 
 
-def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25) -> None:
+def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25, distortion: float = 6.0) -> None:
     """Vertical lip lines made in the shader (our own asset, the user's "making your own assets"; no free scan resolves
     them - Ten24's lips are ~220 texels across): Blender's Wave Texture in bands across the lips (the object's X, a
     line every `period_mm`, its distortion by noise for irregular furrows), masked by the lips' share, as a bump on top of
@@ -1733,7 +1733,7 @@ def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25) -> Non
         wave = nt.nodes.new("ShaderNodeTexWave")
         wave.wave_type, wave.bands_direction, wave.wave_profile = "BANDS", "X", "SIN"
         wave.inputs["Scale"].default_value = 1000.0 / period_mm
-        wave.inputs["Distortion"].default_value = 6.0
+        wave.inputs["Distortion"].default_value = distortion  # 6 read as a dense crinkle (16:59); his lines fewer, upright
         wave.inputs["Detail"].default_value = 3.0
         wave.inputs["Detail Scale"].default_value = 1.5
         nt.links.new(coord.outputs["Position"], wave.inputs["Vector"])
@@ -2471,8 +2471,8 @@ def factor(name: str):
         return lambda built: lidsmooth(built, int(rings), int(passes))
     if name.startswith("eyedark*"):  # eyedark*0.8 (the tint's level round the eyes)
         return lambda built: eyedark(built, float(name.split("*")[1]))
-    if name.startswith("liplines"):  # liplines, liplines*1.2*0.25 (period, depth in mm)
-        return lambda built: liplines(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("liplines"):  # liplines, liplines*1.2*0.25[*6] (period, depth in mm, distortion)
+        return lambda built: liplines(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("faceshape*"):  # faceshape*lean, faceshape*lean&brow (FACE_PRESETS) - --alone
         return lambda built: faceshape(built, name.split("*", 1)[1])
     if name.startswith("lipshine*"):  # lipshine*0.5*0.1 (roughness, coat)

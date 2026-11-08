@@ -187,6 +187,22 @@ them.** Fixed (`factors._skin_materials`: the product's `principled()` and `sync
 card slot (`batch_slot.sh`, after just-voice's piece), with face round 3: a real scan's face shape on our man
 (`mix*hsr0040`, `hsr0042`, `hsr0161` - HSRD-100's scan identities, CC BY 4.0, through the mixer's own command; a local
 proof that a scan shape reads real, not the mixer's feature work). The lips' and eyes' verdicts above wait on them.
+
+**The foot's route (written while the PC is the peers', 16:4x):** Thunk3D's scan is a leg and foot alone (STL,
+2,971,647 triangles from its size: (148,582,434 - 84) / 50), geometry only. `body_scan.py`'s sources place a scan by
+our torso (`_place_rigid` on tile 1) and fit the whole body through Anny - a lone leg has no torso. The standard route
+stays (the face's and the hands' - a rigid placement, Amberg NICP, Selected-to-Active bake of the normal), with one
+new step: the placement by our foot itself - our foot's faces on tile 1004 (below the ankle joint) against the
+scan's foot, scale from the STL's units (read at load), then the wrap of the foot vertices only and the relief baked
+into tile 1004's normal map, the edge faded at the ankle (`EDGE_FADE`). A new SOURCES row `thunk3d_foot` ("fit":
+"foot"). Booked as a CPU job (trimesh on 3M triangles ~2-4 GB) when the peers' order allows.
+
+**16:5x, the fixed trials (slot cut short at 16:59 - family-release's e2e put Gemma 4 26B on the card; rows
+`scratchpad/row_slot_{eye,lips}.png`):** lip lines at 1.2 mm / 0.5 mm, now on both BSDFs - the rubber look is gone,
+the lips read as lip skin; too dense and crinkly against his fewer, finer, upright lines - **the route works, tuning
+next** (sparser and upright: distortion 2-3, period 1.6, depth 0.3-0.4). The eyes' surround at 0.8 - a slight gain;
+his lids and under-eyes are much darker - 0.65 next. Both, and face round 3, in the rebooked slot after family-release's
+"CPU free" (~17:20; `batch_slot2.sh`).
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
