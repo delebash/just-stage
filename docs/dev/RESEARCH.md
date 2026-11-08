@@ -3110,8 +3110,10 @@ before the rec list; measured in Blender 5.3 and read in our code):
   inside the scalp region's own UV range - the style's region (MakeHuman's `short_hedgehog` roots) or the mask's
   gap-closing reaches there; fixed (2026-11-07): the mask chosen in faces above the neck joint (`scalp._scalp_faces`;
   test_scalp: none rooted below the head). The groom's bare seams (a Y above the ear to the crown and nape, and
-  across the back): Blender's Interpolate Hair Curves parts the fill "by mesh islands" by default - turned off in
-  `scalp._fill_group` (render check queued). "short taper" (2026-11-07, on trial): its stand-off within ~2 mm of
+  across the back): not the mask (chosen in faces, unchanged), not "Part by Mesh Islands" (off - the render the same
+  to three decimals), not the comb's sideways turn; the fill's roots lie evenly over the head with no gap along the
+  lines (a side-view density map, 108,505 roots) - so the strands part there: the guides' paths are the next look.
+  The roots also run well down the neck (the nape's fringe) and the sideburns toward the jaw. "short taper" (2026-11-07, on trial): its stand-off within ~2 mm of
   his in every region; coverage IoU against his 0.82 (short combed 0.80-0.83). His dark-root / light-tip contrast
   (L* 20 / p95 60 at the back against ours 25 / 43): the live model's shares only trade the two; lighter tips
   (`factors hairtip`) lift the highlights (p95 48-55) and the mean (29-35) together - darker body plus tips queued.
