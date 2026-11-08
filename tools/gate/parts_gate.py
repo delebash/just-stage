@@ -59,6 +59,11 @@ EXPRESSIONS = {
     "jawOpen": {"ours": {"jawOpen": JAW}, "cc5": {"Jaw_Open": JAW}},
     "smile": {"ours": {"mouthSmileLeft": 1.0, "mouthSmileRight": 1.0},
               "cc5": {"Mouth_Corner_Pull_L": 1.0, "Mouth_Corner_Pull_R": 1.0}},
+    # a smile as ARKit splits it - the mouth's corners and the cheeks' squint (CC5's one corner pull raises the cheeks
+    # and squints the eyes too: HD Aaron's smile, 2026-11-07; ours with mouthSmile alone moved only the mouth)
+    "smile_full": {"ours": {"mouthSmileLeft": 1.0, "mouthSmileRight": 1.0, "cheekSquintLeft": 1.0,
+                            "cheekSquintRight": 1.0},
+                   "cc5": {"Mouth_Corner_Pull_L": 1.0, "Mouth_Corner_Pull_R": 1.0}},
     "browInnerUp": {"ours": {"browInnerUp": 1.0}, "cc5": {"Brow_Raise_In_L": 1.0, "Brow_Raise_In_R": 1.0}},
 }  # fmt: skip
 
@@ -85,6 +90,7 @@ VIEWS = {
     "face_jawOpen": ("expression, teeth", "jawOpen"),
     "mouth_jawOpen": ("teeth and gums, tongue", "jawOpen"),
     "face_smile": ("expression", "smile"),
+    "face_smile_full": ("expression", "smile_full"),
     "mouth_smile": ("teeth and gums, lips", "smile"),
     "face_browInnerUp": ("expression, brows", "browInnerUp"),
 }
