@@ -41,6 +41,16 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   CronCreate):** every 20 min when idle, resume the verdict work from these docs; every 3 h, remind every peer session
   of the shared rules (the user: "they can help keep you on task").
 
+- **2026-11-08 ~02:00 (read the plan's §18a for each row's numbers):** block B ended; suites: unit 45 passed, tools
+  33 passed, Blender ~143 passed / 1 failed (test_lashes: the ledge turn put one lash on the nose - fixed by
+  `lashes.ROOT_REACH`, the three lash tests pass; the full Blender suite reruns at the end). Found and fixed on the CPU:
+  the teeth transplant (new keys start at 1.0), the brows' sweep is placement (roots on the lid, median 8.5 mm above
+  the eye against his 17.5), not binding. Built and dry-run: `aaronshape*upper` (his brow ridge and fold, depth-
+  projected), `aaroncards*shaped`, `eyetrans`, `aaroneyes*own`, `nailmat`, `setkey*mouthClose*0.1` (closes the
+  slit), `aaronwrinkles*smile`, the foot transplant (`aaron_foot.npz`), the body rig (`tools/gate/body_rig.py`,
+  `parts_gate.POSES`, `test_body_rig.py`). **Block C** (`scratchpad/batch_C.sh`, log `batch_C` in batch_B.log) waits
+  for the file `scratchpad/card_back` - create it when web-9e sends "card free"; `card_back.lent` pauses it between
+  steps for a peer. Then review every sheet against his and write each row's verdict.
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
   "why do you keep missing everything").
