@@ -35,7 +35,7 @@ def main(params: Params) -> Result:
 
     obj = character.find(params.character)
     arm = skeleton.add(obj)
-    weighted = sum(1 for v in obj.data.vertices if any(g.weight > 0 for g in v.groups
-                                                         if obj.vertex_groups[g.group].name in skeleton.definition()))  # fmt: skip
+    bones = {vg.index for vg in obj.vertex_groups if vg.name in skeleton.definition()}
+    weighted = sum(1 for v in obj.data.vertices if any(g.group in bones and g.weight > 0 for g in v.groups))
     return Result(object=arm.name, bones=len(arm.data.bones), weighted_vertices=weighted,
                   riders=[o.name for o in skeleton.riders(obj)])  # fmt: skip

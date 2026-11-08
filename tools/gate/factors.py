@@ -1677,10 +1677,11 @@ NAIL_PLATE, NAIL_LUNULA, NAIL_EDGE = (0.545, 0.349, 0.267), (0.70, 0.55, 0.50), 
 NAIL_LUNULA_TO, NAIL_EDGE_FROM = 0.22, 0.88  # shares of each nail's length, from its base
 
 
-def _nail_along(built: dict) -> int:
-    """Each nail (a connected piece of our nail tile, 1005) given `nail_along` - 0 at its base, 1 at its tip - along
-    its finger: from the skin within 30 mm of it (the finger's end, which lies behind the nail) toward the nail,
-    flattened onto the nail. Returns the pieces found."""
+def _nail_pieces(built: dict) -> tuple[np.ndarray, set[int], list[dict]]:
+    """Our nails: (every vertex in world space, the nail tile's vertices, one dict per nail - a connected piece of the
+    tile, 1005 - with its vertices, centre, outward normal, base-to-tip `axis` and each vertex's `along`, 0 at its base
+    and 1 at its tip). The axis runs from the skin within 30 mm of the nail (the finger's end, which lies behind it)
+    toward the nail, flattened onto it."""
     from mathutils.kdtree import KDTree
 
     build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
@@ -1715,18 +1716,17 @@ def _nail_along(built: dict) -> int:
             ra, rb = root(vs[0]), root(v)
             if ra != rb:
                 parent[rb] = ra
-    nail_v = np.array(sorted(nail_v))
-    pieces = {}
-    for v in nail_v:
-        pieces.setdefault(root(v), []).append(v)
+    groups = {}
+    for v in sorted(nail_v):
+        groups.setdefault(root(v), []).append(v)
     skin = importlib.import_module("bl_ext.system.juststage.core.makehuman").skin_mask(len(co))
-    others = np.flatnonzero(skin & ~np.isin(np.arange(len(co)), nail_v))
+    others = np.flatnonzero(skin & ~np.isin(np.arange(len(co)), np.array(sorted(nail_v))))
     kd = KDTree(len(others))
     for i, v in enumerate(others):
         kd.insert(co[v], i)
     kd.balance()
-    along = np.zeros(len(co), np.float32)
-    for vs in pieces.values():
+    pieces = []
+    for vs in groups.values():
         vs = np.array(vs)
         c = co[vs].mean(0)
         n = sum(normals[v] for v in vs)
@@ -1736,10 +1736,82 @@ def _nail_along(built: dict) -> int:
         axis -= (axis @ n) * n
         axis /= np.linalg.norm(axis)
         s = (co[vs] - c) @ axis
-        along[vs] = (s - s.min()) / max(s.max() - s.min(), 1e-6)
+        pieces.append({"vertices": vs, "centre": c, "normal": n, "axis": axis,
+                       "along": (s - s.min()) / max(s.max() - s.min(), 1e-6)})  # fmt: skip
+    return co, nail_v, pieces
+
+
+def _nail_along(built: dict) -> int:
+    """Each nail given `nail_along` - 0 at its base, 1 at its tip - along its finger (`_nail_pieces`). Returns the
+    pieces found."""
+    me = built["body"].data
+    co, _, pieces = _nail_pieces(built)
+    along = np.zeros(len(co), np.float32)
+    for piece in pieces:
+        along[piece["vertices"]] = piece["along"]
     attr = me.attributes.get("nail_along") or me.attributes.new("nail_along", "FLOAT", "POINT")
     attr.data.foreach_set("value", along)
     return len(pieces)
+
+
+NAIL_FREE = 0.85  # along: past this a nail's border is its free edge (no groove, no fold over it)
+
+
+def nailshape(built: dict, dome_mm: float, groove_mm: float, lip_mm: float) -> None:
+    """Build queue item 7 (row 16: ours a flat plate in a rectangular window with a hard step; his a curved plate
+    tucked under a cuticle fold, the skin rolling over its sides). The approved design (2026-11-05): nail beds are
+    sculpted shape and detail - a loop only where shape can't (Q-BASE-3). Shape alone, on our existing faces, along
+    each nail's outward normal: the plate domed across (`dome_mm` on its middle line, 0 at its sides), its border sunk
+    into a groove (`groove_mm`; not at the free edge), the skin's first ring round it raised into a fold's lip
+    (`lip_mm`). A shape key at 1. A shape: --alone."""
+    body = built["body"]
+    me = body.data
+    co, nail_v, pieces = _nail_pieces(built)
+    maps = _maps()
+    udim = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", udim)
+    udim = udim.reshape(-1, 2)
+    in_skin = set()
+    for poly in me.polygons:
+        if not 4.0 <= udim[list(poly.loop_indices), 0].mean() < 5.0:
+            in_skin.update(poly.vertices)
+    edges = np.empty(len(me.edges) * 2, np.int64)
+    me.edges.foreach_get("vertices", edges)
+    nbr = {}
+    for a, b in edges.reshape(-1, 2):
+        nbr.setdefault(int(a), set()).add(int(b))
+        nbr.setdefault(int(b), set()).add(int(a))
+    offset = np.zeros_like(co)
+    counts = {"border": 0, "ring": 0, "plate": 0}
+    for piece in pieces:
+        vs, n, c, axis = piece["vertices"], piece["normal"], piece["centre"], piece["axis"]
+        side = np.cross(n, axis)
+        across = (co[vs] - c) @ side
+        across = across / max(np.abs(across).max(), 1e-6)
+        along = dict(zip(vs.tolist(), piece["along"].tolist(), strict=True))
+        for v, a in zip(vs.tolist(), across.tolist(), strict=True):
+            if v in in_skin:  # the border, shared with the finger's skin
+                if along[v] < NAIL_FREE:
+                    offset[v] -= groove_mm / 1000 * n
+                    counts["border"] += 1
+                    for u in nbr[v] - nail_v:
+                        offset[u] = lip_mm / 1000 * n
+                        counts["ring"] += 1
+            else:
+                offset[v] += dome_mm / 1000 * (1.0 - a * a) * n
+                counts["plate"] += 1
+    keys = me.shape_keys
+    if keys is None:
+        body.shape_key_add(name="Basis", from_mix=False)
+        keys = me.shape_keys
+    basis = np.empty(len(me.vertices) * 3, np.float32)
+    keys.reference_key.data.foreach_get("co", basis)
+    local = offset @ np.linalg.inv(np.array(body.matrix_world)[:3, :3]).T
+    key = body.shape_key_add(name="JustStage nail shape trial", from_mix=False)
+    key.data.foreach_set("co", (basis.reshape(-1, 3) + local).astype(np.float32).ravel())
+    key.value = 1.0
+    me.update()
+    print("NAIL SHAPE", dome_mm, groove_mm, lip_mm, len(pieces), "nails", counts, flush=True)
 
 
 def aaronnailgeo(built: dict, stem: str = "aaron_nails") -> None:
@@ -1883,6 +1955,9 @@ def factor(name: str):
         return lambda built: eyescale(built, float(k), *pivot)
     if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)
         return lambda built: rigsmooth(built, int(name.split("*")[1]))
+    if name.startswith("nailshape*"):  # nailshape*0.5*0.5*0.25 (mm: the plate's dome, the border's groove, the fold's lip)
+        _k, dome, groove, lip = name.split("*")
+        return lambda built: nailshape(built, float(dome), float(groove), float(lip))
     if name.startswith("browlift*"):  # browlift*9 (the brows grown again, their band lifted 9 mm)
         return lambda built: browlift(built, float(name.split("*")[1]))
     if name.startswith("setkey*"):  # setkey*mouthClose*0.1 (a body shape key held at a value)

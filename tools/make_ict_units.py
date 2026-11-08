@@ -4,11 +4,11 @@
 """ICT-FaceKit's scanned expression shapes as our face units (the plan's §7 "Expression shapes", Q-RIG-1's per-shape
 pick, decided under the go 2026-11-08 for the shapes measured: Faceunits' eyeBlink folds the closed lid, ICT's
 closes smooth - the gate's sheet `sheet_C9_ictblink.png`; ICT's mouthSmile + cheekSquint lift the corners and cheeks
-as HD Aaron's smile does, Faceunits' bends the mouth alone - RESEARCH 14.7). ICT's shape is carried onto our base man through the
-smile carry's wrap (eye-rim landmarks, a scaled ICP, Amberg's NICP, a barycentric carry with a harmonic fill -
-`tools/gate/smile_transfer.py carry`), then kept as offsets on hm08's vertices, the form MakeHuman's targets take, so
-every character applies it as it applies a Faceunits target (`face_units.add`; base v2's appended vertices carried by
-`base.extend`). ICT-FaceKit is MIT (its LICENSE; ATTRIBUTION.md).
+as HD Aaron's smile does, Faceunits' bends the mouth alone - RESEARCH 14.7). ICT's shape is carried onto our base
+man through the smile carry's wrap (eye-rim landmarks, a scaled ICP, Amberg's NICP, a barycentric carry with a
+harmonic fill - `tools/gate/smile_transfer.py carry`), then kept as offsets on hm08's vertices, the form MakeHuman's
+targets take, so every character applies it as it applies a Faceunits target (`face_units.add`; base v2's appended
+vertices carried by `base.extend`). ICT-FaceKit is MIT (its LICENSE; ATTRIBUTION.md).
 
     1. python tools/dev.py blender -b --python tools/gate/smile_transfer.py -- export
            .dev/gate/smile/ours_average_man.npz
