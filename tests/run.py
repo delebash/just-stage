@@ -3,7 +3,11 @@
 
 """The one test runner inside Blender (docs/standards/testing.md §2): pytest on Blender's own Python.
 
-Run by `python tools/dev.py test [pytest args]`, which starts Blender headless on JustStage's own folders.
+Run by `python tools/dev.py test [pytest args]`, which starts Blender headless on JustStage's own folders. It passes
+`-q` itself: don't add another - at `-qq` pytest prints no "N passed" line (the 2026-11-07/08 suite logs had none).
+Windows' faulthandler prints "Windows fatal exception: access violation" at `os.environ` writes (pytest's
+`PYTEST_CURRENT_TEST`) during some runs - handled exceptions inside Blender's process: every test after one ran on
+and passed (2026-11-08, 16 and 42 dumps in two green runs); a real crash ends the run.
 """
 
 import os

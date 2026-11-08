@@ -83,16 +83,22 @@ def joint(arm: bpy.types.Object, bone: str) -> Vector:
     return arm.matrix_world @ arm.pose.bones[bone].head
 
 
-def _place(arm: bpy.types.Object, body: bpy.types.Object, group: str, a: np.ndarray, b: np.ndarray) -> float:
-    """Where a bone's weights sit along a limb, a -> b (world): the weighted centroid of its vertex group, 0..1."""
+def _place(arm: bpy.types.Object, body: bpy.types.Object, group: str, near: str, far: str) -> float:
+    """Where a bone's weights sit along a limb, from bone `near`'s head (0) to bone `far`'s (1): the weighted centroid
+    of its vertex group, all at rest - the shaped body (shape keys mixed: ours is shaped by them) against the bones'
+    rest heads (a posed limb against rest vertices read nonsense, 2026-11-08)."""
+    co = _ext("modules.body.build").shaped_coords(body)
+    co = co @ np.array(body.matrix_world)[:3, :3].T + np.array(body.matrix_world)[:3, 3]
+    a, b = (np.array(arm.matrix_world @ arm.data.bones[n].head_local) for n in (near, far))
     vg = body.vertex_groups[group]
-    co, w = [], []
+    index, weight = [], []
     for v in body.data.vertices:
         for g in v.groups:
             if g.group == vg.index and g.weight > 0:
-                co.append(body.matrix_world @ v.co)
-                w.append(g.weight)
-    c = (np.asarray(co) * np.asarray(w)[:, None]).sum(0) / np.sum(w)
+                index.append(v.index)
+                weight.append(g.weight)
+    w = np.asarray(weight)
+    c = (co[index] * w[:, None]).sum(0) / w.sum()
     return float((c - a) @ (b - a) / ((b - a) @ (b - a)))
 
 
@@ -105,7 +111,7 @@ def twist(arm: bpy.types.Object, body: bpy.types.Object, roles: dict, degrees: f
     axis = (wrist - elbow) / np.linalg.norm(wrist - elbow)
     shares = {}
     for key in ("twist_near", "twist_far"):
-        shares[roles[key]] = min(max(_place(arm, body, roles[key], elbow, wrist), 0.0), 1.0)
+        shares[roles[key]] = min(max(_place(arm, body, roles[key], roles["lowerarm"], roles["hand"]), 0.0), 1.0)
     near, far = roles["twist_near"], roles["twist_far"]
     turn(arm, near, axis, shares[near] * degrees)
     inherited = shares[near] * degrees if arm.pose.bones[far].parent.name == near else 0.0

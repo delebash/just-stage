@@ -1986,6 +1986,20 @@ credits"). Their terms, image-to-image control and APIs are unread; the face tes
 
 ### 14.5 · Mouth, nails, ears
 
+*measured, 2026-11-08* - the teeth's size against HD Aaron's (build queue item 5; probe `scratchpad/teeth_size2.py`
+on the library's Average man and his blend; ours `upper_teeth_and_gums`, his `Std_Upper_Teeth` material - both with
+their gums): upper arch width ours 62.4 mm / his 64.9; depth 60.9 / 51.7 (ours 56.1 on the crowns alone); the band
+within 4 mm of the front incisors 23.4 / 20.5 mm wide; front height with the gums 12.1 / 19.2 (our crowns 9.4 - a
+real central incisor's crown is ~10.5 mm). So not a size gap: our arch is as wide and deeper, its front flatter -
+the arch's form, which the plan's teeth variety (Poseidon3D arches, GNM's teeth directions; §5) sets per character;
+a uniform scale would narrow an arch that is already narrower. (The 2026-11-08 render's "his smaller" is that form
+and his lip covering more of his incisors.)
+
+*measured, 2026-11-08* - the tongue in "aa" (ours jawOpen 0.4 on the library's Average man, his V_Open 1; probe
+`scratchpad/tongue_probe.py`, world mm against the lower incisors): the tip ours 5.2 mm behind the incisors' front /
+his 9.5, 4.0 / 5.5 mm below their edge; the dorsum's top 26.3 / 21.3 above it. Ours sits as far forward and as high
+as his, so "no tongue showing" (row 11) is the opening - his V_Open opens wider than our jawOpen 0.4 - not the tongue.
+
 *web + measured, 2026-10-31* - the face's neutral: lips and lids (`../plans/2026-10-31-audit-face-edits.md`, 18 searches,
 every one logged; key claims page-read):
 - MakeHuman's CC0 identity mouth targets (in our repo, `extension/juststage/data/fetched/makehuman/targets/mouth/`)

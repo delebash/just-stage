@@ -791,11 +791,13 @@ def teethcolour(built: dict, r: float, g: float, b: float) -> None:
     print("TEETH COLOUR", (r, g, b), "on", done, "ramps", flush=True)
 
 
-def eyescale(built: dict, k: float) -> None:
+def eyescale(built: dict, k: float, pivot: str = "centre") -> None:
     """Build queue item 5 (row 5: our eyeball 14.5-14.8 mm in radius on three characters, HD Aaron's 13.2 - his at his
-    own size in our sockets read as his eye): both eye parts scaled by `k` about their own centres, then refit's eye
-    steps again - the clearance, the lids' contact (the rims back onto the smaller eyeball), the eye films, and the
-    blink's closing step. A shape: --alone."""
+    own size in our sockets read as his eye): both eye parts scaled by `k` about their own centres - or, `pivot`
+    "front", about the cornea's front (the eye's most forward vertex), as `aaroneyes*own` set his eyeball: scaled
+    about the centre, the lids followed the eyeball in and the opening shrank (2026-11-08) - then refit's eye steps
+    again: the clearance, the lids' contact (the rims back onto the smaller eyeball), the eye films, and the blink's
+    closing step. A shape: --alone."""
     parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
     eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
     base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
@@ -811,7 +813,11 @@ def eyescale(built: dict, k: float) -> None:
         c = np.asarray(centre) @ inv[:3, :3].T + inv[:3, 3]
         co = np.empty(len(obj.data.vertices) * 3)
         obj.data.vertices.foreach_get("co", co)
-        co = c + (co.reshape(-1, 3) - c) * k
+        co = co.reshape(-1, 3)
+        if pivot == "front":  # the cornea's front: the most forward vertex in world space (the face looks down -y)
+            world = co @ np.array(obj.matrix_world)[:3, :3].T + np.array(obj.matrix_world)[:3, 3]
+            c = co[int(np.argmin(world[:, 1]))]
+        co = c + (co - c) * k
         obj.data.vertices.foreach_set("co", co.ravel())
         obj.data.update()
     keys = body.data.shape_keys
@@ -1872,8 +1878,9 @@ def factor(name: str):
     if name.startswith("teethcolour*"):  # teethcolour*0.52*0.42*0.36 (our enamel's base colour, linear)
         _k, r, g, b = name.split("*")
         return lambda built: teethcolour(built, float(r), float(g), float(b))
-    if name.startswith("eyescale*"):  # eyescale*0.89 (both eyeballs scaled about their centres, the lids refitted)
-        return lambda built: eyescale(built, float(name.split("*")[1]))
+    if name.startswith("eyescale*"):  # eyescale*0.89 (both eyeballs scaled about their centres, the lids refitted);
+        _k, k, *pivot = name.split("*")  # eyescale*0.89*front: about the cornea's front
+        return lambda built: eyescale(built, float(k), *pivot)
     if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)
         return lambda built: rigsmooth(built, int(name.split("*")[1]))
     if name.startswith("browlift*"):  # browlift*9 (the brows grown again, their band lifted 9 mm)
