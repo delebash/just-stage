@@ -2096,6 +2096,19 @@ every one logged; key claims page-read):
     mass bulging up, narrowed eyes and crow's feet. Ours only bends the mouth. The landmark model moves its cheek
     point with the mouth whatever the skin does, so the cheek's lift and the line are judged on the pictures. His
     crow's feet are wrinkle maps (plan §7's wrinkles row, TO BUILD), not shape.
+  - **ICT's smile on the gate's man, in EEVEE against HD Aaron** (*measured, 2026-11-07 late*;
+    `.dev/gate/parts/2026-11-07j`, `factors ictsmile*ict_average_man`).
+    - The carry on the gate's own man: the wrap 0.53 / 2.21 mm (p50 / p90), the eye landmarks 1.18 mm off, ICT's
+      mouth corners at x ±2.19 cm. The carried sizes: mouthSmile 15.0 mm, cheekSquint 5.9 mm, eyeSquint 3.5 mm.
+    - The full smile (mouthSmile + cheekSquint), his | ours in mm: corners up 12.6 | 11.4 (0.91), out 6.9 | 7.7,
+      cheek point up 4.8 | 4.0, lower lid up 0.5 | 0.9, eye opening -0.4 | -1.5.
+    - The Landmarker's mouthSmile score: his 0.86 / 0.85, ours 0.83 / 0.84 (Faceunits' full smile: 0.72 / 0.79).
+    - By eye: the corners and the cheeks' lift reach his. Still short: his deep smile line from the nose's wing past
+      the corner (ours faint), his crow's feet, and his lips thinning as they stretch (ours stay full; our lower lip
+      rises only 0.68 of his).
+    - Next: HD Aaron's smile with his wrinkle maps off. CC Blender Tools drives three sets of wrinkle maps (colour,
+      roughness, normal, flow) from his expression keys, scaled by `wrinkle_strength` on CC_Base_Body. Turning that
+      to 0 (`parts_gate --cc5-inputs wrinkle_strength=0`) shows how much of his smile line is maps, not shape.
 - GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
   and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
   landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
@@ -3029,6 +3042,19 @@ every one logged; key claims page-read):
   So no contact setting fixes it: the lower lid needs its shape - its skin rings below the lash line laid in a smooth
   slope off the eyeball (an extension of the approved contact key), or the plan's escalation (the head on a new
   topology, §4).
+- **The lower lid's roll is its margin's tilt** (*measured, 2026-11-07 late*, the gate's man exported
+  `.dev/gate/smile/ours_average_man.npz`, base v2's rows).
+  - On the lower lid's middle, the lash line sits 2.4 mm straight below the rim at its depth (dy 0.16 / -0.41 mm),
+    74-80 deg below horizontal: a wall facing the camera. The middle row bulges 0.8 mm forward of both, so the
+    cross-section is a rounded tube.
+  - The upper lid's lash line sits 2.2 mm in front of its rim and level (5-7 deg): a ledge.
+  - Why nothing tried so far changed it: the contact (`parts.eyelid_contact`) and base v2 move each row only along
+    its own line from the eye's centre, which changes the gap but never the angle. The lower lash line keeps hm08's
+    angle, about 11 deg below its rim's.
+  - `lidsmooth` (4 rings x 10 passes, 6 x 20): eye DISTS 0.264 / 0.266; by eye the skin below is a little smoother,
+    and the tube stays.
+  - On trial: `factors lidledge*k*gap` turns each lower lash vertex k of the way onto its rim's line, gap mm off
+    the eyeball, carried into the skin below.
 
 ### 14.14 · Scalp hair
 

@@ -603,6 +603,51 @@ def lidsmooth(built: dict, rings: int, iterations: int) -> None:
           round(float(moved.max()) * 1000, 2), "mm", flush=True)
 
 
+def lidledge(built: dict, k: float, gap_mm: float) -> None:
+    """The lower lid's margin turned from a wall into a ledge. Measured on the gate's man (2026-11-07 late): the lower
+    lash line sits 2.4 mm straight below the rim at its depth (74-80 deg below horizontal - a wall facing the camera,
+    the thick roll), the upper one 2.2 mm in front of its rim and level (5-7 deg - a ledge). The contact
+    (`parts.eyelid_contact`) moves each row only along its own line from the eye's centre, so it can't turn the margin.
+    Here each lower lash vertex goes onto the line `k` of the way from its own toward its rim's (1 = straight out from
+    the rim), `gap_mm` off the eyeball; the middle row midway; the move carried into the skin below (`parts._carry`,
+    CARRY) and added to the contact key. A shape: --alone."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+    body = built["body"]
+    me = body.data
+    co = build.shaped_coords(body)
+    spheres = [eye_layers._eye_sphere(o) for n, o in parts.parts_of(body).items() if n in ("eyeLeft", "eyeRight")]
+    rows = base.rows()
+    push = np.zeros_like(co)
+
+    def unit(v: np.ndarray) -> np.ndarray:
+        return v / np.linalg.norm(v)
+
+    turned = []
+    for lash, margin, rim in rows:
+        if lash < 0 or rim < 0:
+            continue
+        c, r = min(spheres, key=lambda s: np.linalg.norm(co[margin] - s[0]))
+        if co[rim][2] >= c[2]:  # the upper lid: a ledge already
+            continue
+        d_rim, d_lash = unit(co[rim] - c), unit(co[lash] - c)
+        d = unit((1 - k) * d_lash + k * d_rim)
+        push[lash] = c + d * (r + gap_mm / 1000) - co[lash]
+        push[margin] = c + unit(d + d_rim) * (r + (gap_mm / 1000 + parts.RIM_GAP) / 2) - co[margin]
+        turned.append(float(np.linalg.norm(push[lash])))
+    parts._carry(body, rows, push)
+    key = me.shape_keys.key_blocks[base.CONTACT]
+    kco = np.empty(len(me.vertices) * 3, np.float32)
+    key.data.foreach_get("co", kco)
+    key.data.foreach_set("co", (kco.reshape(-1, 3) + push / max(key.value, 1e-6)).astype(np.float32).ravel())
+    me.update()
+    bpy.context.view_layer.update()
+    print("LID LEDGE", k, gap_mm, "mm:", len(turned), "lower lash vertices moved, most",
+          round(max(turned, default=0.0) * 1000, 2), "mm", flush=True)
+
+
 def eye_slider(built: dict, key: str, value: float) -> None:
     sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
     catalog = sliders.catalog()
@@ -680,6 +725,9 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("lidledge"):  # lidledge*1*2.3 (the share toward the rim's line, the lash line's gap in mm)
+        _, k, gap = name.split("*")
+        return lambda built: lidledge(built, float(k), float(gap))
     if name.startswith("ictsmile"):  # ictsmile*ict_average_man (the carried deltas' file stem)
         return lambda built: ictsmile(built, name.split("*", 1)[1])
     if name.startswith("lidcarry"):  # lidcarry*0.85*0.7*0.55 (a share a ring)

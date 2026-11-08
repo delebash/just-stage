@@ -179,6 +179,8 @@ def build_cc5(scene, engine: str, inputs: dict[str, float] | None = None) -> dic
                 for name, value in inputs.items():
                     if name in node.inputs:
                         node.inputs[name].default_value = value
+    if inputs and "wrinkle_strength" in inputs:  # CC Blender Tools' wrinkle maps' overall strength (his drivers read it)
+        body["wrinkle_strength"] = inputs["wrinkle_strength"]
     keyed = [o for o in kept if o.type == "MESH" and o.data.shape_keys]
     return {"body": body, "objects": kept, "keyed": keyed, "armature": next(o for o in kept if o.type == "ARMATURE")}
 
@@ -517,7 +519,8 @@ if __name__ == "__main__":
     p.add_argument("--views", default=",".join(VIEWS))
     p.add_argument("--size", type=int, default=SIZE)
     p.add_argument("--samples", type=int, default=CYCLES_SAMPLES)
-    p.add_argument("--cc5-inputs", default="", help='"Name=value;Name=value" on his skin shaders (a diagnostic)')
+    p.add_argument("--cc5-inputs", default="", help='"Name=value;Name=value" on his skin shaders (a diagnostic); '
+                   '"wrinkle_strength=0" turns his wrinkle maps off')
     p.add_argument("--tag", default="", help="appended to the file names (a diagnostic's variant)")
     p.add_argument("--skin", default="", help="a library skin (.blend) on ours, as the Content panel applies it")
     p.add_argument("--brows", choices=("library", "generated"), default="library")
