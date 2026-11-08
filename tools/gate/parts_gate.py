@@ -80,6 +80,9 @@ VIEWS = {
     "cheek": ("skin", "neutral"),
     "nose": ("skin", "neutral"),  # 2026-11-07: the nose's and the chin's skin, close (the face proof's regions)
     "chin": ("skin", "neutral"),
+    # 2026-11-07 late: the forehead's own view - the eye view's top rows showed his forehead above the brow but our
+    # skin under ours (our brow sits nearer the eye), so its "forehead" patches compared different skin
+    "forehead": ("skin", "neutral"),
     "ear": ("ears", "neutral"),
     "torso": ("body skin, nipples", "neutral"),
     "hand": ("hands, nails", "neutral"),
@@ -338,6 +341,8 @@ def view(name: str, a: dict[str, Vector]):
         return a["pupil_r"] + _v(-0.008, 0, -0.045), _v(-0.34, -0.94, 0), z, 0.06
     if name == "nose":  # the nose's side and back, from a little to the side
         return m + _v(0, -0.015, -0.03), _v(-0.4, -0.917, 0), z, 0.06
+    if name == "forehead":  # the middle of the forehead, 4.5 cm above the pupils' midpoint, from the front
+        return m + _v(0, 0, 0.045), _v(0, -1, 0), z, 0.06
     if name == "chin":
         return a["mouth"] + _v(0, -0.005, -0.035), _v(0, -0.97, -0.24), z, 0.06
     if name == "ear":

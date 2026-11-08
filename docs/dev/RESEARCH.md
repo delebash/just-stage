@@ -2619,6 +2619,16 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   - On a cheek patch (~7 mm at 256 px) stages 3-5 see ~0.5-2 mm: the pores' size and pattern, not the microrelief
     (stages 1-2) and not colour (stage 0). The next trials scale the pore tile's size (`factors poresize*k`) and
     depth (`pores*k`), scored per layer (`scratchpad/batch_face.sh`, `.dev/gate/parts/2026-11-07k`).
+  - **The pore trials** (*measured*, `.dev/gate/parts/2026-11-07k`, the cheek's excess; baseline 0.0179, reproducing
+    0.0183): pore tile x0.8 the size 0.0187, x1.25 0.0221, x1.5 0.0282; depth x0.7 0.0210, x1.4 0.0231; x1.25 and
+    depth x1.3 0.0211. Every change is worse: the pores' size and depth are at their best on the cheek, so the cheek's
+    stage 3-4 gap is the pores' shape and arrangement (Ten24's scanned tile against his), not their scale. The nose
+    (baseline 0.0785 in this build) improves with larger or shallower pores (x1.5 0.0649, depth x0.7 0.0676).
+  - **VOID: the "forehead" numbers from the eye view's top rows** (the night table's 0.107 -> 0.021, the factor
+    trials that used them). The eye view frames from the pupil: its top rows show his forehead above the brow but
+    our skin under ours, because our brow sits nearer the eye, so the two samples were different skin. In build k
+    our brow's lower hairs reach those rows (0.042). The gate now has a forehead view (`parts_gate` "forehead",
+    4.5 cm above the pupils, frontal, 6 cm wide); its patches are set on both renders before any number.
 
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
