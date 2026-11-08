@@ -99,8 +99,12 @@ def _tile_uv(nt, number: int):
 
 
 def _plain(px: np.ndarray, name: str, colorspace: str):
+    """An image from `px` (h x w x 4, the values a source image's `pixels` gave). Colour (sRGB) goes in an 8-bit image:
+    Blender reads a float image's values as linear whatever its colour space says, so sRGB values put in one rendered
+    the skin washed out (`redmottle`, 2026-11-08 - and the earlier colour factors `colourflat`, `colourpores0` with
+    it); data (Non-Color) stays float, used as it is."""
     h, w = px.shape[:2]
-    img = bpy.data.images.new(name, w, h, float_buffer=True)
+    img = bpy.data.images.new(name, w, h, float_buffer=colorspace == "Non-Color")
     img.colorspace_settings.name = colorspace
     img.pixels.foreach_set(px.astype(np.float32).ravel())
     img.pack()

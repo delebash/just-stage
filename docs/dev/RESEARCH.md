@@ -2661,6 +2661,10 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
     no pore trial moved it. The forehead the other way: 21-28% too much fine brightness detail (pores, microrelief),
     27% too little at 2-5 mm (his forehead lines), and 8 L* brighter. Trial queued: `factors redmottle*k` (redness
     band-passed 0.5-5 mm, scaled; checked on the map: x1.3 -> the band x1.23, brightness unchanged).
+    **VOID (2026-11-08):** the first run scored 0.0887 at every strength - the rewrite put the 8-bit sRGB values in
+    a float image, which Blender reads as linear, so the skin rendered washed out (mean BGR 185 / 196 / 216 against
+    151 / 170 / 209). The earlier colour factors with the same helper (`colourflat`, `colourpores0`, 2026-11-07a)
+    are void for the same reason. Fixed (`factors._plain`: colour in 8-bit); rerun queued.
     (A first try in texture space picked the wrong skin - the nearest-triangle pick landed on lid and fold lines - so
     it was dropped for the renders' own patches.)
 
