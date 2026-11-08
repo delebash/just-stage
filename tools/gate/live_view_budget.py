@@ -8,8 +8,8 @@ in Blender's window (a redraw needs one):
 
     python tools/dev.py blender .dev/gate/gate_scene.blend --python tools/gate/live_view_budget.py
 
-Per case (hair hidden as in the gate; hair shown): ms per redraw over 30 redraws after 10 to warm up, and the card's
-memory in use (`nvidia-smi`). Written to `.dev/gate/out/live_view_budget.json`; Blender quits when done."""
+Per case (every groom hidden; the scalp's alone hidden; all shown): ms per redraw over 30 redraws after 10 to warm
+up, and the card's memory in use (`nvidia-smi`). Written to `.dev/gate/out/live_view_budget.json`; Blender quits when done."""
 
 import json
 import subprocess
@@ -71,11 +71,20 @@ def _run():
     viewport.show_live([window.screen], camera=True)
     region = next(r for r in area.regions if r.type == "WINDOW")
     result = {"view_px": [region.width, region.height], "live_scatter": material.EEVEE_SCATTER}
+    # every groom hidden by this tool itself, then the scalp's alone, then none: the saved scene's own visibility
+    # can't be trusted (2026-11-08: today's gate scene hid nothing, so "hair hidden" measured the full hair - 112 ms)
+    curves = [o for o in scene.objects if o.type == "CURVES"]
+    scalp = [o for o in curves if o.juststage.part == "scalp"]
+    for obj in curves:
+        obj.hide_viewport = True
     result["hair_hidden"] = _measure(window, area)
-    for obj in scene.objects:  # the gate hid hair and lashes in both engines (blender_gate.py prepare)
-        if obj.hide_viewport and obj.type in ("CURVES", "MESH") and obj.parent is not None:
-            obj.hide_viewport = False
+    for obj in curves:
+        obj.hide_viewport = obj in scalp
+    result["scalp_hidden"] = _measure(window, area)
+    for obj in curves:
+        obj.hide_viewport = False
     result["hair_shown"] = _measure(window, area)
+    result["strands"] = {o.juststage.part or o.name: len(o.data.curves) for o in curves}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(result, indent=1))
     print("BUDGET", json.dumps(result), flush=True)
