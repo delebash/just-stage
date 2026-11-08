@@ -1486,6 +1486,71 @@ def fieldcut(built: dict, stem: str, guides: int = 3000) -> None:
 SMILE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "smile"
 
 
+def aaronsmile(built: dict, stem: str = "aaron_skin_pinned") -> None:
+    """Checklist row 9's deciding test (a LOCAL TEST): HD Aaron's own smile shape (Mouth_Corner_Pull_L / _R, the
+    gate's smile; `.dev/gate/hair/aaron_smile.npz`, his world offsets in his mesh's order) carried onto our head
+    through the head wrap - each of our head's skin vertices takes his offset at its point on his wrapped face
+    (barycentric), turned and scaled by the wrap's alignment, full within 2 mm of it and none past 6 mm - written into
+    our mouthSmileLeft / Right by side; our cheekSquint keys emptied, so `smile_full` is his smile alone. ICT's scanned
+    smile left his deep smile line out (sheet `scratchpad/sheet_C16_smileline.png`): does his own shape bring it?"""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    makehuman = importlib.import_module("bl_ext.system.juststage.core.makehuman")
+    st_spec = importlib.util.spec_from_file_location("smile_transfer", HERE / "smile_transfer.py")
+    st = importlib.util.module_from_spec(st_spec)
+    st_spec.loader.exec_module(st)
+    data = np.load(HAIR_TRIALS / f"{stem}.npz")
+    wrapped, placed, tris = data["co"].astype(np.float64), data["placed"].astype(np.float64), data["all_tris"]
+    src = np.load(HAIR_TRIALS / "aaron_skin_src.npz")["co"].astype(np.float64)
+    head_idx = np.flatnonzero(src[:, 2] > src[:, 2].max() - 0.30)  # groom_transfer.head_region's vertices, in order
+    align = st._similarity(src[head_idx], placed)
+    lin = align[:3, :3]  # his offsets into our frame: the wrap's rotation and scale
+    smile = np.load(HAIR_TRIALS / "aaron_smile.npz")
+    tree = BVHTree.FromPolygons([Vector(v) for v in wrapped], [list(f) for f in tris])
+    body = built["body"]
+    me = body.data
+    mw = np.array(body.matrix_world)
+    co = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]
+    skin = makehuman.skin_mask(len(co))
+    head = skin & (co[:, 2] > co[skin, 2].max() - 0.30)
+    deltas = {side: np.zeros_like(co) for side in ("L", "R")}
+    for v in np.flatnonzero(head):
+        hit, _n, ti, dist = tree.find_nearest(Vector(co[v]))
+        if hit is None or dist > 0.006:
+            continue
+        a, b, c = wrapped[tris[ti]]
+        v0, v1, v2 = b - a, c - a, np.array(hit) - a
+        d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
+        den = d00 * d11 - d01 * d01
+        w1 = (d11 * d20 - d01 * d21) / den if den else 0.0
+        w2 = (d00 * d21 - d01 * d20) / den if den else 0.0
+        bary = np.array([1 - w1 - w2, w1, w2])
+        fade = float(np.clip((0.006 - dist) / 0.004, 0.0, 1.0))
+        his_v = head_idx[tris[ti]]
+        for side in ("L", "R"):
+            deltas[side][v] = (bary @ smile[side][his_v].astype(np.float64)) @ lin.T * fade
+    blocks = me.shape_keys.key_blocks
+    to_local = np.linalg.inv(mw[:3, :3])
+    n = len(me.vertices)
+    ref = np.empty(n * 3, np.float32)
+    blocks[0].data.foreach_get("co", ref)
+    ref = ref.reshape(-1, 3)
+    for side in ("L", "R"):
+        d = deltas[side]
+        size = np.linalg.norm(d, axis=1)
+        x = float((co[:, 0] * size).sum() / max(size.sum(), 1e-12))
+        key = blocks["mouthSmileLeft" if x > 0 else "mouthSmileRight"]  # our Left is the character's left, +x
+        key.data.foreach_set("co", (ref + d @ to_local.T).astype(np.float32).ravel())
+        print("AARON SMILE", side, "->", key.name, "max", round(float(size.max()) * 1000, 1), "mm, side x",
+              round(x * 100, 2), "cm", flush=True)
+    for name in ("cheekSquintLeft", "cheekSquintRight"):  # his corner pull raises the cheeks itself
+        blocks[name].data.foreach_set("co", ref.ravel())
+    me.update()
+    bpy.context.view_layer.update()
+
+
 def ictsmile(built: dict, stem: str, mouth: float = 1.0, cheek: float = 1.0) -> None:
     """ICT-FaceKit's smile shapes carried onto our head (`tools/gate/smile_transfer.py`, `.dev/gate/smile/<stem>.npz`)
     written into our ARKit keys of the same names (mouthSmile, cheekSquint, eyeSquint), each side to the key that
@@ -1741,6 +1806,8 @@ def factor(name: str):
     if name.startswith("aaronshape"):  # aaronshape[*lower] (our head moved onto his face shape; "lower": below the eyes)
         region = name.split("*", 1)[1] if "*" in name else ""
         return lambda built: aaronshape(built, "aaron_skin_pinned", region)
+    if name == "aaronsmile":  # his own smile shape carried onto our head (into mouthSmile; cheekSquint emptied)
+        return aaronsmile
     if name.startswith("ictkeys*"):  # ictkeys*ict_blink_average_man: any carried ICT shapes into our keys of their names
         return lambda built: ictsmile(built, name.split("*")[1])
     if name.startswith("aaronwrinkles*"):  # aaronwrinkles*smile (after aaronskin: his wrinkle maps as his smile sets them)
