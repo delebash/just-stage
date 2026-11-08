@@ -898,8 +898,8 @@ def aaronshape(built: dict, stem: str = "aaron_skin_on_ours") -> None:
 def aaronteeth(built: dict) -> None:
     """THE TRANSPLANT for the mouth (a LOCAL TEST): HD Aaron's own teeth, gums and tongue (appended from the gate's
     .blend) in our mouth - matched to ours at the front teeth (`parts_gate._front_teeth`) and scaled to our teeth's
-    width, each bound to our teeth part by Blender's Surface Deform so they ride our jaw in every mouth view; ours
-    hidden. With `aaronskin` (his lips) the mouth views ask: does our mouth carry CC5's? A new set of objects: --alone."""
+    width; his lower teeth and tongue given our teeth's jaw keys (the same rigid motions) so they ride our jaw in
+    every mouth view; ours hidden. With `aaronskin` (his lips) the mouth views ask: does our mouth carry CC5's? A new set of objects: --alone."""
     from mathutils import Matrix
 
     parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
@@ -913,6 +913,8 @@ def aaronteeth(built: dict) -> None:
             obj.modifiers.remove(m)
         if obj.data.shape_keys:
             obj.shape_key_clear()
+    bpy.context.view_layer.update()  # their world matrices are read only after the scene has them (stale before)
+    for obj in dst.objects:
         world = obj.matrix_world.copy()
         obj.parent = None
         obj.matrix_world = world
@@ -930,14 +932,54 @@ def aaronteeth(built: dict) -> None:
     for obj in dst.objects:
         obj.matrix_world = move @ obj.matrix_world
     bpy.context.view_layer.update()
-    for obj in dst.objects:
-        mod = obj.modifiers.new("Rides our jaw", "SURFACE_DEFORM")
-        mod.target = ours
-        with bpy.context.temp_override(object=obj, active_object=obj):
-            bpy.ops.object.surfacedeform_bind(modifier=mod.name)
+    # his lower teeth and tongue ride our jaw: for each jaw key on our teeth, the rigid motion of our moving vertices
+    # (Kabsch), given to his lower teeth (their own material) and his whole tongue as a key of the same name - the
+    # gate's expressions then set his with ours (built["keyed"]). Surface Deform would not bind to our teeth.
+    keys = ours.data.shape_keys
+    mw_o = np.array(ours.matrix_world)
+    n_o = len(ours.data.vertices)
+    base = np.empty(n_o * 3)
+    keys.reference_key.data.foreach_get("co", base)
+    base_w = base.reshape(-1, 3) @ mw_o[:3, :3].T + mw_o[:3, 3]
+    made = []
+    for kb in keys.key_blocks[1:]:
+        k = np.empty(n_o * 3)
+        kb.data.foreach_get("co", k)
+        k_w = k.reshape(-1, 3) @ mw_o[:3, :3].T + mw_o[:3, 3]
+        moving = np.linalg.norm(k_w - base_w, axis=1) > 1e-6
+        if moving.sum() < 3:
+            continue
+        a_, b_ = base_w[moving], k_w[moving]
+        ca, cb = a_.mean(0), b_.mean(0)
+        u, _s, vt = np.linalg.svd((b_ - cb).T @ (a_ - ca))
+        d = np.diag([1.0, 1.0, np.sign(np.linalg.det(u @ vt))])
+        rot = u @ d @ vt
+        for obj in dst.objects:
+            me = obj.data
+            mw = np.array(obj.matrix_world)
+            co = np.empty(len(me.vertices) * 3)
+            me.vertices.foreach_get("co", co)
+            w = co.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3]
+            if obj.name.startswith("CC_Base_Teeth"):
+                names = [s.material.name if s.material else "" for s in obj.material_slots]
+                lower = np.zeros(len(w), bool)
+                for p in me.polygons:
+                    if names[p.material_index].startswith("Std_Lower_Teeth"):
+                        lower[list(p.vertices)] = True
+            else:
+                lower = np.ones(len(w), bool)
+            moved = w.copy()
+            moved[lower] = (w[lower] - ca) @ rot.T + cb
+            if not me.shape_keys:
+                obj.shape_key_add(name="Basis", from_mix=False)
+            key = obj.shape_key_add(name=kb.name, from_mix=False)
+            local = (moved - mw[:3, 3]) @ np.linalg.inv(mw[:3, :3]).T
+            key.data.foreach_set("co", local.ravel())
+            made.append(kb.name)
+    built["keyed"] = [*built["keyed"], *dst.objects]
     ours.hide_render = True
     print("AARON TEETH: scale", round(scale, 3), "front teeth moved", round(float(np.linalg.norm(b - a)) * 1000, 1),
-          "mm; bound", [o.modifiers[0].is_bound for o in dst.objects], flush=True)
+          "mm; jaw keys copied:", sorted(set(made)), flush=True)
 
 
 def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
@@ -975,6 +1017,8 @@ def aaroncards(built: dict, stem: str = "aaron_skin_pinned") -> None:
             obj.modifiers.remove(m)
         if obj.data.shape_keys:
             obj.shape_key_clear()
+    bpy.context.view_layer.update()  # world matrices read only after the scene has them (stale before)
+    for obj in dst.objects:
         mw = np.array(obj.matrix_world)
         co = np.empty(len(obj.data.vertices) * 3)
         obj.data.vertices.foreach_get("co", co)

@@ -219,13 +219,15 @@ def carry(ours_npz: Path, archive: Path, style: str, out: Path) -> None:
 
 
 def carry_region(ours_npz: Path, source_npz: Path, out: Path, material: int, box: tuple, shift=(0.0, 0.0, 0.0),
-                 anchors=None, tile: int = 1002) -> None:
+                 anchors=None, tile: int = 1002, extra=None) -> None:
     """HD Aaron's skin on one region of our body (a LOCAL TEST, the body's transplant): his triangles of `material`
     (his slot index: 1 Std_Skin_Body, 2 Std_Skin_Arm) inside `box` ((x0, x1), (y0, y1), (z0, z1), metres, world)
     aligned onto ours in the same box (centre to centre, then a scaled ICP) and wrapped onto our skin there (NICP);
     saved as `carry_skin` saves the head's, for `factors aaronbody`. `shift` moves his body first (the two stand in
     different places: ours pupils' midpoint less his), so one box holds both; `anchors` (his points, ours) instead
-    move him by the similarity between them (a hand's pose differs from ours). `tile`: our UDIM tile it covers."""
+    move him by the similarity between them (a hand's pose differs from ours). `tile`: our UDIM tile it covers.
+    `extra` (material, tile, out): another of his materials in the box carried through this same wrap (each vertex
+    moved as its nearest wrapped vertices moved) - his nails ride his fingers onto ours."""
     import trimesh
     from trimesh import registration
 
@@ -260,6 +262,24 @@ def carry_region(ours_npz: Path, source_npz: Path, out: Path, material: int, box
     np.savez(out, co=wrapped.astype(np.float32), tris=sf, tuv=s["tuv"][sel], uv_name=s["uv_name"],
              placed=placed.astype(np.float32), all_tris=sf, material=str(s["names"][material]), tile=tile)  # fmt: skip
     print(f"REGION: {len(sel)} of his {s['names'][material]} triangles -> {out}", flush=True)
+    if extra is not None:
+        from scipy.spatial import cKDTree
+
+        e_mat, e_tile, e_out = extra
+        e_sel = np.flatnonzero((s["tmat"] == e_mat) & inside(sco)[stris].all(1))
+        e_used = np.unique(stris[e_sel])
+        e_new = -np.ones(len(sco), np.int64)
+        e_new[e_used] = np.arange(len(e_used))
+        e_placed = st._apply(matrix, sco[e_used])
+        dist, idx = cKDTree(placed).query(e_placed, NEAREST)
+        w = 1.0 / np.maximum(dist, 1e-6)
+        e_wrapped = e_placed + np.einsum("nk,nkj->nj", w / w.sum(1, keepdims=True), (wrapped - placed)[idx])
+        gap = trimesh.proximity.closest_point(target, e_wrapped)[1]
+        np.savez(e_out, co=e_wrapped.astype(np.float32), tris=e_new[stris[e_sel]], tuv=s["tuv"][e_sel],
+                 uv_name=s["uv_name"], placed=e_placed.astype(np.float32), all_tris=e_new[stris[e_sel]],
+                 material=str(s["names"][e_mat]), tile=e_tile)  # fmt: skip
+        print(f"EXTRA: {len(e_sel)} of his {s['names'][e_mat]} triangles through the wrap; to our skin p50 "
+              f"{np.median(gap) * 1000:.2f} mm -> {e_out}", flush=True)
 
 
 def carry_cards(ours_npz: Path, source_npz: Path, out: Path) -> None:
@@ -288,8 +308,9 @@ if __name__ == "__main__":
         oa = np.array([ours_a[k] for k in keys])
         lo, hi = oa.min(0) - 0.05, oa.max(0) + 0.05
         material, tile = (2, 1003) if a[0] == "hand" else (4, 1005)
+        extra = (4, 1005, Path(a[3]).with_name("aaron_nails.npz")) if a[0] == "hand" else None  # his nails ride the hand
         carry_region(Path(a[1]), Path(a[2]), Path(a[3]), material, ((lo[0], hi[0]), (lo[1], hi[1]), (lo[2], hi[2])),
-                     anchors=(np.array([his_a[k] for k in keys]), oa), tile=tile)
+                     anchors=(np.array([his_a[k] for k in keys]), oa), tile=tile, extra=extra)
     elif a[0] == "skin":  # skin OURS.npz SKIN_SOURCE.npz OUT.npz [EYES.npz] (his eyeballs: the eye rims pinned)
         carry_skin(Path(a[1]), Path(a[2]), Path(a[3]), Path(a[4]) if len(a) > 4 else None)
     else:  # usc OURS.npz hairstyles.zip ID OUT.npz
