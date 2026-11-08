@@ -102,8 +102,14 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
     (`groom_transfer.py cards`, `factors guidefile*aaron_cards`) is queued, to judge our render on his cut.
   - Suites: unit 45 and tools 30 passed; the Blender suite printed no summary, so it is rerun with its log kept
     (`.dev/suite_2026-11-07k.log`).
+- **The user, 2026-11-07 late: "focus on can we meet quality 1st if anyone cant meet quality we stop"; "why is it
+  taking so long".** The method changed to one deciding test per part: THE TRANSPLANT - HD Aaron's own content on our
+  body, rendered our way (local tests only). Matches him -> our body and renderer carry CC5 there, the rest is content
+  (feasible); can't match even with his content -> that part fails, stop. Built: skin (`factors aaronskin`), hair (his
+  cut as our strands - done, outline right; `fieldcut`: our own generator along his measured cut).
 - **web-4c (JustDirect) has the card** since our "card free" (2026-11-07 late): nothing of ours on it until it says
-  it's done. Then run `scratchpad/batch_after.sh`: the Blender suite (tonight's lid and detector changes are unverified
+  it's done. Then run `scratchpad/batch_decide.sh` (the transplant, the field cut, every part's current renders and
+  sheets in `.dev/gate/parts/2026-11-07all`, then `batch_after.sh`): the Blender suite (tonight's lid and detector changes are unverified
   until it), the tools and unit suites, the cheek's last factors (relief, colour mottling, scatter, microrelief), the
   forehead with Ten24's forehead tile. If the base v2 tests pass, rebuild the library's characters (backup first) so
   they carry the lower-lid ledge. The per-part table: `docs/gate/2026-11-07/report.md`, "Late night".
