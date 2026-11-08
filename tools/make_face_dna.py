@@ -52,9 +52,60 @@ CHANNELS.update({
 JAW_UNITS = {"jawOpen": "jawOpen", "jawLeft": "jawLeft", "jawRight": "jawRight", "jawFwd": "jawForward"}
 CHIN_SHARE = 0.8  # the chin: the skin a jaw unit moves by at least this share of its largest move (bone under skin)
 JAW = "FACIAL_C_Jaw"
+#: the eyes' look expressions -> (joint, our unit whose eye-helper turn the joint takes): MetaHuman's L / R are the
+#: face's sides; a look Left turns the left eye out and the right eye in
+EYES = {f"eyeLook{d}{s}": (f"FACIAL_{s}_Eye", f"eyeLook{u}{side}")
+        for s, side in (("L", "Left"), ("R", "Right"))
+        for d, u in (("Up", "Up"), ("Down", "Down"),
+                     ("Left", "Out" if s == "L" else "In"), ("Right", "In" if s == "L" else "Out"))}  # fmt: skip
+HELPER = {"FACIAL_L_Eye": "helper-l-eye", "FACIAL_R_Eye": "helper-r-eye"}
 
 
-def jaw_motions() -> dict[str, list[float]]:
+def _turn(a, b):
+    """The rigid rotation taking point set `a` to `b` (Kabsch)."""
+    import numpy as np
+
+    ca, cb = a.mean(0), b.mean(0)
+    u, _s, vt = np.linalg.svd((b - cb).T @ (a - ca))
+    return u @ np.diag([1.0, 1.0, np.sign(np.linalg.det(u @ vt))]) @ vt
+
+
+def _euler_deg(r) -> list[float]:
+    """XYZ Euler angles (degrees) of a rotation matrix - Blender's pose `rotation_euler` order."""
+    import math
+
+    from mathutils import Matrix
+
+    return [math.degrees(a) for a in Matrix(r.tolist()).to_euler("XYZ")]
+
+
+def eye_motions(body, arm) -> dict:
+    """Each look expression's turn of its eye joint, from how our look unit turns the eye's helper (MakeHuman's eye
+    geometry the eye part is fitted to), in the joint's own axes: expression -> (joint, 6 values)."""
+    import importlib
+
+    import numpy as np
+
+    paths = importlib.import_module("bl_ext.system.juststage.paths")
+    makehuman = importlib.import_module("bl_ext.system.juststage.core.makehuman")
+    groups = makehuman.vertex_groups(paths.makehuman("mesh_metadata", "basemesh_vertex_groups.json"))
+    keys = body.data.shape_keys
+    n = len(body.data.vertices)
+    basis = np.empty(n * 3, np.float32)
+    keys.reference_key.data.foreach_get("co", basis)
+    basis = basis.reshape(-1, 3).astype(np.float64)
+    out = {}
+    for expression, (joint, unit) in EYES.items():
+        co = np.empty(n * 3, np.float32)
+        keys.key_blocks[unit].data.foreach_get("co", co)
+        helper = groups[HELPER[joint]]
+        world = _turn(basis[helper], co.reshape(-1, 3)[helper].astype(np.float64))
+        rest = np.array(arm.data.bones[joint].matrix_local)[:3, :3]
+        out[expression] = (joint, [0.0, 0.0, 0.0, *_euler_deg(rest.T @ world @ rest)])
+    return out
+
+
+def jaw_motions() -> tuple[dict, dict]:
     """Each jaw expression's motion of `FACIAL_C_Jaw` - (tx, ty, tz) cm and (rx, ry, rz) degrees along the bone's own
     axes - read off our units' chin on the average man (a character made here and removed)."""
     import importlib
@@ -95,7 +146,7 @@ def jaw_motions() -> dict[str, list[float]]:
             else:  # the chin's shift, in the bone's axes
                 shift = rest.T @ offsets[chin].mean(0) * 100.0
                 out[expression] = [*map(float, shift), 0.0, 0.0, 0.0]
-        return out
+        return out, eye_motions(body, arm)
     finally:
         for obj in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
             bpy.data.objects.remove(obj)
@@ -134,7 +185,7 @@ def archetype(path: Path) -> tuple[list[str], list[str], list[tuple[str, str, in
 
 
 def write(path: Path, gui: list[str], raw: list[str], links: list[tuple[str, str, int]],
-          jaw: dict[str, list[float]]) -> dict:
+          jaw: dict[str, list[float]], eyes: dict) -> dict:
     table = {**CHANNELS, **_splits()}  # expression -> channel: one-to-one onto our units, or a part of one
     channels = sorted(set(table.values()))
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -147,13 +198,14 @@ def write(path: Path, gui: list[str], raw: list[str], links: list[tuple[str, str
         w.setGUIControlName(i, name)
     for i, name in enumerate(raw):
         w.setRawControlName(i, name)
-    w.setJointName(0, "FACIAL_C_FacialRoot")
-    w.setJointName(1, JAW)
-    w.setJointIndices(0, [0, 1])
+    joints = ["FACIAL_C_FacialRoot", JAW, *sorted({j for j, _ in eyes.values()})]
+    for i, name in enumerate(joints):
+        w.setJointName(i, name)
+    w.setJointIndices(0, list(range(len(joints))))
     w.setLODJointMapping(0, 0)
-    w.setJointHierarchy([0, 0])
-    w.setNeutralJointTranslations([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])  # outputs are the joints' moves from rest
-    w.setNeutralJointRotations([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+    w.setJointHierarchy([0] * len(joints))
+    w.setNeutralJointTranslations([[0.0, 0.0, 0.0]] * len(joints))  # outputs are the joints' moves from rest
+    w.setNeutralJointRotations([[0.0, 0.0, 0.0]] * len(joints))
     for i, name in enumerate(channels):
         w.setBlendShapeChannelName(i, name)
     w.setBlendShapeChannelIndices(0, list(range(len(channels))))
@@ -169,16 +221,20 @@ def write(path: Path, gui: list[str], raw: list[str], links: list[tuple[str, str
     w.setGUIToRawSlopeValues([v[2] for _, _, v in rows])
     w.setGUIToRawCutValues([0.0] * len(rows))
     w.setPSDCount(0)
-    w.setJointRowCount(9 * 2)  # 9 attributes a joint: tx ty tz rx ry rz sx sy sz
+    w.setJointRowCount(9 * len(joints))  # 9 attributes a joint: tx ty tz rx ry rz sx sy sz
     w.setJointColumnCount(len(raw))
-    # the jaw: one group, the jaw expressions in, the jaw's moved attributes out (row-major: outputs x inputs)
-    inputs = [ri[EXPRESSION + e] for e in jaw]
-    attributes = sorted({a for move in jaw.values() for a, v in enumerate(move) if abs(v) > 1e-9})
-    w.setJointGroupJointIndices(0, [1])
-    w.setJointGroupInputIndices(0, inputs)
-    w.setJointGroupOutputIndices(0, [9 * 1 + a for a in attributes])
-    w.setJointGroupValues(0, [jaw[e][a] for a in attributes for e in jaw])
-    w.setJointGroupLODs(0, [len(attributes)])
+    # one group a joint: its expressions in, its moved attributes out (row-major: outputs x inputs)
+    moves = {JAW: dict(jaw)}
+    for expression, (joint, move) in eyes.items():
+        moves.setdefault(joint, {})[expression] = move
+    for g, (joint, table) in enumerate(moves.items()):
+        j = joints.index(joint)
+        attributes = sorted({a for move in table.values() for a, v in enumerate(move) if abs(v) > 1e-9})
+        w.setJointGroupJointIndices(g, [j])
+        w.setJointGroupInputIndices(g, [ri[EXPRESSION + e] for e in table])
+        w.setJointGroupOutputIndices(g, [9 * j + a for a in attributes])
+        w.setJointGroupValues(g, [table[e][a] for a in attributes for e in table])
+        w.setJointGroupLODs(g, [len(attributes)])
     # raw -> channel, one input each
     ci = {n: i for i, n in enumerate(channels)}
     pairs = [(ri[EXPRESSION + e], ci[c]) for e, c in sorted(table.items()) if EXPRESSION + e in ri]
@@ -191,13 +247,14 @@ def write(path: Path, gui: list[str], raw: list[str], links: list[tuple[str, str
     missing = sorted(e for e in table if EXPRESSION + e not in ri)
     return {"gui": len(gui), "raw": len(raw), "gui_to_raw": len(rows), "channels": len(channels),
             "linked": len(pairs), "names_missing": missing,
-            "jaw": {e: [round(v, 3) for v in m] for e, m in jaw.items()}}  # fmt: skip
+            "jaw": {e: [round(v, 3) for v in m] for e, m in jaw.items()},
+            "eyes": {e: [j, [round(v, 2) for v in m]] for e, (j, m) in eyes.items()}}  # fmt: skip
 
 
 def main(argv: list[str]) -> dict:
     source = Path(argv[0]) if argv else ARCHETYPE
     gui, raw, links = archetype(source)
-    report = write(OUT, gui, raw, links, jaw_motions())
+    report = write(OUT, gui, raw, links, *jaw_motions())
     print(f"FACE DNA {OUT}: {report}", flush=True)
     return report
 

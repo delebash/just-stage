@@ -115,3 +115,22 @@ def test_jaw_open_drops_the_chin_and_runs_again_in_place(human):
     count = len(obj.data.shape_keys.key_blocks)
     assert bpy.ops.juststage.head_add_face_units(character=result.character) == {"FINISHED"}
     assert len(obj.data.shape_keys.key_blocks) == count  # replaced, not added twice
+
+
+def test_a_look_turns_the_eyeball_on_its_joint(human):
+    """The eyes are joints (`FACIAL_L/R_Eye`, the face rig job's step 3e): our look units turned only the lids and the
+    eye's helper - the eyeball stayed; now the face rig turns the eye's joint by the turn the unit gives the helper
+    (measured into the DNA), so eyeLookOutLeft turns the left eyeball toward the face's left (+x)."""
+    result, obj = human
+    api.run("juststage.head.add_parts", character=result.character)
+    api.run("juststage.head.add_face_units", character=result.character)
+    eye = next(o for o in bpy.data.objects if o.juststage.part_of == result.character and o.juststage.part == "eyeLeft")
+    rest = _evaluated(eye)
+    front = int(np.argmin(rest[:, 1]))  # the cornea's front: the face looks down -y
+    obj.data.shape_keys.key_blocks["eyeLookOutLeft"].value = 1.0
+    bpy.context.view_layer.update()
+    turned = _evaluated(eye)
+    obj.data.shape_keys.key_blocks["eyeLookOutLeft"].value = 0.0
+    bpy.context.view_layer.update()
+    assert turned[front, 0] - rest[front, 0] > 0.001  # the front moved > 1 mm toward the face's left
+    assert np.abs(_evaluated(eye) - rest).max() < 1e-5

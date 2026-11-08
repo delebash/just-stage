@@ -11,8 +11,9 @@ vertices - `MEAN` - on the shaped body; roll, parent and flags from the file), a
 groups named after the bones, base v2's appended lid vertices taking their nearest body vertex's; an Armature
 modifier first in the body's stack (linear blend skinning, as Unreal's). The armature is a part of the character -
 a child of the body, as its other parts are (the body is the character's object: the panels, the library and the
-grooms all hang on it). The head's rigid parts (eyes, teeth, their films) ride the `head` bone through an Armature
-modifier of their own, all their vertices weighted to it - skinned to the skeleton, as a game engine takes them.
+grooms all hang on it). The head's rigid parts ride it through an Armature modifier of their own - skinned to the
+skeleton, as a game engine takes them: the eye films and the upper teeth on `head`, the lower teeth, gums and tongue on
+the jaw joint, each eyeball on its eye joint (the face's joints, FACE_BONES, mirrored in by MetaHuman's names).
 The twist bones have no constraints: twist-swing is `rig/body.dna`'s layer (the data model §2, "never hand-made
 drivers")."""
 
@@ -36,7 +37,11 @@ FOLLOWS_BODY = {"SURFACE_DEFORM", "MESH_DEFORM", "SHRINKWRAP"}
 #: animation tools need to key them"), by MetaHuman's names, placed the MPFB2 way: name -> (head cube, tail cube,
 #: parent). The jaw: MakeHuman's jaw bone runs from its mouth joint (the pivot) to its jaw joint (the chin) - the hinge
 #: the teeth's stand-in keys turned about (face rig job, step 3c)
-FACE_BONES = {"FACIAL_C_Jaw": ("joint-mouth", "joint-jaw", "head")}
+FACE_BONES = {"FACIAL_C_Jaw": ("joint-mouth", "joint-jaw", "head"),
+              "FACIAL_L_Eye": ("joint-l-eye", "joint-l-eye-target", "head"),  # MPFB2's eye.L / eye.R joints
+              "FACIAL_R_Eye": ("joint-r-eye", "joint-r-eye-target", "head")}  # fmt: skip
+#: the eyes ride their own joints whole (the face rig turns them with the look units)
+EYE_BONES = {"eyeLeft": "FACIAL_L_Eye", "eyeRight": "FACIAL_R_Eye"}
 JAW = "FACIAL_C_Jaw"
 #: the teeth part's groups that ride the jaw (`teeth.groups.json`, tools/bind_parts.py); the rest rides the head
 JAW_GROUPS = ("lower_teeth_and_gums", "tongue")
@@ -151,7 +156,7 @@ def place(character: bpy.types.Object, arm: bpy.types.Object) -> None:
         for name, (_head, _tail, parent) in FACE_BONES.items():
             eb = bones.get(name) or bones.new(name)
             eb.head, eb.tail = where[name]
-            eb.roll = 0.0  # its local X the face's left-right axis: the jaw opens about it
+            eb.roll = 0.0  # the DNA's values are measured in each face bone's own axes (tools/make_face_dna.py)
             eb.parent = bones[parent]
     finally:
         bpy.ops.object.mode_set(mode="OBJECT")
@@ -235,6 +240,15 @@ def attach(character: bpy.types.Object, arm: bpy.types.Object) -> list[str]:
     for part in riders(character):
         n = len(part.data.vertices)
         jaw = np.zeros(n, bool)
+        if part.juststage.part in EYE_BONES:  # the eyeball turns on its own joint
+            bone = EYE_BONES[part.juststage.part]
+            eye = part.vertex_groups.get(bone) or part.vertex_groups.new(name=bone)
+            eye.add(list(range(n)), 1.0, "REPLACE")
+            if part.vertex_groups.get(HEAD) is not None:
+                part.vertex_groups.remove(part.vertex_groups[HEAD])
+            _modifier(part, arm)
+            done.append(part.name)
+            continue
         if part.juststage.part == "teeth":
             from ..head import parts
 

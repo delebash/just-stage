@@ -78,9 +78,9 @@ def test_the_skeleton_is_the_specs_82_in_def_with_every_skin_vertex_weighted(man
         groups = [g for g in body.data.vertices[i].groups if g.group in names and g.weight > 0]
         assert 0 < len(groups) <= 8, i
         assert abs(sum(g.weight for g in groups) - 1.0) < 1e-3, i
-    for part in ("eyeLeft", "eyeRight", "teeth"):
+    for part, bone in (("eyeLeft", "FACIAL_L_Eye"), ("eyeRight", "FACIAL_R_Eye"), ("teeth", skeleton.HEAD)):
         obj = next(o for o in skeleton.riders(body) if o.juststage.part == part)
-        assert obj.modifiers[0].type == "ARMATURE" and obj.vertex_groups.get(skeleton.HEAD) is not None
+        assert obj.modifiers[0].type == "ARMATURE" and obj.vertex_groups.get(bone) is not None, part
 
 
 EXTREMES = [{"gender": 0.0, "weight": 0.0, "height": 0.0}, {"gender": 1.0, "weight": 1.0, "muscle": 1.0, "height": 1.0},
