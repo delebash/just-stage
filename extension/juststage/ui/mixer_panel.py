@@ -32,6 +32,7 @@ PARTS = (
     ("arms", "Arms"),
     ("legs", "Legs"),
 )
+HEAD = tuple(key for key, _label in PARTS[:7])  # CC5's Head tab, its first seven parts; the rest its Body tab
 MODES = (
     ("both", "Both", "The part's shape, place, turn and size"),
     ("features", "Features", "The part's shape; its place, turn and size kept"),
@@ -128,11 +129,16 @@ class VIEW3D_PT_juststage_mixer(bpy.types.Panel):
         except CommandError as e:  # the masks not generated: the tool to run
             layout.label(text=str(e), icon="ERROR")
             return
-        grid = layout.grid_flow(columns=3, even_columns=True, align=True)
-        for key, label in _parts():
-            cell = grid.row(align=True)
-            cell.enabled = bool(reach.get(key))
-            cell.prop_enum(wm, "juststage_mix_region", key, text=label)
+        for group, keys in (("Head", HEAD), ("Body", None)):  # CC5's Head tab, then its Body tab
+            found = [(key, label) for key, label in _parts() if (key in keys if keys else key not in HEAD)]
+            if not found:
+                continue
+            layout.label(text=group)
+            grid = layout.grid_flow(row_major=True, columns=3, even_columns=True, align=True)
+            for key, label in found:
+                cell = grid.row(align=True)
+                cell.enabled = bool(reach.get(key))
+                cell.prop_enum(wm, "juststage_mix_region", key, text=label)
         layout.prop(wm, "juststage_mix_mode", expand=True)
         reached = reach.get(wm.juststage_mix_region, ())
         if not reached:

@@ -267,39 +267,26 @@ def visible_face_count(obj: bpy.types.Object) -> int:
         evaluated.to_mesh_clear()
 
 
+MIX_READ = "JustStage mix read"  # the moment's key shaped_coords reads Blender's mix from
+
+
 def shaped_coords(obj: bpy.types.Object) -> np.ndarray:
     """Every vertex's position with the shape keys mixed in and no modifiers — the helpers and joint cubes too, which
-    the mask hides from view. What MHCLO fits to (MPFB2 fits to the shaped base)."""
+    the mask hides from view. What MHCLO fits to (MPFB2 fits to the shaped base). Blender's own mix, as it draws it -
+    values, mutes, relative keys and a key's vertex group (the mixer's): `Object.shape_key_add(from_mix=True)`
+    ("Create new shape from existing mix of shapes", https://docs.blender.org/api/5.3/bpy.types.Object.html), read and
+    removed at once. Never from a draw or depsgraph handler (it adds a key)."""
     n = len(obj.data.vertices)
-    keys = obj.data.shape_keys
-    if not keys:
-        co = np.empty(n * 3, dtype=np.float64)
-        obj.data.vertices.foreach_get("co", co)
-        return co.reshape(-1, 3)
-    basis = np.empty(n * 3, dtype=np.float32)
-    keys.reference_key.data.foreach_get("co", basis)
-    basis = basis.reshape(-1, 3).astype(np.float64)
-    mix = basis.copy()
     co = np.empty(n * 3, dtype=np.float32)
-    for key in keys.key_blocks[1:]:
-        if key.mute or key.value == 0.0:
-            continue
-        key.data.foreach_get("co", co)
-        move = (co.reshape(-1, 3) - basis) * key.value
-        if key.vertex_group:  # a key limited to a vertex group moves by its weights, as Blender mixes it (the mixer)
-            move *= _group_weights(obj, key.vertex_group, n)[:, None]
-        mix += move
-    return mix
-
-
-def _group_weights(obj: bpy.types.Object, name: str, n: int) -> np.ndarray:
-    """A vertex group's weight at every vertex (0 outside it)."""
-    weights = np.zeros(n)
-    vg = obj.vertex_groups.get(name)
-    if vg is None:
-        return weights
-    for v in obj.data.vertices:
-        for g in v.groups:
-            if g.group == vg.index:
-                weights[v.index] = g.weight
-    return weights
+    if not obj.data.shape_keys:
+        obj.data.vertices.foreach_get("co", co)
+        return co.reshape(-1, 3).astype(np.float64)
+    active, pinned = obj.active_shape_key_index, obj.show_only_shape_key
+    obj.show_only_shape_key = False  # pinned, Blender's mix would be the active key alone
+    mix = obj.shape_key_add(name=MIX_READ, from_mix=True)
+    try:
+        mix.data.foreach_get("co", co)
+    finally:
+        obj.shape_key_remove(mix)
+        obj.active_shape_key_index, obj.show_only_shape_key = active, pinned
+    return co.reshape(-1, 3).astype(np.float64)

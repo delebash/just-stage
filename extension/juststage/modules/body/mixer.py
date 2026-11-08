@@ -312,7 +312,7 @@ def _follow_weights(character: bpy.types.Object) -> tuple[np.ndarray, np.ndarray
 
 def follow(character: bpy.types.Object) -> None:
     """The helpers' key on the character's current mix (HELPERS_KEY): each helper vertex moved by the mixed skin around
-    it, the skin's offsets as Blender draws the mixer's keys (value x the key's vertex group)."""
+    it - the skin's offsets the mixer's keys give, as Blender draws them (its mix with them, less its mix without)."""
     from ...core import makehuman
     from . import build
 
@@ -323,19 +323,18 @@ def follow(character: bpy.types.Object) -> None:
     key = keys.key_blocks.get(HELPERS_KEY)
     if not mixed and key is None:
         return
-    n = len(character.data.vertices)
     skin, end = makehuman.BODY_VERTICES, makehuman.HM08_VERTICES
-    basis = np.empty(n * 3, np.float32)
+    with_mix = build.shaped_coords(character)[:skin]
+    for k in mixed:
+        k.mute = True
+    try:
+        offsets = with_mix - build.shaped_coords(character)[:skin]
+    finally:
+        for k in mixed:
+            k.mute = False
+    basis = np.empty(len(character.data.vertices) * 3, np.float32)
     keys.reference_key.data.foreach_get("co", basis)
     basis = basis.reshape(-1, 3)
-    offsets = np.zeros((skin, 3))
-    co = np.empty(n * 3, np.float32)
-    groups: dict[str, np.ndarray] = {}
-    for k in mixed:
-        k.data.foreach_get("co", co)
-        if k.vertex_group not in groups:
-            groups[k.vertex_group] = build._group_weights(character, k.vertex_group, n)[:skin]
-        offsets += (co.reshape(-1, 3)[:skin] - basis[:skin]) * k.value * groups[k.vertex_group][:, None]
     rows, cols, weights = _follow_weights(character)
     helpers = np.stack([np.bincount(rows, weights * offsets[cols, a], minlength=end - skin) for a in range(3)], 1)
     if key is None:
