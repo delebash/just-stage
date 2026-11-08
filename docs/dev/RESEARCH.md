@@ -2665,6 +2665,13 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
     a float image, which Blender reads as linear, so the skin rendered washed out (mean BGR 185 / 196 / 216 against
     151 / 170 / 209). The earlier colour factors with the same helper (`colourflat`, `colourpores0`, 2026-11-07a)
     are void for the same reason. Fixed (`factors._plain`: colour in 8-bit); rerun queued.
+  - **The cheek's other levers, one at a time** (*measured, 2026-11-08*, build k; baseline 0.0179): the scan's relief
+    off 0.0180, x1.5 0.0176; scattering x0.5 0.0183, x2 0.0193; the microrelief off 0.0891 (our tile carries the
+    cheek); the colour flat 0.0615 VOID (the float-image slip). So relief and scattering aren't the cheek's levers;
+    the colour is next (rerun queued).
+  - **Ten24's own forehead as the pore tile** (`.dev/gate/pores/ten24_forehead`, shippable with a credit): forehead
+    0.0359 -> 0.0286 (his pattern 0.0225, the floor 0.0139); the cheek unchanged at 0.0179. Before it replaces the
+    shipped tile: the nose, hand and torso views with it (they share the tile) - queued.
     (A first try in texture space picked the wrong skin - the nearest-triangle pick landed on lid and fold lines - so
     it was dropped for the renders' own patches.)
 
