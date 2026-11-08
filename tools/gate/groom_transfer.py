@@ -282,6 +282,86 @@ def carry_region(ours_npz: Path, source_npz: Path, out: Path, material: int, box
               f"{np.median(gap) * 1000:.2f} mm -> {e_out}", flush=True)
 
 
+def carry_nails(ours_npz: Path, source_npz: Path, out: Path, ours_anchors: Path, his_anchors: Path,
+                ours_tiles: Path) -> None:
+    """His five fingernails on our five, one by one (a LOCAL TEST, the nails' deciding transplant): his right hand moved
+    by the similarity of the hand anchors (wrist, knuckles, middle fingertip), his nails (slot 4) and ours (our UDIM
+    tile 1005 - `ours_tiles`: the scan route's export, the same topology) split into nails (connected pieces), the
+    five nearest the hand's end on each side paired in order across the hand, each of his aligned onto its partner
+    (centre to centre, a scaled ICP) and wrapped onto it (NICP); saved as `carry_region` saves, for `aaronbody`."""
+    import json
+
+    import scipy.sparse as sp
+    import trimesh
+    from scipy.sparse.csgraph import connected_components
+    from trimesh import registration
+
+    o, s = np.load(ours_npz), np.load(source_npz)
+    co, tris = o["co"], o["tris"]
+    tile = np.load(ours_tiles)["tile"]
+    keys = ("wrist", "index1", "pinky1", "middle_tip")
+    oa_j, ha_j = json.loads(Path(ours_anchors).read_text()), json.loads(Path(his_anchors).read_text())
+    oa, ha = np.array([oa_j[k] for k in keys]), np.array([ha_j[k] for k in keys])
+    sim = st._similarity(ha, oa)
+    sco = st._apply(sim, s["co"])
+    lo, hi = oa.min(0) - 0.05, oa.max(0) + 0.05
+
+    def inside(p):
+        return ((p >= lo) & (p <= hi)).all(1)
+
+    def pieces(points, faces):
+        n = len(points)
+        e = np.vstack([faces[:, [0, 1]], faces[:, [1, 2]]])
+        _, lab = connected_components(sp.coo_matrix((np.ones(len(e)), (e[:, 0], e[:, 1])), shape=(n, n)), directed=False)
+        used = np.unique(faces)
+        out_ = []
+        for c in np.unique(lab[used]):
+            f = faces[(lab[faces[:, 0]] == c)]
+            if len(f) >= 4:
+                out_.append(f)
+        return out_
+
+    ours_f = tris[(tile == 4) & inside(co)[tris].all(1)]
+    his_sel = np.flatnonzero((s["tmat"] == 4) & inside(sco)[s["tris"]].all(1))
+    ours_p, his_p = pieces(co, ours_f), pieces(sco, s["tris"][his_sel])
+    tip = oa[3]
+    across = oa[1] - oa[2]  # index knuckle less little-finger knuckle: the order across the hand
+
+    def five(ps, pts):
+        ps = sorted(ps, key=lambda f: np.linalg.norm(pts[np.unique(f)].mean(0) - tip))[:5]
+        return sorted(ps, key=lambda f: float(pts[np.unique(f)].mean(0) @ across))
+
+    ours5, his5 = five(ours_p, co), five(his_p, sco)
+    print(f"NAILS: ours {len(ours_p)} pieces, his {len(his_p)}; pairing {min(len(ours5), len(his5))}", flush=True)
+    all_co, all_tris, all_tuv, all_placed, base = [], [], [], [], 0
+    tri_index = {tuple(t_): i for i, t_ in enumerate(s["tris"][his_sel].tolist())}
+    for ofc, hfc in zip(ours5, his5, strict=False):
+        target = trimesh.Trimesh(co, ofc, process=False)
+        used = np.unique(hfc)
+        ren = -np.ones(len(sco), np.int64)
+        ren[used] = np.arange(len(used))
+        hv, hf = sco[used], ren[hfc]
+        start = np.eye(4)
+        start[:3, 3] = co[np.unique(ofc)].mean(0) - hv.mean(0)
+        m, _, cost = registration.icp(hv, target, initial=start, threshold=1e-8, max_iterations=60, reflection=False,
+                                      scale=True)  # fmt: skip
+        placed = st._apply(m, hv)
+        wrapped = registration.nricp_amberg(trimesh.Trimesh(placed, hf, process=False), target,
+                                            steps=[[0.02, 0, 0.5, 10]] * 3, distance_threshold=0.005)  # fmt: skip
+        gap = trimesh.proximity.closest_point(target, wrapped)[1]
+        print(f"  nail: ICP {cost * 1000:.2f} mm, wrapped p50 {np.median(gap) * 1000:.2f} mm", flush=True)
+        uv = np.array([s["tuv"][his_sel][tri_index[tuple(t_)]] for t_ in hfc.tolist()])
+        all_co.append(wrapped)
+        all_placed.append(placed)
+        all_tris.append(hf + base)
+        all_tuv.append(uv)
+        base += len(hv)
+    np.savez(out, co=np.concatenate(all_co).astype(np.float32), tris=np.concatenate(all_tris),
+             tuv=np.concatenate(all_tuv), uv_name=s["uv_name"], placed=np.concatenate(all_placed).astype(np.float32),
+             all_tris=np.concatenate(all_tris), material=str(s["names"][4]), tile=1005)  # fmt: skip
+    print("WRITTEN", out, flush=True)
+
+
 def carry_cards(ours_npz: Path, source_npz: Path, out: Path) -> None:
     """HD Aaron's own hair cards (a gate export of his .blend - LOCAL TEST ONLY, nothing of his ships) as strands on
     our head: his cut exactly, so our strands and shading are judged on the same cut."""
@@ -311,6 +391,8 @@ if __name__ == "__main__":
         extra = (4, 1005, Path(a[3]).with_name("aaron_nails.npz")) if a[0] == "hand" else None  # his nails ride the hand
         carry_region(Path(a[1]), Path(a[2]), Path(a[3]), material, ((lo[0], hi[0]), (lo[1], hi[1]), (lo[2], hi[2])),
                      anchors=(np.array([his_a[k] for k in keys]), oa), tile=tile, extra=extra)
+    elif a[0] == "nailfit":  # nailfit OURS.npz SKIN_SOURCE.npz OUT.npz OURS_ANCHORS HIS_ANCHORS OURS_TILES.npz
+        carry_nails(Path(a[1]), Path(a[2]), Path(a[3]), Path(a[4]), Path(a[5]), Path(a[6]))
     elif a[0] == "skin":  # skin OURS.npz SKIN_SOURCE.npz OUT.npz [EYES.npz] (his eyeballs: the eye rims pinned)
         carry_skin(Path(a[1]), Path(a[2]), Path(a[3]), Path(a[4]) if len(a) > 4 else None)
     else:  # usc OURS.npz hairstyles.zip ID OUT.npz
