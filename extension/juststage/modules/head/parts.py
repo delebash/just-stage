@@ -233,6 +233,9 @@ def refit(character: bpy.types.Object) -> None:
     eye_clearance(character)
     eyelid_contact(character)  # base v2's rim back on the eyeball, after the clearance moved the lid's skin
     eye_layers.refit(character)  # the occlusion and tearline ride the eyes
+    from . import lip_seal
+
+    lip_seal.seal(character)  # the neutral's lips closed (hm08 leaves a see-through slit)
     teeth = parts_of(character).get("teeth")
     if teeth is not None:
         face_units.add_to_teeth(character, teeth)
