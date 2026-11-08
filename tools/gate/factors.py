@@ -1450,6 +1450,7 @@ if __name__ == "__main__":
     p.add_argument("--lights", choices=("stage", "world"), default="stage")
     p.add_argument("--scalp", default="library", help='our scalp: library, generated, "generated:<style>"')
     p.add_argument("--alone", action="store_true", help="a build for each factor (shape changes: eyebag*0 ...)")
+    p.add_argument("--character", default="", help="another library character for ours (parts_gate's --character)")
     a = p.parse_args(args)
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     names = a.factors.split(",")
@@ -1458,10 +1459,10 @@ if __name__ == "__main__":
     if a.alone:  # a build each (a factor that changes the shape)
         for t, n in zip(tags, names, strict=True):
             pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, tag=t, prepare=factor(n),
-                      lights=a.lights, scalp=a.scalp)
+                      lights=a.lights, scalp=a.scalp, character=a.character)
     else:  # built once, the materials set back before each factor (parts_gate.render's variants)
         pg.render("ours", a.engine, out, a.views.split(","), pg.SIZE, pg.CYCLES_SAMPLES, lights=a.lights,
-                  scalp=a.scalp, variants=[(t, factor(n)) for t, n in zip(tags, names, strict=True)])
+                  scalp=a.scalp, character=a.character, variants=[(t, factor(n)) for t, n in zip(tags, names, strict=True)])
     for tag in tags:
         for view in a.views.split(","):
             made = out / f"{a.engine}_{view}_ours{tag}.png"
