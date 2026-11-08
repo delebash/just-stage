@@ -1993,6 +1993,17 @@ every one logged; key claims page-read):
   each template tooth, a Laplacian deformation of the crown, the template's roots kept (RMS < 0.096 mm); Teeth3DS stores
   per-vertex tooth labels in JSON; Poseidon3D's label format is not stated on its page.
 
+- **The neutral slit and the nails, measured 2026-11-08** (CPU probes, the library's Average man):
+  - The slit: rays from 6 cm in front along the depth, every 0.05 mm up and down the mouth, at x -18..18 mm by 3 -
+    a ray that reaches the front teeth's depth went between the lips. Neutral: 0.3-0.9 mm wide, widest at the middle.
+    Faceunits' mouthPress 0.3 each side: 0-0.4. mouthClose 0.1: 0 everywhere (0.3 too). A snap of each lip-edge
+    vertex to its nearest partner across (within 1.2 mm, not one edge apart) found 5-13 pairs 0.94-1.17 mm apart and
+    left 0.15-0.75 mm - the pairs weren't the slit's edges.
+  - HD Aaron's nails: CC5's skin shader (CC Blender Tools' rl_skin_shader) with Std_Nails maps; his nail texture's
+    median over his 3,576 nail faces sRGB (0.545, 0.349, 0.267) - those faces hold the skin round the nail too. Ours:
+    20 nail pieces on tile 1005; each fingernail's base-to-tip found from the skin within 30 mm (12.6-13.8 mm long,
+    pointing down and forward); the small toes' come out tilted sideways by the toes beside them.
+
 ### 14.6 · Shape spaces, sliders, mixing
 
 - **MakeHuman's MHM names for the macro sliders** (`makehuman/data/modifiers/modeling_modifiers.json`, MakeHuman's
@@ -2131,6 +2142,19 @@ every one logged; key claims page-read):
   and locally relaxed" - no vertex set, weights or iterations: the details are ours. CC5's manual: Transformer >
   Character > "Correct Eyeblink" snaps the upper lid onto the lower. MetaHuman moves the lids by joints (EyelidUpperA/B,
   EyelidLowerA/B); expressions are joint animation with per-vertex corrective shapes at LOD0 only.
+
+- **The body rig and the wrinkles, measured 2026-11-08:**
+  - HD Aaron's export: 101 bones, 90 deform, with twist bones (upper arm, forearm, thigh, calf, neck, ribs) and
+    share bones (elbow, knee, toe); his body's 356 shape keys are face shapes and face correctives (C_*), no body
+    correctives; no drivers on his keys.
+  - MPFB2's game-engine rig (53 bones, no twist bones) and its weights on our man (`tools/gate/body_rig.py`): every
+    vertex's weights sum to 1.000; base v2's 128 lid vertices take their nearest's. Posed to the same bone directions
+    as his (aimed in world space; a turn by angle from each rest left the forearms pointing apart), the nearest skin
+    to the joint posed over rest: elbow (~107 deg) ours 0.90 / his 0.69, knee (90) 0.77 / 0.92, sitting (hip 90)
+    0.96 / 0.85, arm 30 deg above level 0.86 / 0.91. A crude measure: the renders decide.
+  - His wrinkles: his head material's rl_wrinkle_shader takes 46 driven inputs (each driver reads his body's
+    `wrinkle_strength`, `wrinkle_regions`, `wrinkle_curves` and his keys); his smile (Mouth_Corner_Pull_L/R 1) gives
+    12 of them 0.6-1.0, his neutral none (each driver's expression evaluated by hand on its targets).
 
 ### 14.8 · Skin colour: scans, the scan route, delighting, hair out, the AI painting route (retired)
 
