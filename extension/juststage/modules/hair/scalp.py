@@ -227,9 +227,11 @@ def _hair_group(name: str) -> bpy.types.NodeTree:
 
 def _fill_group(seed: int, character: bpy.types.Object) -> bpy.types.NodeTree:
     """Blender's Interpolate Hair Curves with its inputs held in a group of ours - the scalp mask image among them."""
+    # "Part by Mesh Islands" off: on (Blender's default) it parts the fill along the surface's islands - bare lines
+    # above the ear, over the crown and across the back (the gate's hair views, 2026-11-07)
     return _chain("JustStage scalp fill", [("Interpolate Hair Curves", {
         "Density": DENSITY, "Interpolation Guides": INTERPOLATION_GUIDES, "Mask Texture": scalp_mask(character),
-        "Seed": seed})])
+        "Seed": seed, "Part by Mesh Islands": False})])
 
 
 def _chain(name: str, steps: list) -> bpy.types.NodeTree:
