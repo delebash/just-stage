@@ -10,6 +10,7 @@ build: CMake 3.14+, SWIG for the Python wrappers, Python 3 with its development 
 no headers, so they come from python.org's NuGet package of the same version.
 
     python libs/openriglogic/build.py [--jobs N]
+    python libs/openriglogic/build.py --install   # the built wheel into extension/juststage/wheels only
 
 Inputs (fetched by hand once, see the working doc): the source at SOURCE, pinned to COMMIT; Python 3.13.13's headers
 and import library from the NuGet package `python` 3.13.13 at PY_DEV; SWIG from PyPI's `swig` wheel in the tools venv,
@@ -39,6 +40,7 @@ CMAKE = Path(
     "/bin/cmake.exe"
 )
 DIST = Path(__file__).resolve().parent / "dist"
+EXT_WHEELS = Path(__file__).resolve().parents[2] / "extension" / "juststage" / "wheels"  # the manifest's `wheels`
 PYTHON_VERSION = "3.13.13"
 SWIG_VERSION = "4.3.1"  # `.dev/venv-tools/Scripts/python -m pip install swig==4.3.1`
 
@@ -116,8 +118,25 @@ def main() -> int:
     shutil.copy2(SOURCE / "LICENSE", info / "LICENSE")
     DIST.mkdir(exist_ok=True)
     run([DEV / "venv-tools" / "Scripts" / "wheel.exe", "pack", stage, "--dest-dir", DIST])
+    install()
     return 0
 
 
+def install() -> Path:
+    """The wheel into the extension's `wheels/` folder, which its manifest lists (Blender installs it when the
+    extension is enabled); returns its path there."""
+    wheels = sorted(DIST.glob("openriglogic-*.whl"))
+    if not wheels:
+        raise SystemExit(f"no wheel in {DIST}; build it first")
+    EXT_WHEELS.mkdir(exist_ok=True)
+    target = EXT_WHEELS / wheels[-1].name
+    shutil.copy2(wheels[-1], target)
+    print(f"INSTALLED {target}", flush=True)
+    return target
+
+
 if __name__ == "__main__":
+    if "--install" in sys.argv:  # the built wheel into the extension only (no rebuild)
+        install()
+        sys.exit(0)
     sys.exit(main())

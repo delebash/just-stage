@@ -17,3 +17,7 @@ blender_version_min = "5.3.0"
 
 license = ["SPDX:GPL-3.0-or-later"]
 copyright = ["2026 JustStage contributors"]
+
+# compiled parts as Blender's extension wheels (docs/standards/plugins.md; built per machine by
+# libs/openriglogic/build.py, which puts the wheel here - not committed): OpenRigLogic's DNA and RigLogic bindings (MIT)
+wheels = ["./wheels/openriglogic-13.5.2-cp313-cp313-win_amd64.whl"]

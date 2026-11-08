@@ -92,7 +92,9 @@ NAIL_LUNULA, NAIL_LUNULA_SHARE = (0.82, 0.72, 0.68), 0.35
 NAIL_TIP = (0.80, 0.75, 0.66)
 NAIL_GROOVE = 0.45  # how much the fold's groove round the plate darkens it
 NAIL_RIDGES = 0.05  # +- share of the colour
-NAIL_ROUGHNESS, NAIL_SPECULAR, NAIL_COAT = 0.18, 0.6, 0.5
+#: the plate's shine: matte like HD Aaron's - at 0.18 / 0.6 / 0.5 (roughness, specular level, coat) our plate read
+#: milky white beside his skin-toned one; at 0.55 / 0.3 / 0 it reads as his (the gate's `nailshine`, 2026-11-08)
+NAIL_ROUGHNESS, NAIL_SPECULAR, NAIL_COAT = 0.55, 0.3, 0.0
 NAIL_RAISE = 0.0006  # m: the plate over its fold
 #: the mouth's lining (the inner lips and the mouth's skin; `tools/make_mouth_mask.py`): wet mucosa where the mask is -
 #: no scan or painting covers it, so an open mouth showed a pale rim of skin inside the lips (the gate, 2026-11-05)

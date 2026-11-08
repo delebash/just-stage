@@ -1833,8 +1833,9 @@ def naildisp(built: dict, dome_mm: float, groove_mm: float, lip_mm: float) -> No
 
 def nailshine(built: dict, coat: float, specular: float, roughness: float) -> None:
     """Item 7, one factor: our nail plate reads milky white where HD Aaron's is barely lighter than his skin, and its
-    colour along the nail (`nailmat`) changed little - so its shine: the plate's coat (0.5 built), specular level (0.6)
-    and roughness (0.18; `maps.NAIL_COAT`, `NAIL_SPECULAR`, `NAIL_ROUGHNESS`) set on the shader's nail mixes."""
+    colour along the nail (`nailmat`) changed little - so its shine: the plate's coat, specular level and roughness
+    (`maps.NAIL_COAT`, `NAIL_SPECULAR`, `NAIL_ROUGHNESS`; 0.5 / 0.6 / 0.18 until this trial set them to 0 / 0.3 / 0.55)
+    set on the shader's nail mixes."""
     maps = _maps()
     done = 0
     for nt in _skin_trees(built):

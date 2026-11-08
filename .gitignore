@@ -16,6 +16,9 @@ dist/
 # made by the offline tools in libs/ (e.g. libs/wrap/gnm_to_hm08.py)
 extension/juststage/data/generated/
 
+# compiled wheels the manifest lists, built per machine (libs/openriglogic/build.py)
+extension/juststage/wheels/
+
 # JustStage AI (server/): its install
 server/node_modules/
 /node_modules/

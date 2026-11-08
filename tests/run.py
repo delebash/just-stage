@@ -22,6 +22,9 @@ import pytest  # noqa: E402
 
 ADDON = "bl_ext.system.juststage"
 
+# the manifest's wheels installed before enabling (Blender's own call: "needed so wheels can be setup before the add-on
+# is enabled" - addon_utils.extensions_refresh; --factory-startup enables nothing at startup, so nothing synced them)
+addon_utils.extensions_refresh(addon_modules_pending=[ADDON])
 addon_utils.enable(ADDON, default_set=True, handle_error=None)
 if ADDON not in {m.__name__ for m in addon_utils.modules()} or not addon_utils.check(ADDON)[1]:
     print(f"run.py: {ADDON} did not load", file=sys.stderr)
