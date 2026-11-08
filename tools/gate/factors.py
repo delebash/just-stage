@@ -648,6 +648,98 @@ def lidsmooth(built: dict, rings: int, iterations: int) -> None:
           round(float(moved.max()) * 1000, 2), "mm", flush=True)
 
 
+def blinkfix(built: dict) -> None:
+    """The blink's deciding test (checklist row 10): can our lids close cleanly? Known broken: a 2 mm gap and a
+    0.7-1.1 mm clip into the eyeball (plan §7 "Per-character"). The plan's named method (OmniFaceRig's: "upper-eyelid
+    vertices snapped to lower lid and locally relaxed"): in each eyeBlink key every upper row (lash line, margin, rim)
+    closes onto the lower row of its kind at the same angle round the eye; the move carried into four rings of upper
+    lid skin (0.7, 0.45, 0.25, 0.1); any lid point left inside the eyeball pushed out to 0.3 mm off it. Prints the gap
+    and the clip before and after. A shape: --alone."""
+    base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+    body = built["body"]
+    me = body.data
+    n = len(me.vertices)
+    blocks = me.shape_keys.key_blocks
+    shaped = build.shaped_coords(body)
+    basis = np.empty(n * 3, np.float32)
+    blocks[0].data.foreach_get("co", basis)
+    basis = basis.reshape(-1, 3).astype(np.float64)
+    mw = np.array(body.matrix_world)
+    inv = np.linalg.inv(mw)
+    spheres = {name: eye_layers._eye_sphere(o) for name, o in parts.parts_of(body).items() if name in ("eyeLeft", "eyeRight")}
+    rows = base.rows()
+    rows = rows[(rows >= 0).all(1)]
+    edges = np.empty(len(me.edges) * 2, np.int64)
+    me.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    nbr: dict[int, set[int]] = {}
+    for a, b in edges:
+        nbr.setdefault(int(a), set()).add(int(b))
+        nbr.setdefault(int(b), set()).add(int(a))
+
+    def to_local(p):
+        return p @ inv[:3, :3].T + inv[:3, 3]
+
+    for key_name, eye_name in (("eyeBlinkLeft", "eyeLeft"), ("eyeBlinkRight", "eyeRight")):
+        key = blocks[key_name]
+        kco = np.empty(n * 3, np.float32)
+        key.data.foreach_get("co", kco)
+        kco = kco.reshape(-1, 3).astype(np.float64)
+        closed = shaped + (kco - basis)  # the closed lid on the current shape (local)
+        c_w, r = spheres[eye_name]
+        c = to_local(c_w)
+        mine = rows[np.linalg.norm(shaped[rows[:, 2]] - c, axis=1) < 0.025]
+        up, lo = mine[shaped[mine[:, 2], 2] > c[2]], mine[shaped[mine[:, 2], 2] <= c[2]]
+        if len(up) < 3 or len(lo) < 3:
+            continue
+
+        def az(p):
+            return np.arctan2(p[:, 0] - c[0], -(p[:, 1] - c[1]))
+
+        def gap_and_clip(state):
+            mid_up = up[np.argsort(np.abs(az(shaped[up[:, 0]])))[:3], 0]
+            mid_lo = lo[np.argsort(np.abs(az(shaped[lo[:, 0]])))[:3], 0]
+            gap = float(np.linalg.norm(state[mid_up].mean(0) - state[mid_lo].mean(0)))
+            lid_v = np.array(sorted({int(v) for v in up.ravel()}))
+            clip = float(max(0.0, (r - np.linalg.norm(state[lid_v] - c, axis=1)).max()))
+            return gap * 1000, clip * 1000
+
+        before = gap_and_clip(closed)
+        adj = np.zeros_like(closed)
+        order = np.argsort(az(shaped[lo[:, 2]]))
+        lo_az = az(shaped[lo[order, 2]])
+        for col in range(3):  # lash line, margin, rim: each upper row onto the lower row of its kind
+            tgt = closed[lo[order, col]]
+            for v, a in zip(up[:, col], az(shaped[up[:, col]]), strict=True):
+                p = np.array([np.interp(a, lo_az, tgt[:, k]) for k in range(3)])
+                adj[v] = p - closed[v]
+        taken = set(int(v) for v in mine.ravel())
+        ring_of_lash = {int(v): adj[v] for v in up[:, 0]}
+        frontier, seen = set(ring_of_lash), set(taken)
+        for share in (0.7, 0.45, 0.25, 0.1):  # the upper lid's skin follows its lash line
+            nxt = {u for v in frontier for u in nbr[v]} - seen
+            nxt = {u for u in nxt if shaped[u, 2] > c[2]}
+            for u in nxt:
+                src = [v for v in nbr[u] if v in frontier]
+                adj[u] = share / max(len(src), 1) * sum(adj[v] for v in src) if src else 0.0
+            seen |= nxt
+            frontier = nxt
+        fixed = closed + adj
+        lid_v = np.array(sorted(seen | taken))
+        dist = np.linalg.norm(fixed[lid_v] - c, axis=1)
+        inside = dist < r + 0.0003
+        fixed[lid_v[inside]] = c + (fixed[lid_v[inside]] - c) / dist[inside, None] * (r + 0.0003)
+        after = gap_and_clip(fixed)
+        key.data.foreach_set("co", (basis + (fixed - shaped)).astype(np.float32).ravel())
+        print("BLINK FIX", key_name, f"gap {before[0]:.2f} -> {after[0]:.2f} mm, clip {before[1]:.2f} -> {after[1]:.2f} mm",
+              flush=True)
+    me.update()
+    bpy.context.view_layer.update()
+
+
 def lidcrease(built: dict, ring: int, mm: float) -> None:
     """The eye's deciding test (checklist row 6): can our lid's mesh hold HD Aaron's upper-lid crease? The ring of upper
     lid skin `ring` rings above the upper lash line pushed `mm` toward its eye's centre, the rings either side half as
@@ -1293,6 +1385,8 @@ def factor(name: str):
         return lambda built: aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
         return lambda built: guidefile(built, name.split("*", 1)[1])
+    if name == "blinkfix":  # the blink closed onto the lower lid (row 10)
+        return blinkfix
     if name.startswith("lidcrease"):  # lidcrease*3*1.5 (the ring above the lash line, mm inward)
         _, r, mm = name.split("*")
         return lambda built: lidcrease(built, int(r), float(mm))

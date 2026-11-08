@@ -37,6 +37,9 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   every part and the whole body has a verdict (meets HD Aaron or provably can't); then on to the app's other features.
   Decisions attacked to consensus and kept (changed only on a new measured fact, shown). After a compaction: read this
   file, the plan's §18a and §19.3 and `docs/gate/2026-11-07/report.md` first; keep a background job running.**
+- **Wake-ups (session-only, set 2026-11-08 ~00:40, expire after 7 days or with the session - set them again with
+  CronCreate):** every 20 min when idle, resume the verdict work from these docs; every 3 h, remind every peer session
+  of the shared rules (the user: "they can help keep you on task").
 
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
