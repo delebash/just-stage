@@ -28,4 +28,8 @@ if ADDON not in {m.__name__ for m in addon_utils.modules()} or not addon_utils.c
     sys.exit(2)
 
 args = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
-sys.exit(pytest.main([os.path.join(ROOT, "tests", "blender"), "-p", "no:cacheprovider", "-q", *args]))
+#: the whole folder only when no test path is given (pytest's own `testpaths` rule) - it was always added, so a file
+#: given to narrow a run ran the whole suite (2026-11-08)
+given = [a for a in args if not a.startswith("-") and os.path.exists(os.path.join(ROOT, a.split("::")[0]))]
+default = [] if given else [os.path.join(ROOT, "tests", "blender")]
+sys.exit(pytest.main([*default, "-p", "no:cacheprovider", "-q", *args]))
