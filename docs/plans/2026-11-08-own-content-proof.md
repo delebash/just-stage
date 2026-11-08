@@ -81,6 +81,109 @@ character on our assets) at the views, every kept fix checked on a fresh New hum
 | 8 | Nails, ears | doesn't match yet | - | - |
 | 9 | Whole body; four characters | doesn't match yet | - | - |
 
+## Step 1's fault list (2026-11-08 15:0x, every view fresh: `.dev/gate/parts/2026-11-08all`, sheets `scratchpad/all/all_<view>.png`, grids `grid_g1-5.png`)
+
+The user, ~15:00: good enough = "a human cant visually tell the difference on closeup" - not a score of 0. So the
+cheek's 0.018 against his skin's 0.012 on our head passes. Each part has a one-hour box (two fix rounds); then the
+verdict - matches / close / not possible with free assets (what's missing) - and the next part (the user, ~14:55: "give
+up on it and say it is not possible ... you job is not to keep trying until the universe ends").
+
+| # | Part | Verdict now | What a person sees (ours against his) |
+|---|---|---|---|
+| 1 | Scalp hair | far | a grey helmet with a hard fringe line over the forehead, a bowl outline in profile and from behind, orange strands at the nape; his a layered short cut, darker roots, light tips |
+| 2 | Face shape and eyes' look | far | broad, flat, puffy face with small squinting eyes - reads as a doll; his bone structure (brow ridge, cheekbones, nose) |
+| 3 | Lips | far | smooth pink rubber, hard outline, no lines, broad plastic sheen; his lines, darker border, small wet highlight |
+| 4 | Eyes (eyeball, lids) | far | the white too bright and bluish-grey, a thick orange ledge on the lower lid, no crease; the closed lid's skin smears into a stretched blur in the blink |
+| 5 | Stubble | far | a dense fuzzy mat over the lower face and chin; his short, sparse, greying |
+| 6 | Forehead and nose skin | far | a pebbly orange-peel bump all over; his smooth with lines (forehead), fine pores and redness (nose) |
+| 7 | Teeth, mouth | far | small evenly spaced pegs; his natural teeth |
+| 8 | Feet | far | smooth plastic, no detail (no free scanned foot - known) |
+| 9 | Torso, neck | far | flat and smooth, two light blotches by the sternum, a darker patch on the neck's side; his defined (his build is identity, the blotches are faults) |
+| 10 | Ears | close-far | small, smooth, little inner detail; his detailed, redder inside |
+| 11 | Nails | close | the plate reads set in with a dark ring, the fingertip skin pitted; his natural |
+| 12 | Hands | close | real tendons and creases; ours paler (tone, a setting) |
+| 13 | Cheek skin | **matches** (the user's bar) | a touch softer and less red if you hunt for it |
+
+Order of work (worst first): 1 hair, 2 face shape, 3 lips, 4 eyes, 5 stubble, 6 forehead and nose skin, 7 teeth, 9
+torso and neck, 10 ears, 11 nails, 8 feet (its route is the user's download).
+
+**The user's hour (15:12-16:15, "you control all pc resources ... complete this in under an hour"):** the peers hold
+heavy work until "PC free". Runs: hair round 1 (`.dev/gate/parts/2026-11-08hair1`), the quick round
+(`2026-11-08q`: forehead and nose pore depth, lip tint and shine, eye white, stubble density and grey), the face shape
+round (`2026-11-08face`: leaner cheeks with cheekbones, the brow up with the eyes more open, both). **15:14 our Blender
+reached 17.6 GB RAM / 43.8 GB committed, free RAM 0** - four `--alone` builds of a 183k-strand scalp in one process
+pile up; killed at once (free RAM back to 18 GB). Since: one Blender process per new-groom or new-shape trial
+(`batch_rest.sh`), and `scratchpad/ram_guard.ps1` stops our Blender by itself below 3 GB free.
+- Hair round 1, read: flatter sides (`scalpstyle*sides`) bare the scalp at the side and keep the helmet - not kept.
+  The sheet shows the cause: our hairline ~30 mm above the brows and the hair over the temples - a wig's edge round a
+  small forehead; his hairline far higher. Trials queued: the scalp grown one ring (`hairline`) and none
+  (`hairline0`) past MakeHuman's hedgehog roots (56 mm above the eye), and lighter tips (`hairtip*0.5`).
+- The foot: Thunk3D's CC BY scan downloaded (RESEARCH §14.11) - its fit and bake after the quick parts.
+- **The quick round, read by eye (15:3x, rows `scratchpad/row_q_*.png`):** forehead pores x2 -> x1 takes the orange
+  peel away at the eye and forehead views - **KEPT** (`make_face_regions.py` REGIONS forehead 2.0 -> 1.0; the shipped
+  map and the library rebuilt at the hour's end). Nose pores 0.6 -> 0.3: no visible change; the nose reads close to
+  his (his redder - tone) - **nose: matches**. Lip tint (0.95, 0.58, 0.62): orange and waxy - not kept. Lip shine
+  rough 0.5 / coat 0.15: a little less plastic, still a smooth tube - kept for round 2. Eye white x0.85: no visible
+  change - not kept; the eye's fault is the lid's shape and the missing darkness round the eye, not the white.
+- **Stubble (15:40, rows `row_q_stubble*.png`):** 100 a cm2 (160 shipped) reads lighter, no longer a mat, close to
+  his at the lips and face views - **KEPT** (`stubble.DENSITY` 160 -> 100; the library's characters carry it after the
+  rebuild). A greyer mix (0.45) reads closer to him too, but grey is age - a character setting, not a fault: 0.25 kept.
+  Left: our beard region reaches higher up the cheeks than his.
+- **Face shape round 1 (15:51, rows `row_face_{face,eye}.png`):** leaner cheeks with cheekbones, the brow raised with
+  the eyes more open, both (our MakeHuman sliders at 0.4-1.0) - each moves the face a little; at the face view it still
+  reads as a doll - not kept. What makes the doll look, read off the sheets: the eyes (a narrow opening, no lid crease,
+  no darkness round the eye - his has a deep crease and dark, reddish lids and under-eyes), the hair's frame, the lips -
+  more than the cheeks' width. Round 2 queued: the sliders at full strength with the brow ridge forward
+  (`faceshape*strong`), and the skin round the eyes darker and redder (`eyedark*0.8`, by the region map's eyes region).
+- **15:54, a second runaway, caught by the RAM guard at 0.2 GB free:** `scalpstyle*hairline` removed the scalp mask
+  image the fill group's node pointed at - hair grew over the whole body (3,545,891 strands, 30 GB committed). My bug:
+  the trial now writes the new mask INTO the fill's own image. The guard now checks every 2 s and stops our Blender at
+  6 GB free (10 s / 3 GB let it reach 0.2). The hairline trials rerun after face round 2 (`batch_hair2.sh`).
+- **Hair colour (16:00, `row_hairtip_*.png`):** lighter tips (`hairtip*0.5`) turn our hair orange-brown, not his
+  ash-light tips over dark roots - not kept. The back view shows the gap is the cut: ours one blocky helmet with a
+  straight edge at the nape, his layered, lifted on top, tapered. Our generator's settings (round 1) can't make that;
+  the route left: an artist's free cut - VincentFreelance's CC BY men's collections on Sketchfab (RESEARCH §14.14, ~100
+  cuts as cards), downloaded by us through the signed-in Chrome, as the foot was. Also seen: a skin patch on the back of
+  the neck (a body-skin fault). 16:02: the Chrome extension disconnected ("Browser extension is not connected") - the
+  download waits for it.
+- **Lip lines (16:04, `row_lip2.png`):** our shader-made lines at 0.25 and 0.5 mm depth barely show; the lips still
+  read as a smooth tube - not kept. The thinner-lip shape follows.
+- **Thinner lips (16:10, `row_lip3.png`):** `faceshape*lipthin` gives a slightly better shape with a cupid's bow, but
+  our pink tint (MPFB2's lips mask on hm08's UVs) then spills above the new lip edge; with the shine and lines too they
+  still read as a smooth tube. **Lips, the box spent: not reached by settings, sliders or shader lines. Missing: a lip
+  detail map of our own (colour darkening to the border and seam, a lighter centre, fine lines) fitted to the lip's
+  shape - a made asset, its own job; no free scan resolves it (Ten24 ~220 texels across the lips).**
+- **Face round 2 (16:15, `row_face2_{face,eye}.png`):** the eyes' surround darker (`eyedark*0.8`) barely shows - not
+  kept; the sliders at full strength (`faceshape*strong`) give a heavy shadowed brow ridge - worse - not kept. **Face
+  shape, the box spent: our MakeHuman sliders don't make the face read real. Missing: a scan-based face shape - the
+  route is the mixer's scan identities (stopped by the user at 09:55); the transplant of 11-08 (his shape on our mesh,
+  `aaronshape*upper`) showed our mesh carries a real face's shape.**
+- **Hairline (16:23, `row_hair2_{face,profile}.png`, the mask fix working: 145,707 / 138,564 strands):** one ring
+  past the hedgehog's roots raises the hairline and shows a real forehead - the face reads much less like a doll; no
+  bare line at the side - **KEPT** (`scalp.MASK_RINGS` 2 -> 1); none left a hard edge at the temple. The cut is still a
+  helmet: **hair, the box spent: our generator's settings don't make a real cut. Missing: an artist's cut - a free CC BY
+  one (VincentFreelance's collections) through Chrome, which disconnected at 16:02.**
+
+### The hour's verdicts (15:12-16:23, the user's bar: a person can't tell at close-up)
+
+| Part | Verdict | Kept in the product | What's missing |
+|---|---|---|---|
+| Cheek skin | matches | - | - |
+| Nose skin | matches (his redder - tone) | - | - |
+| Forehead skin | orange peel gone (kept; to confirm at the face view after the rebuild) | forehead pores x2 -> x1 | - |
+| Stubble | close (lighter, sparse like his) | density 160 -> 100 a cm2 | the beard region reaches higher on the cheeks |
+| Scalp hair | not reached | the hairline one ring (higher, softer) | an artist's cut (free CC BY on Sketchfab) |
+| Face shape | not reached | - | a scan-based face shape (the mixer, stopped by the user) |
+| Lips | not reached | - | a lip detail map of our own (colour to the border and seam, lines) |
+| Eyes | not reached | - | the lid's shape (crease, margin) - the white and the surround's colour don't move it |
+| Teeth, ears, torso and neck patches, nails, feet | not tested this hour | - | - |
+
+Kept changes go into the app once: the region map regenerated and the library rebuilt (backup first), booked with the
+peers.
+- Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
+  a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
+  lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
+
 ## Where it stands
 
 - 2026-11-08 ~10:20: renders made 09:45-09:57 (`.dev/gate/parts/2026-11-08new`: `eevee_{view}_ours_new` the New
@@ -224,6 +327,12 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
 - **14:50: step 1 of THE PLAN, IN MY WORDS** - every view (22) rendered fresh, ours then his, in one batch
   (`scratchpad/batch_all.sh`, out `.dev/gate/parts/2026-11-08all`), sheets by `scratchpad/sheet_all.py`; then the
   fault list, worst first.
+- Prepared meanwhile (lips, seen 05:36 renders `.dev/gate/parts/2026-11-08brow/eevee_lips_*`, sheet
+  `scratchpad/sheet_lips_now.png`): ours one flat saturated pink, a broad plastic sheen, smooth as rubber, a hard
+  outline; his a darker red at the seam and border, a paler lower-lip centre, vertical lip lines, a small wet highlight,
+  the colour fading into the skin. Our lips are one tint (`maps.LIP_TINT` (1.0, 0.56, 0.90) over MPFB2's lips mask),
+  roughness 0.33, coat 0.3, no relief of their own. Ten24's scan as a lip-line source: its lips span ~220 texels
+  (4.6 / mm) and its Level_01 normals show the lips' form but no lines (`scratchpad/ten24_lips_pair.png`) - too coarse.
 
 ## Mistakes to avoid
 

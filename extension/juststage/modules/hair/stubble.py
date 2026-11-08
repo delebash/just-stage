@@ -29,7 +29,9 @@ from . import lashes
 NAME = "JustStage stubble"
 #: 2026-11-06, against HD Aaron's Stubble at the gate's mouth and cheek views: denser, shorter, finer, curved, a third
 #: of the hairs grey (the first pass - 60 a cm2, 1.5 mm, straight black - read as scattered black lines over the cheeks)
-DENSITY = 160.0  # hairs a cm2
+#: 2026-11-08, judged by eye at full resolution beside HD Aaron (`.dev/gate/parts/2026-11-08q`, the user's bar): at 160
+#: our stubble read as a dense dark mat over the lower face, his short and sparse; at 100 it reads close to his
+DENSITY = 100.0  # hairs a cm2
 #: 2026-11-06, the clean-input gate's cheek view: HD Aaron's Stubble hairs 2.4-4.2 mm, lying close along the skin,
 #: a third of them white - ours (1 mm, rising 45 degrees, grey at melanin 0.25) read as scattered dots, no white
 #: Gate run 10's lips view: ours thick (0.1 mm), sparse-looking, every way - each strand stood out (chin share >8 L*

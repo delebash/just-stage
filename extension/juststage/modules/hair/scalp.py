@@ -133,7 +133,11 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
     return out
 
 
-MASK_RINGS = 2  # the style's root faces grown this many rings over the mesh (the gaps between its roots closed)
+#: the style's root faces grown this many rings over the mesh (the gaps between its roots closed). 2 -> 1 on 2026-11-08,
+#: judged by eye beside HD Aaron (`.dev/gate/parts/2026-11-08hair1`, `factors scalpstyle*hairline`): two rings put the
+#: hairline ~30 mm above the brows and over the temples - a wig's edge round a small forehead; one ring shows a real
+#: forehead with no bare line at the side (none rings left a hard edge at the temple)
+MASK_RINGS = 1
 #: the nape's hairline: the faces above MakeHuman's head joint less this (m) - cut at the neck joint, the hair ran down
 #: the neck past HD Aaron's short, clean nape (the gate's hair views, 2026-11-07)
 NAPE_JOINT, NAPE_BELOW = "joint-head", -0.01

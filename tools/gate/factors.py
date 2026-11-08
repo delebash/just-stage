@@ -1544,6 +1544,219 @@ def fieldcut(built: dict, stem: str, guides: int = 3000) -> None:
     print("FIELD CUT", stem, guides, "guides", flush=True)
 
 
+#: the scalp's style trials (2026-11-08, the own-content proof's step 1: our "short taper" reads as a grey helmet - a
+#: bowl outline, a hard straight fringe line): (style overrides on SHORT_TAPER, MASK_RINGS or None). "base" regrows the
+#: style unchanged - each trial's one-change baseline (the library's groom is a stored asset, not this regrow)
+SCALP_PRESETS = {
+    "base": ({}, None),
+    "sides": ({"lift": (24.0, 4.0), "side_scale": (0.4, 0.85, 0.35)}, None),  # flatter, shorter sides: no bowl
+    "hairline": ({}, 1),  # the scalp grown one ring past the hedgehog's roots, not two: a higher, softer hairline
+    "hairline0": ({}, 0),  # the hedgehog's roots alone (56 mm above the eye): round 1 showed ours ~30 mm, a wig's edge
+}
+
+
+def scalpstyle(built: dict, preset: str) -> None:
+    """Our scalp regrown with one style change (SCALP_PRESETS), the library's groom hidden - a new groom: --alone."""
+    scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
+    over, rings = SCALP_PRESETS[preset]
+    _hide_part(built, "scalp")
+    old_rings, name = scalp.MASK_RINGS, f"style trial {preset}"
+    if rings is not None:
+        # the mask is made once per file and the fill group's image node points at it: write the new rings' mask INTO
+        # that image (2026-11-08 15:54: removing it left the node empty - hair grew over the whole body, 3.5M strands,
+        # 30 GB, stopped by the RAM guard)
+        scalp.MASK_RINGS = rings
+        old = bpy.data.images.get("JustStage scalp mask")
+        if old is not None:
+            old.name = "JustStage scalp mask (old)"
+        new = scalp.scalp_mask(built["body"])
+        if old is not None:
+            old.pixels.foreach_set(np.array(new.pixels[:], np.float32))
+            old.pack()
+            bpy.data.images.remove(new)
+            old.name = "JustStage scalp mask"
+    scalp.STYLES[name] = {**scalp.SHORT_TAPER, **over}
+    try:
+        groom = scalp.make(built["body"], name)
+    finally:
+        scalp.STYLES.pop(name, None)
+        scalp.MASK_RINGS = old_rings
+    pg.colour_scalp(groom)
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("SCALP STYLE", preset, over, "rings", rings if rings is not None else old_rings, flush=True)
+
+
+def _skin_node_inputs(built: dict, node_name: str):
+    """Every skin material's node `maps.NODE + node_name` (one per skin tree)."""
+    maps = _maps()
+    return [nt.nodes[maps.NODE + node_name] for nt in _skin_trees(built) if maps.NODE + node_name in nt.nodes]
+
+
+def lipshine(built: dict, rough: float, coat: float) -> None:
+    """The lips' roughness and coat (`maps.LIP_ROUGHNESS` 0.33, `LIP_COAT` 0.3) - step 1's fault: a broad plastic sheen
+    over our lips where his show a small wet highlight on a matte lip."""
+    n = 0
+    for key, value in (("lips_rough", rough), ("lips_coat", coat)):
+        for node in _skin_node_inputs(built, key):
+            next(i for i in node.inputs if i.identifier == "B_Float").default_value = value
+            n += 1
+    print("LIP SHINE rough", rough, "coat", coat, "on", n, "nodes", flush=True)
+
+
+def liptint(built: dict, r: float, g: float, b: float) -> None:
+    """The lips' tint over the skin (`maps.LIP_TINT` (1.0, 0.56, 0.90)) - step 1's fault: one flat saturated pink."""
+    nodes = _skin_node_inputs(built, "lips_tint")
+    for node in nodes:
+        next(i for i in node.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+    print("LIP TINT", (r, g, b), "on", len(nodes), "nodes", flush=True)
+
+
+def eyewhite(built: dict, k: float) -> None:
+    """The eyes' white colour (`eyes.WHITE`) scaled by k - step 1's fault: the white reads too bright and bluish."""
+    eyes = importlib.import_module("bl_ext.system.juststage.modules.head.eyes")
+    n = 0
+    for mat in bpy.data.materials:
+        if mat.node_tree is None:
+            continue
+        node = mat.node_tree.nodes.get(eyes.NODE + "white")
+        if node is not None:
+            node.outputs[0].default_value = (*(k * c for c in eyes.WHITE), 1.0)
+            n += 1
+        for g in (x for x in mat.node_tree.nodes if x.type == "GROUP" and "EyeWhiteColor" in x.inputs):
+            g.inputs["EyeWhiteColor"].default_value = (*(k * c for c in eyes.WHITE), 1.0)
+            n += 1
+    print("EYE WHITE x", k, "on", n, "nodes", flush=True)
+
+
+def stubbletrial(built: dict, density: float, grey: float, length: float) -> None:
+    """Our stubble regrown (`stubble.make`) at a density (hairs a cm2, 160 shipped), grey share (0.25) and length (mm,
+    2.8) - step 1's fault: a dense dark mat over the lower face against his short, sparse, greying stubble. A new groom:
+    --alone."""
+    stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
+    old = stubble.GREY_SHARE
+    stubble.GREY_SHARE = grey
+    try:
+        stubble.make(built["body"], density=density, length_mm=length)
+    finally:
+        stubble.GREY_SHARE = old
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("STUBBLE", density, "a cm2, grey", grey, "length", length, flush=True)
+
+
+#: the face's shape by our own sliders (2026-11-08, step 1's fault: a broad, flat, puffy face with small squinting
+#: eyes reads as a doll; his bone structure): presets of (slider id, value), each a character setting we ship
+FACE_PRESETS = {
+    "lean": [("head/head-fat-decr-incr", -0.5), ("cheek/l-cheek-volume-decr-incr", -0.5),
+             ("cheek/r-cheek-volume-decr-incr", -0.5), ("cheek/l-cheek-bones-decr-incr", 0.5),
+             ("cheek/r-cheek-bones-decr-incr", 0.5)],
+    "brow": [("eyebrows/eyebrows-trans-down-up", 1.0), ("eyes/l-eye-height2-decr-incr", 0.4),
+             ("eyes/r-eye-height2-decr-incr", 0.4)],
+}
+FACE_PRESETS["leanbrow"] = FACE_PRESETS["lean"] + FACE_PRESETS["brow"]
+#: round 2 (15:52: "lean" and "brow" at half strength moved the face too little to read differently): full strength,
+#: the eyes opened by the lid sliders and the brow ridge brought forward
+FACE_PRESETS["strong"] = [("head/head-fat-decr-incr", -1.0), ("cheek/l-cheek-volume-decr-incr", -1.0),
+                          ("cheek/r-cheek-volume-decr-incr", -1.0), ("cheek/l-cheek-bones-decr-incr", 1.0),
+                          ("cheek/r-cheek-bones-decr-incr", 1.0), ("eyebrows/eyebrows-trans-down-up", 1.0),
+                          ("eyebrows/eyebrows-trans-backward-forward", 1.0), ("eyes/l-eye-height2-decr-incr", 1.0),
+                          ("eyes/r-eye-height2-decr-incr", 1.0)]  # fmt: skip
+#: the lips (step 1 / the quick round: ours a puffy round tube, his flatter with a defined border and a cupid's bow)
+FACE_PRESETS["lipthin"] = [("mouth/mouth-upperlip-volume-decr-incr", -0.6), ("mouth/mouth-lowerlip-volume-decr-incr", -0.4),
+                           ("mouth/mouth-cupidsbow-decr-incr", 0.5)]  # fmt: skip
+
+
+def eyedark(built: dict, k: float) -> None:
+    """The skin round the eyes darker and a little redder - his lids and under-eyes read darker and reddish-brown, ours
+    the cheek's flat colour (15:51, `row_face_eye.png`). The face's "eyes" region (`make_face_regions.py`: within 17 mm
+    of a pupil) is the only one whose region map has both pores < 0.1 and microrelief < 0.13 (R, B / 8); the base
+    colour there x (k, k^1.6... as an RGB tint: k, k x 0.9, k x 0.85 for the red-brown), the map's own softened edge."""
+    maps = _maps()
+    tint = (k, k * 0.9, k * 0.85)
+    n = 0
+    for nt in _skin_trees(built):
+        split = nt.nodes.get(maps.NODE + "face_regions_split")
+        bsdf = next((x for x in nt.nodes if x.type == "BSDF_PRINCIPLED"), None)
+        if split is None or bsdf is None or not bsdf.inputs["Base Color"].is_linked:
+            continue
+        lo_r, lo_b = nt.nodes.new("ShaderNodeMath"), nt.nodes.new("ShaderNodeMath")
+        for node, out, edge in ((lo_r, "Red", 0.10), (lo_b, "Blue", 0.13)):
+            node.operation = "LESS_THAN"
+            nt.links.new(split.outputs[out], node.inputs[0])
+            node.inputs[1].default_value = edge
+        mask = nt.nodes.new("ShaderNodeMath")
+        mask.operation = "MULTIPLY"
+        nt.links.new(lo_r.outputs[0], mask.inputs[0])
+        nt.links.new(lo_b.outputs[0], mask.inputs[1])
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        nt.links.new(mask.outputs[0], mix.inputs["Factor"])
+        next(i for i in mix.inputs if i.identifier == "A_Color").default_value = (1.0, 1.0, 1.0, 1.0)
+        next(i for i in mix.inputs if i.identifier == "B_Color").default_value = (*tint, 1.0)
+        times = nt.nodes.new("ShaderNodeVectorMath")
+        times.operation = "MULTIPLY"
+        nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, times.inputs[0])
+        nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Color"), times.inputs[1])
+        nt.links.new(times.outputs["Vector"], bsdf.inputs["Base Color"])
+        n += 1
+    print("EYE DARK tint", tint, "on", n, "skins", flush=True)
+
+
+def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25) -> None:
+    """Vertical lip lines made in the shader (our own asset, the user's "making your own assets"; no free scan resolves
+    them - Ten24's lips are ~220 texels across): Blender's Wave Texture in bands across the lips (the object's X, a
+    line every `period_mm`, its distortion by noise for irregular furrows), masked by the lips' share, as a bump on top of
+    the skin's relief - step 1's fault: our lips read as smooth rubber, his show fine vertical lines."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        share = nt.nodes.get(maps.NODE + "lips_share")
+        bsdf = next((x for x in nt.nodes if x.type == "BSDF_PRINCIPLED"), None)
+        if share is None or bsdf is None:
+            continue
+        coord = nt.nodes.new("ShaderNodeNewGeometry")  # world position in metres (the object's own units may not be)
+        wave = nt.nodes.new("ShaderNodeTexWave")
+        wave.wave_type, wave.bands_direction, wave.wave_profile = "BANDS", "X", "SIN"
+        wave.inputs["Scale"].default_value = 1000.0 / period_mm
+        wave.inputs["Distortion"].default_value = 6.0
+        wave.inputs["Detail"].default_value = 3.0
+        wave.inputs["Detail Scale"].default_value = 1.5
+        nt.links.new(coord.outputs["Position"], wave.inputs["Vector"])
+        height = nt.nodes.new("ShaderNodeMath")
+        height.operation = "MULTIPLY"
+        nt.links.new(wave.outputs["Fac"], height.inputs[0])
+        nt.links.new(share.outputs[0], height.inputs[1])
+        bump = nt.nodes.new("ShaderNodeBump")
+        bump.inputs["Distance"].default_value = depth_mm / 1000.0
+        bump.inputs["Strength"].default_value = 1.0
+        nt.links.new(height.outputs[0], bump.inputs["Height"])
+        if bsdf.inputs["Normal"].is_linked:
+            nt.links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
+        nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+        n += 1
+    print("LIP LINES every", period_mm, "mm, depth", depth_mm, "mm on", n, "skins", flush=True)
+
+
+def faceshape(built: dict, presets: str) -> None:
+    """The face's shape set by one or more FACE_PRESETS ("lean", "lean&brow"), the eyes, teeth and films refitted.
+    A shape: --alone."""
+    sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
+    catalog = sliders.catalog()
+    done = []
+    for preset in presets.split("&"):
+        for key, value in FACE_PRESETS[preset]:
+            if key not in catalog:
+                print("FACE SLIDER MISSING", key, flush=True)
+                continue
+            sliders.apply(built["body"], catalog[key], value)
+            done.append((key, value))
+    bpy.context.view_layer.update()
+    importlib.import_module("bl_ext.system.juststage.modules.head.parts").refit(built["body"])
+    bpy.context.view_layer.update()
+    print("FACE SHAPE", presets, done, flush=True)
+
+
 SMILE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "smile"
 
 
@@ -2241,6 +2454,22 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("eyedark*"):  # eyedark*0.8 (the tint's level round the eyes)
+        return lambda built: eyedark(built, float(name.split("*")[1]))
+    if name.startswith("liplines"):  # liplines, liplines*1.2*0.25 (period, depth in mm)
+        return lambda built: liplines(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("faceshape*"):  # faceshape*lean, faceshape*lean&brow (FACE_PRESETS) - --alone
+        return lambda built: faceshape(built, name.split("*", 1)[1])
+    if name.startswith("lipshine*"):  # lipshine*0.5*0.1 (roughness, coat)
+        return lambda built: lipshine(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("liptint*"):  # liptint*0.9*0.55*0.6 (linear RGB)
+        return lambda built: liptint(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("eyewhite*"):  # eyewhite*0.85
+        return lambda built: eyewhite(built, float(name.split("*")[1]))
+    if name.startswith("stubbletrial*"):  # stubbletrial*90*0.4*2.8 (a cm2, grey share, mm) - --alone
+        return lambda built: stubbletrial(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("scalpstyle"):  # scalpstyle*sides (SCALP_PRESETS)
+        return lambda built: scalpstyle(built, name.split("*", 1)[1])
     if name.startswith("fieldcut"):  # fieldcut*field_aaron[*3000] (the field's stem, the guides)
         stem, *n = name.split("*")[1:]
         return lambda built: fieldcut(built, stem, *(int(x) for x in n))

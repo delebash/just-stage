@@ -3017,7 +3017,10 @@ re-check before the rec list; nothing run on skin here):
   we ask is that you provide us with a credit wherever it's used" (the page saved 2026-11-04). Its feet are in shoes. So
   run 11's flat hands have a donor in hand: our hand fitted to Ten24's mesh and its relief baked onto our hand tiles.
   Feet: Thunk3D's "Leg-foot" (Sketchfab, "CC Attribution" [API], 2.97M faces, geometry only) is the one detailed bare
-  foot found; more hands: Arkify "Pencil Hand Pack" (3 female + 3 male, Artec Space Spider, CC Attribution [API]),
+  foot found (*downloaded 2026-11-08 15:08* through the user's signed-in Chrome, its page read: "CC Attribution - Author
+  must be credited. Commercial use is allowed", author "Diana Liu (@Diana123456)", the description "Leg-foot scan by
+  Thunk3D Fisher's 3D scanner"; the original format, STL 47 MB zipped -> `左脚 02.stl` ("left foot 02"), 148.6 MB,
+  in `.dev/downloads/sketchfab_leg_foot_2026-11-08/foot/`; the other offers were USDZ 51, glTF 43, GLB 77 MB); more hands: Arkify "Pencil Hand Pack" (3 female + 3 male, Artec Space Spider, CC Attribution [API]),
   Thunk3D hands - their detail unseen until downloaded.
 - **HSR0042 is a 24-year-old, 179 cm, 112 kg African man** (*page read, 2026-11-06*, HSRD-100's
   `manifest/persons.jsonl`: `{"person_id": "HSR0042", "age": "24", "sex": "Male", "ethnicity": "African", "height_cm":
