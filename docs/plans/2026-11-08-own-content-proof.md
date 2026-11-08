@@ -14,7 +14,46 @@ The transplant verdicts of 2026-11-08 (`docs/gate/2026-11-07/report.md`, "the ve
 mesh and renderer can carry his quality - diagnostics, not verdicts. Nothing else (no mixer, no features) until every
 part below has a verdict with OUR content.
 
-## The test (the same for every part)
+## THE PLAN, IN MY WORDS (2026-11-08 ~14:50 - governs; replaces "The test" and the order below)
+
+The user, ~14:45 (TASKS, verbatim): rewrite a simple plan in my own words, my own quality bar - "it has to look as
+real as cc5" - my own decisions, each attacked until it doesn't change.
+
+**The goal.** Our character - the model and every part: skin, eyes, nose, lips, teeth, tongue, hair, nails - looks as
+real as CC5's HD Aaron does in Blender's EEVEE, built only from what we may give away free: our code, free assets, and
+assets we make or combine. Or: proof that a part can't, naming what is missing.
+
+**The bar (mine).** Side by side with HD Aaron - the same stage, EEVEE, the gate's views (whole face, three-quarter,
+and close-ups of the eye, cheek, forehead, nose, lips, open mouth with teeth and tongue, ear, hand, nails, scalp hair,
+whole body) - nothing in ours looks less real than his. "Less real" means a fault no real person has: plastic or waxy
+shine, rubbery or puffy shapes, one flat colour, skin too smooth or too regular, painted-on detail, hard edges where
+skin should blend, seams, a dark or wrong-coloured part, hair that reads as a helmet, glassy or doll-like eyes.
+Identity is not a fault (face shape, lip size, age, tone, build - character settings). Numbers back the eye, only on
+the same skin on both renders with nothing over it: skin texture (DISTS excess) at most his own skin's score on our
+head + 0.005 (about twice chance); detail per size band within 15% of his. A part passes when my written fault list
+for ours is empty (or matched by the same fault in his), its numbers are inside, and its side-by-side sheet is saved
+for the user. Then the same check on three other characters (a woman, an older man, a darker skin).
+
+**The order (mine): the worst-looking fault first**, from one fresh side-by-side of every view - not the smallest
+measured gap. A fault I can't see on the sheet is not worked on.
+
+**The loop.** Name the fault -> list the ways to fix it (a setting, code, our texture, a free source, an asset we make
+or combine) -> try them one at a time, each trial one change -> keep it if the fault visibly shrinks and nothing else
+gets worse -> into the product and the library, seen on a fresh New human. A fault that survives every route: "can't",
+with what's missing.
+
+**Rules against my own mistakes (each happened today).** Before any render, check the measure reads the same skin on
+both with nothing covering it, and that each trial changes one thing. While the card is busy, prepare the next round
+of the same fault. Never pick a trial from a hunch when a number or the sheet says where the fault is.
+
+Attack passes (what each changed): (1) "my eye could pass my own work" -> the written fault list, the numbers where
+valid, and every sheet kept for the user's final look; (2) "worst-first breaks riskiest-first" -> the worst visible
+fault is also the likeliest "can't", so it answers feasibility sooner; (3) "the DISTS limit lets the cheek pass" ->
+the cheek sits at +0.006 over his skin's own score, still outside; it waits behind visible faults; (4) "identity vs
+realism" -> rubbery lips are a fault, full lips are not; (5) "which character" -> the library's Average man (an app
+character on our assets) at the views, every kept fix checked on a fresh New human. A sixth pass changed nothing.
+
+## The test (superseded 2026-11-08 ~14:50 by the plan above - kept as the record)
 
 1. **Render** our default character exactly as the app makes it (`parts_gate.py --character new`: New human, dressed -
    our skin, textures, shaders, eyes, teeth, brows, lashes) and HD Aaron (`--who cc5`): the app's stage, the gate's
@@ -32,7 +71,7 @@ part below has a verdict with OUR content.
 
 | # | Part | Status | Our number vs his band | Last change tried |
 |---|---|---|---|---|
-| 1 | Face skin: texture, colour, shine (the "plastic" look) | doesn't match yet | shine matches on the matched window (cheek sheen 0.61 vs his 0.58); texture DISTS excess cheek 0.018, forehead 0.042 (chance +-0.002-0.004); fold band 1.01 vs 1.35; a* 11.1 vs 13.0 | round 1 (8 trials): none kept; round 2 next - forehead pores, tile, fold relief, redness |
+| 1 | Face skin: texture, colour, shine (the "plastic" look) | doesn't match yet | shine matches on the matched window (cheek sheen 0.61 vs his 0.58); texture DISTS excess cheek 0.018 (his skin on our head 0.012; chance +-0.002), forehead 0.0286 on its valid view (block C, the Ten24 tile, now shipped; the "0.042" first written here was the eye view - VOID, see round 2); fold band 1.01 vs 1.35; a* 11.1 vs 13.0 | round 1 (8 trials): none kept; round 2a (fold relief) and 2c (the forehead on its valid view) |
 | 2 | Body skin: torso, hands, feet | doesn't match yet | torso 0.049 vs 0.023 (his skin on ours), hand 0.047 vs 0.016, foot 0.102 vs 0.002 | - |
 | 3 | Scalp hair | doesn't match yet | - | - |
 | 4 | Eyes: eyeball, iris, sclera, lids | doesn't match yet | eyeball 14.8 mm vs 13.2 | - |
@@ -121,7 +160,7 @@ cheek - the man +0.0179, the New human +0.0525 (chance +-0.0023); forehead (eye 
 ### Round 1 (face skin: shine and two texture levers) - measured 2026-11-08 ~11:55 (`scratchpad/shine_table.txt`,
 `dists_shine.txt`; our man, EEVEE; sheen = specular / all light; DISTS excess, pass = within chance +-0.002-0.004)
 
-| Trial | Sheen face forehead | Sheen face cheeks | Sheen cheek view | Spread | L* | a* | pore | fold | DISTS cheek | DISTS forehead | Kept? |
+| Trial | Sheen face forehead | Sheen face cheeks | Sheen cheek view | Spread | L* | a* | pore | fold | DISTS cheek | DISTS "forehead" (the eye view's top patches - VOID, see round 2) | Kept? |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | HD Aaron | 0.578 | 0.376 | 0.583 | 0.67 | 73.3 | 13.0 | 1.73 | 1.35 | - | - | - |
 | ours as built (`micro*1`) | 0.414 | 0.347 | 0.612 | 0.69 | 75.5 | 11.1 | 1.69 | 1.01 | 0.0179 | 0.0423 | - |
@@ -169,8 +208,33 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   81,213 border pixels (max 8 levels), and the two variants differ from it in R alone (the forehead's pores; ratio
   down to 0.603 / 0.750 at the region's core). Each forehead variant is judged against `regions*base`, not against
   `micro*1`. 14:2x: both peers gave the card; round 2a running (`batch_r2a.log`).
+- **14:36 renders done (30); 14:4x found, looking at the sheets (`scratchpad/sheet_r2a_{forehead,cheek}.png`): the
+  forehead numbers of rounds 1 and 2a are VOID.** Round 1's "DISTS forehead" column was the eye view's top patches,
+  declared void on 11-07 late (the gate report: his forehead above the brow against our skin under ours) - so "pores
+  x0.6 helped the forehead" and round 2b's forehead variants rested on a void measure. Round 2a rendered the forehead
+  view with the fringe over its top half, where `dists.py`'s forehead patches assume the scalp hidden (`nohair`). Valid
+  for the forehead: block C's forehead view with `nohair` (0.0359 -> 0.0286 with the Ten24 tile). Round 2a's cheek and
+  nose numbers stand. So round 2c (`batch_r2c.sh`): the forehead view only, `nohair` on every trial - as built, the
+  map's base, the two pore depths, and his skin on our head (the floor this view never had). By eye, round 2a's cheek:
+  relief x1.5 / x2 look like as built; his reads finer, crisper and redder.
+- **Round 2a's valid numbers (14:42, `scratchpad/dists_r2a.txt`):** cheek as built 0.0179, relief x1.5 0.0174, x2
+  0.0167 (chance +-0.002); nose 0.0735 / 0.0727 / 0.0710 (chance +-0.003). Within or near chance and unchanged by eye -
+  **not kept**. The region-map variants change neither (as they shouldn't). Round 2c (the forehead) is set aside: under
+  the new plan the order comes from step 1's fault list.
+- **14:50: step 1 of THE PLAN, IN MY WORDS** - every view (22) rendered fresh, ours then his, in one batch
+  (`scratchpad/batch_all.sh`, out `.dev/gate/parts/2026-11-08all`), sheets by `scratchpad/sheet_all.py`; then the
+  fault list, worst first.
 
 ## Mistakes to avoid
 
+- RAM and the processor are booked like the card (the global rule, 2026-11-08 after the lock-up; just voice read
+  Windows' log: at 10:34 a low-virtual-memory warning on the 32 GB PC - its audiocpp_cli 22.8 GB, audiocpp_server
+  16.5 GB and our blender.exe 9.0 GB - services timing out from 11:00 until the hang at 13:53). Before a Blender build,
+  render or CPU scoring: tell the peers what, the GB and the minutes, wait; one heavy job at a time; a watcher
+  (`scratchpad/ram_watch.ps1`) logs free RAM and alerts below 4 GB. Our render: ~5 GB RAM, 9.3 GB committed (measured
+  14:3x).
+- Before any trial, check its measure is valid for the area: which view and patches it reads, what covers them
+  (hair, brows), and the gate report's corrections (2026-11-08: two rounds' forehead numbers came from the eye view the
+  report had voided on 11-07, and from the forehead view with the fringe on).
 - A transplant is not a verdict. A side fix (speed, tooling, layout) is not the job unless the proof step needs it.
 - Read the code before saying what a test used (I said the gate had its own lights - it uses the app's stage).

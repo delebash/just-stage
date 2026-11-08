@@ -37,6 +37,18 @@ yet" or "can't, X missing". Order: face skin (shine, colour, waxiness, texture) 
 brows, lashes, stubble -> teeth and mouth -> expressions -> nails and ears -> whole body and four characters.
 Working doc: `../plans/2026-11-08-own-content-proof.md`.
 
+**The user, 2026-11-08 ~14:45, verbatim (the plan restated in my own words, my own bar - it governs the job; text in
+`../plans/2026-11-08-own-content-proof.md` "THE PLAN, IN MY WORDS"):** "The real gap is in your plan's text.  It is
+simple you can change the plan text to whaever you want i dont care, here is the simple truth of what i am trying to
+achieve.  I want cc5 quality in a 3d chracter creator clone, that means the model and all textures eyes skin nose teeth
+tongue look as reaslitic as cc5 does using eevee in blender, we have rewritne the plan rethought it , re orgnaized it
+and you still mess up every time, the only thing you need to to do is prove that we can match that quality with our
+model and textures that we can use for free and you either tweaking coding or textures or making your own assets are
+combination assets, so you can rewrite a simple plan in your own words to achieve this with your own quality bar which
+will be it has to loo as real as cc5, i dont know wha t those numbers will be but you are smart and can guess, that is
+your job after all , make you own damn decsions, always think adverserilly on each decision each plan until you dont
+change your mind, just answer this can before you start test, do you understna what you are doing"
+
 How it is kept: the plan's §18a checklist (every part and the whole body) drives every step; each decision is attacked
 in passes and written with its reasons in the plan's §19.3 - it changes only on a new measured fact, shown with the old
 and new side by side; after a compaction RESUME, §18a, §19.3 and the gate report are read before any action; a
