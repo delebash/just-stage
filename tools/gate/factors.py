@@ -375,6 +375,20 @@ def hairthrough(built: dict, share: float) -> None:
     print("HAIR LIGHT THROUGH", share, "on", n, "nodes", flush=True)
 
 
+def hairdensity(built: dict, per_m2: float) -> None:
+    """The scalp fill's density (`scalp.DENSITY`, 1.3M strands a m2 - 130 a cm2 - against the real ~223, Barman 1965;
+    the plan's §14 "Density: TO SET") set on the fill group's Interpolate Hair Curves - our hair's mean L* stays above
+    HD Aaron's whatever the shading (the scalp showing through, the guess)."""
+    group = bpy.data.node_groups.get("JustStage scalp fill")
+    node = next(n for n in group.nodes if n.type == "GROUP" and n.node_tree and n.node_tree.name.startswith("Interpolate"))
+    node.inputs["Density"].default_value = per_m2
+    for obj in bpy.data.objects:
+        if obj.type == "CURVES":
+            obj.data.update_tag()
+    bpy.context.view_layer.update()
+    print("HAIR DENSITY", per_m2, flush=True)
+
+
 def hairmelanin(built: dict, melanin: float) -> None:
     """Every scalp groom's own colour set to `melanin` (its `melanin` curve attribute; the strands take their guides')
     - darker roots for HD Aaron's L* 20 at the back (ours 25)."""
@@ -506,6 +520,8 @@ def factor(name: str):
             for step in steps:
                 step(built)
         return chained
+    if name.startswith("hairdensity"):  # hairdensity*2200000 (strands a m2)
+        return lambda built: hairdensity(built, float(name.split("*")[1]))
     if name.startswith("hairmelanin"):  # hairmelanin*1.0
         return lambda built: hairmelanin(built, float(name.split("*")[1]))
     if name.startswith("lashcap"):  # lashcap*1.6 (mm)
