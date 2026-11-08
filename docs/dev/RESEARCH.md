@@ -2067,6 +2067,14 @@ every one logged; key claims page-read):
   mesh-tension method (WACV 2023) blends scanned expanded / compressed maps but makes none, Reallusion's sets are its
   scanned content. Q-RIG-4 stays research-first; its unexplored route is a buckling (thin-shell) simulation of our own
   expressions baked to maps - a deep pass of its own.
+  Two more pilots the same day ("generate facial wrinkle normal maps from expression blendshapes simulation skin
+  buckling", "procedural wrinkle maps from mesh compression Blender geometry nodes face expressions") [snippets, not yet
+  read at the source]: the domain's routes - Oat 2007's stretch / compress map pair per region from sculpts; simulation
+  (Li & Kry's multi-layer skin, McGill; Bickel et al. 2007's thin-shell buckling); Blender Studio's procedural
+  wrinkles for *Charge* (`studio.blender.org/blog/procedural-wrinkles/`): Geometry Nodes computes compression and stretch
+  from the deformed face against its rest, the shader turns them into a wrinkle bump - no scanned maps. A candidate for
+  our content once read at its source and checked against the two patents read (Disney's orientation bins, granted to
+  2044; Microsoft's tension-weighted map blends, US 12,062,140 claim 17 - plan §3 rule 8).
 - **Poly Hammer's Character DNA add-on, weighed first (the plan's §7 "Rig runtime"; read 2026-11-08 at its source -
   `github.com/poly-hammer/character-dna-addon`, GPL-3.0, pushed 2026-11-08, 313 stars; README and
   `src/addons/character_dna/bindings/__init__.py` read; queries "Poly Hammer MetaHuman DNA addon Blender RigLogic
