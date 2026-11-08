@@ -769,6 +769,41 @@ def rigsmooth(built: dict, iterations: int) -> None:
         print("RIG SMOOTH 0: the plain rig", flush=True)
 
 
+def eyescale(built: dict, k: float) -> None:
+    """Build queue item 5 (row 5: our eyeball 14.5-14.8 mm in radius on three characters, HD Aaron's 13.2 - his at his
+    own size in our sockets read as his eye): both eye parts scaled by `k` about their own centres, then refit's eye
+    steps again - the clearance, the lids' contact (the rims back onto the smaller eyeball), the eye films, and the
+    blink's closing step. A shape: --alone."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    eye_layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+    base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
+    blink_contact = importlib.import_module("bl_ext.system.juststage.modules.head.blink_contact")
+    body = built["body"]
+    eyes = parts.parts_of(body)
+    before = {}
+    for name in ("eyeLeft", "eyeRight"):
+        obj = eyes[name]
+        centre, radius = eye_layers._eye_sphere(obj)
+        before[name] = radius
+        inv = np.linalg.inv(np.array(obj.matrix_world))
+        c = np.asarray(centre) @ inv[:3, :3].T + inv[:3, 3]
+        co = np.empty(len(obj.data.vertices) * 3)
+        obj.data.vertices.foreach_get("co", co)
+        co = c + (co.reshape(-1, 3) - c) * k
+        obj.data.vertices.foreach_set("co", co.ravel())
+        obj.data.update()
+    keys = body.data.shape_keys
+    if keys and base.CONTACT in keys.key_blocks:
+        keys.key_blocks[base.CONTACT].value = 0.0
+    parts.eye_clearance(body)
+    parts.eyelid_contact(body)
+    eye_layers.refit(body)
+    blink_contact.make(body)
+    bpy.context.view_layer.update()
+    after = {n: eye_layers._eye_sphere(eyes[n])[1] for n in before}
+    print("EYE SCALE", k, {n: (round(before[n] * 1000, 2), round(after[n] * 1000, 2)) for n in before}, "mm", flush=True)
+
+
 def browlift(built: dict, mm: float) -> None:
     """Checklist row 12's fix, tried: our brows grown again (`brows.make`) with their band lifted `mm` before the hairs
     are rooted on the skin - our roots sit 0-12.5 mm above the eye's centre (median 8.5), on the lid the blink moves
@@ -1812,6 +1847,8 @@ def factor(name: str):
         return lambda built: ictsmile(built, name.split("*")[1])
     if name.startswith("aaronwrinkles*"):  # aaronwrinkles*smile (after aaronskin: his wrinkle maps as his smile sets them)
         return lambda built: aaronwrinkles(built, name.split("*")[1])
+    if name.startswith("eyescale*"):  # eyescale*0.89 (both eyeballs scaled about their centres, the lids refitted)
+        return lambda built: eyescale(built, float(name.split("*")[1]))
     if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)
         return lambda built: rigsmooth(built, int(name.split("*")[1]))
     if name.startswith("browlift*"):  # browlift*9 (the brows grown again, their band lifted 9 mm)
