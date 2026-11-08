@@ -1831,6 +1831,31 @@ def naildisp(built: dict, dome_mm: float, groove_mm: float, lip_mm: float) -> No
           f"{height.max():.2f} mm; modifiers {[m.name for m in body.modifiers]}", flush=True)
 
 
+def nailshine(built: dict, coat: float, specular: float, roughness: float) -> None:
+    """Item 7, one factor: our nail plate reads milky white where HD Aaron's is barely lighter than his skin, and its
+    colour along the nail (`nailmat`) changed little - so its shine: the plate's coat (0.5 built), specular level (0.6)
+    and roughness (0.18; `maps.NAIL_COAT`, `NAIL_SPECULAR`, `NAIL_ROUGHNESS`) set on the shader's nail mixes."""
+    maps = _maps()
+    done = 0
+    for nt in _skin_trees(built):
+        for key, value in (("coat", coat), ("spec", specular), ("rough", roughness)):
+            node = nt.nodes.get(maps.NODE + f"nail_{key}")
+            if node is None:
+                continue
+            socket = next(i for i in node.inputs if i.identifier == "B_Float")
+            socket.default_value = value
+            done += 1
+    print("NAIL SHINE", coat, specular, roughness, done, "mixes", flush=True)
+
+
+def bodynoshadow(built: dict) -> None:
+    """Item 5's inner mouth, one factor: our tongue is in view (`tongueglow`) yet black-red whatever its material
+    (`tonguess`, `tonguegrad` - no change) - is it the body's own mouth (hm08's inner mouth skin) shadowing it? The
+    body casts no shadow (a diagnostic only: the whole body)."""
+    built["body"].visible_shadow = False
+    print("BODY NO SHADOW", built["body"].name, flush=True)
+
+
 def _tongue(built: dict):
     parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
     pm = importlib.import_module("bl_ext.system.juststage.modules.head.part_materials")
@@ -2105,6 +2130,11 @@ def factor(name: str):
     if name.startswith("naildisp*"):  # naildisp*0.6*0.4*0.3 (mm: dome, groove, lip - on the plate's own outline)
         _k, dome, groove, lip = name.split("*")
         return lambda built: naildisp(built, float(dome), float(groove), float(lip))
+    if name == "bodynoshadow":  # the body casts no shadow (does its mouth shadow the tongue?)
+        return bodynoshadow
+    if name.startswith("nailshine*"):  # nailshine*0.1*0.4*0.4 (the nail plate's coat, specular level, roughness)
+        _k, coat, spec, rough = name.split("*")
+        return lambda built: nailshine(built, float(coat), float(spec), float(rough))
     if name.startswith("tonguess*"):  # tonguess*0 (our tongue's subsurface weight)
         return lambda built: tonguess(built, float(name.split("*")[1]))
     if name.startswith("tonguegrad*"):  # tonguegrad*1.318*0.195 (his shader's Front AO / Rear AO along our tongue)
