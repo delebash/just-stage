@@ -2053,6 +2053,13 @@ every one logged; key claims page-read):
 
 ### 14.7 · Face rig, expressions, body rig, capture
 
+- **Wrinkle content, re-checked 2026-11-08 (the face rig's next step; queries "best way to generate facial
+  expression wrinkle maps for a digital human 2026", "open dataset expression wrinkle normal maps face scans
+  license"):** nothing new since `../plans/2026-11-05-research-face-animation.md` §3 - FaceScape's 20-expression
+  displacement maps "free for non-commercial research" [snippet], ICT-3DRFE behind a signed EULA [snippet], Microsoft's
+  mesh-tension method (WACV 2023) blends scanned expanded / compressed maps but makes none, Reallusion's sets are its
+  scanned content. Q-RIG-4 stays research-first; its unexplored route is a buckling (thin-shell) simulation of our own
+  expressions baked to maps - a deep pass of its own.
 - **Poly Hammer's Character DNA add-on, weighed first (the plan's §7 "Rig runtime"; read 2026-11-08 at its source -
   `github.com/poly-hammer/character-dna-addon`, GPL-3.0, pushed 2026-11-08, 313 stars; README and
   `src/addons/character_dna/bindings/__init__.py` read; queries "Poly Hammer MetaHuman DNA addon Blender RigLogic
