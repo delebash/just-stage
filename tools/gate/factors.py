@@ -1602,6 +1602,71 @@ def _nail_along(built: dict) -> int:
     return len(pieces)
 
 
+def aaronnailgeo(built: dict, stem: str = "aaron_nails") -> None:
+    """Checklist row 16's deciding test, the geometry (a LOCAL TEST): his own five nail pieces - plate, cuticle fold
+    and the skin round them, as his mesh has them - set on our right hand's nails (`groom_transfer.py nailfit`'s aligned
+    `placed`, not its wrap) with his UVs and his nail material; our nail faces made transparent under them. His
+    material on our flat plates read as crumpled skin (11-08 night); does his nail's shape on our finger read as his?"""
+    data = np.load(HAIR_TRIALS / f"{stem}.npz")
+    co, tris, tuv, layer_name = data["placed"].astype(np.float64), data["tris"], data["tuv"], str(data["uv_name"])
+    me = bpy.data.meshes.new("Aaron nails (geometry)")
+    me.from_pydata([tuple(v) for v in co], [], [tuple(int(i) for i in f) for f in tris])
+    me.update()
+    uv = me.uv_layers.new(name=layer_name)
+    uv.data.foreach_set("uv", tuv.reshape(-1, 2).astype(np.float32).ravel())
+    obj = bpy.data.objects.new("Aaron nails (geometry)", me)
+    bpy.context.scene.collection.objects.link(obj)
+    me.shade_smooth()
+    with bpy.data.libraries.load(str(pg.CC5_BLEND["eevee"]), link=False) as (_src, dst):
+        dst.materials = [str(data["material"])]
+    mat = dst.materials[0]
+    lib_dir = pg.CC5_BLEND["eevee"].parent
+    for img in bpy.data.images:
+        if img.filepath.startswith("//") and not Path(bpy.path.abspath(img.filepath)).exists():
+            img.filepath = str(lib_dir / img.filepath[2:])
+
+    def point_at_layer(nt, seen):
+        if nt in seen:
+            return
+        seen.add(nt)
+        for node in list(nt.nodes):
+            if node.type == "UVMAP":
+                node.uv_map = layer_name
+            elif node.type == "TEX_IMAGE" and not node.inputs["Vector"].is_linked:
+                uvn = nt.nodes.new("ShaderNodeUVMap")
+                uvn.uv_map = layer_name
+                nt.links.new(uvn.outputs["UV"], node.inputs["Vector"])
+            elif node.type == "GROUP" and node.node_tree:
+                point_at_layer(node.node_tree, seen)
+
+    point_at_layer(mat.node_tree, set())
+    me.materials.append(mat)
+    # our nail faces (tile 1005) see-through under his
+    body = built["body"]
+    hidden = bpy.data.materials.new("nail hidden (trial)")
+    hidden.use_nodes = True
+    nt = hidden.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    nt.links.new(nt.nodes.new("ShaderNodeBsdfTransparent").outputs[0], out.inputs["Surface"])
+    body.data.materials.append(hidden)
+    slot = len(body.data.materials) - 1
+    maps = _maps()
+    udim = np.empty(len(body.data.loops) * 2, np.float32)
+    body.data.uv_layers[maps.UV].data.foreach_get("uv", udim)
+    udim = udim.reshape(-1, 2)
+    idx = np.empty(len(body.data.polygons), np.int64)
+    body.data.polygons.foreach_get("material_index", idx)
+    n = 0
+    for poly in body.data.polygons:
+        if 4.0 <= udim[list(poly.loop_indices), 0].mean() < 5.0:
+            idx[poly.index] = slot
+            n += 1
+    body.data.polygons.foreach_set("material_index", idx)
+    body.data.update()
+    print("AARON NAIL GEOMETRY:", len(tris), "of his triangles on our hand;", n, "of our nail faces see-through", flush=True)
+
+
 def nailmat(built: dict) -> None:
     """Checklist row 16 (the nails' transplants were void - his nail piece holds the fingertip's skin): our nails' own
     colour laid along each nail (`_nail_along`) - a paler lunula at the base, his plate's colour, a subtle free edge -
@@ -1673,6 +1738,8 @@ def factor(name: str):
     if name.startswith("setkey*"):  # setkey*mouthClose*0.1 (a body shape key held at a value)
         _k, key, value = name.split("*")
         return lambda built: setkey(built, key, float(value))
+    if name == "aaronnailgeo":  # his nail pieces (plate, fold, skin round them) on our right hand's nails
+        return aaronnailgeo
     if name == "nailmat":  # our nails coloured along their length (lunula, his plate colour, a subtle free edge)
         return nailmat
     if name == "aaronteeth":  # his teeth, gums and tongue in our mouth, riding our jaw
