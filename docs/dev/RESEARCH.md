@@ -2563,6 +2563,8 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   (x0.75: 0.058 / 0.092); specular x1.6 hurts; coat x3 helps the forehead only (0.062). His MicroNMask is 1 over the
   whole face but brows, lash lines, nostrils, the nose tip (~0.6) and lips (~0.5) - ours scales the microrelief x5 on
   the forehead, x3 nose, x1.6 chin (`make_face_regions.py`, set on voided inputs); the forehead at 1/5 of it: 0.059.
+  The nose (its own close view, 2026-11-07): 0.171 as built (pores x2, micro x3 - deep pits against his smooth
+  nose); micro x0.33 0.132; with pores x0.5 0.078, x0.3 0.053 (kept: pores 0.6, micro 1); his coat set no change.
 
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
@@ -3106,7 +3108,13 @@ before the rec list; measured in Blender 5.3 and read in our code):
   60,000 sample) lie over 20 cm from the head - stray strands: 2,018 of 102,137 curves, 3-5 cm long, rooted ~31-34 cm
   below the hair's centre and ~9 cm behind it (the lower neck / upper back), their surface UVs (0.62-0.63, 0.67-0.68)
   inside the scalp region's own UV range - the style's region (MakeHuman's `short_hedgehog` roots) or the mask's
-  gap-closing reaches there; the fix: roots below the nape hairline cut in 3D (in the hair proof).
+  gap-closing reaches there; fixed (2026-11-07): the mask chosen in faces above the neck joint (`scalp._scalp_faces`;
+  test_scalp: none rooted below the head). The groom's bare seams (a Y above the ear to the crown and nape, and
+  across the back): Blender's Interpolate Hair Curves parts the fill "by mesh islands" by default - turned off in
+  `scalp._fill_group` (render check queued). "short taper" (2026-11-07, on trial): its stand-off within ~2 mm of
+  his in every region; coverage IoU against his 0.82 (short combed 0.80-0.83). His dark-root / light-tip contrast
+  (L* 20 / p95 60 at the back against ours 25 / 43): the live model's shares only trade the two; lighter tips
+  (`factors hairtip`) lift the highlights (p95 48-55) and the mean (29-35) together - darker body plus tips queued.
 
 ### 14.15 · The live view against the film
 
