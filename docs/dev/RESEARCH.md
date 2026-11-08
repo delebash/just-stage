@@ -3290,6 +3290,29 @@ before the rec list; measured in Blender 5.3 and read in our code):
     p95 62 / 65) were read through "taper5"'s cover mask, copied onto renders of another style, so skin and
     background are in the numbers. Re-measure with the style's own cover before using them.
 
+- **A shippable route to authored cuts: hair-card collections turned into our strands** (*2026-11-07 late*; the
+  converter `groom_transfer.py cards` proved on HD Aaron's own cards). The 2026-10-30 library table searched strand
+  grooms only; card meshes were never searched.
+  - Queries (WebSearch, standard): "free realistic short men's haircut hair cards 3d model download" -> RenderHub
+    and Superhive (Blender Market) listings, mostly paid - one seller (khaloui) at $18.99 each, "royalty free";
+    "free male hair cards game ready short hair CC-BY" -> a free CGTrader model "male hairstyle short01 low poly"
+    ("Royalty Free License (no AI)" per the snippet, unread) and FlippedNormals' free sample "Hair - Short Male
+    Hairstyle" (licence unread); "best free realistic hair grooms for Blender 2026 men short hairstyle" -> Superhive
+    paid grooms. Sketchfab's public API, `downloadable=true` (no licence filter), q = "short hair cards", "male hair
+    cards", "men haircut", "short male hair": 37 models.
+  - **Pick: VincentFreelance's collections on Sketchfab**, each "CC Attribution" CC BY 4.0 on its own API record
+    (read 2026-11-07): "FREE 21 Realtime man Hairstyles collection" (uid 6a876007..., 915,434 faces, 2,314 likes),
+    "FREE Male Fashion Hair collection 01" (2735370f...) and "02" (bd74c3f6...), "Male Fashion Hair collection 08"
+    (a60076cc...), "Realtime male Fashion Hair collection 07" (bf63cecf...), "12 Real-time woman Hairstyles
+    collection 09" (a2464050...). The records say "Files of sketchfab is free,but Textures not included" - we need
+    only the cards' shape and texture direction. ~21 styles each, ~100 cuts. Why: authored cuts, the licence ships
+    with a credit, one converter for all. Needs the user: Sketchfab downloads go through the user's account (as
+    Thunk3D's foot).
+  - Not tonight, and why: DiffLocks (single image -> strands) needs an account at difflocks.is.tue.mpg.de for its
+    checkpoints (`download_checkpoints.sh`) and Linux GPU libraries (NATTEN, FlashAttention-2) - WSL isn't installed
+    here. Perm (MIT) samples within USC-HairSalon's styles (no short men's taper) and its photo-fitting pipeline is
+    held by Adobe (README: "reach out ... for an individual release license").
+
 ### 14.15 · The live view against the film
 
 - **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over
