@@ -845,6 +845,16 @@ def lidledge(built: dict, k: float, gap_mm: float) -> None:
           round(max(turned, default=0.0) * 1000, 2), "mm", flush=True)
 
 
+def browup(built: dict, value: float) -> None:
+    """The brow raised by MakeHuman's own slider (`eyebrows/eyebrows-trans-down-up`, positive up): our brow sits low,
+    almost on the upper lid, where HD Aaron has ~15 mm of lid and a crease (the eye view, 2026-11-08) - the lid space
+    the eye's look needs, made by a slider we ship. A shape: --alone."""
+    sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
+    sliders.apply(built["body"], sliders.catalog()["eyebrows/eyebrows-trans-down-up"], value)
+    bpy.context.view_layer.update()
+    print("BROW UP", value, flush=True)
+
+
 def eye_slider(built: dict, key: str, value: float) -> None:
     sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
     catalog = sliders.catalog()
@@ -1399,6 +1409,8 @@ def factor(name: str):
         return lambda built: aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
         return lambda built: guidefile(built, name.split("*", 1)[1])
+    if name.startswith("browup"):  # browup*1 (the brow slider, up)
+        return lambda built: browup(built, float(name.split("*")[1]))
     if name == "blinkfix":  # the blink closed onto the lower lid (row 10)
         return blinkfix
     if name.startswith("lidcrease"):  # lidcrease*3*1.5 (the ring above the lash line, mm inward)
