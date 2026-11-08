@@ -1754,6 +1754,25 @@ def _nail_along(built: dict) -> int:
     return len(pieces)
 
 
+def tongueglow(built: dict) -> None:
+    """A diagnostic for item 5's inner mouth (ours reads dark with no tongue where his pink tongue shows; ours sits like
+    his - RESEARCH 14.5): our tongue drawn flat green, unlit - is it in view at all (then the gap is its lighting and
+    shading), or hidden (then its place or the lips)?"""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    pm = importlib.import_module("bl_ext.system.juststage.modules.head.part_materials")
+    teeth = parts.parts_of(built["body"])["teeth"]
+    slot = [r for r, _ in pm.PART_REGIONS["teeth"]].index("tongue")
+    mat = teeth.material_slots[slot].material.copy()
+    nt = mat.node_tree
+    out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+    glow = nt.nodes.new("ShaderNodeEmission")
+    glow.inputs["Color"].default_value = (0.0, 1.0, 0.0, 1.0)
+    glow.inputs["Strength"].default_value = 1.0
+    nt.links.new(glow.outputs["Emission"], out.inputs["Surface"])
+    teeth.material_slots[slot].material = mat
+    print("TONGUE GLOW", teeth.name, mat.name, flush=True)
+
+
 NAIL_FREE = 0.85  # along: past this a nail's border is its free edge (no groove, no fold over it)
 
 
@@ -1955,6 +1974,8 @@ def factor(name: str):
         return lambda built: eyescale(built, float(k), *pivot)
     if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)
         return lambda built: rigsmooth(built, int(name.split("*")[1]))
+    if name == "tongueglow":  # our tongue flat green: in view or hidden (item 5's inner mouth)
+        return tongueglow
     if name.startswith("nailshape*"):  # nailshape*0.5*0.5*0.25 (mm: the plate's dome, the border's groove, the fold's lip)
         _k, dome, groove, lip = name.split("*")
         return lambda built: nailshape(built, float(dome), float(groove), float(lip))
