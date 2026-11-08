@@ -238,6 +238,24 @@ a region - raising ours helps the forehead and hurts the cheek (ours then varies
 0.198 patch to patch). Next: the t1 batch (coat, scatter x2 / x3, roughness with deeper pores, the forehead's micro at
 his level with roughness, the scans' relief x1.3), scored on the 24-patch grid.
 
+## Night: the rest of the loop (EEVEE against Aaron; RESEARCH §14.9-14.14 hold the details)
+
+| Part | Start of the evening | Now | What moved it |
+|---|---|---|---|
+| Cheek (excess) | 0.047 | 0.018 | the layered microrelief (shipped) |
+| Forehead | 0.107 | 0.021 | the tile + his mask's micro level + roughness 0.50 (shipped) |
+| Nose (new view) | 0.171 | 0.053 | micro x1, pores 0.6 (shipped) |
+| Back of the hand | 0.085 | 0.047 | the hands' rebuild + the arms' micro x2 (shipped) |
+| Torso | 0.052 | 0.049 | the scan's red dots unreddened (shipped) |
+| Foot | 0.107 | 0.10 | nothing in our control: no scan relief - Thunk3D's foot (the user's download) |
+| Hair back L* (his 20.4) | 27 | 23 | real density 2.2M a m2 and clump 0.1 (shipped; clumping had parted the strands into bare lines) |
+| Hair highlights p95 (his 60) | 43 | 37 | open: his light-tipped strands - the shading's shares, tips, melanin only trade mean for highlights |
+| Eye | DISTS 0.267 | 0.261 (trials) | open: the lower lid's thick roll is its skin's shape - no film, shine, slider, margin width or carry setting removes it |
+
+Not the lever, measured: HD Aaron's own body shine values (coat 0.10 at 0.35, specular 0.40, base 0.72) on our skin;
+his coat values on the face; lower body roughness (it matched his look against his values - rejected).
+
 ## Next
 
-The face per the loop above; then the hands, the feet, the hair against Aaron's hair, the eyes - all EEVEE.
+The hair's highlights and style (the nape too long, the front taller than his); the lower lid's shape; the smile
+(the expression sets' scoring, plan §19.2 item 9); the foot when its donor is downloaded.
