@@ -88,7 +88,21 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   style and the gate's (the library rebuilt, backup `.dev/backup/library_2026-11-07g`). The gate report's night table
   (`docs/gate/2026-11-07/report.md`) holds every part's number. Open: the hair's highlights and style, the lower lid's
   shape, the smile (§19.2 item 9), the foot (its download).
-- Running since JustVoice's "card free" (2026-11-07 late; web-4c told; send "card free" to both when it ends):
+- **Late 2026-11-07 (the user's "go, start as soon as the card frees": decide each part's feasibility within about a
+  day).** Found, all in EEVEE against HD Aaron (RESEARCH §14.7, §14.9, §14.12, §14.14):
+  - Smile: ICT-FaceKit's scanned smile carried onto our man (`smile_transfer.py`, `factors ictsmile`) moves the
+    corners 0.91 of his, and the cheeks lift. His smile line and cheek mass are shape (his wrinkle maps off: only the
+    crow's feet go). Depth trials queued.
+  - Face skin: the remaining excess (cheek 0.018, forehead 0.021) sits at VGG stages 3-5, ~0.5-2 mm: pores' size
+    and pattern (`dists.py --by-layer`). Pore size and depth trials queued (`.dev/gate/parts/2026-11-07k`).
+  - Eyes: the lower lid's roll is its margin's tilt (a wall, the upper a ledge). `lidsmooth` failed; `factors
+    lidledge` queued.
+  - Hair: the procedural comb's outline is the gap (a helmet). HD Aaron's own cut as our strands
+    (`groom_transfer.py cards`, `factors guidefile*aaron_cards`) is queued, to judge our render on his cut.
+  - Suites: unit 45 and tools 30 passed; the Blender suite printed no summary, so it is rerun with its log kept
+    (`.dev/suite_2026-11-07k.log`).
+- Running (`scratchpad/batch_face.sh`, log `scratchpad/batch_face.log`; web-4c told; send "card free" to it when done):
+  the trials above. Before it, `scratchpad/batch_next.sh` (done, log `batch_next.log`):
   `scratchpad/batch_next.sh`, log `scratchpad/batch_next.log`: the library's hair (the nape at the head joint, quiff
   0.8), `factors lidsmooth` on the lower lid, the full smile (`face_smile_full`: mouthSmile + cheekSquint), the hair
   with the library's style, the smile's feasibility (ICT-FaceKit's scanned smile carried onto the gate's man by
