@@ -2653,6 +2653,15 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
     the pattern is the lever: Ten24's cheek tile (dense round pits, skew -0.31) suits a cheek, not a forehead. The
     shippable trial is Ten24's own forehead (8k crop 6110, 6220, 170; skew 0.04; `.dev/gate/pores/ten24_forehead`)
     as a region's tile - queued.
+  - **What differs, split by brightness and colour** (*measured on the renders*, the gate's patches, band-passed
+    L*, a*, b*; build k): the cheek's brightness detail matches his at every scale (0.5-2 mm 0.80 against 0.84; 2-5 mm
+    equal); its redness varies 18% less than his at 0.5-2 mm (0.75 / 0.91) and 29% less at 2-5 mm (0.37 / 0.52) - his
+    blotches and fine veins - and its mean is less red (a* 12.0 / 13.6). So the cheek's gap is colour, which is why
+    no pore trial moved it. The forehead the other way: 21-28% too much fine brightness detail (pores, microrelief),
+    27% too little at 2-5 mm (his forehead lines), and 8 L* brighter. Trial queued: `factors redmottle*k` (redness
+    band-passed 0.5-5 mm, scaled; checked on the map: x1.3 -> the band x1.23, brightness unchanged).
+    (A first try in texture space picked the wrong skin - the nearest-triangle pick landed on lid and fold lines - so
+    it was dropped for the renders' own patches.)
 
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 

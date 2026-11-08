@@ -146,6 +146,21 @@ def colourflat(built: dict) -> None:
     _rewrite_colour(built, flat)
 
 
+def redmottle(built: dict, k: float) -> None:
+    """The colour's red variation at 0.5-5 mm scaled by `k` on the head tile: redness (red less the mean of green and
+    blue) band-passed between 0.5 and 5 mm, (k - 1) of it added to the red channel. Measured on the gate's cheek
+    patches (2026-11-07 late): ours matches his brightness detail at every scale but varies in red 18% less at
+    0.5-2 mm and 29% less at 2-5 mm (his blotches and fine veins) - where the cheek's excess sits."""
+    def change(rgb, mm_per_px):
+        red = rgb[..., 0] - 0.5 * (rgb[..., 1] + rgb[..., 2])
+        band = _fft_blur(red, 0.5 / mm_per_px / 2.0) - _fft_blur(red, 5.0 / mm_per_px / 2.0)
+        out = rgb.copy()
+        out[..., 0] = np.clip(rgb[..., 0] + (k - 1.0) * band, 0.0, 1.0)
+        return out
+
+    _rewrite_colour(built, change)
+
+
 def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
     """A body part's donor relief (`tools/body_scan.py texture`: `body_1003_hands_*`) over the skin's own on the arm
     tile, by its weight, in the shader - nothing rebuilt before the part is measured. `strength` scales its tilt;
@@ -804,6 +819,8 @@ def factor(name: str):
     if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)
         key, value = name.split("*")
         return lambda built: eye_slider(built, key, float(value))
+    if name.startswith("redmottle"):  # redmottle*1.3 (the red variation at 0.5-5 mm scaled)
+        return lambda built: redmottle(built, float(name.split("*")[1]))
     if name.startswith("poretile"):  # poretile*aaron_cheek (the candidate tile's stem)
         return lambda built: poretile(built, name.split("*", 1)[1])
     if name.startswith("microtile"):  # microtile*v2b, microtile*v2b+micro*1.5 (then the depth scaled)
