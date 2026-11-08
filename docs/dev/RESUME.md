@@ -111,8 +111,12 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   body, rendered our way (local tests only). Matches him -> our body and renderer carry CC5 there, the rest is content
   (feasible); can't match even with his content -> that part fails, stop. Built: skin (`factors aaronskin`), hair (his
   cut as our strands - done, outline right; `fieldcut`: our own generator along his measured cut).
-- **web-4c (JustDirect) has the card** since our "card free" (2026-11-07 late): nothing of ours on it until it says
-  it's done. Then run `scratchpad/batch_decide.sh` (the transplant, the field cut, every part's current renders and
+- **Card order, 2026-11-07 late:** our block A (`scratchpad/batch_A.sh`: every transplant - ears, lips, mouth,
+  teeth, brows / lashes / stubble cards, torso, hand, nails - and the quiff) runs now; then "card free" to web-4c for its
+  clips (30-60 min); after its "card free", our block B (`scratchpad/batch_B.sh`: every part beside his, the other
+  characters, the trials, the suites last).
+- (Earlier:) **web-4c (JustDirect) had the card** after our first "card free": nothing of ours on it until it said
+  it was done. Then run `scratchpad/batch_decide.sh` (the transplant, the field cut, every part's current renders and
   sheets in `.dev/gate/parts/2026-11-07all`, then `batch_after.sh`): the Blender suite (tonight's lid and detector changes are unverified
   until it), the tools and unit suites, the cheek's last factors (relief, colour mottling, scatter, microrelief), the
   forehead with Ten24's forehead tile. If the base v2 tests pass, rebuild the library's characters (backup first) so
