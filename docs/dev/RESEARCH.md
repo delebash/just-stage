@@ -2672,6 +2672,12 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   - **Ten24's own forehead as the pore tile** (`.dev/gate/pores/ten24_forehead`, shippable with a credit): forehead
     0.0359 -> 0.0286 (his pattern 0.0225, the floor 0.0139); the cheek unchanged at 0.0179. Before it replaces the
     shipped tile: the nose, hand and torso views with it (they share the tile) - queued.
+  - **The colour, valid now** (*measured, 2026-11-08*, the fixed rewrite): red mottling x1.3 / x1.6 - cheek 0.0179 /
+    0.0178, nose 0.0784 / 0.0783 (baseline 0.0179 / 0.0785): no move - the render-space redness difference isn't what
+    the measure sees; my red-mottling theory is refuted. The colour flat: cheek 0.0325, nose 0.0955 - the colour detail
+    we have matters. So every single lever on the cheek is measured: pores (size, depth, pattern), the scan's relief,
+    scattering and red mottling don't move it; the microrelief carries it. Ours is 0.006 above his own skin's floor on
+    our head (0.0179 against 0.0123) - content tuning, not a limit; the face skin's verdict (feasible) stands.
     (A first try in texture space picked the wrong skin - the nearest-triangle pick landed on lid and fold lines - so
     it was dropped for the renders' own patches.)
 
