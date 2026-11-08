@@ -76,7 +76,8 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   stubble). The smile: CC5's Mouth_Corner_Pull carries his cheek raise and eye squint, our ARKit mouthSmile only the
   mouth - the expression sets' scoring (plan §19.2 item 9). The card: JustVoice (justvioce-0f) lets us use it
   whenever idle - send "card free" when done.
-- Latest (2026-11-07 night): the nose 0.171 -> 0.053 (pores 0.6, micro 1 - shipped; library rebuilt with it); torso
+- Latest (2026-11-07 night): the nose 0.171 -> 0.0785 shipped (pores 0.6, micro 1; the 0.053 first written was a
+  whole-skin trial, corrected late that night); torso
   0.049 with the spots unreddened; his body shine set is not the lever (relief is). Eyes: the lower roll survives the
   sliders and a 1.2-1.6 mm margin - the lid's own skin shape; next the plan's escalation (the head on a new topology)
   or a lid-shape fix - not started. Hair: strays and the island partings fixed (`Part by Mesh Islands` off; render
@@ -101,7 +102,9 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
     (`groom_transfer.py cards`, `factors guidefile*aaron_cards`) is queued, to judge our render on his cut.
   - Suites: unit 45 and tools 30 passed; the Blender suite printed no summary, so it is rerun with its log kept
     (`.dev/suite_2026-11-07k.log`).
-- Running (`scratchpad/batch_face.sh`, log `scratchpad/batch_face.log`; web-4c told; send "card free" to it when done):
+- **web-4c (JustDirect) waits for the card**: send it "card free" when `batch_face.sh` ends, then nothing of ours on
+  the card until it says it's done (~35-45 min of its models).
+- Running (`scratchpad/batch_face.sh`, log `scratchpad/batch_face.log`):
   the trials above. Before it, `scratchpad/batch_next.sh` (done, log `batch_next.log`):
   `scratchpad/batch_next.sh`, log `scratchpad/batch_next.log`: the library's hair (the nape at the head joint, quiff
   0.8), `factors lidsmooth` on the lower lid, the full smile (`face_smile_full`: mouthSmile + cheekSquint), the hair

@@ -2621,6 +2621,8 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   the forehead, x3 nose, x1.6 chin (`make_face_regions.py`, set on voided inputs); the forehead at 1/5 of it: 0.059.
   The nose (its own close view, 2026-11-07): 0.171 as built (pores x2, micro x3 - deep pits against his smooth
   nose); micro x0.33 0.132; with pores x0.5 0.078, x0.3 0.053 (kept: pores 0.6, micro 1); his coat set no change.
+  **Correction (2026-11-07 late):** those trials scaled the whole skin, not the nose alone. The shipped nose-only
+  change (pores 0.6, micro 1) measures 0.0785 (build k), not 0.053.
 - **Where the face's remaining gap sits** (*measured, 2026-11-07 late*, `dists.py --patches --by-layer`: the excess
   split across DISTS' six layers, which add up; renders `.dev/gate/parts/2026-11-07h`, the shipped state):
   - Cheek 0.0183 (chance +-0.0023): pixels -4%, VGG stage 1 3%, stage 2 9%, stage 3 27%, stage 4 50%, stage 5 16%.
