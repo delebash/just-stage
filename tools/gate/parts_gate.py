@@ -250,6 +250,8 @@ def _pose(who: str, built: dict, name: str | None) -> None:
     spec.loader.exec_module(body_rig)
     if "rig_start" not in built:
         arm = built["armature"] if who == "cc5" else body_rig.build(built["body"])
+        if arm.animation_data and arm.animation_data.action:  # his import's "Default" action: a render's frame update
+            arm.animation_data.action = None  # put his pose back over ours (2026-11-08: his posed views came out unposed)
         built["rig"] = arm
         built["rig_start"] = {pb.name: pb.matrix_basis.copy() for pb in arm.pose.bones}
     arm = built["rig"]
