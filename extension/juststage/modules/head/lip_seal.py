@@ -136,8 +136,32 @@ def seal(character: bpy.types.Object) -> float:
     sealed[index] += chosen * delta
     key.data.foreach_set("co", sealed.ravel())
     key.value = 1.0
+    drive(character)
     character.data.update()
     return chosen
+
+
+#: the seal is the neutral's: it fades as the jaw opens, gone by a quarter of jawOpen - held at 1 it pulled the lips
+#: ~5 mm together in every expression (mouthClose moves them up to 36 mm), so an open mouth hid the teeth (2026-11-08)
+FADE = "max(0.0, 1.0 - 4.0 * j)"
+
+
+def drive(character: bpy.types.Object) -> None:
+    """The SEAL key's value from the jaw (FADE), once the face units are there; held at 1 until then."""
+    keys = character.data.shape_keys
+    if keys is None or SEAL not in keys.key_blocks or "jawOpen" not in keys.key_blocks:
+        return
+    key = keys.key_blocks[SEAL]
+    key.driver_remove("value")
+    driver = key.driver_add("value").driver
+    driver.type = "SCRIPTED"
+    driver.expression = FADE
+    var = driver.variables.new()
+    var.name = "j"
+    var.type = "SINGLE_PROP"
+    var.targets[0].id_type = "KEY"
+    var.targets[0].id = keys
+    var.targets[0].data_path = 'key_blocks["jawOpen"].value'
 
 
 def drawn_slit_mm(character: bpy.types.Object) -> float:

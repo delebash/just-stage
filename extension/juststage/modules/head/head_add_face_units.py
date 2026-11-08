@@ -28,16 +28,15 @@ COMMAND = dict(
 
 def main(params: Params) -> Result:
     from ... import character
-    from . import face_units
-
-    from . import parts
+    from . import face_units, parts
 
     obj = character.find(params.character)
     added = face_units.add(obj)
     teeth = parts.parts_of(obj).get("teeth")
     if teeth is not None:  # the lower teeth and tongue ride the jaw units
         face_units.add_to_teeth(obj, teeth)
-    from . import blink_contact
+    from . import blink_contact, lip_seal
 
     blink_contact.make(obj)  # the blink's closing step (the lids snapped and relaxed onto each other)
+    lip_seal.drive(obj)  # the neutral's seal fades as the jaw opens
     return Result(units=len(added), missing=[n for n in face_units.ARKIT if n not in added])

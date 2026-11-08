@@ -38,6 +38,7 @@ def test_a_new_characters_lips_are_sealed_and_still_open(macros):
         # the jaw still opens the mouth from the sealed lips - wider than hm08's own slit (0.6-0.9 mm); the measure's
         # window reaches only 4 mm below the front teeth, so an open mouth reads 1.8-3 mm there, not its full height
         assert lip_seal.drawn_slit_mm(body) > 1.0
+        assert key.value == 0.0  # the seal is the neutral's: gone with the jaw open (it held the lips ~5 mm closed)
     finally:
         for obj in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
             bpy.data.objects.remove(obj)
