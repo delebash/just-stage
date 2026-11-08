@@ -56,6 +56,12 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   (read it first).** Built: the spec's 82 UE5 bones (`tools/make_skeleton.py` -> `data/generated/rigs/`), the Rig
   module (`juststage.rig.add_skeleton`, New human adds it, refit after shape changes), the gate on it plus
   `pose_twist`. Next: the suites, the posed renders (card), the library rebuild.
+  ~07:00 on the card (peers gave it; send web-4c "card free" when all end): batch D's full suite
+  (`.dev/suite_2026-11-08s.log`), then E (`pose_twist` again; the eyeball 0.89 about its centre / cornea front ->
+  `.dev/gate/parts/2026-11-08eye`), F (the smile on ICT's units -> `2026-11-08smile`; job doc
+  `docs/plans/2026-11-08-smile-units.md`), G (item 7, the nail bed as shape: `nailshape` -> `2026-11-08nail`) - logs
+  `scratchpad/batch_{D_skel,E,F,G}.log`. Item 5 found: the teeth's size is arch form, the tongue sits like his
+  (RESEARCH 14.5). After: look at each sheet, the narrowed skeleton test run, the library rebuild (backup first).
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
   "why do you keep missing everything").
