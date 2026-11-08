@@ -33,6 +33,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 
 ### Where it stands (update after every step)
 
+- **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
+  list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
+  "why do you keep missing everything").
+
 - **The plan's §0 governs (2026-11-07 evening): the bar is ours against HD Aaron in EEVEE only - never Aaron in Cycles;
   one loop per part (render both in EEVEE -> measure and look -> one change -> keep or undo) with the stop rule; no
   new tool, audit or decision list unless a measured gap needs it; no turn ends on a report.** Cycles numbers below are
