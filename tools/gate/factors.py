@@ -1855,6 +1855,67 @@ def mouthnoshadow(built: dict) -> None:
     print("MOUTH NO SHADOW on", done, "skin materials", flush=True)
 
 
+def _no_shadow_faces(built: dict, faces, label: str) -> None:
+    """The body's `faces` transparent to shadow rays (the Light Path's "Is Shadow Ray" on a face attribute; the
+    material's transparent shadows), the rest casting as before - a diagnostic of which skin shadows the mouth."""
+    body = built["body"]
+    me = body.data
+    mask = np.zeros(len(me.polygons), np.float32)
+    mask[list(faces)] = 1.0
+    attr = me.attributes.get("js_noshadow") or me.attributes.new("js_noshadow", "FLOAT", "FACE")
+    attr.data.foreach_set("value", mask)
+    done = 0
+    for nt in _skin_trees(built):
+        out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
+        surface = out.inputs["Surface"].links[0].from_socket
+        path, get = nt.nodes.new("ShaderNodeLightPath"), nt.nodes.new("ShaderNodeAttribute")
+        get.attribute_name = "js_noshadow"
+        clear, mix = nt.nodes.new("ShaderNodeBsdfTransparent"), nt.nodes.new("ShaderNodeMixShader")
+        both = nt.nodes.new("ShaderNodeMath")
+        both.operation = "MULTIPLY"
+        nt.links.new(path.outputs["Is Shadow Ray"], both.inputs[0])
+        nt.links.new(get.outputs["Fac"], both.inputs[1])
+        nt.links.new(both.outputs["Value"], mix.inputs["Fac"])
+        nt.links.new(surface, mix.inputs[1])
+        nt.links.new(clear.outputs["BSDF"], mix.inputs[2])
+        nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+        done += 1
+    for slot in body.material_slots:
+        if slot.material:
+            slot.material.use_transparent_shadow = True
+    print("NO SHADOW", label, int(mask.sum()), "faces on", done, "skin materials", flush=True)
+
+
+def headnoshadow(built: dict) -> None:
+    """Item 5's inner mouth, narrowed again: the head's tile (UDIM 1001) casts no shadow - is the tongue's shadow from
+    the head at all (the mouth lining alone was not it, `mouthnoshadow`)?"""
+    me = built["body"].data
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[_maps().UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    faces = [p.index for p in me.polygons if uv[list(p.loop_indices), 0].mean() < 1.0]
+    _no_shadow_faces(built, faces, "head tile")
+
+
+def cavitynoshadow(built: dict) -> None:
+    """...and only the faces inside the mouth: behind the front teeth's front and within the mouth's width and height
+    (the teeth part's box widened 5 mm) - hm08's mouth interior, which no vertex group names."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    body = built["body"]
+    teeth = pg._world(parts.parts_of(body)["teeth"], evaluated=False)
+    lo, hi = teeth.min(0) - 0.005, teeth.max(0) + 0.005
+    front = float(teeth[:, 1].min())
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    mw = np.array(body.matrix_world)
+    co = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]  # our shape lives in its keys
+    faces = []
+    for p in body.data.polygons:
+        c = co[list(p.vertices)].mean(0)
+        if c[1] > front and (lo[0] < c[0] < hi[0]) and (lo[2] < c[2] < hi[2]):
+            faces.append(p.index)
+    _no_shadow_faces(built, faces, "mouth cavity")
+
+
 def bodynoshadow(built: dict) -> None:
     """Item 5's inner mouth, one factor: our tongue is in view (`tongueglow`) yet black-red whatever its material
     (`tonguess`, `tonguegrad` - no change) - is it the body's own mouth (hm08's inner mouth skin) shadowing it? The
@@ -2139,6 +2200,8 @@ def factor(name: str):
         return lambda built: naildisp(built, float(dome), float(groove), float(lip))
     if name == "mouthnoshadow":  # the mouth's inner skin casts no shadow (does it darken the tongue?)
         return mouthnoshadow
+    if name in ("headnoshadow", "cavitynoshadow"):  # the head's tile / the mouth's interior casts no shadow
+        return {"headnoshadow": headnoshadow, "cavitynoshadow": cavitynoshadow}[name]
     if name == "bodynoshadow":  # the body casts no shadow (does its mouth shadow the tongue?)
         return bodynoshadow
     if name.startswith("nailshine*"):  # nailshine*0.1*0.4*0.4 (the nail plate's coat, specular level, roughness)
