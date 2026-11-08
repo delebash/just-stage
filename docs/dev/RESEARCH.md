@@ -2976,6 +2976,12 @@ about the eye's centre, the lids' contact follows the ball in - the opening shri
 blink. Scaled about the cornea's front, the opening and the blink stay as built, but the iris (part of the eyeball)
 shrinks with it, away from his larger iris. Neither kept: the eye's look is its opening's shape and the iris, not the
 ball's size.
+- Then measured (MediaPipe's iris points 468-477 and lid points on the gate's face view, 0.30 m / 2048 px; probe
+  `scratchpad/iris_measure.py`): his iris 12.7 / 12.8 mm, opening 27.5 x 11.1 / 28.4 x 10.5 mm; ours 11.5 / 11.7,
+  24.8 x 9.7 / 25.1 x 10.1. But his face is 8.5% wider (cheekbone points 134.8 against 124.2 mm) and his pupils 62.7
+  mm apart against our 58.4: scaled to that distance our iris is within 2% of his, the opening's width within 4% and
+  its height within 1%. Our iris (11.6 mm) is a real adult's (~11.7 mm across); his larger eye is his larger head - a
+  slider setting (row 18), not an eye fault.
 
 - **EEVEE's eye white and the lids' shadow** (Blender 5.3, a close eye, one 120 W area light 0.6 m wide, measured
   2026-11-04):
