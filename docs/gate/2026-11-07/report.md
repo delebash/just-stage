@@ -271,7 +271,7 @@ The hair's highlights and style (the nape too long, the front taller than his); 
 | Part | Now (build k, `.dev/gate/parts/2026-11-07k`, j, e, f) | Verdict by the gate's rule | What is left, and its route |
 |---|---|---|---|
 | Cheek skin | excess 0.0179 against his chance band +-0.0023 | not proved | Pore size, depth and pattern ruled out (his own pore pattern: 0.0172). The gap sits at 0.5-2 mm (`dists --by-layer`). Next, one at a time: the scan's relief, the colour's mottling, the light's scatter, the microrelief - queued |
-| Forehead | new view; measured with the scalp hidden - see below | not proved | The library style's fringe hangs over our forehead |
+| Forehead | its own view, the scalp hidden: 0.0359 against +-0.0016; with his pore pattern 0.0225 | not proved | The pores' pattern is the lever here: Ten24's own forehead as a region tile is queued. The library style's fringe hangs over our forehead |
 | Nose | 0.0785 (shipped); larger pores 0.065, shallower 0.068 | not proved | Pore size and depth on the nose region |
 | Hand, torso | 0.047, 0.049 (not re-run tonight) | not proved | As the night table |
 | Foot | 0.10 | not proved | Needs a scanned foot (Thunk3D, the user's download) |

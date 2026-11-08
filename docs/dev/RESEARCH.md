@@ -2648,6 +2648,11 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
   - The forehead view at 4.5 cm: our forehead is mostly under the library style's fringe (his is bare, with forehead
     lines), so it is measured with the scalp hidden (`nohair`). The patch grid: rows 0.15-0.75, columns 0.10-0.70,
     12% squares, clear of his frown line.
+  - **The forehead, measured** (30 patches, scalp hidden): ours 0.0359 against his band +-0.0016 - stage 4 54%,
+    stage 5 19%. With his pore pattern 0.0225 (stage 4 0.0192 -> 0.0119, stage 5 0.0069 -> 0.0034). So on the forehead
+    the pattern is the lever: Ten24's cheek tile (dense round pits, skew -0.31) suits a cheek, not a forehead. The
+    shippable trial is Ten24's own forehead (8k crop 6110, 6220, 170; skew 0.04; `.dev/gate/pores/ten24_forehead`)
+    as a region's tile - queued.
 
 ### 14.10 · Skin shading: scattering, specular, roughness, the tone model
 
