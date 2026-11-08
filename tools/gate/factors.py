@@ -1849,6 +1849,35 @@ def nailshine(built: dict, coat: float, specular: float, roughness: float) -> No
     print("NAIL SHINE", coat, specular, roughness, done, "mixes", flush=True)
 
 
+def mouthnoshadow(built: dict) -> None:
+    """Item 5's inner mouth, narrowed: the body casting no shadow lit our tongue (`bodynoshadow`) - is it the mouth's
+    own inner skin? Where our mouth-lining mask is (`maps._mouth_layer`'s `mouth_in`: the mask on the head's tile), the
+    skin turns transparent to shadow rays (Blender's Light Path "Is Shadow Ray", the material's transparent shadows),
+    the rest of the body casting as before."""
+    maps = _maps()
+    done = 0
+    for nt in _skin_trees(built):
+        inside = nt.nodes.get(maps.NODE + "mouth_in")
+        out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
+        surface = out.inputs["Surface"].links[0].from_socket
+        path = nt.nodes.new("ShaderNodeLightPath")
+        clear = nt.nodes.new("ShaderNodeBsdfTransparent")
+        mix = nt.nodes.new("ShaderNodeMixShader")
+        both = nt.nodes.new("ShaderNodeMath")
+        both.operation = "MULTIPLY"
+        nt.links.new(path.outputs["Is Shadow Ray"], both.inputs[0])
+        nt.links.new(inside.outputs["Value"], both.inputs[1])
+        nt.links.new(both.outputs["Value"], mix.inputs["Fac"])
+        nt.links.new(surface, mix.inputs[1])
+        nt.links.new(clear.outputs["BSDF"], mix.inputs[2])
+        nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+        done += 1
+    for slot in built["body"].material_slots:
+        if slot.material:
+            slot.material.use_transparent_shadow = True
+    print("MOUTH NO SHADOW on", done, "skin materials", flush=True)
+
+
 def bodynoshadow(built: dict) -> None:
     """Item 5's inner mouth, one factor: our tongue is in view (`tongueglow`) yet black-red whatever its material
     (`tonguess`, `tonguegrad` - no change) - is it the body's own mouth (hm08's inner mouth skin) shadowing it? The
@@ -2131,6 +2160,8 @@ def factor(name: str):
     if name.startswith("naildisp*"):  # naildisp*0.6*0.4*0.3 (mm: dome, groove, lip - on the plate's own outline)
         _k, dome, groove, lip = name.split("*")
         return lambda built: naildisp(built, float(dome), float(groove), float(lip))
+    if name == "mouthnoshadow":  # the mouth's inner skin casts no shadow (does it darken the tongue?)
+        return mouthnoshadow
     if name == "bodynoshadow":  # the body casts no shadow (does its mouth shadow the tongue?)
         return bodynoshadow
     if name.startswith("nailshine*"):  # nailshine*0.1*0.4*0.4 (the nail plate's coat, specular level, roughness)
