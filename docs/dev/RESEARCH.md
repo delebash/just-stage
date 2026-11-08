@@ -2970,6 +2970,13 @@ re-check before the rec list; nothing run on skin here):
 
 ### 14.12 · Eyes
 
+*measured, 2026-11-08* - the eyeball's size (build queue item 5; `factors eyescale`, `.dev/gate/parts/2026-11-08eye`,
+sheet `scratchpad/sheet_D9_eyefront.png`): ours 14.8 / 14.76 mm in radius -> 13.17 / 13.14 (HD Aaron's 13.2). Scaled
+about the eye's centre, the lids' contact follows the ball in - the opening shrinks, a red mark at the lower lid in the
+blink. Scaled about the cornea's front, the opening and the blink stay as built, but the iris (part of the eyeball)
+shrinks with it, away from his larger iris. Neither kept: the eye's look is its opening's shape and the iris, not the
+ball's size.
+
 - **EEVEE's eye white and the lids' shadow** (Blender 5.3, a close eye, one 120 W area light 0.6 m wide, measured
   2026-11-04):
   - The lid stands about a millimetre off the eyeball. The light's `shadow_maximum_resolution` defaults to 1 mm.
