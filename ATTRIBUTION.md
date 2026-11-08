@@ -13,6 +13,7 @@ into the user's JustStage library by `tools/build_skins.py` / `tools/build_libra
 | Hair-editor pack (`hair/haireditor/hair.blend`) | files.makehumancommunity.org/functional/haireditor.zip | Tomáš Klecer (MakeHuman) | CC0-1.0 |
 | Faceunits 01 (52 ARKit face units) | files.makehumancommunity.org/functional/faceunits01.zip | Mika Suominen (MakeHuman) | CC0-1.0 |
 | ICT-FaceKit neutral mesh (eye occlusion and tearline strips) | github.com/USC-ICT/ICT-FaceKit @ da5f95a6 | USC Institute for Creative Technologies | MIT |
+| The face's blink units (`data/generated/faceunits_ict/eyeBlinkLeft.npz`, `eyeBlinkRight.npz`: ICT-FaceKit's `eyeBlink_L` / `eyeBlink_R` carried onto our base man, `tools/make_ict_units.py`) | github.com/USC-ICT/ICT-FaceKit @ da5f95a6 (FaceXModel) | USC Institute for Creative Technologies | MIT |
 | GNM head model v3 | huggingface.co/google/gnm-v3 | Google | Apache-2.0 |
 | Studio Small 09 HDRI (2K) | polyhaven.com/a/studio_small_09 | Poly Haven | CC0-1.0 |
 | The skin's pore tile (`data/generated/skin/pores.png`, `tools/face_test/pore_tile.py`: the upper cheek's relief from Level_01_Normal, 33 mm) | ten24.info/sample-scan (Ten24 sample scan, OBJ package; the page as downloaded: `.dev/downloads/ten24_sample/sample-scan-page-2026-11-04.html`) | Ten24 Media | "Feel free to use this scan as you wish for both commercial and personal projects. All we ask is that you provide us with a credit wherever it's used." - credited here |

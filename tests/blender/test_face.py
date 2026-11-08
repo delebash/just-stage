@@ -49,6 +49,19 @@ def test_a_character_gets_the_52_keys_at_rest(human):
     assert all(keys[name].value == 0.0 for name in face_units.ARKIT)
 
 
+def test_the_blink_units_are_icts_scanned_blink(human):
+    """2026-11-08 (Q-RIG-1's per-shape pick): Faceunits' eyeBlink folded the closed lid's skin; ICT-FaceKit's scanned
+    blink, carried onto our base (`tools/make_ict_units.py`), closes it smooth - the two blink keys are ICT's."""
+    result, obj = human
+    api.run("juststage.head.add_face_units", character=result.character)
+    for name in face_units.ICT_UNITS:
+        data = np.load(paths.generated("faceunits_ict", f"{name}.npz", tool="tools/make_ict_units.py"))
+        moved = _offsets(obj, name)
+        assert np.allclose(moved[data["index"]], data["delta"], atol=1e-6), name
+        side = float(obj.data.vertices[int(data["index"][np.argmax(np.linalg.norm(data["delta"], axis=1))])].co.x)
+        assert np.sign(side) == (1.0 if name.endswith("Left") else -1.0), (name, side)  # Left is the character's +x
+
+
 def _teeth_rows(teeth, group_name):
     rows = np.zeros(len(teeth.data.vertices), dtype=bool)
     rows[importlib.import_module("bl_ext.system.juststage.modules.head.parts").groups("teeth")[group_name]] = True

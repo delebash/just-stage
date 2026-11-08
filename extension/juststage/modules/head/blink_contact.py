@@ -62,6 +62,14 @@ def _lids(rows: np.ndarray, co: np.ndarray, move: np.ndarray, centre: np.ndarray
     return mine[upper], mine[~upper]
 
 
+def _to_polyline(p: np.ndarray, line: np.ndarray) -> float:
+    """A point's distance to the nearest point of a polyline (its segments, in order)."""
+    a, b = line[:-1], line[1:]
+    ab = b - a
+    t = np.clip(((p - a) * ab).sum(1) / np.maximum((ab * ab).sum(1), 1e-18), 0.0, 1.0)
+    return float(np.linalg.norm(a + ab * t[:, None] - p, axis=1).min())
+
+
 def _neighbours(me) -> dict[int, set[int]]:
     edges = np.empty(len(me.edges) * 2, np.int64)
     me.edges.foreach_get("vertices", edges)
@@ -140,8 +148,8 @@ def make(character: bpy.types.Object) -> dict[str, tuple[float, float]]:
         key.slider_min, key.slider_max = 0.0, 1.0
         _drive(key, keys, unit.name)
         mid_up = up[np.argsort(np.abs(az(neutral[up[:, 0]])))[:3], 0]
-        mid_lo = lo[np.argsort(np.abs(az(neutral[lo[:, 0]])))[:3], 0]
-        gap = float(np.linalg.norm(fixed[mid_up].mean(0) - fixed[mid_lo].mean(0)))
+        line = fixed[lo[order, 0]]  # the lower lash line, round the eye
+        gap = max(_to_polyline(fixed[v], line) for v in mid_up)  # each middle upper lash point to the lower line
         clip = float(max(0.0, (r - np.linalg.norm(fixed[lid] - c, axis=1)).max()))
         done[side] = (round(gap * 1000, 2), round(clip * 1000, 2))
     me.update()

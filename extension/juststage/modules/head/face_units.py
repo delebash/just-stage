@@ -33,6 +33,27 @@ def unit_path(name: str):
     return paths.makehuman("targets", "faceunits", f"{name}.target")
 
 
+#: units taken from ICT-FaceKit's scanned shapes instead of Faceunits (Q-RIG-1's per-shape pick, 2026-11-08: the
+#: closed lid - Faceunits' eyeBlink folds the skin above the lashes, ICT's closes smooth; `tools/make_ict_units.py`)
+ICT_UNITS = ("eyeBlinkLeft", "eyeBlinkRight")
+
+
+def _offsets(name: str) -> tuple[np.ndarray, np.ndarray] | None:
+    """A unit's hm08 (indices, offsets in metres): ICT's carried shape for ICT_UNITS, else Faceunits' target; None
+    where the pack has none."""
+    if name in ICT_UNITS:
+        data = np.load(paths.generated("faceunits_ict", f"{name}.npz", tool="tools/make_ict_units.py"))
+        return data["index"].astype(np.int64), data["delta"].astype(np.float32)
+    path = unit_path(name)
+    if not path.exists():
+        return None
+    rows = makehuman.read_target(path)
+    if not rows:
+        return np.zeros(0, np.int64), np.zeros((0, 3), np.float32)
+    index = np.fromiter((r[0] for r in rows), dtype=np.int64, count=len(rows))
+    return index, np.array([r[1:] for r in rows], dtype=np.float32) * makehuman.SCALE_TO_METRES
+
+
 def add(obj: bpy.types.Object) -> list[str]:
     """Every unit the pack has, as a shape key at 0 on `obj` (replacing one of the same name); returns the names."""
     if not obj.data.shape_keys:
@@ -41,18 +62,15 @@ def add(obj: bpy.types.Object) -> list[str]:
     obj.data.shape_keys.reference_key.data.foreach_get("co", basis)
     basis = basis.reshape(-1, 3)
     added = []
-    for name in ARKIT:
-        path = unit_path(name)
-        if not path.exists():
-            continue
-        rows = makehuman.read_target(path)
-        co = basis.copy()
-        if rows:
-            from ..body import base
+    from ..body import base
 
-            index = np.fromiter((r[0] for r in rows), dtype=np.int64, count=len(rows))
-            delta = np.array([r[1:] for r in rows], dtype=np.float32) * makehuman.SCALE_TO_METRES
-            index, delta = base.extend(obj, index, delta)
+    for name in ARKIT:
+        found = _offsets(name)
+        if found is None:
+            continue
+        co = basis.copy()
+        if len(found[0]):
+            index, delta = base.extend(obj, *found)
             co[index] += delta
         key = obj.data.shape_keys.key_blocks.get(name) or obj.shape_key_add(name=name, from_mix=False)
         key.data.foreach_set("co", co.ravel())
