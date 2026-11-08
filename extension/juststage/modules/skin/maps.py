@@ -88,7 +88,9 @@ NAIL_FREE_EDGE = (0.92, 0.97)  # along: the free edge - a thin pale rim on a sho
 NAIL_LUNULA_FINGERS = (0.25, 0.03)  # lunula length = first - second * digit (thumb 0.22 ... little 0.10)
 NAIL_LUNULA_TOES = (0.06, 0.0)  # the big toe's, the others' (rarely seen)
 NAIL_BED, NAIL_BED_SHARE = (0.50, 0.30, 0.27), 0.25  # linear: mixed into the skin's colour
-NAIL_LUNULA, NAIL_LUNULA_SHARE = (0.82, 0.72, 0.68), 0.35
+#: the lunula's pale share: 0.35 read as a white crescent beside HD Aaron's barely-seen one; 0.05 as his (the gate's
+#: `nailluna`, 2026-11-08, sheet `scratchpad/sheet_D22_luna.png`)
+NAIL_LUNULA, NAIL_LUNULA_SHARE = (0.82, 0.72, 0.68), 0.05
 NAIL_TIP = (0.80, 0.75, 0.66)
 NAIL_GROOVE = 0.45  # how much the fold's groove round the plate darkens it
 NAIL_RIDGES = 0.05  # +- share of the colour

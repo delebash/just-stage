@@ -322,6 +322,8 @@ def test_the_nail_plate_is_matte_like_his(human, tmp_path):
         return next(i for i in nodes[maps.NODE + f"nail_{key}"].inputs if i.identifier == "B_Float").default_value
 
     assert plate("rough") >= 0.5 and plate("coat") == 0.0 and plate("spec") <= 0.35
+    share = nodes[maps.NODE + "nail_lunula_share"].inputs[1].default_value
+    assert share <= 0.1  # a faint lunula, as his (0.35 read as a white crescent - `nailluna`, 2026-11-08)
 
 
 def test_a_mapped_skin_sets_the_nail_bed_into_the_finger(human, tmp_path):
