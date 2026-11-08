@@ -183,7 +183,8 @@ def measure_dir(out_dir: Path, engine: str) -> dict:
     report = {}
     frames_path = out_dir / "frames.json"  # written by parts_gate.py render: each render's frame width
     frames = json.loads(frames_path.read_text()) if frames_path.exists() else {}
-    pattern = re.compile(rf"^{engine}_(?P<view>.+?)_(?P<who>(?:ours|cc5)(?:_f-\w+)?)\.png$")  # factors.py's tags
+    # a tag after the name: factors.py's `_f-...`, parts_gate's `--tag` (`_new`: the app's New human)
+    pattern = re.compile(rf"^{engine}_(?P<view>.+?)_(?P<who>(?:ours|cc5)(?:_[\w-]+)?)\.png$")
     for path in sorted(out_dir.glob(f"{engine}_*.png")):
         m = pattern.match(path.name)
         if not m or m["view"] not in WINDOWS:

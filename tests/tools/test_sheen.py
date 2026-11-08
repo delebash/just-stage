@@ -28,6 +28,20 @@ def _exr(path: Path, gloss: np.ndarray, diffuse: np.ndarray) -> None:
         f.write(str(path))
 
 
+def test_blenders_multi_part_exr_reads_every_part(tmp_path):
+    """Blender 5.3 writes a part a pass, named `<layer>.<Pass Name>` (measured on its own output, 2026-11-08)."""
+    header = {"compression": OpenEXR.ZIP_COMPRESSION, "type": OpenEXR.scanlineimage}
+    parts = []
+    for name, value in (("Combined", 1.0), ("Glossy Direct", 0.2), ("Diffuse Direct", 0.6)):
+        channels = {f"ViewLayer.{name}.{c}": np.full((8, 8), value, np.float32) for c in "RGB"}
+        parts.append(OpenEXR.Part({**header, "name": f"ViewLayer.{name}"}, channels, name=f"ViewLayer.{name}"))
+    with OpenEXR.File(parts) as f:
+        f.write(str(tmp_path / "multi.exr"))
+    lum = sheen.passes(tmp_path / "multi.exr")
+    assert sorted(lum) == ["Combined", "Diffuse Direct", "Glossy Direct"]
+    assert sheen.measure(lum, (0.0, 1.0, 0.0, 1.0))["sheen share"] == 0.25
+
+
 def test_the_share_and_the_spread_read_back(tmp_path):
     even = np.full((40, 40), 0.25)
     glint = np.zeros((40, 40))

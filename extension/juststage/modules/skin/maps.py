@@ -46,8 +46,10 @@ MM_PER_UV = {1001: 724.0, 1002: 851.0, 1003: 753.0, 1004: 1224.0, 1005: 48.0}
 TEXEL = "juststage_texel"
 TEXEL_LEVELS = (-1, 0, 1, 2)  # half octaves: x0.71, x1, x1.41, x2 the tile's tiling
 TEXEL_SMOOTH = 12  # passes of the corner average inside a tile (a few cm on hm08)
-#: the pore tile (pore_relief): Ten24's scanned cheek relief, its own size in its pores.json (2026-11-06; the Lee
-#: Perry-Smith cheek tile it replaced, 56 mm, carried his stubble's streaks - docs/plans/2026-11-06-inputs-audit.md)
+#: the pore tile (pore_relief): Ten24's scanned forehead relief since 2026-11-08 (its upper cheek before - the forehead
+#: measured better or equal against HD Aaron everywhere, tools/face_test/pore_tile.py TEN24_CROPS), its own size in its
+#: pores.json (the Lee Perry-Smith cheek tile of 2026-11-05, 56 mm, carried his stubble's streaks -
+#: docs/plans/2026-11-06-inputs-audit.md)
 PORE_TOOL = ".dev/venv-rdf/Scripts/python -I tools/face_test/pore_tile.py"
 #: the pores' relief: full strength, 0.3 mm (the gate, 2026-11-05: 0.35 / 0.2 mm left a scanned skin's cheek at 0.39 of
 #: HD Aaron's pore band; 1.0 / 0.3 mm brought it to 0.99 against his 0.96 - his pores are relief, his colour alone 0.40)

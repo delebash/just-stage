@@ -540,9 +540,12 @@ def _render_views(who, engine, out_dir, names, size, samples, tag, built, scene,
         for pass_name in PASSES:
             setattr(scene.view_layers[0], f"use_pass_{pass_name}", True)
         bpy.ops.render.render(write_still=True)
-        if PASSES:  # the same render once more as linear multilayer EXR, every pass in it
+        if PASSES:  # the same render once more as linear multilayer EXR, every pass in it (Blender 5.x: the media type
+            # picks multilayer, then its format)
+            settings.media_type = "MULTI_LAYER_IMAGE"
             settings.file_format, settings.color_depth = "OPEN_EXR_MULTILAYER", "32"
             bpy.data.images["Render Result"].save_render(filepath=str(out_dir / f"{stem}.exr"), scene=scene)
+            settings.media_type = "IMAGE"
             settings.file_format, settings.color_depth = "PNG", "8"
         frames[stem] = {"width_m": placed[3], "size": size}
         frames_path.write_text(json.dumps(frames, indent=1))

@@ -32,7 +32,7 @@ part below has a verdict with OUR content.
 
 | # | Part | Status | Our number vs his band | Last change tried |
 |---|---|---|---|---|
-| 1 | Face skin: texture, colour, shine (the "plastic" look) | doesn't match yet | DISTS excess cheek +0.006, forehead +0.022, nose +0.031 (11-08 a.m., gate man); roughness ours 0.43-0.48 flat vs his 0.66 (p10-p90 0.62-0.70) | - |
+| 1 | Face skin: texture, colour, shine (the "plastic" look) | doesn't match yet | shine matches on the matched window (cheek sheen 0.61 vs his 0.58); texture DISTS excess cheek 0.018, forehead 0.042 (chance +-0.002-0.004); fold band 1.01 vs 1.35; a* 11.1 vs 13.0 | round 1 (8 trials): none kept; round 2 next - forehead pores, tile, fold relief, redness |
 | 2 | Body skin: torso, hands, feet | doesn't match yet | torso 0.049 vs 0.023 (his skin on ours), hand 0.047 vs 0.016, foot 0.102 vs 0.002 | - |
 | 3 | Scalp hair | doesn't match yet | - | - |
 | 4 | Eyes: eyeball, iris, sclera, lids | doesn't match yet | eyeball 14.8 mm vs 13.2 | - |
@@ -73,6 +73,88 @@ the face, cheek and forehead windows, ours and his.
 Measures for every trial, beside his: sheen share and spread (face, cheek, forehead windows), Lab and its spread
 (`measure.py`), DISTS excess (`dists.py --patches`, cheek / forehead / nose), and the face sheet by eye. Tone is a
 character's slider, not quality: compared at matched tone where colour is judged (`dists.py --tone`).
+
+### Measured 2026-11-08 ~10:55 (`measure.py` on `.dev/gate/parts/2026-11-08new`, EEVEE; detail = RMS L* by band)
+
+| Window | Who | L* | a* | b* | micro | pore | fold | form |
+|---|---|---|---|---|---|---|---|---|
+| cheek | HD Aaron | 73.3 | 13.0 | 12.6 | 0.64 | 1.73 | 1.35 | 0.70 |
+| cheek | gate's man (library Average man) | 75.5 | 11.1 | 13.8 | 0.67 | 1.69 | 1.01 | 0.62 |
+| cheek | New human (the app's default) | 82.2 | 6.7 | 8.2 | 0.37 | 1.10 | 0.73 | 0.47 |
+| forehead | HD Aaron | 73.9 | 12.3 | 12.1 | - | 1.69 | 1.09 | - |
+| forehead | gate's man | 76.0 | 10.8 | 13.5 | - | 3.23 | 1.82 | - |
+| forehead | New human | 84.1 | 6.4 | 7.9 | - | 0.74 | 0.58 | - |
+
+The New human - what a user gets from New human - is far below the gate's man: paler (L* +8-10 over him), half his
+redness, about half the detail in every band. The gate's man is near HD Aaron on the cheek (detail 0.95-1.05 of his
+but the fold band 0.75), above him on the forehead (pores 1.9x). So the first fix is what the New human gets that the
+library's man doesn't (running: `scratchpad/diff_new_vs_man.py`, both built the gate's way, every skin input side by
+side) - then the shine trials on whichever is the app's default.
+**Found (`scratchpad/diff_new_vs_man.json`, 2026-11-08 ~11:00):** the two skin materials are identical - every image
+and node value; the only differences are the tone (melanin New human 0.0104, man 0.03 - three times paler) and the
+shape (gender New human 0.5, MakeHuman's default in-between face; man 1.0). So the "plastic" first look is the New
+human's defaults (pale, half-male face), not other skin assets; the skin proof runs on our man (the same assets) at his
+tone, against HD Aaron. The New human's defaults are a row of their own (a decision for the user's list; what CC5's
+own new character starts from is unchecked).
+**Baseline texture (DISTS `--patches`, the same renders, CPU, 2026-11-08 ~11:10; pass = within the chance band):**
+cheek - the man +0.0179, the New human +0.0525 (chance +-0.0023); forehead (eye view) - the man +0.0423, the New human
++0.0599 (chance +-0.0029 / 0.0039). Not tone-matched (tone is a slider): `--tone` reruns structure alone.
+
+### Run log
+
+- 10:2x: the passes - Blender 5.3 picks multilayer EXR by `media_type = "MULTI_LAYER_IMAGE"` (its `file_format` enum
+  lacks it otherwise) and writes a multi-part EXR, a part a pass ("ViewLayer.Glossy Direct"; EEVEE gives Diffuse and
+  Glossy as "Direct" only - its whole light); `sheen.passes` reads every part (tests 2 passed).
+- 10:35: HD Aaron's render with passes crashed Blender (EXCEPTION_ACCESS_VIOLATION in EEVEE's world capture,
+  `CaptureView::render_world` -> `GPU_texture_mipmap_mode`, a null read; `F:\ClaudeCode\tmp\blender.crash.txt`); the
+  same render without passes ran at 09:53 and his face view with passes ran once at 10:2x. Rerun alone after the trials
+  before anything is built around it.
+
+- 10:35-10:58: the 8 trials on our man rendered (`.dev/gate/parts/2026-11-08shine`, 32 renders with passes); 11:0x
+  HD Aaron rerun alone with passes - no crash (the 10:35 crash was a one-off). **Seen** (`scratchpad/sheet_trials_face.png`):
+  at the face view the eight trials look alike - none moves our face toward his. What separates the faces at that
+  distance is the shape (his narrow, structured face - brow ridge, cheekbones, deep-set eyes, a defined nose - against
+  MakeHuman's broad flat average), the eyes, the lips, the colour's variation - not the shine. So the skin is judged on
+  the matched windows (the plan's pass 4) and the overall face look waits on the shape row; asked of the user: the face
+  shape before the body skin (my rec: yes - it is what the face view is made of).
+
+### Round 1 (face skin: shine and two texture levers) - measured 2026-11-08 ~11:55 (`scratchpad/shine_table.txt`,
+`dists_shine.txt`; our man, EEVEE; sheen = specular / all light; DISTS excess, pass = within chance +-0.002-0.004)
+
+| Trial | Sheen face forehead | Sheen face cheeks | Sheen cheek view | Spread | L* | a* | pore | fold | DISTS cheek | DISTS forehead | Kept? |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| HD Aaron | 0.578 | 0.376 | 0.583 | 0.67 | 73.3 | 13.0 | 1.73 | 1.35 | - | - | - |
+| ours as built (`micro*1`) | 0.414 | 0.347 | 0.612 | 0.69 | 75.5 | 11.1 | 1.69 | 1.01 | 0.0179 | 0.0423 | - |
+| coat x0.5 | 0.407 | 0.348 | 0.607 | 0.72 | 75.3 | 11.3 | 1.74 | 1.04 | 0.0181 | 0.0423 | no (no change) |
+| coat x2 | 0.425 | 0.346 | 0.619 | 0.65 | 75.9 | 10.7 | 1.60 | 0.96 | 0.0177 | 0.0425 | no (no change) |
+| micro x0.5 | 0.416 | 0.349 | 0.615 | 0.68 | 75.6 | 11.0 | 1.71 | 1.05 | 0.0363 | 0.0617 | no (worse) |
+| pores x0.6 | 0.427 | 0.348 | 0.619 | 0.66 | 75.8 | 10.9 | 1.31 | 0.85 | 0.0247 | **0.0390** | forehead only: next round |
+| rough x1.38 | 0.394 | 0.371 | 0.580 | 0.41 | 75.1 | 11.5 | 1.08 | 0.84 | 0.0514 | 0.0637 | no (worse) |
+| spec x1.25 | 0.413 | 0.348 | 0.610 | 0.70 | 75.9 | 10.7 | 1.88 | 1.07 | 0.0210 | 0.0439 | no (worse) |
+| sss x0.7 | 0.414 | 0.347 | 0.612 | 0.69 | 75.5 | 11.1 | 1.75 | 1.03 | 0.0177 | 0.0420 | no (no change) |
+
+**Read:** our skin's shine already matches his where the skin is matched (the cheek view 0.61 vs 0.58, spread 0.69 vs
+0.67); no shine lever moved the texture score toward his - raising roughness to his 0.66 (S2) made it much worse
+(0.018 -> 0.051: our sheen goes too even, spread 0.41). The face view's forehead gap (0.41 vs 0.58) is his forehead's
+shape facing the key light - the shape row, not a skin setting (none of these moved it). So: S1-S4 and W1 done, none
+kept. Left for the face skin: the texture (cheek 0.018, forehead 0.042 - the gap), the fold band (ours 1.01 vs his 1.35),
+the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the forehead alone, Ten24's forehead tile
+(T1), the scans' fold relief (T2 `relief*1.5`), the redness (C1, a rebuilt skin).
+
+### Round 2 (face skin: texture) - set up 2026-11-08 ~12:20
+
+- **T1 kept (mine, from measurements already made):** the checklist's row 1 (block C, 2026-11-08) had Ten24's
+  forehead pore tile better or equal everywhere against HD Aaron - forehead 0.0359 -> 0.0286, nose 0.0785 -> 0.0737,
+  torso 0.0493 -> 0.0310, hand and cheek within noise - waiting only on its licence row: the same scan and grant as the
+  shipped cheek tile (Ten24: "free for commercial and personal projects ... a credit"), the same size (154 px, 33.5 mm,
+  so every material's tiling stays right and no library rebuild is needed - `pore_relief` loads the file by path).
+  `pore_tile.py` now cuts the forehead (`TEN24_CROPS`, `TEN24_PLACE`); ATTRIBUTION's row says so; the old tile backed up
+  in `.dev/backup/pores_2026-11-08`. Not repeated: red mottling (row 1 says it doesn't move the cheek).
+- **2a** (`scratchpad/batch_r2a.sh`, out `.dev/gate/parts/2026-11-08r2a`): the tile regenerated and checked equal to the
+  trial's; our man with it as built, and with the scans' fold relief x1.5 and x2 (the fold band 1.01 against 1.35).
+- **2b** after 2a's numbers: the forehead's own pore depth (`make_face_regions.py` REGIONS forehead 2.0 -> 1.2, round
+  1's `pores*0.6` helped the forehead and hurt the cheek - so the forehead alone), the regions image backed up first.
+- Waiting: the release's CPU pause (its e2e), then just voice's card piece (~25 min).
 
 ## Mistakes to avoid
 

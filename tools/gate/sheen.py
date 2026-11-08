@@ -43,19 +43,21 @@ WINDOWS = {
     "forehead": {"forehead": (0.40, 0.80, 0.20, 0.80)},
 }
 LUMA = np.array([0.2126, 0.7152, 0.0722])
-SPECULAR = ("GlossDir", "GlossInd")
-DIFFUSE = ("DiffDir", "DiffInd")
+#: the passes' names: Blender 5.3 writes a multi-part EXR, a part a pass ("Glossy Direct" - EEVEE's Specular Light, all
+#: of it; Cycles adds "Glossy Indirect"), older files one part with short names
+SPECULAR = ("Glossy Direct", "Glossy Indirect", "GlossDir", "GlossInd")
+DIFFUSE = ("Diffuse Direct", "Diffuse Indirect", "DiffDir", "DiffInd")
 
 
 def passes(path: Path) -> dict[str, np.ndarray]:
-    """Each pass's luminance (H x W) from a Blender multilayer EXR (channels `<layer>.<pass>.<R|G|B>`)."""
+    """Each pass's luminance (H x W) from a Blender multilayer EXR - every part's channels `<layer>.<pass>.<R|G|B>`."""
+    found: dict[str, dict[str, np.ndarray]] = {}
     with OpenEXR.File(str(path), separate_channels=True) as f:
-        channels = f.channels()
-        found: dict[str, dict[str, np.ndarray]] = {}
-        for name, channel in channels.items():
-            parts = name.split(".")
-            if len(parts) >= 2 and parts[-1] in "RGB":
-                found.setdefault(parts[-2], {})[parts[-1]] = np.asarray(channel.pixels, np.float64)
+        for part in f.parts:
+            for name, channel in part.channels.items():
+                stem, _, colour = name.rpartition(".")
+                if colour in ("R", "G", "B") and stem:
+                    found.setdefault(stem.rpartition(".")[2], {})[colour] = np.asarray(channel.pixels, np.float64)
     return {p: sum(LUMA[i] * c[k] for i, k in enumerate("RGB")) for p, c in found.items() if set("RGB") <= set(c)}
 
 

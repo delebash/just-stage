@@ -122,14 +122,18 @@ def tile_for(name: str, zone_cache: dict) -> tuple[np.ndarray, dict] | None:
     return tile, info
 
 
-#: the chosen crop (2026-11-06): the upper cheek between the lid's creases and the stubble, no strand in its colour; a
-#: crop 25 texels higher kept the lower lid's creases in a corner as streaks, lower ones reach the stubble
-TEN24_CROP = (5820, 6615, 170)
+#: Ten24's crops (x, y, side on Level_01's 8K), by place. The upper cheek (2026-11-06): between the lid's creases and
+#: the stubble, no strand in its colour (a crop 25 texels higher kept the lower lid's creases as streaks, lower ones
+#: reach the stubble). The forehead (the shipped one since 2026-11-08): measured against HD Aaron (DISTS excess over
+#: his own, `tools/gate/factors.py poretile*ten24_forehead`, 2026-11-08) better or equal everywhere - forehead 0.0359
+#: -> 0.0286, nose 0.0785 -> 0.0737, torso 0.0493 -> 0.0310, hand and cheek within noise; the same size (154 px)
+TEN24_CROPS = {"forehead": (6110, 6220, 170), "upper cheek": (5820, 6615, 170)}
+TEN24_PLACE = "forehead"
 
 
 def main(names) -> int:
     if names == ["ten24"]:
-        tile, info = ten24(*TEN24_CROP)
+        tile, info = ten24(*TEN24_CROPS[TEN24_PLACE], place=TEN24_PLACE)
         return _write(tile, info)
     cache: dict = {}
     found = [r for r in (tile_for(n, cache) for n in names) if r is not None]
@@ -158,7 +162,7 @@ TEN24 = ROOT / ".dev" / "downloads" / "ten24_sample" / "x" / "OBJ Package"
 TEN24_PX_PER_MM = 4.6  # its density on the face (relief_tiles.py: eye to mouth ~300 texels ~ 65 mm)
 
 
-def ten24(x: int, y: int, side: int) -> tuple[np.ndarray, dict] | None:
+def ten24(x: int, y: int, side: int, place: str = "upper cheek") -> tuple[np.ndarray, dict] | None:
     relief = _module("relief_tiles", ROOT / "tools" / "gate" / "relief_tiles.py")
     colour = relief._ffmpeg_crop(TEN24 / "Colour Maps" / "JPG" / "Colour_8k.jpg", x, y, side)
     strands = int(hair.mask(colour.astype(np.float32)).sum())  # hair in the colour over the same texels
@@ -167,7 +171,7 @@ def ten24(x: int, y: int, side: int) -> tuple[np.ndarray, dict] | None:
     tile = relief.fine_tile(height, TEN24_PX_PER_MM)
     info = {"size_mm": tile.shape[0] / TEN24_PX_PER_MM, "px": tile.shape[0], "scan": "ten24",
             "crop_level01_8k": [x, y, side], "strands_in_colour_crop": strands,
-            "source": "Ten24 sample scan (ten24.info/sample-scan), Level_01_Normal.PSD, upper cheek",
+            "source": f"Ten24 sample scan (ten24.info/sample-scan), Level_01_Normal.PSD, {place}",
             "licence": "Ten24: free for commercial and personal projects with a credit (page saved 2026-11-04)",
             "method": "Frankot-Chellappa height from the normals, 1.5 mm high-pass, Moisan's periodic component"}
     print(f"ten24 at {x},{y} ({side}): {strands} strand texels in the colour")
