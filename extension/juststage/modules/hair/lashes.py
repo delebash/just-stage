@@ -71,6 +71,8 @@ def clump(strands: list, start: int) -> None:
 
 #: on base v2, how far into the lid (degrees about the eye) the lashes' rows reach from the lash line
 LASH_ROWS = 1.2
+#: m: a lash's root is looked for this far off the eyeball at most - the lid it grows from is the skin nearest the eye
+ROOT_REACH = 0.008
 
 
 def _lash_line(body: bpy.types.Object, o, side: float):
@@ -137,9 +139,12 @@ def strands(body: bpy.types.Object, openings: dict, seed: int = 7):
                 for extra in (0.0, 0.5, 1.0, 2.0, 3.0):
                     el_k = el[k] + side * extra
                     d_k = direction(az[k : k + 1], np.array([el_k]))[0]
-                    start = o.centre + d_k * (o.radius + 0.02)
+                    # from ROOT_REACH off the eyeball (the lash line sits ~2.3 mm off), ending 5 mm inside it: from
+                    # 20 mm out a ray at the inner corner started inside the nose and rooted a lash there (the
+                    # lower lid's ledge, test_lashes 2026-11-08: 33.5 mm from the eye)
+                    start = o.centre + d_k * (o.radius + ROOT_REACH)
                     s_local = to_local[:3, :3] @ start + to_local[:3, 3]
-                    hit = tree.ray_cast(Vector(s_local), Vector(to_local[:3, :3] @ -d_k), 0.025)
+                    hit = tree.ray_cast(Vector(s_local), Vector(to_local[:3, :3] @ -d_k), ROOT_REACH + 0.005)
                     if hit[0] is not None:
                         break
                 if hit[0] is None:
