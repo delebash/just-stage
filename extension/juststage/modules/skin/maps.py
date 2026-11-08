@@ -84,6 +84,10 @@ NAIL_TILE_INDEX = 4  # 1005
 ARM_TILE_INDEX, ARM_MICRO = 2, 2.0
 NAIL_CUTICLE, NAIL_CUTICLE_CURVE = 0.08, 0.35  # where the plate starts: along > cuticle + curve * across^2
 NAIL_SIDE, NAIL_EDGE_SOFT = 0.8, 0.06  # |across| inside this; the edges' softness (in along / across)
+#: the free edge rounded at its corners, as the cuticle is: the plate ends where along > 1 - curve * across^2 - hm08
+#: has no nail outline, so the tile's islands carry fingertip skin faces at their corners (RESEARCH 14.5), which a
+#: square plate painted white (2026-11-08)
+NAIL_TIP_CURVE = 0.35
 NAIL_FREE_EDGE = (0.92, 0.97)  # along: the free edge - a thin pale rim on a short nail - fades in over this
 NAIL_LUNULA_FINGERS = (0.25, 0.03)  # lunula length = first - second * digit (thumb 0.22 ... little 0.10)
 NAIL_LUNULA_TOES = (0.06, 0.0)  # the big toe's, the others' (rarely seen)
@@ -327,7 +331,12 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
     start = _clamp01(nt, "nail_start", _math(nt, "nail_past_cut", "SUBTRACT", along, cut), 1 / NAIL_EDGE_SOFT)
     sides = _clamp01(nt, "nail_sides", _math(nt, "nail_side_room", "SUBTRACT", NAIL_SIDE,
                                              _math(nt, "nail_abs", "ABSOLUTE", across)), 1 / NAIL_EDGE_SOFT)
-    plate = _math(nt, "nail_plate", "MULTIPLY", _math(nt, "nail_plate_a", "MULTIPLY", start, sides), inside)
+    tip_cut = _math(nt, "nail_tip_cut", "MULTIPLY_ADD", across2, -NAIL_TIP_CURVE, 1.0)
+    before_tip = _math(nt, "nail_before_tip", "SUBTRACT", tip_cut, along)
+    tip_room = _clamp01(nt, "nail_tip_room", before_tip, 1 / NAIL_EDGE_SOFT)
+    plate = _math(nt, "nail_plate", "MULTIPLY", _math(nt, "nail_plate_a", "MULTIPLY",
+                                                       _math(nt, "nail_plate_b", "MULTIPLY", start, sides), tip_room),
+                  inside)  # fmt: skip
     # the lunula: a half-moon from the cuticle, as long as its digit's
     toes = _math(nt, "nail_toes", "GREATER_THAN", digit, 5.5)
     finger_len = _math(nt, "nail_len_f", "MULTIPLY_ADD", digit, -NAIL_LUNULA_FINGERS[1], NAIL_LUNULA_FINGERS[0])
