@@ -49,7 +49,7 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   projected), `aaroncards*shaped`, `eyetrans`, `aaroneyes*own`, `nailmat`, `setkey*mouthClose*0.1` (closes the
   slit), `aaronwrinkles*smile`, the foot transplant (`aaron_foot.npz`), the body rig (`tools/gate/body_rig.py`,
   `parts_gate.POSES`, `test_body_rig.py`). **Block C** (`scratchpad/batch_C.sh`, log `batch_C` in batch_B.log) waits
-  for the file `scratchpad/card_back` - create it when web-9e sends "card free"; `card_back.lent` pauses it between
+  for the file `scratchpad/card_back` - the order (07:40 UTC): web-9e's takes, then web-4c's 20-25 min slot (send it "card yours" on web-9e's "card free"), then create the file on web-4c's "card free"; `card_back.lent` pauses it between
   steps for a peer. Then review every sheet against his and write each row's verdict.
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
