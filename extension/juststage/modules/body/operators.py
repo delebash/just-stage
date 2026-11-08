@@ -78,7 +78,7 @@ class JUSTSTAGE_OT_body_set_mix(CommandOperator, bpy.types.Operator):
 
     character: bpy.props.StringProperty(name="Character")
     region: bpy.props.StringProperty(name="Region")
-    identities: bpy.props.StringProperty(name="Identities", description="Comma-separated identity names")
+    identities: bpy.props.StringProperty(name="Identities", description="Comma-separated identity names", default="")
     weights: bpy.props.CollectionProperty(name="Weights", type=JustStageFloat)
     strength: bpy.props.FloatProperty(name="Strength", default=1.0, min=0.0, max=1.0)
 
