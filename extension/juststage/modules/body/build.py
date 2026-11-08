@@ -205,6 +205,28 @@ def keep_on_floor(obj: bpy.types.Object) -> None:
         stand_on_floor(obj)
 
 
+def refit_riders(obj: bpy.types.Object) -> None:
+    """After the body's shape changed: what rides it, fitted again - the head's parts (the head module) and the
+    skeleton (the rig module), each only when its module is there and the character has it."""
+    try:
+        from ..head import parts
+    except ImportError:
+        parts = None
+    if parts is not None and parts.parts_of(obj):
+        parts.refit(obj)
+    refit_skeleton(obj)
+
+
+def refit_skeleton(obj: bpy.types.Object) -> None:
+    """The skeleton's joints on the body's shape and the head's parts riding it (the rig module; nothing without
+    one)."""
+    try:
+        from ..rig import skeleton
+    except ImportError:
+        return
+    skeleton.refit(obj)
+
+
 def visible_vertex_count(obj: bpy.types.Object) -> int:
     """Vertices left after the modifiers (the helper mask) — what the user sees."""
     depsgraph = bpy.context.evaluated_depsgraph_get()

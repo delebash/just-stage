@@ -75,9 +75,6 @@ def main(params: Params) -> Result:
 
 
 def _refit(obj) -> None:
-    try:  # the head's eyes and teeth ride the body's helpers (head module; absent when it is switched off)
-        from ..head import parts
-    except ImportError:
-        return
-    if parts.parts_of(obj):
-        parts.refit(obj)
+    from . import build
+
+    build.refit_riders(obj)  # the head's eyes and teeth ride the body's helpers, the skeleton its joint cubes

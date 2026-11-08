@@ -2164,6 +2164,21 @@ every one logged; key claims page-read):
     as his (aimed in world space; a turn by angle from each rest left the forearms pointing apart), the nearest skin
     to the joint posed over rest: elbow (~107 deg) ours 0.90 / his 0.69, knee (90) 0.77 / 0.92, sitting (hip 90)
     0.96 / 0.85, arm 30 deg above level 0.86 / 0.91. A crude measure: the renders decide.
+  - The skeleton (build queue item 8, 2026-11-08, *measured* on the fetched files; `tools/make_skeleton.py`):
+    MPFB2's `weights.game_engine_with_breast.json` puts its breast weights on top of the plain game-engine ones -
+    831 chest vertices total up to 1.68 (vertex 1771: breast_r 0.68, spine_03 0.99), the plain file sums to 1.000
+    everywhere; Blender's Armature modifier divides by the total, so it deforms the same, but Unreal and UsdSkel take
+    weights summing to 1, so ours are normalised. The game-engine rig leaves joint-spine-1 -> joint-neck without a bone
+    (its `spine_03` ends at spine-1, `neck_01` starts at the neck): `spine_04` / `spine_05` fill it. Every MakeHuman
+    joint cube has 8 vertices (125 cubes), so MPFB2's own `MEAN` strategy (a plain mean, repeats counted -
+    `entities/rig.py` `get_best_location_from_strategy`) places a point at any rational fraction between two cubes:
+    the twists at exact thirds, `spine_05` at 5/8 (Manny 0.62), `neck_02` at 1/2 (Manny 0.51). Manny's parents
+    (measured) differ from the game-engine rig's at `pelvis` (root), `clavicle_*` and `neck_01` (spine_05), `head`
+    (neck_02), the fingers' `_01` (their metacarpals).
+  - HD Aaron's forearm (his blend, 2026-11-08): `CC_Base_R_Forearm` doesn't deform; `CC_Base_R_ForearmTwist01` (head
+    at the elbow) and its child `ForearmTwist02` (head half way, 0.106 of 0.213 m) carry the forearm, the hand a child
+    of the forearm; his upper arm, thigh and calf the same (Twist01 at the joint, Twist02 its child half way), plus
+    `NeckTwist01/02` and `RibsTwist_L/R` - CC5's own layout, not Manny's thirds.
   - His wrinkles: his head material's rl_wrinkle_shader takes 46 driven inputs (each driver reads his body's
     `wrinkle_strength`, `wrinkle_regions`, `wrinkle_curves` and his keys); his smile (Mouth_Corner_Pull_L/R 1) gives
     12 of them 0.6-1.0, his neutral none (each driver's expression evaluated by hand on its targets).

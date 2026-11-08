@@ -159,10 +159,10 @@ def add(path: str, scene) -> bpy.types.Object:
     if migrations.run([body]):  # a character saved by an older JustStage (base v1: hm08 without the lid anatomy)
         objects = [body, *(o for o in bpy.data.objects if o.juststage.part_of == new)]  # its grooms may be new ones
     if any(o.juststage.part in ("eyeLeft", "eyeRight") for o in objects):  # today's fit: the eyes' lid clearance
-        from ..modules.head import parts
+        from ..modules.body import build
 
         bpy.context.view_layer.update()
-        parts.refit(body)
+        build.refit_riders(body)  # the head's parts, then the skeleton (when it has one)
     skin = body.juststage.skin_material
     if skin is not None and skin.juststage.has_maps:  # today's shading on its maps (modules/skin/maps.py)
         from ..modules.skin import maps, skin_set_tone

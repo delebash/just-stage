@@ -8,13 +8,13 @@ import bpy
 from . import api, character, migrations
 from .commands import api_status
 from .core import usd_hooks
-from .modules import body, hair, head, io, skin
+from .modules import body, hair, head, io, rig, skin
 from .ui import ai_jobs, ai_panel, character_panel, content, menus, operators, viewport_header
 
 CORE = "core"
 _CORE_COMMANDS = (api_status,)
 #: Built-in modules in dependency order; each registers through the same `register_plugin` outside plugins use.
-MODULES = (body, head, skin, hair, io)
+MODULES = (body, head, rig, skin, hair, io)
 
 
 def _api_range() -> str:

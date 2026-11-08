@@ -22,7 +22,7 @@ class Params(NamedTuple):
     asian: float = 0.33
     caucasian: float = 0.33
     african: float = 0.33
-    dressed: bool = False  # the panel's New human: eyes, teeth, lashes and a skin too
+    dressed: bool = False  # the panel's New human: eyes, teeth, the skeleton, lashes and a skin too
 
 
 class Result(NamedTuple):
@@ -100,6 +100,7 @@ def _dress(obj) -> str:
     cid = obj.juststage.character_id
     open_eyes(cid)
     api.run("juststage.head.add_parts", character=cid)
+    api.run("juststage.rig.add_skeleton", character=cid)  # a human has the UE5 skeleton (character-data-model.md)
     lashes.make(obj)
     brows.make(obj)
     name = DEFAULT_SKIN["female" if obj.juststage.gender < 0.5 else "male"]

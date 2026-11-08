@@ -48,8 +48,7 @@ def main(params: Params) -> Result:
         values = np.random.default_rng(params.seed).standard_normal(n).astype(np.float32)
     values *= params.strength
     largest = gnm_space.set_identity(obj, values)
-    from . import parts
+    from ..body import build
 
-    if parts.parts_of(obj):
-        parts.refit(obj)
+    build.refit_riders(obj)  # the eyes and teeth, the skeleton's head and neck joints
     return Result(components=n, max_offset_mm=largest)

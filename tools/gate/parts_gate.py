@@ -118,6 +118,8 @@ VIEWS = {
     "pose_knee": ("knee bent 90 deg: its front and the back's fold", "p_knee"),
     "pose_sit": ("thigh raised 90 deg: the hip, the groin and the buttock", "p_sit"),
     "pose_arm_up": ("upper arm raised to 30 deg above level: the shoulder, the armpit", "p_arm_up"),
+    # 2026-11-08, the skeleton's twist bones (build queue item 8): the hand turned 90 deg about the forearm
+    "pose_twist": ("forearm turned 90 deg: the twist along the forearm, no candy-wrapping", "p_twist"),
 }
 
 #: the poses: each bone of a role aimed at a world direction, parents first (the minimal turn from where it points) -
@@ -129,7 +131,10 @@ POSES = {
     "p_knee": [("thigh", (-0.05, 0.0, -1.0)), ("calf", (0.0, 1.0, -0.05))],  # knee 90 deg, bent back
     "p_sit": [("thigh", (-0.08, -1.0, 0.0)), ("calf", (0.0, 0.0, -1.0))],  # hip and knee 90 deg
     "p_arm_up": [("upperarm", (-0.866, 0.0, 0.5)), ("lowerarm", (-0.866, 0.0, 0.5))],  # 30 deg above level, straight
+    "p_twist": [("upperarm", (-0.94, 0.0, -0.34)), ("lowerarm", (-0.94, 0.0, -0.34))],  # 20 deg below level, straight
 }
+#: a pose's forearm twist after its aims (`body_rig.twist`): degrees the hand turns about the forearm
+TWISTS = {"p_twist": 90.0}
 
 
 # ---- the characters ------------------------------------------------------------------------------------------------
@@ -270,6 +275,8 @@ def _pose(who: str, built: dict, name: str | None) -> None:
         if np.linalg.norm(axis) > 1e-6:
             angle = np.degrees(np.arccos(np.clip(u @ want, -1.0, 1.0)))
             body_rig.turn(arm, bone, axis / np.linalg.norm(axis), angle)
+    if name in TWISTS:
+        print("TWIST", who, body_rig.twist(arm, built["body"], roles, TWISTS[name]), flush=True)
     built["posed"] = {k: body_rig.joint(arm, roles[k]) for k in ("upperarm", "lowerarm", "hand", "thigh", "calf")}
     print("POSED", who, name, {r: np.round(body_rig.limb(arm, roles, r), 3).tolist() for r, _ in POSES[name]},
           flush=True)
@@ -395,7 +402,9 @@ def view(name: str, a: dict[str, Vector]):
                 "pose_elbow_side": (a.get("lowerarm"), _v(-1, 0.3, 0.1).normalized(), z, 0.36),
                 "pose_knee": (a.get("calf"), _v(-1, -0.15, 0.1).normalized(), z, 0.45),
                 "pose_sit": (a.get("thigh"), _v(-1, -0.2, 0.1).normalized(), z, 0.6),
-                "pose_arm_up": (a.get("upperarm"), _v(-0.6, -1, 0.1).normalized(), z, 0.42)}[name]
+                "pose_arm_up": (a.get("upperarm"), _v(-0.6, -1, 0.1).normalized(), z, 0.42),
+                "pose_twist": ((a["lowerarm"] + a["hand"]) * 0.5 if "hand" in a else None,
+                               _v(-0.15, -1, 0.45).normalized(), z, 0.40)}[name]
     face, front34 = 0.30, _v(-0.7071, -0.7071, 0)
     if name == "front":
         return m + _v(0, 0, -0.12), _v(0, -1, 0), z, 0.56

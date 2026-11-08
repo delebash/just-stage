@@ -13,6 +13,7 @@ into the user's JustStage library by `tools/build_skins.py` / `tools/build_libra
 | Hair-editor pack (`hair/haireditor/hair.blend`) | files.makehumancommunity.org/functional/haireditor.zip | Tomáš Klecer (MakeHuman) | CC0-1.0 |
 | Faceunits 01 (52 ARKit face units) | files.makehumancommunity.org/functional/faceunits01.zip | Mika Suominen (MakeHuman) | CC0-1.0 |
 | ICT-FaceKit neutral mesh (eye occlusion and tearline strips) | github.com/USC-ICT/ICT-FaceKit @ da5f95a6 | USC Institute for Creative Technologies | MIT |
+| The body skeleton (`data/generated/rigs/ue5.json`, `weights.ue5.json`: MPFB2's `game_engine_with_breast` rig and weights extended to the UE5 skeleton's 82 bones, its default rig's metacarpals and weights as seeds, `tools/make_skeleton.py`; Epic's bone names and four places measured on the user's UE 5.7 Manny - no Epic file or data shipped) | github.com/makehumancommunity/mpfb2 @ 6ff1eb35 (`src/mpfb/data/rigs/standard/`) | MakeHuman / MPFB2 contributors | CC0-1.0 |
 | The face's blink units (`data/generated/faceunits_ict/eyeBlinkLeft.npz`, `eyeBlinkRight.npz`: ICT-FaceKit's `eyeBlink_L` / `eyeBlink_R` carried onto our base man, `tools/make_ict_units.py`) | github.com/USC-ICT/ICT-FaceKit @ da5f95a6 (FaceXModel) | USC Institute for Creative Technologies | MIT |
 | GNM head model v3 | huggingface.co/google/gnm-v3 | Google | Apache-2.0 |
 | Studio Small 09 HDRI (2K) | polyhaven.com/a/studio_small_09 | Poly Haven | CC0-1.0 |

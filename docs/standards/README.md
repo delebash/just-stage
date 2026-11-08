@@ -93,7 +93,7 @@ Paths are inside the `juststage` add-on unless they say otherwise.
 | Garment layering | MHCLO `z_depth` / `juststage:layer`; `juststage:tuckUnder` | parenting a mesh to the body |
 | Faces hidden under a garment | MHCLO `delete_verts`; a `UsdGeomSubset` (family `juststage:hide`) | a vertex-list blob |
 | Skin weights | MPFB2's weights extended for UE5's bones; garments by transfer (`rig.transfer_weights`) | copying weights by hand |
-| The skeleton | the UE5 skeleton by its own names in MPFB2's rig JSON v110 (`data/rigs/ue5.json`), joints placed by the `CUBE` strategy | a per-character bone list; our own spellings |
+| The skeleton | the UE5 skeleton by its own names in MPFB2's rig JSON v110 (`data/generated/rigs/ue5.json`, made by `tools/make_skeleton.py`), joints placed by the `CUBE` and `MEAN` strategies | a per-character bone list; our own spellings |
 | A creature's skeleton | Mesh2Motion's CC0 creature rigs or Rigify's creature metarigs, Blender's automatic weights | the human skeleton bent to fit |
 | Starter motions and sculpting bases | Mesh2Motion's CC0 animations (human ones retargeted onto the UE5 skeleton); Blender Studio's CC0 base meshes — both in the starter library | motions or bases of unknown licence |
 | A bone's name in another program | the name tables (`data/skeletons/<source>.json`) through the export preset | renaming bones in the armature |

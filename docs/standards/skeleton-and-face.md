@@ -19,9 +19,12 @@ Standard: Epic's skeleton (§8); [Blender bone naming](https://docs.blender.org/
 `calf_l`, `foot_l`, `ball_l`) with `weights.game_engine.json` (§5). JustStage's rig is that rig extended by the 27 bones
 UE5 adds (`spine_04/05`, `neck_02`, twists, metacarpals), in the same format — MPFB2's rig JSON v110
 ([`rig.md`](https://github.com/makehumancommunity/mpfb2/blob/master/docs/fileformats/rig.md)) — as
-`data/rigs/ue5.json` with `data/rigs/weights.ue5.json`. **Every bone's head and tail is placed by MPFB2's `CUBE`
+`data/generated/rigs/ue5.json` with `weights.ue5.json` (made per machine from MPFB2's fetched files by
+`tools/make_skeleton.py`, 2026-11-08). **Every bone's head and tail is placed by MPFB2's `CUBE`
 strategy**: the mean of a named joint cube's vertices (e.g. `"cube_name": "joint-l-foot-1"`), which every morph moves —
-so the skeleton follows the body as sliders change it (item 2). Added bones get their own joint-cube rules and weights.
+so the skeleton follows the body as sliders change it (item 2). Added bones get their own joint-cube rules and weights
+(built 2026-11-08: the twists, `spine_05` and `neck_02` as MPFB2's `MEAN` of two joint cubes' vertices listed in the
+ratio of Manny's place, the metacarpals at MPFB2's default rig's joints; their weights shares of their source bone's).
 
 ### 1.1 Deform bones
 

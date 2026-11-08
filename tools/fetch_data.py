@@ -42,6 +42,9 @@ SOURCES = {
             "src/mpfb/data/targets/**/*.target.gz",
             "src/mpfb/data/rigs/standard/rig.game_engine*.json",
             "src/mpfb/data/rigs/standard/weights.game_engine*.json",
+            # its default rig's metacarpals and weights seed the UE5 skeleton's added bones (tools/make_skeleton.py)
+            "src/mpfb/data/rigs/standard/rig.default.json",
+            "src/mpfb/data/rigs/standard/weights.default.json",
             "src/mpfb/data/expressions/*",
             "src/mpfb/data/uv_layers/*",
             "src/mpfb/data/node_trees/procedural_eyes.json",  # its procedural eye ("EnhancedEye", modules/head/eyes.py)

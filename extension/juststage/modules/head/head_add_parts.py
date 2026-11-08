@@ -33,4 +33,7 @@ def main(params: Params) -> Result:
 
     obj = character.find(params.character)
     added = parts.add(obj)
+    from ..body import build
+
+    build.refit_skeleton(obj)  # a new part rides the head bone (when the character has a skeleton)
     return Result(added=added, parts=sorted(parts.parts_of(obj)))
