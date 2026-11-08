@@ -3194,6 +3194,28 @@ before the rec list; measured in Blender 5.3 and read in our code):
   (L* 20 / p95 60 at the back against ours 25 / 43): the live model's shares only trade the two; lighter tips
   (`factors hairtip`) lift the highlights (p95 48-55) and the mean (29-35) together - darker body plus tips queued.
 
+- **The groom's cut: the procedural comb against an authored cut** (*measured and page read, 2026-11-07 late*).
+  - The library's "JustStage short taper" after tonight's fixes (`.dev/gate/parts/2026-11-07e/*_lib`): no bare
+    lines, a real density, the nape at the head joint (158,165 strands). But its outline is a puffed helmet, wide over
+    the ears, rounded at the back, a centre parting. His is short at the sides and nape, with longer swept locks on
+    top. Region medians of the stand-off (within ~2 mm of his) don't see the outline.
+  - Five taper versions and a comb went into one root cause, past the second-workaround mark. The leading apps ship
+    artist-made grooms (CC5's hair assets, MetaHuman's groom library).
+  - HD Aaron's hair is a card mesh, "Classic_Slick_Back": 41,100 vertices, 20,782 faces, 1,970 cards, 46 mm long at
+    the median (p90 65 mm); the texture's v runs along the strand on 99.8% of them. Two materials: Hair and
+    Hair_Clap (the hairline's cards).
+  - USC-HairSalon (the author's page, read): 343 styles, 10,000 strands each, on one standard head
+    (`head_model.obj`, y up, metres, the face toward +z). Its terms: "internal, non-commercial research, evaluation
+    or testing purposes only", "not allowed to sublicense or distribute". Downloaded for local tests
+    (`.dev/downloads/usc_hairsalon_2026-11-07/`, 3.45 GB). Its shortest cuts (median strand 8-9 cm, top 9-12 cm,
+    sides 6-7 cm) are fringes, bowls and emo cuts; none is a short taper with a swept quiff.
+  - Perm (MIT, the README read): checkpoints and fits of all 343 USC styles on SharePoint; its decoder needs CUDA
+    11.3+ custom ops (Ubuntu, gcc <= 10 tested).
+  - The like-for-like test (`tools/gate/groom_transfer.py cards`): his cards as three strands each (5,910),
+    wrapped onto our head (skull to skin 0.65 / 1.79 mm p50 / p90; roots 1.40 mm off at the median), as our
+    scalp's guides (`factors guidefile*aaron_cards`). It asks: on his exact cut, does our fill and shading reach
+    his look? Queued.
+
 ### 14.15 · The live view against the film
 
 - **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over

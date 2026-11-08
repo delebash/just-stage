@@ -657,6 +657,37 @@ def eye_slider(built: dict, key: str, value: float) -> None:
     print("EYE SLIDER", key, value, flush=True)
 
 
+HAIR_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "hair"
+
+
+def guidefile(built: dict, stem: str) -> None:
+    """An authored groom's strands (`tools/gate/groom_transfer.py`, `.dev/gate/hair/<stem>.npz` - USC-HairSalon's or
+    HD Aaron's own cards, LOCAL TESTS ONLY) as our scalp's guides: `scalp.make` with its own fill, shape and colour, so only the guides differ
+    from the gate's man - does our render reach HD Aaron's hair once the cut is an authored one? Each strand resampled
+    to the guides' POINTS evenly along its length. A new groom: --alone."""
+    scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
+    data = np.load(HAIR_TRIALS / f"{stem}.npz")
+    strands = np.split(data["points"].astype(np.float64), np.cumsum(data["counts"])[:-1])
+    t = np.linspace(0.0, 1.0, scalp.POINTS)
+
+    def resample(s: np.ndarray) -> np.ndarray:
+        along = np.r_[0.0, np.cumsum(np.linalg.norm(np.diff(s, axis=0), axis=1))]
+        return np.stack([np.interp(t, along / along[-1], s[:, k]) for k in range(3)], axis=1)
+
+    found = [resample(s) for s in strands if len(s) > 1 and np.linalg.norm(s[-1] - s[0]) > 0.002]
+    body = built["body"]
+    kept = scalp.guides
+    scalp.guides = lambda character, style, seed=5: found
+    try:
+        groom = scalp.make(body, "short taper")
+    finally:
+        scalp.guides = kept
+    pg.colour_scalp(groom)
+    cid = body.juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("GUIDE FILE", stem, len(found), "guides", flush=True)
+
+
 SMILE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "smile"
 
 
@@ -725,6 +756,8 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
+        return lambda built: guidefile(built, name.split("*", 1)[1])
     if name.startswith("lidledge"):  # lidledge*1*2.3 (the share toward the rim's line, the lash line's gap in mm)
         _, k, gap = name.split("*")
         return lambda built: lidledge(built, float(k), float(gap))

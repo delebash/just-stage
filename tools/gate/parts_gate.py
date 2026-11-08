@@ -133,12 +133,7 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
     if not character:
         for o in list(scene.objects):
             if o.juststage.part_of == shown.character and o.juststage.part == "scalp":
-                api.run("juststage.hair.set_colour", groom=o.name, **SCALP_COLOUR)
-                mod = o.modifiers.get("Strand colour")
-                if mod is not None:
-                    ident = next(i.identifier for i in mod.node_group.interface.items_tree
-                                 if getattr(i, "in_out", "") == "INPUT" and i.name == "Grey Share")
-                    getattr(mod.properties.inputs, ident).value = SCALP_GREY
+                colour_scalp(o)
     if brows == "generated" or not character:  # JustStage's own (modules/hair/brows.py, rec 8); the gate's man greying
         importlib.import_module("bl_ext.system.juststage.modules.hair.brows").make(
             next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of),
@@ -158,6 +153,17 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
     objects = [o for o in scene.objects if shown.character in (o.juststage.character_id, o.juststage.part_of)]
     body = next(o for o in objects if not o.juststage.part_of)
     return {"body": body, "objects": objects, "keyed": [body]}
+
+
+def colour_scalp(groom) -> None:
+    """The gate's man's scalp colour (SCALP_COLOUR, SCALP_GREY) on a scalp groom, as the hair panel sets it."""
+    api = importlib.import_module("bl_ext.system.juststage.api")
+    api.run("juststage.hair.set_colour", groom=groom.name, **SCALP_COLOUR)
+    mod = groom.modifiers.get("Strand colour")
+    if mod is not None:
+        ident = next(i.identifier for i in mod.node_group.interface.items_tree
+                     if getattr(i, "in_out", "") == "INPUT" and i.name == "Grey Share")
+        getattr(mod.properties.inputs, ident).value = SCALP_GREY
 
 
 def build_cc5(scene, engine: str, inputs: dict[str, float] | None = None) -> dict:
