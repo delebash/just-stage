@@ -62,6 +62,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   `docs/plans/2026-11-08-smile-units.md`), G (item 7, the nail bed as shape: `nailshape` -> `2026-11-08nail`) - logs
   `scratchpad/batch_{D_skel,E,F,G}.log`. Item 5 found: the teeth's size is arch form, the tongue sits like his
   (RESEARCH 14.5). After: look at each sheet, the narrowed skeleton test run, the library rebuild (backup first).
+- **2026-11-08 ~07:15: the skeleton job done (library rebuilt with it, backup `library_2026-11-08b`); the card given back.
+  Active job: THE FACE RIG - working doc `docs/plans/2026-11-08-face-rig.md` (step 1, the OpenRigLogic wheel shipped,
+  done). Open from the queue: item 7's nail (displacement into the product, the lunula's white, the spike faces),
+  item 5's tongue (our body's shadow in the mouth - narrow it to the mouth's inner skin; card), the full Blender suite
+  for today's later changes (card).**
 - **THE FEASIBILITY CHECKLIST (the plan's §18a) drives every step** - every part from the plan's rows and the gate's
   list; read it before choosing the next step, update its row the moment a result lands (the user, 2026-11-07 late:
   "why do you keep missing everything").

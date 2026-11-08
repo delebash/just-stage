@@ -311,6 +311,19 @@ def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
     assert tint[1] < tint[2]  # redder, less yellow: blue kept above green
 
 
+def test_the_nail_plate_is_matte_like_his(human, tmp_path):
+    """Our plate read milky white beside HD Aaron's skin-toned one; matte (roughness 0.55, specular 0.3, no coat) it
+    reads as his (the gate's `nailshine`, 2026-11-08) - those values reach the plate's mixes."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+
+    def plate(key):
+        return next(i for i in nodes[maps.NODE + f"nail_{key}"].inputs if i.identifier == "B_Float").default_value
+
+    assert plate("rough") >= 0.5 and plate("coat") == 0.0 and plate("spec") <= 0.35
+
+
 def test_the_nails_have_no_pores(human, tmp_path):
     """The skin's pores and microrelief tiled onto the nails' tile under their coat read as a bumpy plate with white
     specks (gate run 4's nails view; HD Aaron's plates smooth) - nails have none."""
