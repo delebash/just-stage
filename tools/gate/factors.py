@@ -1505,7 +1505,8 @@ def ictsmile(built: dict, stem: str, mouth: float = 1.0, cheek: float = 1.0) -> 
         size = np.linalg.norm(d, axis=1)
         return float((at[:, 0] * size).sum())
 
-    for shape in ("mouthSmile", "cheekSquint", "eyeSquint"):
+    shapes = sorted({k[:-2] for k in deltas.files if k.endswith(("_L", "_R"))})  # the smile's three, or a blink
+    for shape in shapes:
         ours = {}
         for long in ("Left", "Right"):
             key = blocks[f"{shape}{long}"]
@@ -1729,6 +1730,8 @@ def factor(name: str):
     if name.startswith("aaronshape"):  # aaronshape[*lower] (our head moved onto his face shape; "lower": below the eyes)
         region = name.split("*", 1)[1] if "*" in name else ""
         return lambda built: aaronshape(built, "aaron_skin_pinned", region)
+    if name.startswith("ictkeys*"):  # ictkeys*ict_blink_average_man: any carried ICT shapes into our keys of their names
+        return lambda built: ictsmile(built, name.split("*")[1])
     if name.startswith("aaronwrinkles*"):  # aaronwrinkles*smile (after aaronskin: his wrinkle maps as his smile sets them)
         return lambda built: aaronwrinkles(built, name.split("*")[1])
     if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)

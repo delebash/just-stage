@@ -16,7 +16,7 @@ far head held at 0).
 
     1. python tools/dev.py blender -b --python tools/gate/smile_transfer.py -- export OURS.npz
        (the gate's man, `parts_gate.OURS`: his skin's shaped vertices, triangles, lid rims)
-    2. .dev/venv-tools/Scripts/python -I tools/gate/smile_transfer.py carry OURS.npz ICT_DIR DELTAS.npz
+    2. .dev/venv-tools/Scripts/python -I tools/gate/smile_transfer.py carry OURS.npz ICT_DIR DELTAS.npz [SHAPE,SHAPE]
     3. python tools/dev.py blender -b --python tools/gate/factors.py -- --factors ictsmile*DELTAS --alone
        --views face_smile,face_smile_full (the deltas written into our ARKit keys of the same names)
 """
@@ -132,7 +132,7 @@ def _apply(m: np.ndarray, p: np.ndarray) -> np.ndarray:
     return p @ m[:3, :3].T + m[:3, 3]
 
 
-def carry(ours_npz: Path, ict_dir: Path, out: Path) -> None:
+def carry(ours_npz: Path, ict_dir: Path, out: Path, shapes: tuple = SHAPES) -> None:
     import scipy.sparse as sp
     import trimesh
     from scipy.sparse.linalg import spsolve
@@ -204,7 +204,7 @@ def carry(ours_npz: Path, ict_dir: Path, out: Path) -> None:
     lap_ff = lap[free][:, free].tocsc()
     lap_fx = lap[free][:, fixed]
     deltas = {}
-    for name in SHAPES:
+    for name in shapes:
         shaped, _ = _obj(ict_dir / f"{name}.obj")
         d_ict = (shaped[face_v] - ict[face_v]) @ lin.T  # ICT's offset in our frame and scale
         d = np.zeros((n, 3))
@@ -226,4 +226,4 @@ if __name__ == "__main__":
     if args[0] == "export":
         export(Path(args[1]))
     else:
-        carry(Path(args[1]), Path(args[2]), Path(args[3]))
+        carry(Path(args[1]), Path(args[2]), Path(args[3]), tuple(args[4].split(",")) if len(args) > 4 else SHAPES)
