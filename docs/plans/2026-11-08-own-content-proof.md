@@ -214,6 +214,19 @@ sockets, beside the nose, under the lip), ours lit flat; our skins' cavity is fl
 BUILD"), CC5 ships an AO map. Next trial: `aoshade` (Blender's Ambient Occlusion node into the base colour, 15 / 30 mm
 reach, strength 0.5 / 0.8) - `batch_ao.sh`. A third scan (`mix*hsr0161`, `row_slot2_face2.png`): a broader face,
 still a doll - confirmed. On the card ~18:15 (after just-voice's card work).
+
+**18:04, the AO round (`.dev/gate/parts/2026-11-08ao`, rows `row_ao_*.png`; a first run at 17:51 was stopped by the
+RAM guard when just-voice's ASR took ~15 GB beside it):** crease darkness by Blender's AO node (0.5 / 0.8, 15 / 30 mm)
+barely changes the face - still a doll - not kept: **crease shading is not the cause either.** The eyes' surround as a
+fade (`eyedark*0.65`): a slight natural darkening, no ring - a small gain, but the composition already has an eye-zone
+darkening (`skin_base.py` EYE_DARK, the plan's §8) - one way per job: tune that, not a second layer in the shader.
+Irregular lip lines (`liplines*1.3*0.4*4*0.8`): fine uneven vertical lines - the lips read as lips, not rubber - **a
+real gain, the route kept**; into the product it needs coordinates that follow the lips' deformation (the trial's world
+position would swim when the head moves) - UV space, to build; the shader is rebuilt from code on every library load
+(`maps.refresh`), so no rebuild for it. Lips still differ in colour (his darker red to the seam) and fullness.
+**Next: the layer diagnostic (`batch_diag.sh`) - one of his layers at a time on our face (skin, brow/lash/stubble cards,
+eyes at his size, then all three), to find which layer makes ours a doll - the plan's use of a transplant when fixes
+stall; then that layer fixed with our content.** Waits for just-voice's end run ("CPU free" ~18:55).
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
