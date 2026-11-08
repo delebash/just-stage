@@ -11,8 +11,15 @@ def register(api_range: str):
     import bpy
 
     from ... import api
-    from . import (face_rig, head_add_face_rig, head_add_face_units, head_add_parts, head_set_eye_colour,
-                   head_set_identity, operators)
+    from . import (
+        face_rig,
+        head_add_face_rig,
+        head_add_face_units,
+        head_add_parts,
+        head_set_eye_colour,
+        head_set_identity,
+        operators,
+    )
 
     api.register_plugin(PLUGIN, api=api_range, needs=NEEDS, provides=("commands",), builtin=True)
     api.register_command(head_set_identity, PLUGIN)
