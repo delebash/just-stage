@@ -39,9 +39,10 @@ EYE_POINTS = 24  # landmarks round each eye's opening
 WRAP_STEPS = [[0.02, 50, 0.5, 10], [0.02, 20, 0.5, 10], [0.02, 8, 0.5, 10], [0.02, 4, 0.5, 10]]  # body_scan's
 
 
-def export(out: Path) -> None:
+def export(out: Path, character: str = "") -> None:
     """The gate's man as `parts_gate.build_ours` starts him (the library's character, his eyes opened): his skin's
-    shaped vertices (world), its triangles and his lids' rims - no hair, no render."""
+    shaped vertices (world), its triangles and his lids' rims - no hair, no render. `character`: another library
+    character (the gate's `--character`) - the transplants on the women (checklist row 19)."""
     import importlib
     import importlib.util
 
@@ -57,7 +58,8 @@ def export(out: Path) -> None:
     base = importlib.import_module("bl_ext.system.juststage.modules.body.base")
     create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
     scene, _ = pg._stage()
-    shown = api.run("juststage.library.add", path=str(library.root() / "Characters" / f"{pg.OURS['character']}.blend"))
+    name = character or pg.OURS["character"]
+    shown = api.run("juststage.library.add", path=str(library.root() / "Characters" / f"{name}.blend"))
     create.open_eyes(shown.character)
     body = next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of)
     co = build.shaped_coords(body)
@@ -67,7 +69,7 @@ def export(out: Path) -> None:
             for k in range(1, len(p.vertices) - 1)]  # fmt: skip
     out.parent.mkdir(parents=True, exist_ok=True)
     np.savez(out, co=co @ mw[:3, :3].T + mw[:3, 3], tris=np.array(tris, np.int64), rows=base.rows(), world=mw,
-             character=pg.OURS["character"])  # fmt: skip
+             character=name)  # fmt: skip
     print("EXPORTED", len(co), "vertices", len(tris), "skin triangles", flush=True)
 
 
@@ -223,7 +225,7 @@ def carry(ours_npz: Path, ict_dir: Path, out: Path, shapes: tuple = SHAPES) -> N
 
 if __name__ == "__main__":
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
-    if args[0] == "export":
-        export(Path(args[1]))
+    if args[0] == "export":  # export OUT.npz [CHARACTER]
+        export(Path(args[1]), args[2] if len(args) > 2 else "")
     else:
         carry(Path(args[1]), Path(args[2]), Path(args[3]), tuple(args[4].split(",")) if len(args) > 4 else SHAPES)

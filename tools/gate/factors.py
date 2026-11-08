@@ -1769,8 +1769,9 @@ def factor(name: str):
     if name.startswith("aaronbody"):  # aaronbody[*aaron_hand] (his body skin on our torso, or the carried region)
         stem = name.split("*", 1)[1] if "*" in name else "aaron_torso"
         return lambda built: aaronbody(built, stem)
-    if name.startswith("aaronskin"):  # aaronskin (the transplant: his head material on our head)
-        return lambda built: aaronskin(built)
+    if name.startswith("aaronskin"):  # aaronskin[*stem] (the transplant: his head material on our head; a stem for
+        # another character's wrap, e.g. aaronskin*aaron_skin_on_woman)
+        return lambda built: aaronskin(built, name.split("*", 1)[1]) if "*" in name else aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
         return lambda built: guidefile(built, name.split("*", 1)[1])
     if name.startswith("browup"):  # browup*1 (the brow slider, up)
