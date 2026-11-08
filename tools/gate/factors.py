@@ -605,6 +605,49 @@ def eye_slider(built: dict, key: str, value: float) -> None:
     print("EYE SLIDER", key, value, flush=True)
 
 
+SMILE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "smile"
+
+
+def ictsmile(built: dict, stem: str) -> None:
+    """ICT-FaceKit's smile shapes carried onto our head (`tools/gate/smile_transfer.py`, `.dev/gate/smile/<stem>.npz`)
+    written into our ARKit keys of the same names (mouthSmile, cheekSquint, eyeSquint), each side to the key that
+    moves the same side - the gate's face_smile / face_smile_full views then show ICT's scanned smile on our head
+    against HD Aaron's (the smile proof, plan §7 "Expression shapes"). A shape: --alone."""
+    deltas = np.load(SMILE_TRIALS / f"{stem}.npz")
+    body = built["body"]
+    me = body.data
+    blocks = me.shape_keys.key_blocks
+    n = len(me.vertices)
+    to_local = np.linalg.inv(np.array(body.matrix_world)[:3, :3])
+
+    def side(d: np.ndarray, at: np.ndarray) -> float:
+        """Where a shape moves the skin: the moved vertices' mean x, weighted by how far each moves."""
+        size = np.linalg.norm(d, axis=1)
+        return float((at[:, 0] * size).sum())
+
+    for shape in ("mouthSmile", "cheekSquint", "eyeSquint"):
+        ours = {}
+        for long in ("Left", "Right"):
+            key = blocks[f"{shape}{long}"]
+            kco, ref = np.empty(n * 3, np.float32), np.empty(n * 3, np.float32)
+            key.data.foreach_get("co", kco)
+            key.relative_key.data.foreach_get("co", ref)
+            ref = ref.reshape(-1, 3)
+            ours[long] = (key, ref, side(kco.reshape(-1, 3) - ref, ref))
+        for short in ("_L", "_R"):
+            d = deltas[f"{shape}{short}"].astype(np.float64)
+            if len(d) != n:
+                raise RuntimeError(f"{stem}: {len(d)} vertices carried, the body has {n} - export him again")
+            d = d @ to_local.T
+            same = [k for k, (_, ref, s) in ours.items() if np.sign(s) == np.sign(side(d, ref))]
+            key, ref, _ = ours[same[0] if len(same) == 1 else ("Left" if short == "_L" else "Right")]
+            key.data.foreach_set("co", (ref + d).astype(np.float32).ravel())
+            print("ICT SMILE", f"{shape}{short}", "->", key.name, "max",
+                  round(float(np.linalg.norm(d, axis=1).max()) * 1000, 1), "mm", flush=True)
+    me.update()
+    bpy.context.view_layer.update()
+
+
 SCALED_KEYS = {"pores", "micro", "relief", "roughvar", *SHINE}
 
 
@@ -630,6 +673,8 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("ictsmile"):  # ictsmile*ict_average_man (the carried deltas' file stem)
+        return lambda built: ictsmile(built, name.split("*", 1)[1])
     if name.startswith("lidcarry"):  # lidcarry*0.85*0.7*0.55 (a share a ring)
         shares = [float(x) for x in name.split("*")[1:]]
         return lambda built: lidcarry(built, *shares)

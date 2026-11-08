@@ -91,7 +91,9 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - Queued for the card's next free turn (`scratchpad/batch_next.sh`; JustVoice holds the card for the user's audiobook
   until it sends "card free" - no Blender at all meanwhile): the library's hair (the nape at the head joint, quiff
   0.8), `factors lidsmooth` on the lower lid, the full smile (`face_smile_full`: mouthSmile + cheekSquint), the hair
-  with the library's style, then the end-of-list run of every suite (the global tests rule; tonight's commits are
+  with the library's style, the smile's feasibility (ICT-FaceKit's scanned smile carried onto the gate's man by
+  `tools/gate/smile_transfer.py`, rendered with `factors ictsmile` beside HD Aaron's - CPU dry run good, RESEARCH
+  §14.7), then the end-of-list run of every suite (the global tests rule; tonight's commits are
   unverified until it), then `factors hairgrey`. The user's 2026-11-07 global rules apply: NOT STANDARD under a go after
   attack passes (logged in the plan §19.3), gaps decided and logged as mine, faults fixed on sight, tests once at the end.
 - Proof (2) body relief: hands - Ten24's relief in texture space (`body_scan.py texture ten24`, x1.5 + colour), skins

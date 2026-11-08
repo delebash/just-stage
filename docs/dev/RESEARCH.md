@@ -2067,6 +2067,25 @@ every one logged; key claims page-read):
 - Transfer tools: Blender's Surface Deform (built in); ShapeKeyWrap, ShapeKeyTransferBlender, mesh-expression-retargeter
   (GPL-3); `vasiliskatr/deformation_transfer_ARkit_blendshapes` (MIT, Sumner & Popovic 2004) and its example-based
   facial rigging repo (MIT); ARKitBlendshapeHelper and arkit-blendshape-tool have no licence.
+- **ICT's smile on our head (2026-11-07 late, measured; the smile proof's first try, plan §19.3):**
+  - **The download.** ICT-FaceKit at commit da5f95a6 (MIT). `mouthSmile_L/R`, `cheekSquint_L/R`, `cheekRaiser_L/R`,
+    `eyeSquint_L/R`, its neutral and its LICENSE are in `.dev/downloads/ict_facekit_2026-11-07/`.
+  - **The shapes' size** (the most any vertex moves, ICT's centimetres): mouthSmile_L 1.58, cheekRaiser_L 0.69,
+    cheekSquint_L 0.63, eyeSquint_L 0.37. Each moves one side only: _L is +x in Blender's axes, the character's
+    left. Our Faceunits keys for comparison: mouthSmile ~18.7 mm, cheekSquint ~9.0 mm, but they move the mouth
+    alone, while CC5's corner pull also raises the cheeks and squints the eyes (the gate's face_smile view).
+  - **The carry** (`tools/gate/smile_transfer.py`), first run on CPU on the default man (`.dev/facetest/body/ten24/
+    ours.npz`, v2 base, 19,286 vertices):
+    - Alignment: a similarity from 24 points round each eye's opening against our lid rims (`base.rows`), then a
+      scaled ICP; ICT's head scaled 0.952.
+    - The NICP wrap lands within 0.52 / 2.31 mm (p50 / p90) of our skin, with the eye landmarks 1.61 mm off.
+    - The carried sizes: mouthSmile 14.9 mm, cheekSquint 5.9 mm, eyeSquint 3.4 mm, each on its own side.
+  - **The mouth corners match without mouth landmarks.** Ours are at x ±2.1-2.2 cm, z 154.8 cm (from the lips' seam,
+    rays from the front: the seam's groove ends between 2.1 and 2.3 cm). ICT's mouth opening's ends land at ±2.17 cm,
+    z 154.9 cm.
+  - **CPU preview** (flat shaded, not a render): the smile carries its smile line beside the nose and the cheeks' lift,
+    with no tears. The EEVEE render against HD Aaron is queued for the card's next free turn (the gate's own man
+    exported, then `factors ictsmile`).
 - GNM keeps its zero expression neutral on purpose (a mean expression "would result in a face with slightly closed eyes
   and a slightly opened mouth"); its fit solves identity, per-region expression, pose and camera against ~600 dense
   landmarks with a self-intersection penalty (arXiv 2607.23687, page read).
