@@ -259,3 +259,27 @@ his coat values on the face; lower body roughness (it matched his look against h
 
 The hair's highlights and style (the nape too long, the front taller than his); the lower lid's shape; the smile
 (the expression sets' scoring, plan §19.2 item 9); the foot when its donor is downloaded.
+
+## Late night: every part's feasibility, the user's "go, start as soon as the card frees" (EEVEE against HD Aaron)
+
+**Corrections first.** Two of the night table's numbers above don't stand:
+- **Forehead 0.021 - void.** The eye view's top rows showed his forehead above the brow but our skin under ours (our brow
+  sits nearer the eye), so the two samples were different skin. The gate now has its own forehead view.
+- **Nose 0.053 - not what shipped.** It was a trial that scaled pores x0.3 and microrelief x0.33 over the whole skin. The
+  shipped nose-only change measures **0.0785** (build k).
+
+| Part | Now (build k, `.dev/gate/parts/2026-11-07k`, j, e, f) | Verdict by the gate's rule | What is left, and its route |
+|---|---|---|---|
+| Cheek skin | excess 0.0179 against his chance band +-0.0023 | not proved | Pore size, depth and pattern ruled out (his own pore pattern: 0.0172). The gap sits at 0.5-2 mm (`dists --by-layer`). Next, one at a time: the scan's relief, the colour's mottling, the light's scatter, the microrelief - queued |
+| Forehead | new view; measured with the scalp hidden - see below | not proved | The library style's fringe hangs over our forehead |
+| Nose | 0.0785 (shipped); larger pores 0.065, shallower 0.068 | not proved | Pore size and depth on the nose region |
+| Hand, torso | 0.047, 0.049 (not re-run tonight) | not proved | As the night table |
+| Foot | 0.10 | not proved | Needs a scanned foot (Thunk3D, the user's download) |
+| Eyes, lower lid | the roll was its margin's tilt - built: the lower margin turned into a ledge; eye DISTS 0.267 -> 0.258 | not proved | The upper lid's crease, the lower lashes, the bag's colour |
+| Smile | ICT's scanned smile on our head: corners 0.91 of his, the cheeks lift; his smile line is shape, not wrinkle maps | not proved | His crease is sharper: his HD mesh. Routes: the HD subdivision level, or a crease map blended with the smile - untested |
+| Scalp hair | his own cut as our strands follows his outline in every view - the comb's cut was the gap, not our render | not proved | A route to authored cuts (his cards are a local test only); colour, light bands, the crown's whorl, the temples |
+
+**No part is disproved.** Each gap has a measured cause and a route that hasn't been tried yet. **No part is proved equal** by
+the gate's rule (inside his band). Tests: unit 45 and tools 30 passed. The Blender suite ran 143: 141 passed, and the 2
+failures were tonight's lid change. Fixed: the opening detector looks from in front, and the ledge test now checks
+measured values. Rerun after web-4c's turn on the card.

@@ -61,6 +61,9 @@ PATCHES = {
     "foot": _grid([0.30, 0.36, 0.42, 0.48, 0.54], [0.42, 0.48, 0.54], 0.06),
     # the nose's side and back (~3.6 mm patches), clear of its edge on ours (the chin view is under stubble on both)
     "nose": _grid([0.12, 0.18, 0.24, 0.30, 0.36, 0.42, 0.48], [0.26, 0.32, 0.38, 0.44], 0.06),
+    # the forehead's own view (2026-11-07 late, looked at on both, ours with the scalp hidden - `factors nohair`):
+    # ~7 mm patches, clear of his frown line between the brows
+    "forehead": _grid([0.15, 0.27, 0.39, 0.51, 0.63], [0.10, 0.22, 0.34, 0.46, 0.58, 0.70], 0.12),
 }
 PERMUTATIONS = 2000
 #: DISTS' six layers (piq: the input, then VGG16's five stages; a 256 px patch: 256, 256, 128, 64, 32, 16 px maps)
