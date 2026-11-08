@@ -102,8 +102,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
     (`groom_transfer.py cards`, `factors guidefile*aaron_cards`) is queued, to judge our render on his cut.
   - Suites: unit 45 and tools 30 passed; the Blender suite printed no summary, so it is rerun with its log kept
     (`.dev/suite_2026-11-07k.log`).
-- **web-4c (JustDirect) waits for the card**: send it "card free" when `batch_face.sh` ends, then nothing of ours on
-  the card until it says it's done (~35-45 min of its models).
+- **web-4c (JustDirect) has the card** since our "card free" (2026-11-07 late): nothing of ours on it until it says
+  it's done. Then run `scratchpad/batch_after.sh`: the Blender suite (tonight's lid and detector changes are unverified
+  until it), the tools and unit suites, the cheek's last factors (relief, colour mottling, scatter, microrelief), the
+  forehead with Ten24's forehead tile. If the base v2 tests pass, rebuild the library's characters (backup first) so
+  they carry the lower-lid ledge. The per-part table: `docs/gate/2026-11-07/report.md`, "Late night".
 - Running (`scratchpad/batch_face.sh`, log `scratchpad/batch_face.log`):
   the trials above. Before it, `scratchpad/batch_next.sh` (done, log `batch_next.log`):
   `scratchpad/batch_next.sh`, log `scratchpad/batch_next.log`: the library's hair (the nape at the head joint, quiff
