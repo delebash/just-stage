@@ -38,7 +38,8 @@ SHORT_COMBED = {"lengths": ((-0.4, 12.0), (0.0, 24.0), (0.35, 45.0), (0.7, 65.0)
 #: sides, more again at the front hairline, shorter at the sides (by how far the root faces sideways) and the nape
 SHORT_TAPER = {"lengths": ((-0.4, 9.0), (0.0, 18.0), (0.35, 42.0), (0.7, 62.0)), "lift": (24.0, 9.0),
                "sweep": 0.15, "frizz": 0.0008, "noise": 0.0015, "clump": 0.35,
-               "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.25, "back_lift": 0.6, "side_down": 0.15}  # fmt: skip
+               "side_scale": (0.4, 0.85, 0.55), "front_lift": 1.25, "back_lift": 0.6, "side_down": 0.15,
+               "flow_down": 0.35}  # fmt: skip
 STYLES = {"short combed": SHORT_COMBED, "short taper": SHORT_TAPER}
 MASK_SIZE = 1024  # the scalp mask in hm08's UVs, texels
 MELANIN, MELANIN_SPREAD, REDNESS = 0.82, 0.06, 0.2
@@ -102,7 +103,12 @@ def guides(body: bpy.types.Object, style: dict, seed: int = 5):
         jitter = rng.normal(0.0, 0.08, 3)
         for k in range(1, POINTS):
             q, n = nearest(p)
-            d = _flow(q, n, style["sweep"], side, style.get("side_down", 0.6)) + jitter
+            if "flow_down" in style:  # one field everywhere: back and a little down, laid onto the scalp - over the
+                # back of the head it turns down by itself, so neighbouring strands never part (the blended field's
+                # back-on-top / down-at-the-sides left bare lines between them, 2026-11-07)
+                d = np.array([0.0, 1.0, -style["flow_down"]]) + style["sweep"] * side * np.array([1.0, 0.0, 0.0]) + jitter
+            else:
+                d = _flow(q, n, style["sweep"], side, style.get("side_down", 0.6)) + jitter
             d -= (d @ n) * n
             d /= max(np.linalg.norm(d), 1e-9)
             step = p + d * length / (POINTS - 1)

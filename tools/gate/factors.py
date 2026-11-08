@@ -389,6 +389,23 @@ def hairdensity(built: dict, per_m2: float) -> None:
     print("HAIR DENSITY", per_m2, flush=True)
 
 
+def hairgrey(built: dict, share: float) -> None:
+    """The scalp grooms' share of near-unpigmented strands (`scalp.GREY_SHARE`, the strand colour group's "Grey Share",
+    set on each groom's modifier) - HD Aaron's highlights (p95 60 at the back) come from light strands among dark."""
+    group = bpy.data.node_groups.get("JustStage strand colour")
+    ident = next(i.identifier for i in group.interface.items_tree if getattr(i, "name", "") == "Grey Share")
+    n = 0
+    for obj in bpy.data.objects:
+        if obj.type == "CURVES" and obj.juststage.part == "scalp":
+            for m in obj.modifiers:
+                if m.type == "NODES" and m.node_group == group:
+                    m[ident] = share
+                    n += 1
+            obj.data.update_tag()
+    bpy.context.view_layer.update()
+    print("HAIR GREY", share, "on", n, "modifiers", flush=True)
+
+
 def hairmelanin(built: dict, melanin: float) -> None:
     """Every scalp groom's own colour set to `melanin` (its `melanin` curve attribute; the strands take their guides')
     - darker roots for HD Aaron's L* 20 at the back (ours 25)."""
@@ -534,6 +551,8 @@ def factor(name: str):
             for step in steps:
                 step(built)
         return chained
+    if name.startswith("hairgrey"):  # hairgrey*0.2 (a share)
+        return lambda built: hairgrey(built, float(name.split("*")[1]))
     if name.startswith("hairdensity"):  # hairdensity*2200000 (strands a m2)
         return lambda built: hairdensity(built, float(name.split("*")[1]))
     if name.startswith("hairmelanin"):  # hairmelanin*1.0
