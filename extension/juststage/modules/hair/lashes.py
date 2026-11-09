@@ -36,8 +36,10 @@ import numpy as np
 #: proof (4), 2026-11-05) - never put in the code until the clean-input gate showed the lash line thin
 UPPER = {"count": 180, "long": 7.0, "short": 3.8, "rise": 0.0, "curl": 50.0, "band": (0.2, 1.0), "radius": 0.00008,
          "melanin": 1.0}  # fmt: skip
+#: lower lashes are finer and a little lighter - at melanin 0.6 they read golden-orange on dark skin beside the near-black
+#: upper ones (2026-11-09, `.dev/gate/parts/2026-11-09lashlower`; HD Aaron's dark brown): 0.8
 LOWER = {"count": 80, "long": 3.8, "short": 1.8, "rise": 5.0, "curl": 25.0, "band": (0.2, 0.8), "radius": 0.000025,
-         "melanin": 0.6}  # fmt: skip  # lower lashes are finer and lighter
+         "melanin": 0.8}  # fmt: skip
 #: Changed 2026-11-05 (the part-by-part gate): with the eyes opened to an adult's 9 mm (body_create.EYE_OPEN) the
 #: lashes read as a dark line along the lid, seen end-on - HD Aaron's and photographed men's sweep up into a fringe. The
 #: study's 61 deg "from vertical" read the other way (vertical up: ~29 deg ABOVE straight ahead) fits that: here they

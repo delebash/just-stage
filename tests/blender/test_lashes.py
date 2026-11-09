@@ -122,3 +122,9 @@ def test_the_upper_lashes_curve_smoothly_out_of_the_lid(woman):
     sharpest = np.array(sharpest)
     assert np.percentile(sharpest, 90) < 15.0, np.percentile(sharpest, 90)
     assert (sharpest > 20.0).mean() < 0.10, (sharpest > 20.0).mean()
+
+
+def test_the_lower_lashes_are_dark_brown_not_blonde():
+    """At melanin 0.6 the lower lashes read golden-orange on dark skin beside the near-black upper ones (2026-11-09):
+    a dark brown, a little lighter than the upper."""
+    assert 0.75 <= lashes.LOWER["melanin"] < lashes.UPPER["melanin"]

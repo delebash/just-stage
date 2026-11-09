@@ -623,6 +623,22 @@ EYE_SLIDERS = {"eyebag": "bag-decr-incr", "eyeheight2": "height2-decr-incr", "ey
                "eyetrans": "trans-down-up"}  # eyetrans*-1: the eye 2.9 mm down (with browup*1's 7.1 mm: his brow height)
 
 
+def lashtrial(built: dict, radius_mm: float, count: float) -> None:
+    """The lashes grown again with the lower lashes' root radius (`lashes.LOWER["radius"]`, 0.025 mm) and count an eye
+    (80) set - 2026-11-09, ours far fainter than HD Aaron's dark lower fan. A new groom: --alone."""
+    lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
+    old = dict(lashes.LOWER)
+    lashes.LOWER.update(radius=radius_mm / 1000.0, count=int(count))
+    try:
+        lashes.make(built["body"])
+    finally:
+        lashes.LOWER.clear()
+        lashes.LOWER.update(old)
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("LASHES lower radius", radius_mm, "mm, count", int(count), flush=True)
+
+
 def lashlower(built: dict, melanin: float) -> None:
     """The lower lashes' melanin (`lashes.LOWER["melanin"]`, 0.6) set on the groom's own curve attribute - 2026-11-09,
     they read golden-orange on the Heavy woman's dark skin beside her near-black upper lashes; HD Aaron's dark brown.
@@ -3244,6 +3260,9 @@ def factor(name: str):
     if name.startswith("lidcarry"):  # lidcarry*0.85*0.7*0.55 (a share a ring)
         shares = [float(x) for x in name.split("*")[1:]]
         return lambda built: lidcarry(built, *shares)
+    if name.startswith("lashtrial*"):  # lashtrial*0.04*110 (the lower lashes' root radius in mm, count an eye) - --alone
+        _k, radius, count = name.split("*")
+        return lambda built: lashtrial(built, float(radius), float(count))
     if name.startswith("lashlower*"):  # lashlower*0.9 (the lower lashes' melanin)
         return lambda built: lashlower(built, float(name.split("*")[1]))
     if name.startswith("lashcap"):  # lashcap*1.6 (mm)

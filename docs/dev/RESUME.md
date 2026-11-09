@@ -48,6 +48,13 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-09 14:0x:** committed since 10:1x - the lips a soft sheen 0.4 / 0.2 (ab851d6), toenails a short plate on
+  top of the toe (7eead78), the tear film faded out toward the lids (e1fd9f8), the lids' stretched margins smoothed
+  (4758683); tried and removed: the closed lid's fold mask (the open lid went glossy - the working doc's 11:18).
+  Running: the lower lashes at melanin 0.8 (`scratchpad/batch_lashprod.sh`, backup `library_2026-11-09q`). Open (the
+  working doc): the closed lid's streaks (expression-driven detail), the lower lid's ledge width (shape), the lower
+  lashes faint (thin), women's body relief (Q-BODY-3), dark skin's ear redness (chromophore maps); waiting for the
+  user: ISSA + openpyxl, the hair cut.
 - **2026-11-09 10:1x:** committed since 07:3x - the scans' darkened rims weighed out (0359462: no jaw smudges), the
   ears' redness by tone (4a24557), women's sparser brows live by the gender slider (dae067b), the brows thinning to
   their edges (060d447); the verdict table in the working doc updated. Running: a fresh side-by-side of every view

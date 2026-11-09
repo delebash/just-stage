@@ -937,7 +937,12 @@ booked with just-direct-mocap.
   six skins and six characters built; unit 45, tools 55 passed; Blender running.** Seen there: the Heavy woman's lower
   lashes golden-orange on her dark skin beside her near-black upper ones - `lashes.LOWER["melanin"]` 0.6 (redness
   0.25) reads blonde in the hair shader; HD Aaron's lower lashes dark brown. Trial `lashlower*` (`batch_lashlower.sh`,
-  after the suite): 0.6 / 0.8 / 0.92 on the Heavy woman and the gate's man beside him.
+  after the suite): 0.6 / 0.8 / 0.92 on the Heavy woman and the gate's man beside him. End run green (13:48: unit 45,
+  tools 55, Blender 207); committed 4758683. **13:55 (`row_ll_{Heavy_woman,man}.png`): at 0.6 golden lashes on her;
+  0.8 and 0.92 dark and alike - KEPT 0.8 (mine: dark brown, still a little lighter than the upper's 1.0, as real lower
+  lashes are).** All three far fainter than his fan - the known thin lower lashes (0.025 mm, the live view's strand
+  haze; open). Test `test_the_lower_lashes_are_dark_brown_not_blonde`. `batch_lashprod.sh` (backup
+  `library_2026-11-09q`; hair and characters; every suite) - running.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
