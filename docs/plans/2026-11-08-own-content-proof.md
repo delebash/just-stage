@@ -545,6 +545,10 @@ booked with just-direct-mocap.
   noise differed everywhere, void): the shadow is 5,315 texels on the upper lip, at most 4.3% darker, none on the
   throat. The patch and the cheek blotches are the scans' own colour coverage - the composition's feathering, tuned
   on 11-06 (LOW_RANGE) - **open, box spent**. 611 restored from `.dev/backup/compositions_2026-11-09` (byte-equal).
+- **02:4x, the lower lashes' kinks (box 10 min, `lash_lower.py` in this session's scratchpad):** rooted further out
+  (0.5-1.5 deg) worse (47-51% over 20 deg, today 37%); nearer the opening (-0.5) 34%; aimed up (rise -10) or
+  straighter (curl 5-10) no better (37-45%). The kinks come from the lower lid's shape round the roots, not the
+  parameters - **open, box spent**; they are faint (melanin 0.6, 25 um) at every view.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
