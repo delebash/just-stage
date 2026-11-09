@@ -465,6 +465,10 @@ booked with just-direct-mocap.
 - **00:11, the lips in the product (`row_lipsprod2_lips.png`): softer, the corduroy gone, the line at the seam deeper
   - KEPT.** The same sheet: **our chin under the stubble reads coarse and bumpy** (the region table's chin pores x1.5)
   beside his smooth chin - `batch_chin.sh` (region variants chin pores 1.0 / 0.6) after the face tone.
+- **00:40, the chin (`row_chin_chin.png`):** x1.5 coarse orange peel; x1 smoother; **x0.6 fine pores on smoother skin,
+  closest to his - KEPT** (`make_face_regions.REGIONS` chin 0.6; only the region map's R changes - no skin rebuild;
+  `batch_chinprod.sh` after the restore: the map made again and checked against the shipped, the product's chin seen,
+  then every suite - the end run for tonight's later changes).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

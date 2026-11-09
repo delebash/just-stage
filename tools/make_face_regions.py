@@ -47,10 +47,12 @@ RELIEF_SCALE = 8.0  # R = factor / RELIEF_SCALE
 #: (a close view of its own, `parts_gate` "nose"): its pores x2 and microrelief x3 read as deep pits against his smooth
 #: nose - microrelief x1 (his mask) and pores x0.6 bring its excess 0.171 -> 0.053. 2026-11-08 (judged by eye at full
 #: resolution, the user's bar - `.dev/gate/parts/2026-11-08q`, rows `row_q_forehead.png`, `row_q_eye_skin.png`): the
-#: forehead's pores x2 read as orange peel at the eye and forehead views; x1 reads as smooth skin with fine detail
+#: forehead's pores x2 read as orange peel at the eye and forehead views; x1 reads as smooth skin with fine detail.
+#: 2026-11-09 (`.dev/gate/parts/2026-11-09chin`, by eye beside HD Aaron): the chin's pores x1.5 read as coarse orange
+#: peel under the stubble against his smooth chin; x0.6 fine pores on smoother skin, closest to his (x1 between)
 SCALE = (1.15, 1.35)
 REGIONS = {k: (v[0] * SCALE[0], v[1] * SCALE[1], v[2]) for k, v in {
-    "forehead": (1.0, 1.0, 0.50), "nose": (0.6, 1.0, 0.35), "chin": (1.5, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
+    "forehead": (1.0, 1.0, 0.50), "nose": (0.6, 1.0, 0.35), "chin": (0.6, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
     "cheek": (1.0, 1.0, 0.48)}.items()}  # fmt: skip
 #: the head tile's neck, down to the chest, is body skin (2026-11-06: as "cheek" it took the face's roughness and the
 #: face's coat - a glossy band ending in a line across the chest on dark skin): the body tiles' values, and a face
