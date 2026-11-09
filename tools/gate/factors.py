@@ -1754,6 +1754,23 @@ def aoshade(built: dict, strength: float, distance_mm: float = 15.0) -> None:
     print("AO SHADE strength", strength, "reach", distance_mm, "mm on", n, "skins (film and live)", flush=True)
 
 
+def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey: float) -> None:
+    """Our brows grown again (`brows.make`) with the coarse hairs' COUNT, the FINE hairs' count and melanin, and the
+    grey share set - 19:1x: the layer diagnostic made our brows the eyes' main fault (his dark, dense, low; ours grey,
+    thin), and the hair model's shares darkened the scalp but hardly the brows: their own settings are the lever (a
+    fifth white in the gate, 1,400 lighter fine hairs at melanin 0.8). A new groom: --alone."""
+    brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
+    old = brows.COUNT, brows.FINE, brows.FINE_MELANIN
+    brows.COUNT, brows.FINE, brows.FINE_MELANIN = int(count), int(fine), fine_melanin
+    try:
+        brows.make(built["body"], grey_share=grey)
+    finally:
+        brows.COUNT, brows.FINE, brows.FINE_MELANIN = old
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("BROWS", int(count), "coarse,", int(fine), "fine at", fine_melanin, "grey", grey, flush=True)
+
+
 def regiontint(built: dict, k: float = 1.0) -> None:
     """Regional colour in our skin (18:59, the layer diagnostic: HD Aaron's skin on our head took the doll look away -
     redder nose and cheeks, darker reddish lids and under-eyes; ours one flat peach): by the region map's smooth ramps,
@@ -2572,6 +2589,8 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("browtrial*"):  # browtrial*1200*2000*0.92*0 (coarse, fine, fine melanin, grey) - --alone
+        return lambda built: browtrial(built, *(float(x) for x in name.split("*")[1:5]))
     if name.startswith("regiontint"):  # regiontint, regiontint*1.5 (how far from 1)
         return lambda built: regiontint(built, *(float(x) for x in name.split("*")[1:2]))
     if name.startswith("aoshade*"):  # aoshade*0.6[*15] (strength, reach in mm)

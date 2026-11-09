@@ -244,6 +244,11 @@ dark"): `hair_shading.py`'s live-view model (NOT STANDARD, Q-HAIR-6) - its share
 colour (`regiontint`: the eyes' surround darker and reddish, the nose redder, by the region map's smooth ramps) - the
 composition's own route (`skin_base` regional colour, EYE_DARK) once the trial shows the amount. `batch_layers.sh`,
 booked with just-direct-mocap.
+- **19:11 (`.dev/gate/parts/2026-11-08layers`, rows `row_layers_{face,back}.png`):** the hair model at diffuse 0.1 /
+  ambient 0.2 takes the haze off the scalp - its back reads dark like his roots - a gain; the brows hardly change - so
+  the brows' own settings are the lever (the gate's fifth white, 1,400 fine hairs at melanin 0.8, the counts). Regional
+  colour at k 1: a gain, too weak. Round 2 (`batch_layers2.sh`): `regiontint*2`, brows grown with grey 0, then darker
+  fine hairs and denser (`browtrial*1200*2000*0.92*0`), then all with the darker hair model.
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
