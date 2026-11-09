@@ -128,3 +128,5 @@ def test_the_lower_lashes_are_dark_brown_not_blonde():
     """At melanin 0.6 the lower lashes read golden-orange on dark skin beside the near-black upper ones (2026-11-09):
     a dark brown, a little lighter than the upper."""
     assert 0.75 <= lashes.LOWER["melanin"] < lashes.UPPER["melanin"]
+    # and a real lower lash's thickness (0.07-0.1 mm across; at 0.05 they hardly showed) at a real count (75-80 an eye)
+    assert 0.000035 <= lashes.LOWER["radius"] <= 0.00005 and 70 <= lashes.LOWER["count"] <= 90

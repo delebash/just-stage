@@ -942,7 +942,15 @@ booked with just-direct-mocap.
   0.8 and 0.92 dark and alike - KEPT 0.8 (mine: dark brown, still a little lighter than the upper's 1.0, as real lower
   lashes are).** All three far fainter than his fan - the known thin lower lashes (0.025 mm, the live view's strand
   haze; open). Test `test_the_lower_lashes_are_dark_brown_not_blonde`. `batch_lashprod.sh` (backup
-  `library_2026-11-09q`; hair and characters; every suite) - running.
+  `library_2026-11-09q`; hair and characters; every suite). **14:14: end run green (unit 45, tools 55, Blender 208);
+  committed 100ead4.**
+- **14:1x, the lower lashes faint (`batch_lashthick.sh`, `lashtrial*`):** root radius 0.025 mm / 80 an eye (today)
+  against 0.04 / 80 and 0.04 / 110, the gate's man beside him and the Average woman. **14:30 (`row_lt_{eye,face}_*.png`):
+  0.04 shows a fine dark fringe under the eye like his, no eyeliner look at the face view; 110 denser still. KEPT 0.04 /
+  80 (mine)** - attacked: "110 matches his density" - past the measured 75-80 an eye (the lashes' own notes); 0.04 mm
+  radius is 0.08 mm across, a real lower lash's (0.025 was 0.05). Test extended. `batch_lashthickprod.sh` (backup
+  `library_2026-11-09r`; hair and characters; every suite). **14:50: the product's lower lashes show more (the clearer
+  gain on lighter skin); end run green (unit 45, tools 55, Blender 208).**
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
