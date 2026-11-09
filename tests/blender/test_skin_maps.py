@@ -167,7 +167,15 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
     margin = bsdf.inputs["Base Color"].links[0].from_node  # the lid margin's pink, last
     assert margin == nodes[maps.NODE + "margin_colour"]
-    seam = margin.inputs[0].links[0].from_node  # the lips darker toward the mouth's line
+    eyes = margin.inputs[0].links[0].from_node  # the skin round the eyes darker
+    assert eyes == nodes[maps.NODE + "eyes_colour"]
+    tint = next(i for i in nodes[maps.NODE + "eyes_tint"].inputs if i.identifier == "B_Color").default_value
+    assert tuple(tint)[:3] == pytest.approx(maps.EYE_SURROUND_TINT)
+    mask = nodes[maps.NODE + "eyes_mask"].image  # the eyes region (make_face_regions.py): a small part of the head tile
+    px = np.empty(mask.size[0] * mask.size[1] * 4, np.float32)
+    mask.pixels.foreach_get(px)
+    assert 0.005 < (px[0::4] > 0.5).mean() < 0.05
+    seam = eyes.inputs[0].links[0].from_node  # the lips darker toward the mouth's line
     assert seam == nodes[maps.NODE + "lips_seam_colour"]
     tint = next(i for i in nodes[maps.NODE + "lips_seam_tint"].inputs if i.identifier == "B_Color").default_value
     assert tuple(tint)[:3] == pytest.approx(maps.LIP_SEAM_TINT)
