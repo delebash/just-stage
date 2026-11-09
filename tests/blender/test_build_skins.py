@@ -153,3 +153,23 @@ def test_the_border_blend_fades_a_scans_mottling_toward_a_plain_tile(tmp_path):
     finally:
         scene.render.engine = engine
         bpy.data.objects.remove(strip)
+
+
+def test_a_body_part_carries_detail_not_a_tint():
+    """Ten24's hands ran 3-7% lighter and bluer than the arm on every man's skin (2026-11-09): a part's colour is
+    centred on its own median under its weight, as the tiles' own are - the hands as warm as the arm."""
+    found = build_skins._body_scan()
+    if found is None or 1003 not in found:
+        pytest.skip("no body scan made (tools/body_scan.py)")
+    import numpy as np
+    from pathlib import Path
+
+    folder = Path(build_skins.paths.GENERATED) / "skin"
+    if not (folder / "body_1003_hands_weight.png").exists():
+        pytest.skip("no hands part")
+    import OpenImageIO as oiio
+
+    buf = oiio.ImageBuf(str(folder / "body_1003_hands_weight.png"))
+    w = np.asarray(buf.get_pixels(oiio.FLOAT), np.float32)[::-1, :, 0]
+    ratio = found[1003]["ratio"]
+    assert np.allclose(np.median(ratio[w > 0.9], axis=0), 1.0, atol=0.02)

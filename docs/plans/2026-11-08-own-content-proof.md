@@ -970,7 +970,38 @@ booked with just-direct-mocap.
   look again. KEPT (mine) the first: today's tuned period and depth, only the shape (LIP_CREASE 0.2) and the wobble
   (distortion 8 -> 3, detail 3 -> 1).** The shader rebuilds from code on every library load (`maps.refresh`) - no
   library rebuild. The test extended (the crease node in the chain). **15:33 (`row_cp.png`): the product's lips fine
-  vertical lines, no worms; skin-maps 23 passed; end run green (unit 45, tools 55, Blender 208).**
+  vertical lines, no worms; skin-maps 23 passed; end run green (unit 45, tools 55, Blender 208).** Committed ff494f2.
+- **15:3x, the face's flat colour, measured (`batch_regioncol.sh`, the Diffuse Color pass, `region_redness.py`):** his
+  cheeks a* 21.1 / 21.7 at L* 48.6, ours 16.3 at L* 55; his nose 17.8, ours 19.9; his whole face R/G ~2.6, ours
+  2.1-2.4. But his a* ~20 at L* ~48 is redder than any measured skin - NIST's people at L* 49 have a* ~11 - his map's
+  own redness (CC5 maps carry it for the scattering), not a target; the pattern gap is moderate (his cheeks redder,
+  our nose redder); and 11-08's split showed his colour alone on our head still reads plastic. (Our forehead box fell
+  on hair - the two renders frame the faces differently, fixed boxes don't match; not pursued.) **Not worked: the
+  face's colour moves the realism little - recorded, moved on.**
+- **15:4x, the lower lid's ledge width (box 45 min):** 11-07 turned the puffy tube into a ledge (`parts.LEDGE_TURN,
+  LEDGE_GAP` 0.8 / 2.3 mm; RESEARCH: 1.0 / 1.6 scored worse by DISTS then, 0.264 against 0.258). The new fact: with
+  today's smoothing and the film's fade the ledge reads as a wide smooth glossy band beside his thin pink one. Trial
+  (`lidledge*0.8*{2.3,1.9,1.6}`, --alone, `batch_ledgegap.sh`; 2.3 the product's own value through the same code): the
+  eye (zoomed and whole), face and blink views. **15:48 (`row_lg_{zoom,eye}.png`): the three alike - the band hardly
+  narrows from 2.3 to 1.6 mm. Its width is the margin itself (rim to lash line) and the turn's tilt toward the camera,
+  not the gap. Not kept; box spent. The ledge is the lid's shape - the plan's escalation (the head on a new topology,
+  §4).**
+- **15:5x, the fingernails (`grid_4.png` of the fresh views; `row_tn_nails.png` from the toenail trial):** a pale
+  plate with a dark drawn outline - the same sticker look; the toenail trial's `nailgroove*0.15` took the outline away
+  at the nails and foot views, 0 lost the plate's edge. **KEPT (mine): `maps.NAIL_GROOVE` 0.45 -> 0.15** - the nail
+  bed's displaced groove and fold (nail_bed.py, 0.6 / 0.4 mm) already shade the edge; the colour darkening drew it
+  twice. Its check added to the toenail test. The shader rebuilds on load. `batch_grooveprod.sh` (nails, foot, hand in
+  the product; every suite). **16:06 (`row_gp_{nails,foot,hand}.png`): the drawn outline gone, a faint edge set into
+  the fingertip; end run green (unit 45, tools 55, Blender 208).**
+- **16:0x, the hand paler than the arm (measured, `body_1003_*` maps):** the hands part's colour ratio (Ten24's) under
+  its weight R / G / B 1.029 / 1.060 / 1.066 - 3-7% lighter and bluer - where the arm tile's own detail is centred at
+  0.998: a tint, not detail - the pale whitish hand on every man (the body scan goes on men's skins). Fix (mine; the
+  tiles' own rule): a part's colour centred on its own median under its weight (`build_skins._body_scan`) - detail
+  only, the tone the skin model's. Test `test_a_body_part_carries_detail_not_a_tint`. The three men's skins rebuilt.
+  **16:15 (`row_ht_hand.png`): the hand a little warmer, less whitish - KEPT.** Checked the rest of the paleness: every
+  body tile's detail centred (1002 / 1003 / 1004 at 1.00) and the arm and leg tiles one base colour (Scan man A linear
+  0.591 / 0.310 / 0.220 on both) - the thigh behind reads darker from the light's angle, not its colour. His hand's
+  veins and tendons stronger than ours (the hands part's relief, Ten24's) - open.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

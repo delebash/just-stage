@@ -290,7 +290,14 @@ def _body_scan() -> dict | None:
                     z = np.sqrt(np.clip(1 - ((xy * 2 - 1) ** 2).sum(-1, keepdims=True), 0, 1))  # as body_scan.post stores it
                     relief = np.concatenate([xy, z], -1)
                     if (folder / f"body_{number}_{part}_colour.png").exists():  # a geometry-only donor has none
-                        colour = colour * (1 - w) + read(f"body_{number}_{part}_colour.png") * 2.0 * w
+                        part_colour = read(f"body_{number}_{part}_colour.png") * 2.0
+                        # detail only, centred on its own median under its weight as the tiles' own are: Ten24's
+                        # hands ran 3-7% lighter and bluer than the arm (R / G / B 1.03 / 1.06 / 1.07, 2026-11-09) -
+                        # a pale hand on every man; the character's tone is the skin model's
+                        under = w[..., 0] > 0.5
+                        if under.any():
+                            part_colour = part_colour / np.median(part_colour[under], axis=0)
+                        colour = colour * (1 - w) + part_colour * w
             found[number] = {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3, "relief": relief}
     return found or None
 
