@@ -326,6 +326,12 @@ booked with just-direct-mocap.
   relief boosted (11-07), a made wrinkle layer. Left, outside "free": a paid scan, an artist's sculpt; or a research pass
   on a skin-buckling simulation (RESEARCH §14.7's unexplored route).**
 
+- **21:19, the end run (`scratchpad/batch_end.sh`, logs `end_*.log`):** the shipped region map regenerated (forehead
+  x1), the library backed up (`.dev/backup/library_2026-11-08d`, 1.2 GB), the six scan skins rebuilt, the library's hair
+  and characters rebuilt (24 assets); **unit 45 passed, tools 46 passed, Blender 195 passed (1 deselected: the AI
+  test)** - today's product changes verified. Then renders of the rebuilt library man and a fresh New human
+  (`.dev/gate/parts/2026-11-08final`).
+
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
 
 | Part | Verdict | Kept in the product | What's missing / the route |
