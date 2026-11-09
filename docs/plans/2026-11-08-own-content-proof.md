@@ -358,6 +358,15 @@ booked with just-direct-mocap.
   `batch_foot6.sh` (fit, bake, post, foot and toenail views; `.dev/gate/parts/2026-11-08foot6`). Mistake: the RESUME
   had noted "the foot's 1003 fix" on 11-08 morning (the transplant) - read the earlier fixes for a part before
   building its pipeline.
+- **22:27, the feet WORK (`row_foot6.png`, `crop_foot6_x1.png`, `row_toe6.png`):** fitted to the toes (p50 1.2 / p90
+  3.7 mm), baked on 1003 (12.1% of the tile) and 1004: at x1 our foot's top shows the extensor tendons fanning to the
+  toes and the veins - a real foot's dorsum, where it was smooth; x2 reads carved (not kept); the toes and nails
+  barely change. **Kept: x1 (the scan's own relief) into the product** - `build_skins.BODY_PARTS` + "feet" (a
+  geometry-only part keeps the tile's colour: no colour file, the builder skips it), the ATTRIBUTION row (CC BY 4.0,
+  read from Sketchfab's API). Still short of his: his oily sheen, the ankle's bony shape, the veins raised up to the
+  ankle (our top's upper third stays smooth - the scan's own ankle is smooth there), his darker tone (identity).
+  Running `batch_feet_prod.sh`: the library backed up (`.dev/backup/library_2026-11-08e`), the skins and characters
+  rebuilt, the library man's foot rendered with no trial (`.dev/gate/parts/2026-11-08feetprod`), then every suite.
 
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 
@@ -379,7 +388,7 @@ booked with just-direct-mocap.
 | Nails | close | - | - |
 | Hands | close | - | tone (a setting) |
 | Torso | not reached as built | - | definition: MakeHuman's CC0 community normal works as a slider (its seams to fix); two light blotches by the sternum, a patch on the neck (the scan composition) |
-| Feet | not reached | - | Thunk3D's CC BY scan downloaded - its fit (placed by our foot) and bake to build |
+| Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
 | **Whole character** | **not CC5 quality with free assets** | the above | the deciding gap: the face's mid-scale relief (can't, free); then the live-view hair (cards + a cut - a route) |
 
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)

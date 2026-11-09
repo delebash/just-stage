@@ -262,13 +262,15 @@ BODY_SCAN_SIZE = 2048
 
 
 #: parts with a donor of their own over a body tile's main one (tools/body_scan.py SOURCES' "part")
-BODY_PARTS = ("hands",)
+BODY_PARTS = ("hands", "feet")
 
 
 def _body_scan() -> dict | None:
     """The body tiles' detail from bare-body scans (tools/body_scan.py: the torso's from Artec's, CC BY 3.0; the arms',
-    hands', legs' and feet's from HSRD-100's HSR0042-Body-045, CC BY 4.0) - by tile number, its colour ratio around 1
-    and its relief, rows bottom first as Blender's pixels; None when none is made."""
+    hands', legs' and feet's from HSRD-100's HSR0042-Body-045, CC BY 4.0; the parts over them: the hands' relief and
+    colour from Ten24's sample scan, the feet's relief from Thunk3D's "Leg-foot", CC BY 4.0 - geometry only, so the
+    feet keep the tile's colour) - by tile number, its colour ratio around 1 and its relief, rows bottom first as
+    Blender's pixels; None when none is made."""
     folder = paths.GENERATED / "skin"
     import OpenImageIO as oiio
 
@@ -287,7 +289,8 @@ def _body_scan() -> dict | None:
                     xy = relief[..., :2] * (1 - w) + read(f"body_{number}_{part}_relief.png")[..., :2] * w
                     z = np.sqrt(np.clip(1 - ((xy * 2 - 1) ** 2).sum(-1, keepdims=True), 0, 1))  # as body_scan.post stores it
                     relief = np.concatenate([xy, z], -1)
-                    colour = colour * (1 - w) + read(f"body_{number}_{part}_colour.png") * 2.0 * w
+                    if (folder / f"body_{number}_{part}_colour.png").exists():  # a geometry-only donor has none
+                        colour = colour * (1 - w) + read(f"body_{number}_{part}_colour.png") * 2.0 * w
             found[number] = {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3, "relief": relief}
     return found or None
 

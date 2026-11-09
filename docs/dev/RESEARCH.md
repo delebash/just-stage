@@ -3020,7 +3020,12 @@ re-check before the rec list; nothing run on skin here):
   foot found (*downloaded 2026-11-08 15:08* through the user's signed-in Chrome, its page read: "CC Attribution - Author
   must be credited. Commercial use is allowed", author "Diana Liu (@Diana123456)", the description "Leg-foot scan by
   Thunk3D Fisher's 3D scanner"; the original format, STL 47 MB zipped -> `左脚 02.stl` ("left foot 02"), 148.6 MB,
-  in `.dev/downloads/sketchfab_leg_foot_2026-11-08/foot/`; the other offers were USDZ 51, glTF 43, GLB 77 MB); more hands: Arkify "Pencil Hand Pack" (3 female + 3 male, Artec Space Spider, CC Attribution [API]),
+  in `.dev/downloads/sketchfab_leg_foot_2026-11-08/foot/`; the other offers were USDZ 51, glTF 43, GLB 77 MB; its
+  licence's version read from Sketchfab's API 2026-11-08 22:3x: `creativecommons.org/licenses/by/4.0/`). **Used
+  2026-11-08 (`body_scan.py thunk3d_foot`, the own-content proof's working doc):** rendered alone, the scan holds the
+  dorsum's tendons and veins, the ankle's bones and the toes' creases; baked as the "feet" part it gives our foot's top
+  real tendons at x1 (`.dev/gate/parts/2026-11-08foot6`). Our foot lies on two UDIM tiles: 1003 holds most of its faces,
+  1004 a strip at the heel, 1005 the toenails. More hands: Arkify "Pencil Hand Pack" (3 female + 3 male, Artec Space Spider, CC Attribution [API]),
   Thunk3D hands - their detail unseen until downloaded.
 - **HSR0042 is a 24-year-old, 179 cm, 112 kg African man** (*page read, 2026-11-06*, HSRD-100's
   `manifest/persons.jsonl`: `{"person_id": "HSR0042", "age": "24", "sex": "Male", "ethnicity": "African", "height_cm":

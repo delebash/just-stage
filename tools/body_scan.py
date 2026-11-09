@@ -686,8 +686,11 @@ def post(src: str = "artec") -> None:
                     np.round(np.clip(relief[..., ::-1], 0, 1) * 65535).astype(np.uint16))  # fmt: skip
         if "part" in spec:  # its weight (the edge and fit fades): where build_skins takes this part over the main one
             cv2.imwrite(str(OUT / f"{stem}_weight.png"), np.round(np.clip(w * edge, 0, 1) * 65535).astype(np.uint16))
-        cv2.imwrite(str(OUT / f"{stem}_colour.png"),
-                    np.round(np.clip(ratio[..., ::-1] / 2, 0, 1) * 65535).astype(np.uint16))  # fmt: skip
+        if "part" in spec and spec.get("geometry_only"):  # no colour of its own: the tile's main colour stays
+            (OUT / f"{stem}_colour.png").unlink(missing_ok=True)
+        else:
+            cv2.imwrite(str(OUT / f"{stem}_colour.png"),
+                        np.round(np.clip(ratio[..., ::-1] / 2, 0, 1) * 65535).astype(np.uint16))  # fmt: skip
         info = {"tile": name, "size": SIZE, "source": spec["source"], "licence": spec["licence"],
                 "relief_hp_mm": spec.get("relief_hp_mm", RELIEF_HP_MM), "colour_hp_mm": COLOUR_HP_MM,
                 "colour": "a ratio around 1, stored halved (0.5 = 1)", "strands_filled": int(found.sum()),
