@@ -525,6 +525,8 @@ booked with just-direct-mocap.
   lip vertices near the lining: the lower lip's top, rolled up to the line, came out upper) - the slit in UV divides
   them cleanly (`lips_split_uv.png`: 112 upper, 96 lower; the slit's lining limited to the lips' own, the mouth's
   island excluded). `maps._upper_lip_layer` (`LIP_UPPER_TINT`), the skin-maps test extended; `batch_upperprod.sh`.
+  **02:13, in the product (`row_upperprod_{lips,open}.png`): the upper lip deeper red, the lower lighter - his
+  two-tone; with the mouth open the mask follows the lips. Skin-maps tests 18 passed. KEPT.**
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
