@@ -589,6 +589,13 @@ booked with just-direct-mocap.
   red glow at each mouth corner** (the lining's red mucosa at the corner, lit through by the scattering); **(2) the lips
   crinkled cellophane** - their lines catch wet highlights (LIP_ROUGHNESS 0.33, LIP_COAT 0.3) beside his soft matte
   lips - trial `lipshine` 0.5 / 0.15 and 0.6 / 0.05 (`batch_lipgloss.sh`, the Average and Muscular men).
+  **The ashy dark skin, measured (`diffcol_measure.py`; `core/skin_optics.py` swept):** her face's base colour R/G
+  1.46, G/B 1.44 against her skin's own scan tone (623) R/G 2.26 at 4.5x her luminance; the Muscular man 1.97 against
+  2.29, the Older man 1.79 against 1.87. The skin model's hue falls with melanin at the library's eumelanin share and
+  blood (0.6, 0.016): R/G 1.92 at melanin 0.03, 1.67 at 0.15, 1.45 at 0.25 (at eumelanin 0.3 still 1.61) - real dark
+  skin keeps ~2 (our scans 2.26 at L* ~39). Likely the epidermis's own reflection (r1, near-flat in the two-layer
+  Kubelka-Munk) greying the dark end. **Open - a job of its own: calibrate the model's dark end against the scans'
+  measured tones** (it moves every tone and has its own tests and RESEARCH; not within a box tonight).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
