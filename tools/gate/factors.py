@@ -1661,6 +1661,23 @@ def liptint(built: dict, r: float, g: float, b: float) -> None:
     print("LIP TINT", (r, g, b), "on", len(nodes), "nodes", flush=True)
 
 
+def lipseam(built: dict, k: float) -> None:
+    """The lips' darkening toward the mouth's line (`maps.LIP_SEAM_STRENGTH` 1.0, by `mouth_seam.png`) at `k`."""
+    nodes = _skin_node_inputs(built, "lips_seam_share")
+    for node in nodes:
+        node.inputs[1].default_value = k
+    print("LIP SEAM", k, "on", len(nodes), "nodes", flush=True)
+
+
+def margintint(built: dict, r: float, g: float, b: float) -> None:
+    """The lid margin's tint over the skin (`maps.MARGIN_TINT` (0.86, 0.62, 0.62)) - our margin reads as a thick
+    orange-pink rim round the eye beside HD Aaron's thin wet line (2026-11-08)."""
+    nodes = _skin_node_inputs(built, "margin_tint")
+    for node in nodes:
+        next(i for i in node.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+    print("MARGIN TINT", (r, g, b), "on", len(nodes), "nodes", flush=True)
+
+
 def eyewhite(built: dict, k: float) -> None:
     """The eyes' white colour (`eyes.WHITE`) scaled by k - step 1's fault: the white reads too bright and bluish."""
     eyes = importlib.import_module("bl_ext.system.juststage.modules.head.eyes")
@@ -2775,6 +2792,10 @@ def factor(name: str):
         return lambda built: lipshine(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("liptint*"):  # liptint*0.9*0.55*0.6 (linear RGB)
         return lambda built: liptint(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("lipseam*"):  # lipseam*1.5 (maps.LIP_SEAM_STRENGTH's place; 0 = none)
+        return lambda built: lipseam(built, float(name.split("*")[1]))
+    if name.startswith("margintint*"):  # margintint*1*1*1 (maps.MARGIN_TINT's place, linear RGB; 1,1,1 = the skin's)
+        return lambda built: margintint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("eyewhite*"):  # eyewhite*0.85
         return lambda built: eyewhite(built, float(name.split("*")[1]))
     if name.startswith("stubbletrial*"):  # stubbletrial*90*0.4*2.8 (a cm2, grey share, mm) - --alone

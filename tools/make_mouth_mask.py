@@ -10,10 +10,16 @@ layout; modules/skin/maps.py colours it as wet mucosa.
 
 The lining: the body's vertices behind the lips' front, within the mouth's width and height round the front teeth,
 facing into the mouth; softened over their neighbours. Writes `extension/juststage/data/generated/skin/mouth.png`
-(8-bit grey, 2048², the head tile's UV square)."""
+(8-bit grey, 2048², the head tile's UV square).
+
+The seam: the band of the lips in front of the lining, by each vertex's distance along the surface (Dijkstra over the
+mesh's edges) from it - 1 at the lining, 0 at SEAM_MM - where real lips darken to a deep red into the closed mouth's
+line (HD Aaron's, the own-content proof 2026-11-08; ours one flat pink). Writes `mouth_seam.png` beside it; maps.py
+darkens the lips by it (LIP_SEAM_TINT)."""
 
 from __future__ import annotations
 
+import heapq
 import importlib
 
 import bpy
@@ -30,6 +36,7 @@ HEAD_TILE = 1001
 BEHIND = 0.002  # m behind the lips' frontmost point: the lining starts here
 HALF_WIDTH, HALF_HEIGHT = 0.032, 0.022  # m round the front teeth's centre
 DEPTH = 0.05  # m behind the lips' front: the lining ends (the throat)
+SEAM_MM = 4.0  # the lips' darkening reaches this far in front of the lining
 
 
 def main() -> None:
@@ -51,7 +58,8 @@ def main() -> None:
     to_centre = centre - co
     to_centre /= np.linalg.norm(to_centre, axis=1, keepdims=True)
     facing = np.einsum("ij,ij->i", normals, to_centre) > 0.2
-    weight = (near & behind & facing).astype(np.float32)
+    lining = near & behind & facing
+    weight = lining.astype(np.float32)
     # softened over the neighbours (two rounds of averaging along the edges)
     edges = np.array([e.vertices for e in me.edges])
     for _ in range(2):
@@ -61,6 +69,42 @@ def main() -> None:
         np.add.at(cnt, edges[:, 0], 1)
         np.add.at(cnt, edges[:, 1], 1)
         weight = np.maximum(weight, acc / cnt)
+    image, count = _raster(me, weight)
+    out = paths.GENERATED / "skin" / "mouth.png"
+    maps.write_png(out, np.repeat(image[..., None], 3, axis=2))  # Blender's rows bottom first, as write_png expects
+    print(f"wrote {out}: {int((weight > 0.5).sum())} lining vertices, {count} polygons, "
+          f"{(image > 0.5).mean():.2%} of the head tile")
+    seam = np.clip(1.0 - _distance_from(co, edges, lining) / (SEAM_MM / 1000.0), 0.0, 1.0) ** 2
+    image, count = _raster(me, seam.astype(np.float32))
+    out = paths.GENERATED / "skin" / "mouth_seam.png"
+    maps.write_png(out, np.repeat(image[..., None], 3, axis=2))
+    print(f"wrote {out}: {int(((seam > 0) & ~lining).sum())} vertices in front of the lining, {count} polygons")
+
+
+def _distance_from(co: np.ndarray, edges: np.ndarray, sources: np.ndarray) -> np.ndarray:
+    """Each vertex's distance (m) along the mesh's edges from the nearest of `sources` (Dijkstra; inf if unreached)."""
+    length = np.linalg.norm(co[edges[:, 0]] - co[edges[:, 1]], axis=1)
+    near = [[] for _ in range(len(co))]
+    for (a, b), d in zip(edges.tolist(), length.tolist(), strict=True):
+        near[a].append((b, d))
+        near[b].append((a, d))
+    dist = np.full(len(co), np.inf)
+    dist[sources] = 0.0
+    heap = [(0.0, int(v)) for v in np.flatnonzero(sources)]
+    while heap:
+        d, v = heapq.heappop(heap)
+        if d > dist[v] or d > 0.05:  # a few cm is all the band needs
+            continue
+        for u, w in near[v]:
+            if d + w < dist[u]:
+                dist[u] = d + w
+                heapq.heappush(heap, (d + w, u))
+    return dist
+
+
+def _raster(me, weight: np.ndarray) -> tuple[np.ndarray, int]:
+    """Per-vertex `weight` drawn into the head tile's UV square (SIZE², rows bottom first), the highest where faces
+    overlap, and the polygons drawn."""
     uv_layer = me.uv_layers[maps.UV].data
     image = np.zeros((SIZE, SIZE), np.float32)
     count = 0
@@ -87,10 +131,7 @@ def main() -> None:
             inside = (w > -0.05).all(1)
             image[q[inside, 1].astype(int), q[inside, 0].astype(int)] = np.maximum(
                 image[q[inside, 1].astype(int), q[inside, 0].astype(int)], w[inside] @ val)
-    out = paths.GENERATED / "skin" / "mouth.png"
-    maps.write_png(out, np.repeat(image[..., None], 3, axis=2))  # Blender's rows bottom first, as write_png expects
-    print(f"wrote {out}: {int((weight > 0.5).sum())} lining vertices, {count} polygons, "
-          f"{(image > 0.5).mean():.2%} of the head tile")
+    return image, count
 
 
 main()

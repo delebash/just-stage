@@ -167,7 +167,11 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
     margin = bsdf.inputs["Base Color"].links[0].from_node  # the lid margin's pink, last
     assert margin == nodes[maps.NODE + "margin_colour"]
-    mouth = margin.inputs[0].links[0].from_node  # the mouth's lining over the nails' plate
+    seam = margin.inputs[0].links[0].from_node  # the lips darker toward the mouth's line
+    assert seam == nodes[maps.NODE + "lips_seam_colour"]
+    tint = next(i for i in nodes[maps.NODE + "lips_seam_tint"].inputs if i.identifier == "B_Color").default_value
+    assert tuple(tint)[:3] == pytest.approx(maps.LIP_SEAM_TINT)
+    mouth = seam.inputs[0].links[0].from_node  # the mouth's lining over the nails' plate
     assert mouth == nodes[maps.NODE + "mouth_colour"]
     ears = next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node  # the ears' redness
     assert ears == nodes[maps.NODE + "ears_colour"]
@@ -202,6 +206,11 @@ def test_the_mouths_lining_is_wet_mucosa_on_the_head_tile(human, tmp_path):
     mask.pixels.foreach_get(px)
     assert 0.002 < (px[0::4] > 0.5).mean() < 0.05  # a small part of the head tile
     assert nodes[maps.NODE + "mouth_on_head"].inputs[1].default_value == 0.0  # tile 1001 only
+    seam = nodes[maps.NODE + "lips_seam_mask"].image  # the band in front of the lining (make_mouth_mask.py)
+    band = np.empty(seam.size[0] * seam.size[1] * 4, np.float32)
+    seam.pixels.foreach_get(band)
+    assert ((band[0::4] > 0.05) & (px[0::4] < 0.05)).sum() > 200  # it reaches out of the lining onto the lips
+    assert (band[0::4] > 0.05).mean() < 0.1  # and no further than the mouth
 
 
 def test_the_lid_margin_is_wet_pink_tissue_on_a_mapped_skin(human, tmp_path):

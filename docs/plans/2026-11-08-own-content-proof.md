@@ -382,6 +382,26 @@ booked with just-direct-mocap.
   sternum is now kept - to judge on the render. `batch_torso.sh` (every body source posted again, skins, characters,
   the torso, front, foot and hand views, the tools and Blender suites) runs after the feet's end run. Mistake: I built
   a fix on a guess about what a blob was - map a texel to the body before deciding what it is.
+- **22:38, the feet in the product:** the rebuilt library man's foot (no trial; `row_feetprod.png`) shows the tendons
+  and veins; the end run: unit 45 passed, tools 50 passed (the four new body-scan tests), Blender running.
+- **22:4x, the next faults by the face sheet (`row_final_face.png`), worst first:** (1) the scalp hair a helmet - the
+  route needs an artist's cut: VincentFreelance's "FREE 21 Realtime man Hairstyles collection" (Sketchfab uid
+  6a876007572c464da5184eb99af0c5f7, CC BY 4.0 on its API record, glTF 18.0 MB) - **the download waits for the user's
+  word** (a download needs it each time); (2) the lips a flat pink tube; (3) the eye's orange-pink rim; (4) the skin's
+  mid-scale relief (can't, free).
+- **Lips, the seam (22:4x):** reused `tools/make_mouth_mask.py` (the lining's mask) - it now also writes
+  `mouth_seam.png`: each vertex's distance along the surface (Dijkstra on hm08's edges) from the lining, 1 at it, 0 at
+  4 mm (`SEAM_MM`) - the band of the lips in front of the closed mouth's line (121 vertices in front of the lining);
+  `maps._seam_layer` (after the lining, on the lips' share only): the colour x `LIP_SEAM_TINT` (0.70, 0.48, 0.50) by
+  the band (`LIP_SEAM_STRENGTH` 1.0). In the product (the shader is rebuilt from code on every load - no skin rebuild);
+  the skin-maps tests extended; `factors lipseam*k` renders 0 / 1 / 1.5 at the lips and face views
+  (`.dev/gate/parts/2026-11-08lipseam`, in `batch_torso.sh`).
+- **Eyes (22:4x, `row_eye_final.png`):** ours - a thick orange-pink rim round the opening with a pale ledge under the
+  lower margin, the lower lashes too faint to see (80 exist: the live view's strand haze - cards), a flat white sclera,
+  a pale surround; his a thin wet line, dark lower lashes, a dark red-brown under-eye. Already tried: the white x0.85
+  (no visible change), the surround darker (a small gain - the composition's EYE_DARK is the place). Trial: the margin's
+  tint off and lighter (`factors margintint`, `.dev/gate/parts/2026-11-08margin`, in `batch_torso.sh`) - how much of the
+  rim is colour, how much the lid's shape.
 
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 
