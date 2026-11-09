@@ -715,6 +715,32 @@ booked with just-direct-mocap.
   (`row_br_{face,eye,woman_eye,older_face}.png`): the Average woman wears her own brows - brown, hairs visible, on the
   brow ridge (not a man's low black bar); the Older man's grey smudge gone; the gate's man lighter than HD Aaron's
   dark grey (brown + a fifth white - his colour is identity). End run green: unit 45, tools 53, Blender 201.**
+  Committed afff11c.
+- **07:1x, the women's lower-face smudges (box 30 min; `row_blotch_{young,avgwoman}.png`):** the Young woman a curved
+  dark line from the mouth's corner to the jaw and a blotch by the jaw's angle; the Average woman a brown smudge
+  along the jaw and chin - dirt-like at the three-quarter and face views. Both share hsr0015 (0.4 of their colour);
+  the scans' low layers (`scan_lows.png`: hsr0015, hsr0027, hsr0028) are pale and even - no blotch there. Next
+  decided by `relief0` / `colourflat` against today's with the Diffuse Color pass (`batch_blotch.sh`).
+  **07:2x (`row_bl_{face,tq}_{Young,Average}_woman.png`, `diffcol_bl_Young_woman.png`): colour, not relief** - the
+  smudges stay with the relief off and go with the colour flat; the Diffuse Color pass shows the Young woman's streak
+  down the cheek to the jaw. Located (`comp622_lum.png`, `low_hsr0028.png`, `low_hsr0015.png`): each scan's low layer
+  has a DARK RIM along its outer edge, and where it ends inside another scan or at the jaw the rim shows. Measured on
+  all twenty scans (median log luminance of the low layer by texels from the outer edge): hsr0028 -0.25 / -0.19 /
+  -0.05 / 0.00 at 0-16 / 16-32 / 32-64 / 64-96, hsr0102 -0.38 ... -0.07, d3d_african_woman -0.33 ... +0.01, hsr0081
+  -0.15 ... +0.01; most back to their own skin by 64-96 - the surface turning from the cameras, which the light fit
+  leaves. LOW_FEATHER (16 texels) is far narrower. Fix (mine): each scan's colour weighed in from its outer edge over
+  `LOW_RIM` 96 texels (~16 mm; `skin_base.rim_weight` - distance-to-border weights, the standard as OpenCV's
+  detail::FeatherBlender), its enclosed holes keeping LOW_FEATHER. Attacked: "it thins the colour where one scan
+  alone reaches" - there the fill carries the scan's own inner colour out (smooth_fill), then the cover's edge fade;
+  "holes (eyes) would lose their surroundings" - `_inside` fills them, so only the outer edge counts (the test).
+  Test `test_a_scans_colour_weighs_in_from_its_outer_edge_not_round_its_holes`. `batch_rim.sh` (backups
+  `compositions_2026-11-09c`, `skins_2026-11-09b`, `library_2026-11-09i`; all six composed and built; six characters
+  against today's; every suite). **07:4x: all six composed (cover edge stretches off by >5%: 0-5%); the women's
+  colour changed most where rims overlapped (621 p95 0.26-0.28 log at 100-400 texels in). The renders
+  (`row_rim_{tq,face}_*.png`): the Young woman's jaw streak and blotch down to a faint shade, the Average woman's chin
+  smudge much reduced, the others unchanged - KEPT (mine).** Seen on the same sheets: the Muscular man's new brown
+  brows read auburn on his dark skin (redness 0.3) - trial 0.8 / 0.3 against 0.86 / 0.18 and 0.9 / 0.12 on him and
+  the Average woman (`batch_browred.sh`, after the suite).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

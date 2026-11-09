@@ -52,3 +52,17 @@ def test_the_pores_colour_fades_in_from_where_the_scans_end():
     assert fade[edge] < 0.05
     assert fade[edge - int(2 * skin_base.FEATHER)] > 0.9
     assert np.all(np.diff(fade[: n // 2]) <= 1e-6)  # one smooth ramp down to the edge
+
+
+def test_a_scans_colour_weighs_in_from_its_outer_edge_not_round_its_holes():
+    """The scans darken toward their outer edge (the surface turning from the cameras - the Young and Average women's
+    jaw streaks, 2026-11-09): 0 at the edge, all of it LOW_RIM in; an enclosed hole (an eye) doesn't lower it."""
+    n = 1024
+    yy, xx = np.mgrid[0:n, 0:n]
+    valid = np.hypot(yy - 512, xx - 512) < 400
+    valid &= np.hypot(yy - 512, xx - 512) > 40  # an eye's hole in the middle
+    w = skin_base.rim_weight(valid)
+    edge_row = 512 - 399
+    assert w[edge_row, 512] < 0.01
+    assert w[edge_row + int(skin_base.LOW_RIM) + 2, 512] > 0.99
+    assert w[512, 512 + 45] > 0.99  # beside the hole, full weight

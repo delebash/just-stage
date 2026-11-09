@@ -59,6 +59,13 @@ LOW_NEAR = 0.4  # the share of skin round a texel it needs: holes filled only we
 #: width: cut there at once, it left a step (2026-11-09: 623's colour 10% darker just inside its cover's edge on the
 #: median, 33% at the 10th percentile - a jagged patch on the Heavy woman's chest)
 LOW_EDGE_BANDS = 7
+#: the scans darken toward their outer edge - the surface turning from the cameras (the jaw's underside, the face's
+#: sides), more than the light fit takes out. Measured 2026-11-09 on every scan's low layer by texels from its outer
+#: edge (0-16 / 16-32 / 32-64 / 64-96): hsr0028 -0.25 / -0.19 / -0.05 / 0.00, hsr0102 -0.38 / -0.34 / -0.20 / -0.07,
+#: d3d_african_woman -0.33 / -0.29 / -0.15 / +0.01 (log) - the dark streaks on the Young and Average women's jaws. Each
+#: scan's colour is weighed in from its outer edge over LOW_RIM texels (~16 mm; distance-to-border weights, as
+#: OpenCV's detail::FeatherBlender); its holes (eyes, brows, the mouth) keep LOW_FEATHER
+LOW_RIM = 96.0
 #: HAIR OUT, CC5's way (docs/plans/2026-11-06-inputs-audit.md: CC5's skin colour carries no hair - lashes, brows and
 #: stubble are meshes): every scan has its own lashes and stray brow hairs round the eye and brow holes its skin mask
 #: leaves (scan_skin.py labels eyes and brows, not the lashes on the lids or the hairs beside the brows) - a band of
@@ -195,6 +202,13 @@ def _inside(cover):
     mask = np.zeros((h + 4, w + 4), np.uint8)
     cv2.floodFill(pad, mask, (0, 0), 2)
     return pad[1:-1, 1:-1] != 2
+
+
+def rim_weight(valid):
+    """0 at a scan's outer edge, 1 from LOW_RIM texels in (smoothstep) - the holes it encloses don't count (_inside)."""
+    d = cv2.distanceTransform(_inside(valid).astype(np.uint8), cv2.DIST_L2, 5)
+    t = np.clip(d / LOW_RIM, 0.0, 1.0)
+    return t * t * (3.0 - 2.0 * t)
 
 
 def _without_stubble(fine, keep):
@@ -541,6 +555,7 @@ def compose(seed, params=None):
                 continue
             v = layers[n]["valid_low"].astype(np.float32)
             a = w * np.clip(cv2.GaussianBlur(v, (0, 0), LOW_FEATHER) * 2.0 - 1.0, 0.0, 1.0) * v
+            a = a * rim_weight(layers[n]["valid_low"])  # its darkened rim out (LOW_RIM)
             if scans[n]["stubble"]:
                 num_s += (a * beard)[..., None] * layers[n]["low"].astype(np.float32)
                 tot_s += a * beard

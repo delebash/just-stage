@@ -48,6 +48,12 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-09 07:3x:** committed since 05:4x - the scans' edge faded (b978644: no neck / chest patch on any
+  character), brown brows and the gate keeping a library character's own brows (afff11c). Running: the scans'
+  darkened rims weighed out (`skin_base.rim_weight`; the women's jaw smudges) - `scratchpad/batch_rim.sh` (backups
+  `compositions_2026-11-09c`, `skins_2026-11-09b`, `library_2026-11-09i`). Open (the working doc): women's sparser
+  brows (a live density by sex), the brows' blocky shape, the lower lashes, the ears; waiting for the user: ISSA and
+  openpyxl (the dark skin's calibration), the hair cut.
 - **2026-11-09 05:4x:** kept and committed (6882eed) - the Heavy woman at melanin 0.1 (was 0.25, past measured skin:
   ashy); the gate's variants point the skin at their copy. Kept on trial, rolling out - the neck / chest patch: the
   composer cut its low layer where the scans end (`skin_base.faded_out`: carried past the edge, then OpenCV's
