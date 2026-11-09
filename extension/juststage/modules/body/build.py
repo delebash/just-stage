@@ -216,34 +216,6 @@ def refit_riders(obj: bpy.types.Object) -> None:
     if parts is not None and parts.parts_of(obj):
         parts.refit(obj)
     refit_skeleton(obj)
-    refit_lashes(obj)
-
-
-def refit_lashes(obj: bpy.types.Object) -> None:
-    """The lashes made again on the body's new lids (the hair module; nothing without lashes): riding the lid's surface
-    they tilted with it - the eyes opened by the sliders stood a cluster straight up and dropped a fan over the iris
-    (the own-content proof, 2026-11-08). Their colour (each strand's melanin and redness, `juststage.hair.set_colour`)
-    is kept: the same seed lays the same strands in the same order."""
-    try:
-        from ..hair import lashes
-    except ImportError:
-        return
-    old = next((o for o in bpy.data.objects if o.juststage.part_of == obj.juststage.character_id
-                and o.juststage.part == "eyelashes" and o.type == "CURVES"), None)  # fmt: skip
-    if old is None or not old.data.name.startswith(lashes.NAME):  # a lash style the user chose (styles.py) stays
-        return
-    kept = {}
-    for name in ("melanin", "redness"):
-        attr = old.data.attributes.get(name)
-        if attr is not None:
-            values = np.empty(len(attr.data), np.float32)
-            attr.data.foreach_get("value", values)
-            kept[name] = values
-    made = lashes.make(obj)
-    for name, values in kept.items():
-        attr = made.data.attributes.get(name)
-        if attr is not None and len(attr.data) == len(values):
-            attr.data.foreach_set("value", values)
 
 
 def refit_skeleton(obj: bpy.types.Object) -> None:

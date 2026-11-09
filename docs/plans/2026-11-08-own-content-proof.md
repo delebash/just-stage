@@ -442,7 +442,9 @@ booked with just-direct-mocap.
   on a New human only 1 of 360 went upright (`lash_refit_check.py`), so the cluster is probed on the gate's man
   himself (`upright_probe.py`, which groom it is). Built meanwhile: `build.refit_lashes` (from `refit_riders`, after
   any shape change: our lashes made again on the new lids, the strands' colour kept - a lash style the user chose
-  stays; 1.84 s) - kept only if the probe shows it's the cause. **The lips' seam at 10 mm:** at full resolution
+  stays; 1.84 s) - **taken out (attacked): the panel runs `set_slider` on every step of a drag (`character.py`), so
+  1.84 s a step would stall dragging, for 1 of 360 on the New human; if the probe shows the cluster is lashes tilted by
+  the lids, the standard way is a refit deferred to the drag's end (`bpy.app.timers`).** **The lips' seam at 10 mm:** at full resolution
   (`lips_seam_crop.png`) the line between the lips deepens, most at the corners (44,539 pixels changed, up to 30/255
   at x1; more at 1.5) - a small real gain: LIP_SEAM_STRENGTH -> 1.5 with the next lips change. **A bigger lips fault at
   full resolution: the lip lines read as corduroy** - a dense, even vertical rib beside his sparse irregular creases on
