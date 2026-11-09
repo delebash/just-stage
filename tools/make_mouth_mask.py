@@ -195,4 +195,5 @@ def _raster(me, weight: np.ndarray) -> tuple[np.ndarray, int]:
     return image, count
 
 
-main()
+if __name__ == "__main__":  # imported by make_stretch_mask.py for _raster
+    main()

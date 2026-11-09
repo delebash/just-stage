@@ -71,6 +71,9 @@ def _depth(built: dict, key: str) -> None:
 
 def relief0(built: dict) -> None:
     for nt in _skin_trees(built):
+        cut = nt.nodes.get(_maps().NODE + "relief_off_stretched")  # the strength's own number since 2026-11-09
+        if cut is not None:
+            cut.inputs[0].default_value = 0.0
         nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"].default_value = 0.0
 
 
@@ -366,8 +369,10 @@ def scaled(spec: str):
                             node.outputs[0].default_value /= float(factor)
                         elif node.name.startswith(_maps().NODE + "pore_scale_"):
                             node.inputs[1].default_value /= float(factor)
-                elif key == "relief":
-                    nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"].default_value *= float(factor)
+                elif key == "relief":  # the strength's own number (relief_off_stretched's) since 2026-11-09
+                    cut = nt.nodes.get(_maps().NODE + "relief_off_stretched")
+                    target = cut.inputs[0] if cut is not None else nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"]
+                    target.default_value *= float(factor)
                 elif key in SHINE:
                     _scale_input(nt, SHINE[key], float(factor))
                 else:
@@ -616,6 +621,26 @@ def regions(built: dict, stem: str) -> None:
 EYE_SLIDERS = {"eyebag": "bag-decr-incr", "eyeheight2": "height2-decr-incr", "eyefold": "eyefold-concave-convex",
                "eyefoldup": "eyefold-down-up", "eyeheight1": "height1-decr-incr",
                "eyetrans": "trans-down-up"}  # eyetrans*-1: the eye 2.9 mm down (with browup*1's 7.1 mm: his brow height)
+
+
+def lashlower(built: dict, melanin: float) -> None:
+    """The lower lashes' melanin (`lashes.LOWER["melanin"]`, 0.6) set on the groom's own curve attribute - 2026-11-09,
+    they read golden-orange on the Heavy woman's dark skin beside her near-black upper lashes; HD Aaron's dark brown.
+    The lower lashes found once by their melanin and kept (each variant sets its value on the same strands)."""
+    lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
+    n = 0
+    for obj in bpy.data.objects:
+        if obj.type != "CURVES" or obj.juststage.part != "eyelashes":
+            continue
+        attr = obj.data.attributes["melanin"]
+        values = np.empty(len(attr.data), np.float32)
+        attr.data.foreach_get("value", values)
+        lower = built.setdefault("lower_lashes", {}).setdefault(obj.name, np.isclose(values, lashes.LOWER["melanin"]))
+        values[lower] = melanin
+        attr.data.foreach_set("value", values)
+        obj.data.update_tag()
+        n += int(lower.sum())
+    print("LOWER LASHES melanin", melanin, "on", n, "strands", flush=True)
 
 
 def lashcap(built: dict, mm: float) -> None:
@@ -1739,6 +1764,37 @@ def browedge(built: dict, sd: float) -> None:
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("BROW EDGE", sd, flush=True)
+
+
+MASK_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "masks"
+
+
+def maskshow(built: dict, stem: str) -> None:
+    """A head-tile mask (`.dev/gate/masks/<stem>.png`) painted red over the skin's colour - where a mask lands on the face
+    (2026-11-09: the lids' stretch mask)."""
+    maps = _maps()
+    image = bpy.data.images.load(str(MASK_TRIALS / f"{stem}.png"), check_existing=False)
+    image.colorspace_settings.name = "Non-Color"
+    n = 0
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image, tex.extension = image, "CLIP"
+        nt.links.new(nt.nodes[maps.NODE + "uv"].outputs["UV"], tex.inputs["Vector"])
+        on_head = nt.nodes[maps.NODE + "mouth_on_head"].outputs["Value"]
+        share = nt.nodes.new("ShaderNodeMath")
+        share.operation = "MULTIPLY"
+        nt.links.new(tex.outputs["Color"], share.inputs[0])
+        nt.links.new(on_head, share.inputs[1])
+        red = nt.nodes.new("ShaderNodeMix")
+        red.data_type = "RGBA"
+        nt.links.new(share.outputs[0], red.inputs["Factor"])
+        nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, next(i for i in red.inputs if i.identifier == "A_Color"))
+        next(i for i in red.inputs if i.identifier == "B_Color").default_value = (0.8, 0.0, 0.0, 1.0)
+        nt.links.new(next(o for o in red.outputs if o.identifier == "Result_Color"), bsdf.inputs["Base Color"])
+        mod.sync_live(mat)
+        n += 1
+    print("MASK SHOWN", stem, "on", n, flush=True)
 
 
 def tearfade(built: dict, start: float) -> None:
@@ -3061,6 +3117,8 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("maskshow*"):  # maskshow*stretched (a head-tile mask under .dev/gate/masks painted red)
+        return lambda built: maskshow(built, name.split("*", 1)[1])
     if name.startswith("tearfade*"):  # tearfade*0.7 (the film fades out from this share to its lid-side rim)
         return lambda built: tearfade(built, float(name.split("*")[1]))
     if name.startswith("marginrelief*"):  # marginrelief*0 (the lid margin's relief kept: 0 none)
@@ -3186,6 +3244,8 @@ def factor(name: str):
     if name.startswith("lidcarry"):  # lidcarry*0.85*0.7*0.55 (a share a ring)
         shares = [float(x) for x in name.split("*")[1:]]
         return lambda built: lidcarry(built, *shares)
+    if name.startswith("lashlower*"):  # lashlower*0.9 (the lower lashes' melanin)
+        return lambda built: lashlower(built, float(name.split("*")[1]))
     if name.startswith("lashcap"):  # lashcap*1.6 (mm)
         return lambda built: lashcap(built, float(name.split("*")[1]))
     if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)

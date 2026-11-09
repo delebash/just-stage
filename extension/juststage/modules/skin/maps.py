@@ -116,6 +116,11 @@ NAIL_RAISE = 0.0006  # m: the plate over its fold
 #: the mouth's lining (the inner lips and the mouth's skin; `tools/make_mouth_mask.py`): wet mucosa where the mask is -
 #: no scan or painting covers it, so an open mouth showed a pale rim of skin inside the lips (the gate, 2026-11-05)
 MOUTH_TOOL = "python tools/dev.py blender -b --python tools/make_mouth_mask.py"
+#: the lids' margins where the resting shape stretches them 2-10x against the UV layout (the eyelid contact - always on;
+#: tools/make_stretch_mask.py): every map read through the UVs streaked the lower lid's ledge at the eye view
+#: (2026-11-09); a margin is smooth wet tissue, so inside it the relief layers are out (`_relief_off_stretched`) and the
+#: composed colour smoothed (skin_base.STRETCH_SMOOTH)
+STRETCH_TOOL = "python tools/dev.py blender -b --python tools/make_stretch_mask.py"
 MOUTH_COLOUR, MOUTH_SHARE = (0.42, 0.11, 0.11), 0.85  # linear
 MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
 #: the lips' vermilion over any skin - MPFB2's CC0 lips mask (`mpfb_lips.jpg`, hm08's own UVs) - as CC5's lip colour:
@@ -525,6 +530,31 @@ def _relief_off_mouth(nt) -> None:
         nt.links.new(factor, depth.inputs[0])
 
 
+def stretched() -> bpy.types.Image:
+    """The lids' stretched margins on the head tile (STRETCH_TOOL), loaded once and shared."""
+    path = paths.generated("skin", "stretched.png", tool=STRETCH_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _relief_off_stretched(nt, uv) -> None:
+    """No pores, microrelief or scanned relief on the lids' stretched margins (STRETCH_TOOL): the contact stretches them
+    2-10x, which drew the relief out into streaks; a margin is smooth wet tissue."""
+    nodes = nt.nodes
+    mask = _node(nt, "ShaderNodeTexImage", "stretched_mask", (-1600, -4100))
+    mask.image, mask.interpolation, mask.extension = stretched(), "Linear", "CLIP"
+    nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
+    share = _math(nt, "stretched", "MULTIPLY", mask.outputs["Color"], nodes[NODE + "mouth_on_head"].outputs["Value"])
+    keep = _math(nt, "stretched_keep", "SUBTRACT", 1.0, share)
+    for key in ("pore", "micro"):
+        depth = nodes[NODE + f"{key}_depth"]
+        factor = depth.inputs[0].links[0].from_socket
+        nt.links.new(_math(nt, f"{key}_off_stretched", "MULTIPLY", factor, keep), depth.inputs[0])
+    # the scans' relief at full strength (1) times the keep - a number each build, so a rebuild can't loop it into itself
+    nt.links.new(_math(nt, "relief_off_stretched", "MULTIPLY", 1.0, keep), nodes[NODE + "normal_map"].inputs["Strength"])
+
+
 def _margin_layer(nt, bsdf) -> None:
     """The lid margin's wet pink (MARGIN_TINT, MARGIN_ROUGHNESS, MARGIN_COAT) by base v2's `js_margin` attribute (0
     off the margin, and on characters without it)."""
@@ -859,6 +889,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     _upper_lip_layer(nt, bsdf, uv)
     _eye_layer(nt, bsdf, uv)
     _relief_off_mouth(nt)
+    _relief_off_stretched(nt, uv)
     bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS
     bsdf.inputs["Coat IOR"].default_value = COAT_IOR
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT

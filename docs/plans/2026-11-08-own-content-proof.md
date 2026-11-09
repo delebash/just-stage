@@ -907,7 +907,37 @@ booked with just-direct-mocap.
   not the tear film). KEPT (mine): `eye_layers.TEAR_FADE_OUT` 0.5 - the film's window by its share, fading in from the
   eyeball rim (TEAR_FADE) and out toward the lid rim.** Test `test_the_tear_film_fades_out_toward_the_lids`.
   `batch_tearprod.sh` (backup `library_2026-11-09n`; characters rebuilt - the film's material is made with the eye
-  parts; the product's eye and blink; every suite) - running.
+  parts; the product's eye and blink; every suite). **12:54 (`row_tep_zoom.png`): the fleck gone in the product;
+  end run green (unit 45, tools 54, Blender 206); committed e1fd9f8.**
+- **12:5x, the lower lid's ledge colour (box 60 min):** the contact key (base.CONTACT, always on) stretches the lids'
+  faces against the UV layout: 345 faces touched, p90 2.10x, 40 over 2x, the most 9.7x (`contact_stretch.py`) - the
+  ledge's streaks are its colour (and relief) magnified there, in every pose. Unlike the blink's fold (removed at
+  11:18), this band is always seen and always stretched, and a real margin is smooth wet tissue - so smoothing there
+  is right in itself. `tools/make_stretch_mask.py` (the rest shape - every key at its value, no armature - over the
+  basis, 2.0 -> 3.0x; make_mouth_mask's `_raster`, its main() guarded again): unrestricted it found 31 regions over the
+  head tile (the shape keys stretch other skin too) - restricted to the margin (`js_margin`) and one ring: 64 vertices,
+  0.02% of the tile. Before any rollout (the 11:18 lesson): where it lands, painted red (`maskshow*`,
+  `.dev/gate/masks/stretched.png`, `batch_maskshow.sh`) at the eye, face and blink views. **13:01 (`row_ms_eye.png`): the red
+  band is exactly the lower lid's ledge and the rim at the eye's corners - the margin tissue, nothing on the lid's
+  outer skin.** Built: `maps._relief_off_stretched` (pores, microrelief and the scans' relief cut in the mask; the
+  normal map's strength a number in `relief_off_stretched` - `relief0` / `relief*` set it there),
+  `skin_base.stretch_smoothed` (the composed colour its own blur, STRETCH_SMOOTH 24 texels); tests
+  `test_the_lids_stretched_margins_have_no_relief_to_streak`, `test_the_stretched_margins_are_smoothed_and_nothing_else`.
+  Trial on ONE skin first (`batch_stretch1.sh`: Scan man A composed and built, the library's characters; the gate's man
+  at the eye, face, three-quarter and blink views against today's product; backups `compositions_2026-11-09e`,
+  `skins_2026-11-09d`, `library_2026-11-09o`). **13:05 void** - the mask tool's dressed human needed the mask
+  (Mistakes); the library and composition unchanged (checked), Scan man A's skin restored. The tool now makes an
+  undressed body with the eyes opened and the parts added (the same contact; its mask byte-equal to the one shown).
+  Rerun `batch_stretch2.sh` (stops at a failing step). **13:14 (`row_st_{zoom,eye,blink}.png`): the ledge's streaks
+  softened (its colour a smooth gradient), the eye view otherwise unchanged, the blink unchanged (the margin hidden
+  closed), the face views' changes round the eyes and the mouth (that baseline predates the lips' and the film's
+  commits) - no regression seen. A modest, real gain - KEPT (mine); the ledge's width stays (the lid's shape: open).**
+  Into all six: `batch_stretch_all.sh` (backups `compositions_2026-11-09f`, `skins_2026-11-09e`, `library_2026-11-09p`;
+  the women's eye views; every suite). **13:34 (`row_sa_zoom.png`): both women's ledges a smooth band, no streaks;
+  six skins and six characters built; unit 45, tools 55 passed; Blender running.** Seen there: the Heavy woman's lower
+  lashes golden-orange on her dark skin beside her near-black upper ones - `lashes.LOWER["melanin"]` 0.6 (redness
+  0.25) reads blonde in the hair shader; HD Aaron's lower lashes dark brown. Trial `lashlower*` (`batch_lashlower.sh`,
+  after the suite): 0.6 / 0.8 / 0.92 on the Heavy woman and the gate's man beside him.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -947,10 +977,10 @@ booked with just-direct-mocap.
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
 | Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
 | Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); matte (`LIP_ROUGHNESS, LIP_COAT` 0.6 / 0.05, 11-09 04:1x - no cellophane up close); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | his crisper border; the lines read deep at an extreme crop |
-| Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`) | the lid's rim (shape and glow, not colour); the lower lashes' kinks; the strand haze (cards) |
+| Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`); the tear film's fleck on the ledge gone (`TEAR_FADE_OUT`, 11-09) | the lower lid's rim: a wide ledge with its colour stretched (a thinner margin; the colour unstretched by a static stretch map); the closed lid's streaks (expression-driven detail); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
 | Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask), by tone since 11-09 (`ear_tint`: melanin hides the blood - the Muscular man's orange-red ear now red-brown) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault); a dark skin's ear still redder (the scans' own - chromophore maps); the ears' gloss |
-| Nails | close | - | - |
+| Nails | close; toenails a short plate on top of the toe (11-09, `TOE_PLATE_*`) | - | - |
 | Hands | close | - | tone (a setting) |
 | Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out; the neck / chest patch gone on every character (11-09) | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out`; the scans' edge faded | definition (MakeHuman's CC0 normal as a slider, its seams) |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
@@ -1158,3 +1188,7 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
 - Trial a change on every view it touches before rolling it into the skins (2026-11-09 11:18: the lid-fold mask went
   into all six skins and the library on the blink view's evidence alone; the open eye - the main view - regressed,
   and the rollout had to be reverted from backups).
+- A batch stops at its first failing step, and Blender runs with `--python-exit-code 1` (2026-11-09 13:05: the stretch
+  mask tool's own dressed human needed the mask - Blender exited 0 with no file; the compose, the skin build, the
+  library and the render all ran on and failed after it; the failed skin build had rewritten Scan man A's normal map,
+  restored from its backup).

@@ -554,3 +554,22 @@ def test_a_toes_nail_plate_is_short_and_on_top(human, tmp_path):
     assert toes.any() and fingers.any()
     assert (plate[toes] > 0.5).mean() < 0.7 * (plate[fingers] > 0.5).mean()  # a toe's plate covers less of its island
     assert along[toes & (plate > 0.5)].max() < maps.TOE_PLATE_LENGTH + 0.05  # and ends short of the toe's tip
+
+
+def test_the_lids_stretched_margins_have_no_relief_to_streak(human, tmp_path):
+    """The eyelid contact stretches the lids' margins 2-10x against the UV layout: the pores, microrelief and scanned
+    relief streaked the lower lid's ledge (2026-11-09). Inside the mask (make_stretch_mask.py) all three are cut."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    for key in ("pore", "micro"):
+        assert nodes[maps.NODE + f"{key}_depth"].inputs[0].links[0].from_node == nodes[maps.NODE + f"{key}_off_stretched"]
+    strength = nodes[maps.NODE + "normal_map"].inputs["Strength"]
+    assert strength.links[0].from_node == nodes[maps.NODE + "relief_off_stretched"]
+    mask = nodes[maps.NODE + "stretched_mask"].image
+    px = np.empty(mask.size[0] * mask.size[1] * 4, np.float32)
+    mask.pixels.foreach_get(px)
+    assert 0.00005 < (px[0::4] > 0.5).mean() < 0.002  # the lids' margins: a sliver of the head tile
+    maps.refresh(body.juststage.skin_material)  # a rebuild (every library load) keeps one chain, no loop
+    assert nodes[maps.NODE + "relief_off_stretched"].inputs[0].default_value == 1.0
+    assert not nodes[maps.NODE + "relief_off_stretched"].inputs[0].is_linked

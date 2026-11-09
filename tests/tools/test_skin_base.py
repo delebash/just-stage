@@ -66,3 +66,16 @@ def test_a_scans_colour_weighs_in_from_its_outer_edge_not_round_its_holes():
     assert w[edge_row, 512] < 0.01
     assert w[edge_row + int(skin_base.LOW_RIM) + 2, 512] > 0.99
     assert w[512, 512 + 45] > 0.99  # beside the hole, full weight
+
+
+def test_the_stretched_margins_are_smoothed_and_nothing_else():
+    """The lids' margins stretch 2-10x against the UV layout: the colour's detail streaked the lower lid's ledge
+    (2026-11-09). Inside the mask the composed colour is its own blur; outside, untouched."""
+    rng = np.random.default_rng(2)
+    n = 512
+    ratio_log = (0.05 * rng.standard_normal((n, n, 3))).astype(np.float32)  # pore-scale colour detail
+    mask = np.zeros((n, n), np.float32)
+    mask[200:300, 150:350] = 1.0
+    out = skin_base.stretch_smoothed(ratio_log, mask)
+    assert out[220:280, 170:330].std() < 0.1 * ratio_log[220:280, 170:330].std()  # inside: smooth
+    assert np.array_equal(out[:150], ratio_log[:150])  # outside: as it was

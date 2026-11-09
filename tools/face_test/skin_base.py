@@ -66,6 +66,11 @@ LOW_EDGE_BANDS = 7
 #: scan's colour is weighed in from its outer edge over LOW_RIM texels (~16 mm; distance-to-border weights, as
 #: OpenCV's detail::FeatherBlender); its holes (eyes, brows, the mouth) keep LOW_FEATHER
 LOW_RIM = 96.0
+#: the lids' stretched margins (tools/make_stretch_mask.py's `stretched.png`): the eyelid contact stretches them 2-10x
+#: against the UV layout, so the colour's detail streaked the lower lid's ledge (2026-11-09) - inside the mask the
+#: composed colour is its own blur over STRETCH_SMOOTH texels (~4 mm); a margin is smooth wet tissue
+STRETCH_SMOOTH = 24.0
+STRETCH_MASK = Path(__file__).resolve().parents[2] / "extension" / "juststage" / "data" / "generated" / "skin" / "stretched.png"
 #: HAIR OUT, CC5's way (docs/plans/2026-11-06-inputs-audit.md: CC5's skin colour carries no hair - lashes, brows and
 #: stubble are meshes): every scan has its own lashes and stray brow hairs round the eye and brow holes its skin mask
 #: leaves (scan_skin.py labels eyes and brows, not the lashes on the lids or the hairs beside the brows) - a band of
@@ -202,6 +207,21 @@ def _inside(cover):
     mask = np.zeros((h + 4, w + 4), np.uint8)
     cv2.floodFill(pad, mask, (0, 0), 2)
     return pad[1:-1, 1:-1] != 2
+
+
+def stretch_smoothed(ratio_log, mask):
+    """`ratio_log` (H x W x 3) blended toward its own blur (STRETCH_SMOOTH) by `mask` (H x W, 0-1); elsewhere as it was."""
+    blurred = cv2.GaussianBlur(ratio_log, (0, 0), STRETCH_SMOOTH)
+    return ratio_log + (blurred - ratio_log) * mask[..., None]
+
+
+def _stretch_mask(shape):
+    """The stretched margins' mask at the composition's size (0-1); the tool to run when it's missing."""
+    if not STRETCH_MASK.exists():
+        raise SystemExit(f"{STRETCH_MASK.name} is missing; run: python tools/dev.py blender -b --python "
+                         "tools/make_stretch_mask.py")
+    m = cv2.imread(str(STRETCH_MASK), cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
+    return cv2.resize(m, (shape[1], shape[0]), interpolation=cv2.INTER_LINEAR)
 
 
 def rim_weight(valid):
@@ -601,6 +621,7 @@ def compose(seed, params=None):
     # than 2% (the painting's own guard in test_face_project; walter's scalp came out green and blotchy, 2026-11-03)
     ratio_log[..., 1] = np.minimum(ratio_log[..., 1], ratio_log[..., 0] + 0.02)
     ratio_log[..., 2] = np.minimum(ratio_log[..., 2], ratio_log[..., 1] + 0.02)
+    ratio_log = stretch_smoothed(ratio_log, _stretch_mask(shape))  # the lids' margins: no streaks on the ledge
     ratio = np.exp(ratio_log).astype(np.float32)
     # a ratio around 1: each channel's mean over what the scans covered set to 1 - the scans' own shading had left it
     # below (round 74's scalp darker and more orange than the face); the character's tone is the projection's
