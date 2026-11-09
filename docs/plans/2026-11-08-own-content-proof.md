@@ -442,6 +442,22 @@ booked with just-direct-mocap.
   0.95 irregular wavy creases; **1.8 mm / 0.15 mm / 8 / 1.0 soft irregular crinkles fading in patches - closest to lip
   skin and his soft creases: KEPT** with the seam at 1.5 (`patch_lips.py`, applied after the characters' check so its
   three characters share one state; `batch_lipsprod.sh` renders it in the product and runs the skin-maps tests).
+- **00:08 (11-09), the plan's last step - other characters (`batch_chars.sh`, `row_chars_*.png`: Average woman, Older
+  man, Amara):** worst - **the face darker than the neck and body** (the Older man's face brown on a pale body, the
+  woman's more orange); Amara (her own scan skin) matches. Not tonight's: the Older man's face has been brown since
+  11-06, when the library characters took the scan skins (`.dev/gate/parts/2026-11-06{f,g}/m/Older_man`). **Measured
+  in the baked tiles (`.dev/skins/*/...base_color.1001 vs .1002`, linear): on every scan skin the face's mean is 0.54-0.60
+  of the body tile's** (Scan man C's body sits at its composition's tone, 0.275 vs 0.271). **Root cause:**
+  `skin_base.compose` normalised the colour ratio to 1 over everything the scans covered - the brighter scalp, ears
+  and neck left the face at ~0.55 of the tone the body tiles carry. **Fix:** normalised over the face's skin (covered,
+  no scalp, beard or eye zone - the composition's own `regions` and `eye_zone`); the compositions backed up
+  (`.dev/backup/compositions_2026-11-09`). Watch: round 74's reason for the old way (the scalp darker and more orange
+  than the face) - the hairline, on the render. `batch_facetone.sh`: compose and build the six skins, the face/body
+  ratio printed, the library backed up (`library_2026-11-09a`) and its characters rebuilt, four characters rendered.
+  Also seen: the woman's chin with a beard-shadow texture; a light line down Amara's chest.
+- **00:11, the lips in the product (`row_lipsprod2_lips.png`): softer, the corduroy gone, the line at the seam deeper
+  - KEPT.** The same sheet: **our chin under the stubble reads coarse and bumpy** (the region table's chin pores x1.5)
+  beside his smooth chin - `batch_chin.sh` (region variants chin pores 1.0 / 0.6) after the face tone.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

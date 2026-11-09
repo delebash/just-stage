@@ -560,9 +560,13 @@ def compose(seed, params=None):
     ratio_log[..., 1] = np.minimum(ratio_log[..., 1], ratio_log[..., 0] + 0.02)
     ratio_log[..., 2] = np.minimum(ratio_log[..., 2], ratio_log[..., 1] + 0.02)
     ratio = np.exp(ratio_log).astype(np.float32)
-    # a ratio around 1: each channel's mean over what the scans covered set to 1 - the scans' own shading had left it
-    # below (round 74's scalp darker and more orange than the face); the character's tone is the projection's
-    ratio /= ratio[cover].mean(axis=0)
+    # a ratio around 1: each channel's mean over the FACE's skin (what the scans covered, no scalp, beard or eye zone)
+    # set to 1 - the character's tone is the projection's, and the body tiles carry that tone. Over everything covered
+    # (until 2026-11-09; round 74 had the scalp darker and more orange than the face) the brighter scalp, ears and neck
+    # left the face at 0.54-0.60 of the tone on every scan skin: a face darker than its own neck and body
+    beard, scalp = regions(shape[0])
+    face = cover & (scalp < 0.1) & (beard < 0.1) & ~eye_zone(shape[0])
+    ratio /= ratio[face if face.sum() > 10000 else cover].mean(axis=0)
     return ratio, cover, p
 
 
