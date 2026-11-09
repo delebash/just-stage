@@ -552,6 +552,12 @@ booked with just-direct-mocap.
 - **02:47, the third end run green: unit 45, tools 51, Blender 198 passed (1 deselected: the AI test) - the upper
   lip's layer, the scar's fill and the rebuilt skins verified.** Then the characters' step again on the final state
   (`batch_chars2.sh`).
+- **02:54, the characters on the final state (`row_chars2_{face,lips,eye}.png`):** the lips' two-tone holds on all
+  three (Amara's upper lip very dark on her dark skin - plausible); new faults: (1) **the woman's jaw underside a dark
+  brown band with an edge** (`woman_chin.png`) - base colour or shading? the Diffuse Color pass rendering; (2) **the
+  Older man's and Amara's eye surround a bruised grey-blue** - partly before the eye layer (the 11-06 render had grey
+  sockets: the composition's eye zone), deepened by it - `factors eyetint` (`batch_eyetint.sh`: shipped, 0.8, off on
+  the Older man, Amara and the Average man).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

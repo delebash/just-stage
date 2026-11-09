@@ -1725,6 +1725,15 @@ def lipset(built: dict, period: float, depth: float, distortion: float, vary: fl
     print("LIP SET", (period, depth, distortion, vary), "on", n, "trees", flush=True)
 
 
+def eyetint(built: dict, r: float, g: float, b: float) -> None:
+    """The eyes' surround tint (`maps.EYE_SURROUND_TINT` (0.60, 0.54, 0.51)) set on its node - on darker skins the
+    surround reads bruised grey (2026-11-09, the characters' check); 1,1,1 = the layer off."""
+    nodes = _skin_node_inputs(built, "eyes_tint")
+    for node in nodes:
+        next(i for i in node.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+    print("EYE TINT", (r, g, b), "on", len(nodes), "nodes", flush=True)
+
+
 def margintint(built: dict, r: float, g: float, b: float) -> None:
     """The lid margin's tint over the skin (`maps.MARGIN_TINT` (0.86, 0.62, 0.62)) - our margin reads as a thick
     orange-pink rim round the eye beside HD Aaron's thin wet line (2026-11-08)."""
@@ -2872,6 +2881,8 @@ def factor(name: str):
         return lambda built: lipseam(built, float(name.split("*")[1]))
     if name.startswith("lipset*"):  # lipset*1.8*0.0002*6*0.95 (maps.LIP_LINES' place: period mm, depth m, distortion,
         return lambda built: lipset(built, *(float(x) for x in name.split("*")[1:5]))  # vary)
+    if name.startswith("eyetint*"):  # eyetint*1*1*1 (maps.EYE_SURROUND_TINT's place; 1,1,1 = off)
+        return lambda built: eyetint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("margintint*"):  # margintint*1*1*1 (maps.MARGIN_TINT's place, linear RGB; 1,1,1 = the skin's)
         return lambda built: margintint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("eyewhite*"):  # eyewhite*0.85
