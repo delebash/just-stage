@@ -462,6 +462,10 @@ booked with just-direct-mocap.
   restored from the backup and the skins and characters rebuilt, `batch_restore.sh`).** The brown face on the
   Older man is not in the maps: the tone gain multiplies every tile alike - the diagnostic next: the face view's
   Diffuse Color pass (the base colour before light), forehead against chest, Older man and Average man.
+  **00:53, the diagnostic (`.dev/gate/parts/2026-11-09diffcol`, `diffcol_measure.py`): in the base colour forehead /
+  chest = 1.02-1.10 (Average man), 0.94-1.09 (Older man) - they match; in the renders the forehead is 1.2-1.8x the
+  chest (the key light on the face). NO head/body colour fault - I misread the sheet, then measured it with a bad
+  mask. The Older man is mid-brown by his preset (melanin 0.08 on the library's lightness scale) - identity. Closed.**
 - **00:11, the lips in the product (`row_lipsprod2_lips.png`): softer, the corduroy gone, the line at the seam deeper
   - KEPT.** The same sheet: **our chin under the stubble reads coarse and bumpy** (the region table's chin pores x1.5)
   beside his smooth chin - `batch_chin.sh` (region variants chin pores 1.0 / 0.6) after the face tone.
