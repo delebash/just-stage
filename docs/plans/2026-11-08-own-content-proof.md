@@ -570,6 +570,10 @@ booked with just-direct-mocap.
   grey texels scattered small (38,663, no single blob at the brow); its face reads fuzzy and speckled all over (the
   dark scans' fine layer). Not located cleanly - **open**, a composition job (the brow holes' fill, the eye zone's hue
   correction reaching the brow).
+- **03:2x, the woman's coarse skin (`row_womanrelief_{cheek,lips,face}.png`):** her scan relief finer than 7 mm at
+  0.6 / 0.4 smooths it a little; the cobbled pattern (cells ~2 mm) stays - it is the shared pore tile (judged a match
+  on the men's darker, stubbled cheek), coarse on her lighter bare skin; women's facial pores are finer than men's -
+  trial `pores*0.7` / `*0.5` on her (`batch_womanpores.sh`).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
