@@ -549,6 +549,9 @@ booked with just-direct-mocap.
   (0.5-1.5 deg) worse (47-51% over 20 deg, today 37%); nearer the opening (-0.5) 34%; aimed up (rise -10) or
   straighter (curl 5-10) no better (37-45%). The kinks come from the lower lid's shape round the roots, not the
   parameters - **open, box spent**; they are faint (melanin 0.6, 25 um) at every view.
+- **02:47, the third end run green: unit 45, tools 51, Blender 198 passed (1 deselected: the AI test) - the upper
+  lip's layer, the scar's fill and the rebuilt skins verified.** Then the characters' step again on the final state
+  (`batch_chars2.sh`).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
