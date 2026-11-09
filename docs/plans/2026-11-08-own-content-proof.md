@@ -437,6 +437,11 @@ booked with just-direct-mocap.
   (one suite for the lashes, the lips and the eyes); rendered after by `batch_eyelayer.sh`. **23:5x, in the product
   (`row_eyelayer_{eye,face}.png`): the lids and under-eyes darker, the eyes set in - as the trial; its test passed in
   the 23:36 suite (195 passed). Kept.**
+- **23:58, the lips' lines (`batch_lipset.sh`, this session's scratchpad `lipset_grid.png`, full resolution):**
+  today's (1.3 mm, 0.4 mm, 4, 0.8) an even rib - corduroy; half the depth still a rib; 1.8 mm / distortion 6 / patchy
+  0.95 irregular wavy creases; **1.8 mm / 0.15 mm / 8 / 1.0 soft irregular crinkles fading in patches - closest to lip
+  skin and his soft creases: KEPT** with the seam at 1.5 (`patch_lips.py`, applied after the characters' check so its
+  three characters share one state; `batch_lipsprod.sh` renders it in the product and runs the skin-maps tests).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
