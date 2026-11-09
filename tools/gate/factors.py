@@ -1142,6 +1142,24 @@ def aaronskin(built: dict, stem: str = "aaron_skin_on_ours") -> None:
     _transplant(built, stem, 1001, "Std_Skin_Head")
 
 
+def aaronflat(built: dict) -> None:
+    """After `aaronskin` (a LOCAL TEST, a diagnostic): his transplanted head material with its relief off - every group
+    input whose name holds "Normal Strength" (CC Blender Tools' skin group: Normal Strength, Micro Normal Strength...)
+    set to 0 - so his colour alone is on our head. 19:5x: his whole skin took much of the doll look away, our regional
+    colour boosted did little - is his gain the colour or the relief (his forehead lines, folds)?"""
+    n = 0
+    for slot in built["body"].material_slots:
+        mat = slot.material
+        if not (mat and mat.node_tree and mat.name.startswith("Std_Skin_Head")):
+            continue
+        for node in mat.node_tree.nodes:
+            for socket in getattr(node, "inputs", []):
+                if "Normal Strength" in socket.name and hasattr(socket, "default_value") and not socket.is_linked:
+                    socket.default_value = 0.0
+                    n += 1
+    print("AARON FLAT: his relief off -", n, "inputs at 0", flush=True)
+
+
 def aaronwrinkles(built: dict, expression: str) -> None:
     """Checklist row 13's deciding test (a LOCAL TEST, after `aaronskin`): HD Aaron's own wrinkle maps on our face in
     our smile. His head material's wrinkle shader (CC Blender Tools' rl_wrinkle_shader) is fed by 46 drivers on his
@@ -2702,6 +2720,8 @@ def factor(name: str):
     if name.startswith("aaronbody"):  # aaronbody[*aaron_hand] (his body skin on our torso, or the carried region)
         stem = name.split("*", 1)[1] if "*" in name else "aaron_torso"
         return lambda built: aaronbody(built, stem)
+    if name == "aaronflat":  # after aaronskin: his relief off, his colour alone
+        return aaronflat
     if name.startswith("aaronskin"):  # aaronskin[*stem] (the transplant: his head material on our head; a stem for
         # another character's wrap, e.g. aaronskin*aaron_skin_on_woman)
         return lambda built: aaronskin(built, name.split("*", 1)[1]) if "*" in name else aaronskin(built)

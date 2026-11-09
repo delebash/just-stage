@@ -269,6 +269,48 @@ booked with just-direct-mocap.
   head proved its weight; ours comes from the scan composition (`tools/face_test/skin_base.py` compose), where the
   regional redness and the eye zone (EYE_DARK) are set; (3) the lips' colour (darker to the seam) and the lip lines
   in the product (UV space).
+- **19:48 (`.dev/gate/parts/2026-11-08colour`, `row_colour_face.png`):** our composition's regional colour boosted
+  (`regioncontrast*1.6`, `*2.2`: the head colour's 5-60 mm variation in log space) - a pinker nose, a little more life;
+  still a doll - not the change his skin gave. His skin brought colour AND relief (forehead lines, folds - our fold
+  band 1.01 against his 1.35). Next, the split (`batch_split.sh`): his whole head material, then his colour alone
+  (`aaronflat`: his normal strengths at 0) - which half carries the realism, before our composition or relief changes.
+- **20:03, THE SPLIT (`.dev/gate/parts/2026-11-08split`, `row_split_face.png`): his colour alone (his relief off) on
+  our head reads smooth and plastic again; with his relief on, his forehead lines, crow's feet and the creases round the
+  eyes and nose make it read real. The face's realism sits in the mid-scale relief - wrinkles and folds - not the pores
+  or the colour.** Ours: the composition's relief is a weighted mean of 2-3 scans (`skin_base._relief`; Scan man A:
+  hsr0040 0.7 + lps 0.3) - averaging people cancels their lines - the plan's §9 row "BUILT-DIFF (a plain mean)",
+  whose decided method is "each region from one scan". Built (mine, the plan's own method): `relief_mode: "first"` in
+  `_relief` - the heaviest scan's relief, the next only where it didn't reach (as the pores). Test: Scan man A composed
+  again with it, built as a test skin outside the library (the shipped composition backed up to
+  `.dev/backup/compositions_611_2026-11-08` and put back), rendered beside the shipped (`batch_relief1.sh`).
+- **20:18 (`.dev/gate/parts/2026-11-08relief`, `row_relief_{face,eye}.png`):** one scan's relief (hsr0040 first)
+  barely changes the face - a few more lines under the eye; still a doll. Two faults in the test itself: the build's
+  relative library path resolved from C:\ (nothing written; rerun with an absolute E: path - the same mistake as 11-07's
+  stray renders: Blender's working directory is not the repo), and `parts_gate --skin` applies the skin's own tone,
+  paler than the library character's - not one change against the shipped render. And hsr0040 is a young man with
+  few lines. Next: the relief from HSR0112 (60) on the same seed, and the shipped skin through the same `--skin` path
+  (`batch_relief2.sh`, `batch_relief_render2.sh`).
+- **20:28, the same `--skin` path for all (`row_relief2_{face,eye}.png`): the shipped skin, one scan's relief (hsr0040)
+  and a 60-year-old's (hsr0112) look almost the same at the face and eye views. Skin relief, the box spent: not reached
+  with our free scans - they carry no wrinkle detail at his strength (HSRD-100 at ~6 texels / mm, mostly young; the
+  relief x2 of 11-07 pushed the form past him without lines). Missing: a mid-scale wrinkle layer - forehead lines, crow's
+  feet, the eye's creases, the nose-to-mouth fold - at his strength. Route left: making it ourselves (a region-placed
+  wrinkle normal layer), its own job.** `skin_base._relief`'s `relief_mode: "first"` stays (the plan's method, off by
+  default; no shipped skin uses it yet).
+
+### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
+
+| Part | Verdict | Kept in the product | What's missing / the route |
+|---|---|---|---|
+| Cheek, nose skin | matches | - | - |
+| Forehead skin | orange peel gone | forehead pores x1 | - |
+| Stubble | close | 100 a cm2 | the beard region higher on the cheeks than his |
+| Brows | close (real brows now) | 1200 / 2000 at 0.92 | the live view's strand haze (cards) |
+| Scalp hair | not reached | hairline one ring | cards for the live view (the approved rule) + an artist's free cut |
+| Face, overall | not reached - reads made | - | the layer diagnostic: (1) live-view strand haze -> cards; (2) the skin's mid-scale wrinkles -> a made wrinkle layer; colour a smaller part |
+| Lips | not reached | (lip lines: the route works, product in UV to build) | the lips' colour to the seam |
+| Eyes | close | - | the lids' darker surround (the composition's EYE_DARK) |
+| Teeth, ears, nails, feet, torso | not judged this evening | - | the foot's scan downloaded (its fit and bake to build) |
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.

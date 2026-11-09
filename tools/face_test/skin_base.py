@@ -382,7 +382,16 @@ def _relief(p, layers, shape, keep=None, scans=None, inside=None):
     as far as `keep` (its stubble's lumps are hair); the holes inside the head (`inside`) filled with the relief
     beside them (hair.mirror_fill)."""
     num, tot = np.zeros((*shape, 2), np.float32), np.zeros(shape, np.float32)
-    for n, w in p.get("relief_from", p.get("broad_from", p["mid_from"])).items():
+    # "first" (the plan's §9 method, 2026-11-08): each texel's folds and lines from ONE scan - the heaviest first, the
+    # next only where it didn't reach - as the pores are; the weighted mean of 2-3 people cancelled their wrinkles (HD
+    # Aaron's relief on our head, his colour off and on, showed the face's realism sits in those lines)
+    first = p.get("relief_mode") == "first"
+    sources = p.get("relief_from", p.get("broad_from", p["mid_from"]))
+    if first:
+        sources = dict(sorted(sources.items(), key=lambda kv: -kv[1]))
+    for n, w in sources.items():
+        if first:
+            w = 1.0
         f = DIR / n / "bake_normal.png"
         if not f.exists():
             continue
@@ -396,6 +405,8 @@ def _relief(p, layers, shape, keep=None, scans=None, inside=None):
         a = a * (1.0 - np.clip(cv2.GaussianBlur(debris, (0, 0), 2.0) * 1.5, 0.0, 1.0))  # the scan's holes and edges out
         if keep is not None and scans is not None and scans[n]["stubble"]:
             a = a * keep
+        if first:  # only where the scans before it left room
+            a = a * np.clip(1.0 - tot, 0.0, 1.0)
         num += a[..., None] * hp
         tot += a
     if not tot.any():
