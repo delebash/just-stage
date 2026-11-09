@@ -118,6 +118,16 @@ def test_brows_have_hd_aarons_grey_hairs_soft_head_and_arched_hairs(man):
     assert max(r[0] for r in radii) <= 0.00004  # finer than 0.08 mm at the root
 
 
+def test_brows_are_dark_brown_not_black(man):
+    """Near-black brows (0.92) read as a grey bar on a woman and grey smoke at the face view (2026-11-09): every hair's
+    melanin a dark brown, with redness."""
+    _made, body = man
+    _f, _r, melanin = brows.strands(body)
+    melanin = np.array(melanin)
+    assert 0.7 < np.median(melanin) < 0.88
+    assert brows.REDNESS >= 0.25 and brows.FINE_MELANIN < 0.88
+
+
 @pytest.mark.parametrize("gender", [1.0, 0.0])
 def test_the_brows_lower_edge_sits_on_the_rim_out_of_the_blinks_reach(gender):
     """2026-11-08: MakeHuman's region put the roots on the lid's top, which the blink moves 5-12 mm, so the hairs swept

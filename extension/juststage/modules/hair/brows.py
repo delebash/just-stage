@@ -46,12 +46,15 @@ BEND = 30.0  # degrees a hair standing square to the brow's line turns toward th
 #: the share of the coarse hairs that are white - a character's own (greying): none by default (gate run 10: a fifth
 #: on everyone made every brow whitish); HD Aaron's about a fifth
 GREY_SHARE, GREY_MELANIN = 0.0, 0.05
-MELANIN, REDNESS, MELANIN_SPREAD = 0.92, 0.12, 0.05
+#: a dark brown, not black: at 0.92 / 0.12 (tuned 11-08 beside HD Aaron, a dark-haired man) a woman's brows read as a
+#: grey-black bar at the eye view and grey smoke at the face view - black hairs thinner than a pixel averaged with the
+#: skin (2026-11-09, `.dev/gate/parts/2026-11-09browcol`; on him brown is no worse)
+MELANIN, REDNESS, MELANIN_SPREAD = 0.8, 0.3, 0.05
 #: the brow's soft body under the coarse hairs (CC5's brows lay a soft base layer under their hair cards; MetaHuman's
 #: strand brows hold fine short hairs among the coarse ones): FINE hairs a brow, at FINE_LENGTH x the coarse ones'
 #: length, FINE_RADIUS thick, lighter - with the painted brows gone from the skins (2026-11-06) the 800 coarse hairs
 #: alone read thin beside HD Aaron's
-FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 2000, 0.5, 0.000022, 0.92
+FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 2000, 0.5, 0.000022, 0.8
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
 #: the band's lower edge (its roots' 10th percentile) at least this many eyeball radii above the eye's centre - about
 #: the orbital rim, where a man's brow lies (RESEARCH 14.13 "Where a brow sits"). MakeHuman's region put our roots

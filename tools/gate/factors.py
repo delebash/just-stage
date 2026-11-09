@@ -1955,18 +1955,25 @@ def aoshade(built: dict, strength: float, distance_mm: float = 15.0) -> None:
     print("AO SHADE strength", strength, "reach", distance_mm, "mm on", n, "skins (film and live)", flush=True)
 
 
-def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey: float) -> None:
+def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey: float, melanin: float | None = None,
+              redness: float | None = None) -> None:
     """Our brows grown again (`brows.make`) with the coarse hairs' COUNT, the FINE hairs' count and melanin, and the
     grey share set - 19:1x: the layer diagnostic made our brows the eyes' main fault (his dark, dense, low; ours grey,
     thin), and the hair model's shares darkened the scalp but hardly the brows: their own settings are the lever (a
-    fifth white in the gate, 1,400 lighter fine hairs at melanin 0.8). A new groom: --alone."""
+    fifth white in the gate, 1,400 lighter fine hairs at melanin 0.8). Optionally the coarse hairs' MELANIN and the
+    brows' REDNESS (2026-11-09: near-black brows read as a grey smudge on the Average woman and the Older man). A new
+    groom: --alone."""
     brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
-    old = brows.COUNT, brows.FINE, brows.FINE_MELANIN
+    old = brows.COUNT, brows.FINE, brows.FINE_MELANIN, brows.MELANIN, brows.REDNESS
     brows.COUNT, brows.FINE, brows.FINE_MELANIN = int(count), int(fine), fine_melanin
+    if melanin is not None:
+        brows.MELANIN = melanin
+    if redness is not None:
+        brows.REDNESS = redness
     try:
         brows.make(built["body"], grey_share=grey)
     finally:
-        brows.COUNT, brows.FINE, brows.FINE_MELANIN = old
+        brows.COUNT, brows.FINE, brows.FINE_MELANIN, brows.MELANIN, brows.REDNESS = old
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("BROWS", int(count), "coarse,", int(fine), "fine at", fine_melanin, "grey", grey, flush=True)
@@ -2882,8 +2889,8 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
-    if name.startswith("browtrial*"):  # browtrial*1200*2000*0.92*0 (coarse, fine, fine melanin, grey) - --alone
-        return lambda built: browtrial(built, *(float(x) for x in name.split("*")[1:5]))
+    if name.startswith("browtrial*"):  # browtrial*1200*2000*0.92*0[*0.8*0.25] (coarse, fine, fine melanin, grey[,
+        return lambda built: browtrial(built, *(float(x) for x in name.split("*")[1:7]))  # melanin, redness]) - --alone
     if name.startswith("mhbody*"):  # mhbody*1.0 (MakeHuman's CC0 body normal on the body tiles, its strength)
         return lambda built: mhbody(built, float(name.split("*")[1]))
     if name.startswith("eartint*"):  # eartint*1.0*0.78*0.76 (the ears' colour multiplier)
@@ -2913,6 +2920,8 @@ def factor(name: str):
         return lambda built: lipseam(built, float(name.split("*")[1]))
     if name.startswith("lipset*"):  # lipset*1.8*0.0002*6*0.95 (maps.LIP_LINES' place: period mm, depth m, distortion,
         return lambda built: lipset(built, *(float(x) for x in name.split("*")[1:5]))  # vary)
+    if name.startswith("hide*"):  # hide*eyebrows (a groom's part: eyebrows, eyelashes, scalp, beard)
+        return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("skintone*"):  # skintone*0.1 (melanin)
         return lambda built: skintone(built, float(name.split("*", 1)[1]))
     if name.startswith("mouthmask*"):  # mouthmask*corner (a variant folder under .dev/gate/mouthmasks)

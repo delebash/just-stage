@@ -681,7 +681,40 @@ booked with just-direct-mocap.
   the library's characters; the New human, the library man, Older man, Average woman, Muscular man, Young woman
   against their earlier renders; every suite) - running. 05:49 all six composed and built (`cover_step.py`, edge
   stretches off by >5%, before -> after: 611 35% -> 2%, 612 55% -> 7%, 613 62% -> 5%, 621 33% -> 2%, 622 40% -> 3%,
-  623 74% -> 11%; p10 now 0.947-0.972); the library's six characters rebuilt 05:50.
+  623 74% -> 11%; p10 now 0.947-0.972); the library's six characters rebuilt 05:50. **06:16
+  (`row_all_{newhuman,library,muscular,young,older,avgwoman}.png`): the New human's throat smudge, the library man's
+  neck smudge and the Muscular man's orange neck patch gone; no new edge anywhere - KEPT; end run green (unit 45,
+  tools 53, Blender 200); committed b978644.** Seen on the same sheets, next by visibility: a grey smudge round the
+  brows on the Average woman and the Older man at the face view (the 03:1x "brow band", box spent then; now a second
+  character - reopened, 30 min, a new method: `hide*eyebrows` against shown, with the Diffuse Color pass -
+  `batch_browband.sh`); the Young woman's and Average woman's dark cheek blotches (inside the cover, not an edge).
+- **06:2x, the grey round the brows - decided (`row_bb_{face,eye}_{Average_woman,Older_man}.png`):** with the brows
+  hidden the grey is gone and the skin under them clean on both - **it is the brow grooms, not the skin** (the 03:1x
+  hunt in Scan man C's tile looked in the wrong layer). One near-black brow for everyone (`brows.MELANIN` 0.92,
+  REDNESS 0.12, 1200 coarse + 2000 fine a brow - tuned 11-08 on HD Aaron, a dark-haired man): on a woman a dense
+  grey-black bar at the eye view, a grey smoke at the face view (black hairs thinner than a pixel averaged with the
+  skin). Trial (`batch_browcol.sh`, one change each, --alone): brown (coarse and fine 0.8, redness 0.3), a woman's
+  sparser (0.7x the hairs), both - on the Average woman; brown against today's on the gate's man beside HD Aaron (no
+  regression on him). Attacked: "11-08's 0.92 was judged beside him" - on him it stays the check; the new fact is the
+  grey on two other characters; "make the brows follow the scalp's colour" - a feature, not this fault.
+  **06:3x, the woman (`row_bc_woman_{eye,face}.png`):** today's regrown brow grey-brown (lighter than the gate's
+  "product" - see below); brown warmer and more natural; sparser alone still grey; sparser and brown the most natural
+  for her (skin between the hairs; a light brown brow at the face view, no bar). Checked the stale-light idea first
+  (`hair_world.py`): every library character's hair carries the stage's own image-light term (0.096) - false. The
+  real difference: the gate (not the app) put the hair library's brows - grown on a man - on every named character
+  (Mistakes). The gate fixed to keep a named character's own brows (after the man's run).
+  **06:4x, the man beside HD Aaron (`row_bc_man_{eye,face}.png`): brown no worse than today's on him (both heavier
+  and blockier than his soft greying brows). Box spent (30 min). KEPT (mine): `brows.MELANIN, REDNESS` 0.8 / 0.3,
+  `FINE_MELANIN` 0.8 for everyone - the woman's grey bar gone, the man unchanged; its test
+  `test_brows_are_dark_brown_not_black`.** The gate: `--brows own` (default) keeps a named character's saved brows,
+  the dead "library" choice and `OURS["brows"]` removed. **Open, routed:** a woman's sparser brows (0.7x read the most
+  natural on her) want a density that follows the gender slider live (a per-hair keep value culled by a geometry-nodes
+  threshold) - regrowing on a slider drag stalls it (as `refit_lashes` did), a fixed count at creation is wrong after a
+  drag; our brows' blocky shape beside his soft ones (both colours). Into the library: `batch_brows.sh` (backup
+  `library_2026-11-09h`; hair and characters rebuilt; four characters rendered; every suite). **07:09
+  (`row_br_{face,eye,woman_eye,older_face}.png`): the Average woman wears her own brows - brown, hairs visible, on the
+  brow ridge (not a man's low black bar); the Older man's grey smudge gone; the gate's man lighter than HD Aaron's
+  dark grey (brown + a fifth white - his colour is identity). End run green: unit 45, tools 53, Blender 201.**
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -922,3 +955,7 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   Python by a relative path from a here-doc - Windows couldn't start it, the composition stayed as it was, and the
   skin, library and renders after it ran on the old one; the measure's "change 0.0000" was the tell). Executables by
   their path from the repo root on the command line, never from inside an embedded script.
+- The gate renders what the app shows, part by part (2026-11-09 06:4x: for a named library character
+  `parts_gate.build_ours` swapped its own brows for the hair library's "JustStage brows" - grown on the hair-model MAN
+  and refit - so every library woman's brows in the gate were a man's dense bar, not the brows she carries; found
+  when `browtrial`'s regrown "today" brow came out lighter than the "product" render).

@@ -9,7 +9,8 @@ differs. A LOCAL TEST: CC5's character comes from the user's own export and noth
     python tools/dev.py blender -b --python tools/gate/parts_gate.py -- render --who cc5 --engine cycles
     python tools/dev.py blender -b --python tools/gate/parts_gate.py -- sheet
 
-`ours`: built the app's way - the library's Daniel, a scalp style and brows from the hair library, the face's ARKit 52
+`ours`: built the app's way - the library's Average man (or `--character`), a scalp style from the hair library,
+JustStage's brows (a named character: its own), the face's ARKit 52
 (`juststage.head.add_face_units`); nothing hidden. `cc5`: HD Aaron as Reallusion's CC Blender Tools imported CC5's
 Blender Pipeline export (hair and stubble on), its EEVEE or Cycles build to match the engine.
 
@@ -38,7 +39,7 @@ CC5_DIR = ROOT / ".dev" / "gate" / "cc5_aaron_blender"
 CC5_BLEND = {"eevee": CC5_DIR / "aaron_hair_eevee.blend", "cycles": CC5_DIR / "aaron_hair_cycles.blend"}
 #: the library's Average man in the Scan man A skin (2026-11-06: Daniel's skin is a face-test AI painting with painted
 #: lashes - docs/plans/2026-11-06-inputs-audit.md); recs 11, 8 for the scalp and brows; stubble as hair (build_ours)
-OURS = {"character": "Average man", "scalp": "JustStage short taper", "brows": "JustStage brows"}
+OURS = {"character": "Average man", "scalp": "JustStage short taper"}
 #: our man's scalp hair as dark as HD Aaron's (2026-11-06: the library style's brown 0.82 with a fifth grey measured
 #: L* 42 at the face view against his 22) - his hair's colour, so the hair's shading and structure are what differ;
 #: through the app's own juststage.hair.set_colour, the gate's man only (character="" )
@@ -155,9 +156,10 @@ def _stage():
     return scene, cam
 
 
-def build_ours(scene, skin: str = "", brows: str = "library", character: str = "", scalp: str = "library",
+def build_ours(scene, skin: str = "", brows: str = "own", character: str = "", scalp: str = "library",
                stubble: str = "generated") -> dict:
-    """The library's man the app's way, with the hair library's scalp style and brows and the face's ARKit 52;
+    """The library's man the app's way, with the hair library's scalp style, JustStage's brows (greying, as HD Aaron's;
+    a named character keeps its own) and the face's ARKit 52;
     `skin` (a library skin's .blend) put on him as the Content panel does."""
     api = importlib.import_module("bl_ext.system.juststage.api")
     library = importlib.import_module("bl_ext.system.juststage.core.library")
@@ -185,9 +187,9 @@ def build_ours(scene, skin: str = "", brows: str = "library", character: str = "
         importlib.import_module("bl_ext.system.juststage.modules.hair.brows").make(
             next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of),
             grey_share=BROW_GREY if not character else 0.0)
-    else:
-        api.run("juststage.library.add", path=str(root / "Hair" / "Brows" / f"{OURS['brows']}.blend"),
-                character=shown.character)
+    # otherwise ("own") a library character wears the brows it was saved with, as the app shows it - until
+    # 2026-11-09 the hair library's brows went on every one, and that item is grown on a man: every library woman
+    # showed a man's brows
     create = importlib.import_module("bl_ext.system.juststage.modules.body.body_create")
     create.open_eyes(shown.character)  # as a dressed human (the library's characters predate EYE_OPEN)
     api.run("juststage.head.add_face_units", character=shown.character)
@@ -471,7 +473,7 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 # ---- render --------------------------------------------------------------------------------------------------------
 
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
-           cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "library",
+           cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "own",
            character: str = "", scalp: str = "library", prepare=None, lights: str = "stage",
            variants: list[tuple[str, object]] | None = None) -> None:
     """`prepare(built)`, if given, changes the built character before any render - one factor at a time
@@ -645,7 +647,9 @@ if __name__ == "__main__":
                    '"wrinkle_strength=0" turns his wrinkle maps off')
     p.add_argument("--tag", default="", help="appended to the file names (a diagnostic's variant)")
     p.add_argument("--skin", default="", help="a library skin (.blend) on ours, as the Content panel applies it")
-    p.add_argument("--brows", choices=("library", "generated"), default="library")
+    p.add_argument("--brows", choices=("own", "generated"), default="own",
+                   help="own: a library character's saved brows (the gate's man: JustStage's, greying); generated: grown "
+                   "again")
     p.add_argument("--character", default="", help="another library character for ours")
     p.add_argument("--scalp", default="library", help='library, generated, or "generated:<style>" (scalp.STYLES)')
     p.add_argument("--lights", choices=("stage", "world"), default="stage", help="world: the image light alone")
