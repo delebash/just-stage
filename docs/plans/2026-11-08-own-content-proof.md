@@ -770,7 +770,25 @@ booked with just-direct-mocap.
   scan's colour split into melanin and haemoglobin (Tsumura et al. 2003, ICA on log RGB; Jimenez et al. 2010) and
   rebuilt at the character's tone through the skin model; NOT STANDARD and cheap: the texture's hue deviation scaled
   by the blood's visibility at the tone (as `ear_tint`) - treats every hue change as blood. A job of its own (it moves
-  every dark skin), with the ears' gloss.
+  every dark skin), with the ears' gloss. Committed 4a24557 (the chain test fixed after the end run: it expected the
+  fixed tint; test_skin_maps 21 passed).
+- **09:0x, women's sparser brows (the 06:4x route; box 45 min):** `brows.DENSITY_BY_SEX` (0.7 a woman, 1.0 a man, by
+  the gender macro) - a Geometry Nodes group (`DENSITY_GROUP`: Delete Geometry by a Random Value per curve, its index
+  the ID - the standard Geometry Nodes pattern) as the brows' first modifier, its "Kept" input set by
+  `brows.set_density` on growing, on a gender drag (`body_set_slider._rebrow`, as `_repore`) and on a library brow
+  put on a character (`groom.add_from_file`). Attacked: "a count fixed at growing" - wrong after a gender drag;
+  "regrow on the drag" - stalls the slider (refit_lashes, 1.84 s a step); "the same hairs at every share" - the ID is
+  the curve's index, so a drag thins and thickens smoothly. Test
+  `test_a_womans_brows_are_sparser_and_follow_the_gender_slider`. `batch_browsex.sh` (backup `library_2026-11-09j`;
+  hair and characters rebuilt; the three women and the Older man; every suite). **08:58 the library build failed** -
+  `mod[identifier] = value` raises in Blender 5.3 ("id properties not supported"); the batch stopped (all of it -
+  Mistakes); fixed to the repo's own 5.x form (`getattr(mod.properties.inputs, identifier).value`, groom.py) -
+  checked (`brow_density_check.py`): a woman 4,450 of 6,400 hairs (0.70), a gender drag to 1.0 all 6,400. Rerun
+  (backup `library_2026-11-09j` from before the failed build stands). **09:12 (`row_bs_{eye,face}.png`,
+  `row_bs2_face.png`): the Average and Heavy women's brows lighter and finer, skin between the hairs, softer at the
+  face view; the men unchanged - KEPT.** End run: unit 45, tools 54, Blender 202 passed, 1 failed - the blink test
+  reshaped every hair's points (a woman now keeps 4,450 of 6,400); reshaped by the hairs kept (the same ones before
+  and after, culled by index) - its rerun running.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -1015,3 +1033,6 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   `parts_gate.build_ours` swapped its own brows for the hair library's "JustStage brows" - grown on the hair-model MAN
   and refit - so every library woman's brows in the gate were a man's dense bar, not the brows she carries; found
   when `browtrial`'s regrown "today" brow came out lighter than the "product" render).
+- Stopping a batch stops all of it (2026-11-09 08:58: TaskStop ended the outer shell, but the batch's own bash went on
+  and started the next render): find the batch's shells and their Blender by command line, stop each, check none
+  is left.

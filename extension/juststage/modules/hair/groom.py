@@ -278,6 +278,10 @@ def add_from_file(character: bpy.types.Object, path: str) -> bpy.types.Object:
             slots[i] = hair_material(f"JustStage Hair ({groom.name})")
             if mat.users == 0:
                 bpy.data.materials.remove(mat)
+    if part == "eyebrows":  # a library brow (grown on whoever) thinned to this character's sex
+        from . import brows
+
+        brows.set_density(character)
     return groom
 
 

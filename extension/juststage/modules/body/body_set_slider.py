@@ -86,9 +86,18 @@ def main(params: Params) -> Result:
     build.apply_macros(obj, values)
     build.keep_on_floor(obj)
     _refit(obj)
-    if params.slider == "gender":  # a mapped skin's pores follow the sex (the skin module's maps.PORES_BY_SEX)
+    if params.slider == "gender":  # a mapped skin's pores and the brows' density follow the sex
         _repore(obj)
+        _rebrow(obj)
     return Result(status="ok", value=float(params.value))
+
+
+def _rebrow(obj) -> None:
+    try:
+        from ..hair import brows
+    except ImportError:
+        return
+    brows.set_density(obj)  # the hair module's DENSITY_BY_SEX: a share culled live, nothing regrown
 
 
 def _repore(obj) -> None:

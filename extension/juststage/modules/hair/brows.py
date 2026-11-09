@@ -56,6 +56,12 @@ MELANIN, REDNESS, MELANIN_SPREAD = 0.8, 0.3, 0.05
 #: alone read thin beside HD Aaron's
 FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 2000, 0.5, 0.000022, 0.8
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
+#: women's brows sparser than men's - the share of the hairs kept by the gender macro (2026-11-09,
+#: `.dev/gate/parts/2026-11-09browcol`: 0.7 read the most natural on the Average woman, skin between the hairs; 1.0 is
+#: HD Aaron's density), culled live by DENSITY_GROUP: a gender drag must not regrow the brows (refit_lashes' 1.84 s a
+#: step stalled the slider)
+DENSITY_BY_SEX = (0.7, 1.0)
+DENSITY_GROUP, DENSITY_MODIFIER = "JustStage Brow Density", "Density"
 #: the band's lower edge (its roots' 10th percentile) at least this many eyeball radii above the eye's centre - about
 #: the orbital rim, where a man's brow lies (RESEARCH 14.13 "Where a brow sits"). MakeHuman's region put our roots
 #: 6-12.5 mm up (median 8.5) on the lid's top, which the blink moves 5-12 mm, so the hairs swept over the closing lid;
@@ -234,5 +240,52 @@ def make(character: bpy.types.Object, seed: int = 11, grey_share: float = GREY_S
     to_local = np.array(character.matrix_world.inverted())
     wanted = np.array(found) @ to_local[:3, :3].T + to_local[:3, 3]
     miss = lashes.place(obj, rest[:, 0], wanted)
+    set_density(character)
     print(f"brows: {len(rest)} hairs, {POINTS} points each, within {miss * 1000:.4f} mm")
     return obj
+
+
+def _density_group() -> bpy.types.NodeTree:
+    """A random share of the curves deleted - Geometry Nodes' Delete Geometry by a Random Value per curve (its index the
+    ID, so the same hairs go at every share): the input "Kept" is the share left."""
+    group = bpy.data.node_groups.get(DENSITY_GROUP)
+    if group is not None:
+        return group
+    group = bpy.data.node_groups.new(DENSITY_GROUP, "GeometryNodeTree")
+    group.interface.new_socket("Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
+    kept = group.interface.new_socket("Kept", in_out="INPUT", socket_type="NodeSocketFloat")
+    kept.default_value, kept.min_value, kept.max_value = 1.0, 0.0, 1.0
+    group.interface.new_socket("Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
+    nodes, links = group.nodes, group.links
+    inp, out = nodes.new("NodeGroupInput"), nodes.new("NodeGroupOutput")
+    drop = nodes.new("ShaderNodeMath")
+    drop.operation = "SUBTRACT"
+    drop.inputs[0].default_value = 1.0
+    links.new(inp.outputs["Kept"], drop.inputs[1])
+    pick = nodes.new("FunctionNodeRandomValue")
+    pick.data_type = "BOOLEAN"
+    pick.inputs["Seed"].default_value = 17
+    links.new(drop.outputs[0], pick.inputs["Probability"])
+    delete = nodes.new("GeometryNodeDeleteGeometry")
+    delete.domain = "CURVE"
+    links.new(inp.outputs["Geometry"], delete.inputs["Geometry"])
+    links.new(next(o for o in pick.outputs if o.type == "BOOLEAN"), delete.inputs["Selection"])
+    links.new(delete.outputs["Geometry"], out.inputs[0])
+    return group
+
+
+def set_density(character: bpy.types.Object) -> None:
+    """The character's brows thinned to its sex's share (DENSITY_BY_SEX by the gender macro) - on growing, on a gender
+    drag (body.set_slider) and on a library groom put on it."""
+    kept = float(np.interp(character.juststage.gender, (0.0, 1.0), DENSITY_BY_SEX))
+    for obj in bpy.data.objects:
+        if obj.juststage.part_of != character.juststage.character_id or obj.juststage.part != "eyebrows":
+            continue
+        mod = obj.modifiers.get(DENSITY_MODIFIER)
+        if mod is None:
+            mod = obj.modifiers.new(DENSITY_MODIFIER, "NODES")
+            mod.node_group = _density_group()
+            obj.modifiers.move(len(obj.modifiers) - 1, 0)  # before the surface deform: fewer curves to carry
+        socket = next(i for i in mod.node_group.interface.items_tree if getattr(i, "name", "") == "Kept")
+        getattr(mod.properties.inputs, socket.identifier).value = kept  # Blender 5.x's modifier inputs (groom.py)
+        obj.update_tag()

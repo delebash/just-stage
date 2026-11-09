@@ -145,12 +145,29 @@ def test_the_brows_lower_edge_sits_on_the_rim_out_of_the_blinks_reach(gender):
             heights = roots[np.sign(roots[:, 0]) == np.sign(centre[0]), 2] - centre[2]
             assert np.percentile(heights, 10) >= brows.RIM_RADII * radius - brows.RIM_TOLERANCE - 1e-4, (name, radius)
         groom = brows.make(body)
-        before = _evaluated(groom).reshape(len(found), brows.POINTS, 3)
+        before = _evaluated(groom).reshape(-1, brows.POINTS, 3)  # the hairs kept (a woman's DENSITY_BY_SEX share)
         keys = body.data.shape_keys.key_blocks
         keys["eyeBlinkLeft"].value = keys["eyeBlinkRight"].value = 1.0
         bpy.context.view_layer.update()
-        after = _evaluated(groom).reshape(len(found), brows.POINTS, 3)
+        after = _evaluated(groom).reshape(-1, brows.POINTS, 3)  # the same ones (culled by index)
         swept = np.linalg.norm(after[:, -1] - before[:, -1], axis=1) > 0.002
         assert swept.mean() < 0.02, swept.mean()  # the blink leaves the brows: a few hairs at most
+    finally:
+        _remove(made)
+
+
+def test_a_womans_brows_are_sparser_and_follow_the_gender_slider():
+    """Women's brows sparser (DENSITY_BY_SEX: 0.7 read the most natural on the Average woman, 2026-11-09), culled
+    live - a gender drag changes the share kept, nothing regrown."""
+    groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    made, body = _human("Brow density", gender=0.0)
+    try:
+        obj = brows.make(body)
+        total = len(obj.data.curves)
+        assert groom.evaluated_curve_count(obj) / total == pytest.approx(brows.DENSITY_BY_SEX[0], abs=0.03)
+        api.run("juststage.body.set_slider", character=made.character, slider="gender", value=1.0)
+        assert groom.evaluated_curve_count(obj) / total == pytest.approx(1.0, abs=0.01)
+        assert len(obj.data.curves) == total  # the same groom, culled - not regrown
+        assert obj.modifiers[0].name == brows.DENSITY_MODIFIER  # before the surface deform
     finally:
         _remove(made)
