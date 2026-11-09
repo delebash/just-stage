@@ -167,7 +167,12 @@ LIP_ROUGHNESS, LIP_COAT = 0.4, 0.2
 #: 2026-11-08 late, at full resolution (`.dev/gate/parts/2026-11-08lipset`): (1.3, 0.4 mm, 4, 0.8) read as an even rib -
 #: corduroy - beside HD Aaron's sparse soft creases; sparser, shallower, more irregular and fading in patches reads as
 #: lip skin (half the depth alone was still a rib)
-LIP_LINES = (1.8, 0.00015, 8.0, 1.0)
+#: 2026-11-09 (`.dev/gate/parts/2026-11-09lipworm`, -lipcrease): with the lips' sheen (0.4 / 0.2) the sine ripple at
+#: distortion 8 and fractal detail 3 read as an even worm-like crinkle, crepe paper - equal ridges and valleys; real
+#: lip lines are thin creases on a smooth lip: the wave's 0-1 raised to LIP_CREASE (a plateau, a narrow valley each
+#: period), distortion 3, detail LIP_LINES_DETAIL 1 (sparser / deeper creases read as parallel ribs again)
+LIP_LINES = (1.8, 0.00015, 3.0, 1.0)
+LIP_CREASE, LIP_LINES_DETAIL = 0.2, 1.0
 LIP_MM_PER_V, LIP_NOISE_MM = 1602.0, 4.0
 #: the ears' redness - MPFB2's CC0 ears mask (`mpfb_ears.jpg`, hm08's own UVs), the colour x EAR_TINT inside it: ours
 #: read pale beside HD Aaron's red, translucent ear (2026-11-08, `.dev/gate/parts/2026-11-08ears`, by eye; the plan's
@@ -482,15 +487,15 @@ def _lip_layer(nt, bsdf) -> None:
     wave.wave_type, wave.bands_direction, wave.wave_profile = "BANDS", "Y", "SIN"
     wave.inputs["Scale"].default_value = LIP_MM_PER_V / period
     wave.inputs["Distortion"].default_value = distortion
-    wave.inputs["Detail"].default_value, wave.inputs["Detail Scale"].default_value = 3.0, 1.5
+    wave.inputs["Detail"].default_value, wave.inputs["Detail Scale"].default_value = LIP_LINES_DETAIL, 1.5
     nt.links.new(uvmap.outputs["UV"], wave.inputs["Vector"])
     noise = _node(nt, "ShaderNodeTexNoise", "lips_vary", (-1400, -2950))
     noise.inputs["Scale"].default_value = LIP_MM_PER_V / LIP_NOISE_MM
     noise.inputs["Detail"].default_value = 2.0
     nt.links.new(uvmap.outputs["UV"], noise.inputs["Vector"])
     gain = _math(nt, "lips_gain", "MULTIPLY_ADD", noise.outputs["Fac"], vary, 1.0 - vary)  # 1 - vary + vary x noise
-    lines = _math(nt, "lips_lines_height", "MULTIPLY", _math(nt, "lips_varied", "MULTIPLY", wave.outputs["Fac"], gain),
-                  share)
+    crease = _math(nt, "lips_crease", "POWER", wave.outputs["Fac"], LIP_CREASE)  # a thin valley on a plateau
+    lines = _math(nt, "lips_lines_height", "MULTIPLY", _math(nt, "lips_varied", "MULTIPLY", crease, gain), share)
     bump = _node(nt, "ShaderNodeBump", "lips_lines", (-150, -2700))
     bump.inputs["Strength"].default_value, bump.inputs["Distance"].default_value = 1.0, depth
     nt.links.new(lines, bump.inputs["Height"])

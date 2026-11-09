@@ -400,6 +400,11 @@ def test_the_lips_have_fine_lines_that_ride_them(human, tmp_path):
     assert nodes[maps.NODE + "lips_uv"].uv_map == "UVMap"  # hm08's own, the mask's
     assert wave.inputs["Scale"].default_value == pytest.approx(maps.LIP_MM_PER_V / period)
     assert nodes[maps.NODE + "lips_gain"].inputs[1].default_value == pytest.approx(vary)
+    # thin creases on a smooth lip, not a ripple (2026-11-09: the sine wave read as crepe paper with the lips' sheen)
+    crease = nodes[maps.NODE + "lips_varied"].inputs[0].links[0].from_node
+    assert crease == nodes[maps.NODE + "lips_crease"] and crease.operation == "POWER"
+    assert crease.inputs[0].links[0].from_node == wave and crease.inputs[1].default_value == pytest.approx(maps.LIP_CREASE)
+    assert maps.LIP_CREASE < 0.5 and wave.inputs["Detail"].default_value == maps.LIP_LINES_DETAIL
 
 
 def test_the_nail_plate_is_matte_like_his(human, tmp_path):

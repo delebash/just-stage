@@ -950,7 +950,27 @@ booked with just-direct-mocap.
   80 (mine)** - attacked: "110 matches his density" - past the measured 75-80 an eye (the lashes' own notes); 0.04 mm
   radius is 0.08 mm across, a real lower lash's (0.025 was 0.05). Test extended. `batch_lashthickprod.sh` (backup
   `library_2026-11-09r`; hair and characters; every suite). **14:50: the product's lower lashes show more (the clearer
-  gain on lighter skin); end run green (unit 45, tools 55, Blender 208).**
+  gain on lighter skin); end run green (unit 45, tools 55, Blender 208).** Committed 1e0d6c1.
+- **15:0x, a fresh side-by-side of every view (`scratchpad/all2/row_<view>.png`, `grid_1-6.png`):** the waiting faults
+  unchanged (the hair a slicked helmet - the cut's download; the face's mid-scale relief - can't free). Within reach:
+  (1) **the lips** - zoomed (`row_lipzoom_{ours,his}.png`): an even worm-like crinkle over both lips like crepe paper,
+  catching light since the 0.4 / 0.2 sheen; his a few irregular vertical furrows on a fine varied texture, the red
+  deepest along the line between the lips; ours a uniform coral upper lip; (2) the face's flat peach colour against his
+  redder cheeks, nose and ears (the regions' redness - 11-08's `regiontint` / `regioncontrast` gave "a little more
+  life", the realism in the relief). Taken: the lips (box 45 min). First which layer makes the crinkle - our lip lines
+  (`lipset` depth 0), the microrelief (`micro0` - not cut on the lips, only the lining), the scans' relief
+  (`relief0`), each off (`batch_lipworm.sh`). **15:05 (`row_lw.png`): our lip lines - at depth 0 the lips smooth
+  with a fine texture; micro0 and relief0 leave the crinkle.** Why: a SIN wave at distortion 8 with fractal detail 3 -
+  equal ridges and valleys, wiggled into worms; real lip lines are thin creases on a smooth lip. Trial (`lipcrease*`,
+  `batch_lipcrease.sh`): the wave's 0-1 raised to a power (0.2 / 0.3: a plateau, a narrow valley each period) with less
+  wobble - 1.8 mm / 0.15 / dist 3 / detail 1; 2.5 mm / 0.2 / 2 / 1; 1.5 mm / 0.1 / 4 / 2 - at the lips (zoomed and
+  whole), the lip corner and the open mouth, beside him. **15:12 (`row_lc_{zoom,lips,corner,open}.png`): all three creases
+  take the crepe crinkle away; 1.8 mm / 0.15 / 3 / 1 fine vertical lines that read as lip skin at every view; 2.5 mm /
+  0.2 / 2 / 1 clearer but evenly parallel - the corduroy 11-08 rejected; 1.5 / 0.1 / 4 / 2 near smooth - the rubber
+  look again. KEPT (mine) the first: today's tuned period and depth, only the shape (LIP_CREASE 0.2) and the wobble
+  (distortion 8 -> 3, detail 3 -> 1).** The shader rebuilds from code on every library load (`maps.refresh`) - no
+  library rebuild. The test extended (the crease node in the chain). **15:33 (`row_cp.png`): the product's lips fine
+  vertical lines, no worms; skin-maps 23 passed; end run green (unit 45, tools 55, Blender 208).**
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -989,7 +1009,7 @@ booked with just-direct-mocap.
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
 | Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
-| Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); matte (`LIP_ROUGHNESS, LIP_COAT` 0.6 / 0.05, 11-09 04:1x - no cellophane up close); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | his crisper border; the lines read deep at an extreme crop |
+| Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); a soft sheen (`LIP_ROUGHNESS, LIP_COAT` 0.4 / 0.2, 11-09 midday - not clay, not cellophane); the lines thin creases (`LIP_CREASE`, 15:3x - no crepe crinkle); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | the upper lip a uniform coral against his red deepest at the line; his few deep furrows and fine cells |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`); the tear film's fleck on the ledge gone (`TEAR_FADE_OUT`, 11-09) | the lower lid's rim: a wide ledge with its colour stretched (a thinner margin; the colour unstretched by a static stretch map); the closed lid's streaks (expression-driven detail); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
 | Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask), by tone since 11-09 (`ear_tint`: melanin hides the blood - the Muscular man's orange-red ear now red-brown) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault); a dark skin's ear still redder (the scans' own - chromophore maps); the ears' gloss |

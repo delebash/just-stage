@@ -1749,6 +1749,30 @@ def upperlip(built: dict, r: float, g: float, b: float) -> None:
     print("UPPER LIP", (r, g, b), "at mouth z", round(mouth_z, 4), "on", n, "skins", flush=True)
 
 
+def lipcrease(built: dict, sharp: float, period: float, depth_mm: float, distortion: float, detail: float) -> None:
+    """The lip lines as thin creases on a smooth lip: the wave's 0-1 raised to `sharp` (a plateau with a narrow valley
+    each period), its period (mm), depth (mm), distortion and detail set - 2026-11-09, the sine ripple at distortion 8 /
+    detail 3 read as an even worm-like crinkle, crepe paper, beside HD Aaron's few irregular furrows."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        wave, varied = nt.nodes.get(maps.NODE + "lips_wave"), nt.nodes.get(maps.NODE + "lips_varied")
+        if wave is None or varied is None:
+            continue
+        wave.inputs["Scale"].default_value = maps.LIP_MM_PER_V / period
+        wave.inputs["Distortion"].default_value, wave.inputs["Detail"].default_value = distortion, detail
+        crease = nt.nodes.get(maps.NODE + "lips_crease")  # the product's own since 2026-11-09 (maps.LIP_CREASE)
+        if crease is None:
+            crease = nt.nodes.new("ShaderNodeMath")
+            crease.operation = "POWER"
+            nt.links.new(wave.outputs["Fac"], crease.inputs[0])
+            nt.links.new(crease.outputs[0], varied.inputs[0])
+        crease.inputs[1].default_value = sharp
+        nt.nodes[maps.NODE + "lips_lines"].inputs["Distance"].default_value = depth_mm / 1000.0
+        n += 1
+    print("LIP CREASE", sharp, period, depth_mm, distortion, detail, "on", n, flush=True)
+
+
 def lipset(built: dict, period: float, depth: float, distortion: float, vary: float) -> None:
     """The product's lip lines (`maps.LIP_LINES` (1.3, 0.0004, 4.0, 0.8)) set on its own nodes - at full resolution they
     read as a dense even rib, corduroy, beside HD Aaron's sparse irregular creases on a smooth lip (2026-11-08)."""
@@ -3127,6 +3151,8 @@ def factor(name: str):
         return lambda built: upperlip(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("lipseam*"):  # lipseam*1.5 (maps.LIP_SEAM_STRENGTH's place; 0 = none)
         return lambda built: lipseam(built, float(name.split("*")[1]))
+    if name.startswith("lipcrease*"):  # lipcrease*0.2*1.8*0.15*3*1 (sharpness, period mm, depth mm, distortion, detail)
+        return lambda built: lipcrease(built, *(float(x) for x in name.split("*")[1:6]))
     if name.startswith("lipset*"):  # lipset*1.8*0.0002*6*0.95 (maps.LIP_LINES' place: period mm, depth m, distortion,
         return lambda built: lipset(built, *(float(x) for x in name.split("*")[1:5]))  # vary)
     if name.startswith("hide*"):  # hide*eyebrows (a groom's part: eyebrows, eyelashes, scalp, beard)
