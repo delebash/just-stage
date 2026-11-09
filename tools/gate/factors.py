@@ -1918,7 +1918,7 @@ def toeplate(built: dict, length: float, side: float) -> None:
 
 
 def nailgroove(built: dict, k: float) -> None:
-    """The nail plate's border darkening (`maps.NAIL_GROOVE`, 0.45) set to k - 2026-11-09, the toenails read as stickers
+    """The nail plate's border darkening (`maps.NAIL_GROOVE`, 0.15 since 2026-11-09, 0.45 before) set to k - the toenails read as stickers
     with a dark outline beside HD Aaron's."""
     maps = _maps()
     nodes = [nt.nodes[maps.NODE + "nail_groove_shade"] for nt in _skin_trees(built) if maps.NODE + "nail_groove_shade" in nt.nodes]

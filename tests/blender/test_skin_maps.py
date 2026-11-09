@@ -559,6 +559,9 @@ def test_a_toes_nail_plate_is_short_and_on_top(human, tmp_path):
     assert toes.any() and fingers.any()
     assert (plate[toes] > 0.5).mean() < 0.7 * (plate[fingers] > 0.5).mean()  # a toe's plate covers less of its island
     assert along[toes & (plate > 0.5)].max() < maps.TOE_PLATE_LENGTH + 0.05  # and ends short of the toe's tip
+    # its edge a faint darkening, not a drawn outline (0.45 read as a sticker; the nail bed's groove shades the edge)
+    shade = nodes[maps.NODE + "nail_groove_shade"]
+    assert shade.inputs[1].default_value == pytest.approx(-4 * maps.NAIL_GROOVE) and maps.NAIL_GROOVE <= 0.2
 
 
 def test_the_lids_stretched_margins_have_no_relief_to_streak(human, tmp_path):

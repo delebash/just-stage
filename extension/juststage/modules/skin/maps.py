@@ -107,7 +107,10 @@ NAIL_BED, NAIL_BED_SHARE = (0.50, 0.30, 0.27), 0.25  # linear: mixed into the sk
 #: `nailluna`, 2026-11-08, sheet `scratchpad/sheet_D22_luna.png`)
 NAIL_LUNULA, NAIL_LUNULA_SHARE = (0.82, 0.72, 0.68), 0.05
 NAIL_TIP = (0.80, 0.75, 0.66)
-NAIL_GROOVE = 0.45  # how much the fold's groove round the plate darkens it
+#: how much the fold's groove round the plate darkens it - 0.45 drew a dark outline round every nail, a sticker beside
+#: HD Aaron's plates set into the fingertip (the nail bed's displaced groove and fold already shade that edge); 0.15 a
+#: faint edge (2026-11-09, `.dev/gate/parts/2026-11-09toenail`, the foot and nails views; 0 lost the plate's edge)
+NAIL_GROOVE = 0.15
 NAIL_RIDGES = 0.05  # +- share of the colour
 #: the plate's shine: matte like HD Aaron's - at 0.18 / 0.6 / 0.5 (roughness, specular level, coat) our plate read
 #: milky white beside his skin-toned one; at 0.55 / 0.3 / 0 it reads as his (the gate's `nailshine`, 2026-11-08)
