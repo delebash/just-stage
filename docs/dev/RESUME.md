@@ -51,8 +51,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **2026-11-08 22:3x: the feet work** - Thunk3D's CC BY scan as the "feet" part on UDIM 1003 + 1004 (most of our foot
   is on 1003; the first bake was 1004 only), the wrap smoothed, the debris limit 0.8: the foot's top shows real tendons
   and veins at x1 (working doc, "21:47-, the feet"). Into the product: `build_skins.BODY_PARTS` + "feet", ATTRIBUTION;
-  running `scratchpad/batch_feet_prod.sh` (library backup `.dev/backup/library_2026-11-08e`, skins and characters
-  rebuilt, the library man's foot render, then every suite - the end run for the ears' tint and the foot pipeline).
+  `scratchpad/batch_feet_prod.sh` (library backup `.dev/backup/library_2026-11-08e`): rebuilt, the library man's foot
+  shows them, **the end run green 22:53 (unit 45, tools 50, Blender 195)**. Running `scratchpad/batch_torso.sh`: the
+  body relief's debris filled (the torso's oval by the sternum, the nipples' bumps), the lips' seam layer
+  (`lipseam` renders), the eye rim's tint (`margintint`), then the tools and Blender suites. Waiting for the user: the
+  hair cut's download (VincentFreelance, CC BY, glTF 18 MB).
   Next after it: the verdict table's open routes (torso definition slider from the CC0 MINDFRONT normal with its seams
   fixed; lips' colour to the seam; face colour), then the four characters.
 - **2026-11-08 21:0x (read the working doc's "evening's verdicts" table and the entries above it):** the user's plan

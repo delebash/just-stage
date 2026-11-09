@@ -383,7 +383,8 @@ booked with just-direct-mocap.
   the torso, front, foot and hand views, the tools and Blender suites) runs after the feet's end run. Mistake: I built
   a fix on a guess about what a blob was - map a texel to the body before deciding what it is.
 - **22:38, the feet in the product:** the rebuilt library man's foot (no trial; `row_feetprod.png`) shows the tendons
-  and veins; the end run: unit 45 passed, tools 50 passed (the four new body-scan tests), Blender running.
+  and veins; **the end run green: unit 45, tools 50 (the four new body-scan tests), Blender 195 passed (1
+  deselected: the AI test) - the feet and the ears' tint verified** (22:53, `scratchpad/prod_*.log`).
 - **22:4x, the next faults by the face sheet (`row_final_face.png`), worst first:** (1) the scalp hair a helmet - the
   route needs an artist's cut: VincentFreelance's "FREE 21 Realtime man Hairstyles collection" (Sketchfab uid
   6a876007572c464da5184eb99af0c5f7, CC BY 4.0 on its API record, glTF 18.0 MB) - **the download waits for the user's
