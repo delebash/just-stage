@@ -332,6 +332,29 @@ booked with just-direct-mocap.
   test)** - today's product changes verified. Then renders of the rebuilt library man and a fresh New human
   (`.dev/gate/parts/2026-11-08final`).
 
+### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
+
+| Part | Verdict | In the product today | What's missing / the route left |
+|---|---|---|---|
+| Cheek, nose skin (texture) | **matches** | - | - |
+| Forehead skin | **matches** (orange peel gone) | forehead pores x1 | - |
+| Face skin relief (wrinkles, folds) | **CAN'T with free assets in hand** | - | a wrinkle-rich face relief at his level - a paid scan or an artist's sculpt (three free scans' relief and a made layer tried) |
+| Face colour | close | - | the regions' redness and the lids' darkness (the composition's EYE_DARK, regional gain) - a skin rebuild |
+| Face shape | identity, not a fault | - | (three real scans' shapes read no more real - not the doll look's cause) |
+| Brows | close | 1200 / 2000 at 0.92 | the live view's strand haze -> cards |
+| Lashes | not reached | - | the live view's strand haze -> cards; a denser line |
+| Stubble | close | 100 a cm2 | the beard region higher on the cheeks than his |
+| Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
+| Lips | close | the lines (UV) | the colour darker to the seam |
+| Eyes | close | - | the lids' surround (with the face colour) |
+| Teeth, mouth | close | - | a little large and white beside his |
+| Ears | not reached | - | the ear's shape (HUTUBS targets, the plan's §5) and colour (redness, translucency); our hair over them |
+| Nails | close | - | - |
+| Hands | close | - | tone (a setting) |
+| Torso | not reached as built | - | definition: MakeHuman's CC0 community normal works as a slider (its seams to fix); two light blotches by the sternum, a patch on the neck (the scan composition) |
+| Feet | not reached | - | Thunk3D's CC BY scan downloaded - its fit (placed by our foot) and bake to build |
+| **Whole character** | **not CC5 quality with free assets** | the above | the deciding gap: the face's mid-scale relief (can't, free); then the live-view hair (cards + a cut - a route) |
+
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
 
 | Part | Verdict | Kept in the product | What's missing / the route |
