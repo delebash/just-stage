@@ -580,7 +580,8 @@ booked with just-direct-mocap.
   `maps.set_pores` from `material.apply` (every tone change and library load) and from `body_set_slider` when gender
   moves; the men stay at 1.0 (everything tuned against HD Aaron unchanged). Its test
   (`test_the_pores_follow_the_characters_sex`). **03:4x: skin-maps tests 19 passed; the woman's cheek in the
-  product (`row_womanprod.png`) smoother, the cobbling gone - KEPT.**
+  product (`row_womanprod.png`) smoother, the cobbling gone - KEPT.** 03:51, the end run green: unit 45, tools 51,
+  Blender 199 passed (1 deselected: the AI test).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
