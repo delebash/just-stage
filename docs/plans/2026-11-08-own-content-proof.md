@@ -481,6 +481,9 @@ booked with just-direct-mocap.
   side's mid-scale colour detail (5 mm - 4 cm, `BORDER_DETAIL`) out within the 5 cm band - none at the border, the
   fine detail and the broad colour kept; its test (a 2 cm mottle against a plain tile). `batch_border.sh` after the
   chin's end run: the six scan skins rebuilt, the characters, the Older man's and Average man's views.
+- **01:09, the end run green: unit 45, tools 50, Blender 197 passed (1 deselected: the AI test) - the lips' values,
+  the chin, the eyes' surround, the lashes (its guard test), the composition's revert and the border code (its new
+  test) verified.** The chin in the product (`row_chinprod.png`): smoother, fine pores - kept.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
