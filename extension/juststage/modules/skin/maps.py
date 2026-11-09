@@ -133,6 +133,10 @@ LIP_ROUGHNESS, LIP_COAT = 0.33, 0.3
 #: the mask), the lines are bands along V. (period mm, depth m, distortion, how much the noise varies the lines)
 LIP_LINES = (1.3, 0.0004, 4.0, 0.8)
 LIP_MM_PER_V, LIP_NOISE_MM = 1602.0, 4.0
+#: the ears' redness - MPFB2's CC0 ears mask (`mpfb_ears.jpg`, hm08's own UVs), the colour x EAR_TINT inside it: ours
+#: read pale beside HD Aaron's red, translucent ear (2026-11-08, `.dev/gate/parts/2026-11-08ears`, by eye; the plan's
+#: §5 "a map on MPFB2's CC0 ears mask only if the ear view shows a gap")
+EAR_TINT = (1.0, 0.78, 0.76)
 OILINESS_DEFAULT = 0.5  # the oiliness slider's default (skin_set_tone.Params): the chain's factor is 1 there
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
@@ -434,6 +438,21 @@ def _lip_layer(nt, bsdf) -> None:
     if bsdf.inputs["Normal"].is_linked:
         nt.links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
     nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+    _ear_layer(nt, bsdf, uvmap)
+
+
+def _ear_layer(nt, bsdf, uvmap) -> None:
+    """The ears' redness: the colour x EAR_TINT by MPFB2's ears mask, read through hm08's own UVs (the lips' UV node)."""
+    mask = _node(nt, "ShaderNodeTexImage", "ears_mask", (-1600, -3200))
+    mask.image = bpy.data.images.load(str(paths.makehuman("textures", "mpfb_ears.jpg")), check_existing=True)
+    mask.image.colorspace_settings.name = "Non-Color"
+    nt.links.new(uvmap.outputs["UV"], mask.inputs["Vector"])
+    tint = _mix(nt, "ears_tint", "RGBA", mask.outputs["Color"], (1.0, 1.0, 1.0), EAR_TINT)
+    tinted = _node(nt, "ShaderNodeVectorMath", "ears_colour", (-200, -3200))
+    tinted.operation = "MULTIPLY"
+    nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, tinted.inputs[0])
+    nt.links.new(tint, tinted.inputs[1])
+    nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
 
 
 def _relief_off_mouth(nt) -> None:

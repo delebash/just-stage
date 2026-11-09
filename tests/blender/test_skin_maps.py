@@ -169,7 +169,12 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     assert margin == nodes[maps.NODE + "margin_colour"]
     mouth = margin.inputs[0].links[0].from_node  # the mouth's lining over the nails' plate
     assert mouth == nodes[maps.NODE + "mouth_colour"]
-    lips = next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node  # the lips' vermilion
+    ears = next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node  # the ears' redness
+    assert ears == nodes[maps.NODE + "ears_colour"]
+    tint = next(i for i in nodes[maps.NODE + "ears_tint"].inputs if i.identifier == "B_Color").default_value
+    assert tuple(tint)[:3] == pytest.approx(maps.EAR_TINT)
+    assert nodes[maps.NODE + "ears_mask"].inputs["Vector"].links[0].from_node == nodes[maps.NODE + "lips_uv"]
+    lips = ears.inputs[0].links[0].from_node  # the lips' vermilion
     assert lips == nodes[maps.NODE + "lips_colour"]
     assert lips.inputs[0].links[0].from_node == nodes[maps.NODE + "nail_groove"]
     rough = bsdf.inputs["Roughness"].links[0].from_node  # the margin's, over the mouth's, the lips', the nails'

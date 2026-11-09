@@ -348,7 +348,7 @@ booked with just-direct-mocap.
 | Lips | close | the lines (UV) | the colour darker to the seam |
 | Eyes | close | - | the lids' surround (with the face colour) |
 | Teeth, mouth | close | - | a little large and white beside his |
-| Ears | not reached | - | the ear's shape (HUTUBS targets, the plan's §5) and colour (redness, translucency); our hair over them |
+| Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask; skin-maps tests 18 passed) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault) |
 | Nails | close | - | - |
 | Hands | close | - | tone (a setting) |
 | Torso | not reached as built | - | definition: MakeHuman's CC0 community normal works as a slider (its seams to fix); two light blotches by the sternum, a patch on the neck (the scan composition) |

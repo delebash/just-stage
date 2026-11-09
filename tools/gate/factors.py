@@ -1710,6 +1710,9 @@ FACE_PRESETS["strong"] = [("head/head-fat-decr-incr", -1.0), ("cheek/l-cheek-vol
                           ("cheek/r-cheek-bones-decr-incr", 1.0), ("eyebrows/eyebrows-trans-down-up", 1.0),
                           ("eyebrows/eyebrows-trans-backward-forward", 1.0), ("eyes/l-eye-height2-decr-incr", 1.0),
                           ("eyes/r-eye-height2-decr-incr", 1.0)]  # fmt: skip
+#: the ears (step 1: ours small and smooth beside his) - larger, the rim and the flap out a little
+FACE_PRESETS["ears"] = [("ears/l-ear-scale-decr-incr", 0.4), ("ears/r-ear-scale-decr-incr", 0.4),
+                        ("ears/l-ear-flap-decr-incr", 0.3), ("ears/r-ear-flap-decr-incr", 0.3)]  # fmt: skip
 #: the lips (step 1 / the quick round: ours a puffy round tube, his flatter with a defined border and a cupid's bow)
 FACE_PRESETS["lipthin"] = [("mouth/mouth-upperlip-volume-decr-incr", -0.6), ("mouth/mouth-lowerlip-volume-decr-incr", -0.4),
                            ("mouth/mouth-cupidsbow-decr-incr", 0.5)]  # fmt: skip
@@ -1895,6 +1898,38 @@ def mhbody(built: dict, strength: float) -> None:
         mod.sync_live(mat)
         n += 1
     print("MH BODY NORMAL strength", strength, "on", n, "skins (film and live)", flush=True)
+
+
+def eartint(built: dict, r: float, g: float, b: float) -> None:
+    """The ears' colour x (r, g, b) by MPFB2's CC0 ears mask (`mpfb_ears.jpg`, hm08's own UVs - as the lips' vermilion
+    by `mpfb_lips.jpg`): step 1's ear fault - ours pale, his red and translucent (the plan's §5: "a map on MPFB2's CC0
+    ears mask only if the ear view shows a gap")."""
+    paths = importlib.import_module("bl_ext.system.juststage.paths")
+    img = bpy.data.images.load(str(paths.makehuman("textures", "mpfb_ears.jpg")), check_existing=True)
+    img.colorspace_settings.name = "Non-Color"
+    n = 0
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        if not bsdf.inputs["Base Color"].is_linked:
+            continue
+        uv = nt.nodes.new("ShaderNodeUVMap")
+        uv.uv_map = "UVMap"
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image = img
+        nt.links.new(uv.outputs["UV"], tex.inputs["Vector"])
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        nt.links.new(tex.outputs["Color"], mix.inputs["Factor"])
+        next(i for i in mix.inputs if i.identifier == "A_Color").default_value = (1.0, 1.0, 1.0, 1.0)
+        next(i for i in mix.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+        mul = nt.nodes.new("ShaderNodeVectorMath")
+        mul.operation = "MULTIPLY"
+        nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, mul.inputs[0])
+        nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Color"), mul.inputs[1])
+        nt.links.new(mul.outputs["Vector"], bsdf.inputs["Base Color"])
+        mod.sync_live(mat)
+        n += 1
+    print("EAR TINT", (r, g, b), "on", n, "skins (film and live)", flush=True)
 
 
 def regiontint(built: dict, k: float = 1.0) -> None:
@@ -2720,6 +2755,8 @@ def factor(name: str):
         return lambda built: browtrial(built, *(float(x) for x in name.split("*")[1:5]))
     if name.startswith("mhbody*"):  # mhbody*1.0 (MakeHuman's CC0 body normal on the body tiles, its strength)
         return lambda built: mhbody(built, float(name.split("*")[1]))
+    if name.startswith("eartint*"):  # eartint*1.0*0.78*0.76 (the ears' colour multiplier)
+        return lambda built: eartint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("regiontint"):  # regiontint, regiontint*1.5 (how far from 1)
         return lambda built: regiontint(built, *(float(x) for x in name.split("*")[1:2]))
     if name.startswith("wrinkles*"):  # wrinkles*w1[*1.5] (the map's folder under .dev/gate/wrinkles, its strength)
