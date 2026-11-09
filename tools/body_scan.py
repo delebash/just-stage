@@ -41,6 +41,10 @@ TEN24 = ROOT / ".dev" / "downloads" / "ten24_sample" / "x" / "OBJ Package"
 #: each source: its scan, the scale to metres, the UDIM tiles (index past 1001) it gives, its fit, its credit
 SOURCES = {
     "artec": {"scan": SCAN, "scale": 0.001, "tiles": (1,), "fit": "torso", "work": WORK_ROOT, "debris_limit": 0.8,
+              # the scanned man's own marks out (the composition's rule): his appendectomy scar - a curved dent on the
+              # lower right abdomen, 8 cm right of and 4 cm below our navel on every man (2026-11-09, the torso view;
+              # found in the relief at this texel, top-first rows): (x, y) on tile 1002 at SIZE, radius mm
+              "marks_out": [((318, 712), 20.0)],  # 20 mm: the scar runs ~3 cm (14 left its end)
               "source": "Artec 3D, Body scan (artec3d.com/3d-models/body-scan)",
               "licence": "CC BY 3.0 Unported ('Body scan by Artec 3D')"},
     "hsr0042": {"scan": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0042-Body-045" / "x" / "HSR0042-Body-045_LOD0.obj",
@@ -667,6 +671,9 @@ def post(src: str = "artec") -> None:
         edge = edge * edge * (3 - 2 * edge)
         hp *= edge[..., None]
         hp = _debris_filled(hp, spec.get("debris_limit", 0.3))
+        marked = _marks(spec, px_per_mm)
+        if marked is not None:  # filled from the skin round them, relief and colour alike
+            hp = _patched(hp, marked, baked, px_per_mm)
         z = np.sqrt(np.clip(1 - (hp**2).sum(-1), 0, 1))
         relief = np.dstack([hp * 0.5 + 0.5, z])
         # colour: hair out, then its detail around 1 (log, over its blur at COLOUR_HP_MM), faded at the edge
@@ -675,6 +682,8 @@ def post(src: str = "artec") -> None:
         lin = np.maximum(hair.fill(lin, found), 1e-4)
         marks = hair.spots(lin, baked, px_per_mm)  # the person's small red spots out (2026-11-07, the torso's gap)
         lin = np.maximum(hair.unred(lin, marks, baked, px_per_mm), 1e-4)  # their redness only: a fill left stains
+        if marked is not None:
+            lin = np.exp(_patched(np.log(lin), marked, baked, px_per_mm))
         ratio_log = np.log(lin) - np.log(np.maximum(mblur(lin, COLOUR_HP_MM * px_per_mm / 2.0), 1e-4))
         ratio_log = np.clip(ratio_log, -0.5, 0.3) * w[..., None] * edge[..., None]
         ratio = np.exp(ratio_log)
@@ -697,6 +706,57 @@ def post(src: str = "artec") -> None:
         wrote = "relief" if "part" in spec and spec.get("geometry_only") else "relief and colour"
         print(f"POST {name}: {wrote} written; {found.sum()} strand texels, {marks.sum()} spot texels unreddened; {fabric.sum()} fabric "
               f"texels out; tile covered {baked.mean():.1%}")
+
+
+def _marks(spec: dict, px_per_mm: float) -> np.ndarray | None:
+    """The source's own named marks (`marks_out`: texel and radius in mm) as a mask on its tile, None without any."""
+    import cv2
+
+    if not spec.get("marks_out"):
+        return None
+    mask = np.zeros((SIZE, SIZE), np.uint8)
+    for (x, y), radius_mm in spec["marks_out"]:
+        cv2.circle(mask, (int(x), int(y)), max(1, int(round(radius_mm * px_per_mm))), 1, -1)
+    return mask.astype(bool)
+
+
+MARK_FINE_MM, MARK_FADE_MM = 12.0, 3.0  # a mark's fill: the skin's texture finer than this from beside it, its level
+# from round it, faded in over this (3 mm and 1 mm left a smoother disc with a rim)
+
+
+def _patched(img: np.ndarray, mask: np.ndarray, valid: np.ndarray, px_per_mm: float) -> np.ndarray:
+    """`img` (H x W x C) inside `mask` made from the skin round it: its level a blur of what lies round each mark (the
+    mark left out), its texture finer than MARK_FINE_MM copied from the nearest whole patch beside the mark - a Telea
+    fill drew a star of flat wedges across a 3 cm mark (2026-11-09) - faded in over MARK_FADE_MM."""
+    import cv2
+
+    count, labels = cv2.connectedComponents(mask.astype(np.uint8))
+    around = (valid & ~mask).astype(np.float32)
+    fine = img - cv2.GaussianBlur(img, (0, 0), MARK_FINE_MM * px_per_mm / 2.0).reshape(img.shape)
+    out = img.copy()
+    for i in range(1, count):
+        one = labels == i
+        ys, xs = np.nonzero(one)
+        sigma = max(np.ptp(ys), np.ptp(xs)) / 2.0
+        level = cv2.GaussianBlur(img * around[..., None], (0, 0), sigma).reshape(img.shape) / np.maximum(
+            cv2.GaussianBlur(around, (0, 0), sigma), 1e-6)[..., None]  # fmt: skip
+        fade = MARK_FADE_MM * px_per_mm  # the fade runs outward: grown by twice it first, so the mark itself is all 1
+        grown = cv2.dilate(one.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (int(4 * fade) + 1,) * 2))
+        soft = np.clip(cv2.GaussianBlur(grown.astype(np.float32), (0, 0), fade), 0.0, 1.0)
+        ys, xs = np.nonzero(soft > 1e-3)
+        mark_r = sigma  # the mark's own half-width
+        reach = int(max(np.ptp(ys), np.ptp(xs)) / 2.0 + mark_r) + 2  # the copied area clear of the mark itself
+        copied = np.zeros((len(ys), img.shape[2]), img.dtype)  # no whole patch beside it: no texture (not its own)
+        for dy, dx in ((0, reach), (0, -reach), (reach, 0), (-reach, 0), (reach, reach), (-reach, -reach),
+                       (reach, -reach), (-reach, reach)):  # fmt: skip
+            sy, sx = ys + dy, xs + dx
+            if (sy.min() >= 0 and sx.min() >= 0 and sy.max() < len(valid) and sx.max() < valid.shape[1]
+                    and valid[sy, sx].all() and not mask[sy, sx].any()):  # fmt: skip
+                copied = fine[sy, sx]
+                break
+        w = soft[ys, xs][:, None]
+        out[ys, xs] = img[ys, xs] * (1.0 - w) + (level[ys, xs] + copied) * w
+    return out
 
 
 def _debris_filled(hp: np.ndarray, limit: float) -> np.ndarray:

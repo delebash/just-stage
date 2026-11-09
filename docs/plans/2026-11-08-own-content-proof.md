@@ -527,6 +527,16 @@ booked with just-direct-mocap.
   island excluded). `maps._upper_lip_layer` (`LIP_UPPER_TINT`), the skin-maps test extended; `batch_upperprod.sh`.
   **02:13, in the product (`row_upperprod_{lips,open}.png`): the upper lip deeper red, the lower lighter - his
   two-tone; with the mouth open the mask follows the lips. Skin-maps tests 18 passed. KEPT.**
+- **02:2x, the mark below every man's navel (`navel_mark.png` in this session's scratchpad):** a curved dent 8 cm right
+  of and 4 cm below our navel - the Artec man's appendectomy scar (the lower right abdomen), on every man's torso. The
+  composition's rule: the person's marks out. Found in the relief at texel (318, 712) of tile 1002 (our navel's body
+  point offset as measured on the render, mapped to UV); `body_scan` SOURCES["artec"]["marks_out"] names it (20 mm -
+  the scar runs ~3 cm) and `post` fills it (`_patched`): the level of the skin round it, the texture finer than 12 mm
+  copied from a whole patch beside it, faded outward over 3 mm. Tries on the way, each seen in texture space
+  (`scar_dry/scar_compare.png`): Telea drew a star of flat wedges; a 3 mm texture left a smooth disc with a rim; 14 mm
+  left the scar's end; the fade inside the mark leaked its dark back; the copy's offset overshot the image (its test
+  caught the last two). Its test in `tests/tools/test_body_scan.py` (5 passed). `batch_scar.sh`: posted, skins and
+  characters rebuilt, the torso views.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

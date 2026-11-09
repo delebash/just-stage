@@ -77,3 +77,18 @@ def test_a_foot_reaches_its_toes_on_its_own_side_only():
     right = body_scan._foot_vertices(o, "r")
     assert right.tolist() == [True, True, False, False]
     assert body_scan._foot_vertices(o, "l").tolist() == [False, False, True, False]
+
+
+def test_a_named_mark_takes_the_skin_round_it_level_and_texture():
+    """A scanned person's own mark (Artec's man's scar, 2026-11-09) filled from the skin round it: its level, and texture
+    copied from beside it - not a smooth disc, not a Telea star."""
+    rng = np.random.default_rng(3)
+    px_per_mm, n = 2.4, 300
+    img = (0.5 + 0.05 * rng.normal(size=(n, n, 1))).astype(np.float32)
+    yy, xx = np.mgrid[0:n, 0:n]
+    mark = (yy - 150) ** 2 + (xx - 150) ** 2 < (10 * px_per_mm) ** 2
+    img[mark] -= 0.3  # a dark dent
+    out = body_scan._patched(img, mark, np.ones((n, n), bool), px_per_mm)
+    inside, around = out[mark, 0], img[~mark, 0]
+    assert abs(inside.mean() - around.mean()) < 0.02  # the skin's level
+    assert inside.std() > 0.5 * around.std()  # its texture, not a flat fill
