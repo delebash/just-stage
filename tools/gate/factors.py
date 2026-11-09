@@ -1916,6 +1916,154 @@ def vfhair(built: dict, bust: str, textured: bool = False, alpha: str = "") -> N
           int(brow.sum()), "brow cards dropped", flush=True)
 
 
+def vfcards(built: dict, bust: str, count: int = 6000, width_mm: float = 7.0, sheet: str = "hair02") -> None:
+    """Hair cards the way CC5 and MetaHuman make them - flat strips carrying a strand texture - built along our own
+    strands (`vfguides`: grown from the free cut's cards, so the artist's shape): `count` of the groom's strands each a
+    ribbon `width_mm` wide, turned to lie on the head, its UV across the strip and along it, the strip a narrow random
+    slice of a CC0 strand sheet (OpenGameArt "Hair Alphas For Days", `sheet`: roots at its top); the strand groom
+    hidden. Q-HAIR-7's approved live-view route with its gap filled (the cut ours, the alphas CC0). A new groom: --alone."""
+    vfguides(built, bust)
+    groom = next(o for o in bpy.data.objects if o.juststage.part == "scalp" and o.type == "CURVES")
+    dg = bpy.context.evaluated_depsgraph_get()
+    cd = groom.evaluated_get(dg).data
+    pos = np.empty(len(cd.points) * 3, np.float32)
+    cd.attributes["position"].data.foreach_get("vector", pos)
+    pos = pos.reshape(-1, 3)
+    offs = np.empty(len(cd.curves) + 1, np.int64)
+    cd.curve_offset_data.foreach_get("value", offs)
+    mw = np.array(groom.matrix_world)
+    pos = pos @ mw[:3, :3].T + mw[:3, 3]
+    rng = np.random.default_rng(3)
+    pick = rng.choice(len(offs) - 1, min(count, len(offs) - 1), replace=False)
+    centre = np.array([np.median(pos[:, 0]), np.median(pos[:, 1]), pos[:, 2].max() - 0.09])
+    verts, faces, uvs, quad_uv = [], [], [], []
+    for k in pick:
+        p = pos[offs[k]:offs[k + 1]]
+        if len(p) < 3:
+            continue
+        tan = np.gradient(p, axis=0)
+        tan /= np.maximum(np.linalg.norm(tan, axis=1, keepdims=True), 1e-9)
+        radial = p - centre
+        side = np.cross(tan, radial)
+        side /= np.maximum(np.linalg.norm(side, axis=1, keepdims=True), 1e-9)
+        n = len(p)
+        taper = np.linspace(1.0, 0.55, n)[:, None]
+        half = side * (width_mm / 2000.0) * taper
+        base = len(verts)
+        x0 = rng.uniform(0.12, 0.62)  # the strip's slice of the sheet
+        for i in range(n):
+            verts.append(p[i] - half[i])
+            verts.append(p[i] + half[i])
+            v = 1.0 - 0.72 * i / (n - 1)  # the sheet's roots at its top
+            uvs.append((x0, v))
+            uvs.append((x0 + 0.16, v))
+        for i in range(n - 1):
+            a = base + 2 * i
+            faces.append((a, a + 1, a + 3, a + 2))
+    me = bpy.data.meshes.new("vf cards")
+    me.from_pydata([tuple(v) for v in verts], [], faces)
+    uv_layer = me.uv_layers.new(name="UVMap")
+    loop_v = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_v)
+    uv_arr = np.array(uvs, np.float32)[loop_v]
+    uv_layer.data.foreach_set("uv", uv_arr.ravel())
+    obj = bpy.data.objects.new("vf cards", me)
+    bpy.context.scene.collection.objects.link(obj)
+    mat = bpy.data.materials.new("vf cards")
+    nt = mat.node_tree
+    bsdf = nt.nodes.get("Principled BSDF")
+    img = nt.nodes.new("ShaderNodeTexImage")
+    img.image = bpy.data.images.load(str(OGA_ALPHAS / f"{sheet}.png"), check_existing=True)
+    nt.links.new(img.outputs["Alpha"], bsdf.inputs["Alpha"])
+    shade = nt.nodes.new("ShaderNodeMix")  # the sheet's own strand brightness into a brown, darker in its gaps
+    shade.data_type = "RGBA"
+    nt.links.new(img.outputs["Color"], shade.inputs["Factor"])
+    next(i for i in shade.inputs if i.identifier == "A_Color").default_value = (0.018, 0.012, 0.009, 1.0)
+    next(i for i in shade.inputs if i.identifier == "B_Color").default_value = (0.085, 0.06, 0.042, 1.0)
+    nt.links.new(next(o for o in shade.outputs if o.identifier == "Result_Color"), bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.42
+    mat.surface_render_method = "DITHERED"
+    me.materials.append(mat)
+    groom.hide_render = True
+    built.setdefault("objects", []).append(obj)
+    print("VF CARDS (ours)", len(faces), "quads on", len(pick), "strands,", width_mm, "mm,", sheet, flush=True)
+
+
+def vfguides(built: dict, bust: str, fill_gap: float = 0.012) -> None:
+    """Our scalp groom (`scalp.make`, Blender's Interpolate Hair Curves and shaping) grown from the free cut's cards as
+    its guide curves (2026-11-09): the cut fitted as `vfhair` does, each card (not its base cap) a guide - its points
+    ordered root (the end nearer the head's centre) to tip, resampled to the groom's point count, its root seated on
+    our skin - so the strands take the artist's shape: the cards' look (sculpted, glossy without the creator's
+    textures) out, our strands' look in. A new groom: --alone."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
+    vfhair(built, bust)  # the fitted cut, linked (plain), our scalp groom hidden
+    hair = next(o for o in bpy.data.objects if o.name.startswith(f"vf_hair_{bust}"))
+    body = built["body"]
+    co = np.array([hair.matrix_world @ v.co for v in hair.data.vertices])
+    ed = np.array([e.vertices for e in hair.data.edges])
+    lab = np.arange(len(co))
+    while True:
+        mn = np.minimum(lab[ed[:, 0]], lab[ed[:, 1]])
+        new = lab.copy()
+        np.minimum.at(new, ed[:, 0], mn)
+        np.minimum.at(new, ed[:, 1], mn)
+        new = new[new]
+        if np.array_equal(new, lab):
+            break
+        lab = new
+    labels, counts = np.unique(lab, return_counts=True)
+    cap = labels[np.argmax(counts)]
+    dg = bpy.context.evaluated_depsgraph_get()
+    tree = BVHTree.FromObject(body, dg)
+    inv, fwd = np.array(body.matrix_world.inverted()), np.array(body.matrix_world)
+    top = co[:, 2].max()
+    centre = np.array([np.median(co[:, 0]), np.median(co[:, 1]), top - 0.09])
+    n_pts = scalp.POINTS
+    out = []
+    for label, count in zip(labels, counts, strict=True):
+        if label == cap or count < 4:
+            continue
+        pts = co[lab == label]
+        c = pts.mean(0)
+        _u, _sv, vt = np.linalg.svd(pts - c, full_matrices=False)
+        t = (pts - c) @ vt[0]
+        if np.linalg.norm(pts[np.argmax(t)] - centre) < np.linalg.norm(pts[np.argmin(t)] - centre):
+            t = -t
+        edges_t = np.linspace(t.min(), t.max(), n_pts + 1)
+        line = []
+        for k in range(n_pts):
+            sel = (t >= edges_t[k]) & (t <= edges_t[k + 1])
+            line.append(pts[sel].mean(0) if sel.any() else c + vt[0] * (edges_t[k] + edges_t[k + 1]) / 2)
+        line = np.array(line)
+        q = inv[:3, :3] @ line[0] + inv[:3, 3]  # the root seated on our skin, the curve moved with it
+        near = np.array(tree.find_nearest(Vector(q))[0])
+        line += (fwd[:3, :3] @ near + fwd[:3, 3]) - line[0]
+        out.append(line)
+    bpy.data.objects.remove(hair)
+    # the sides and the nape - the cut's cap covered them, no card does - from our own style's guides: each kept
+    # where no card root lies within FILL_GAP
+    own = scalp.guides(body, scalp.STYLES["short taper"], 5)
+    card_roots = np.array([g[0] for g in out])
+    kept = [g for g in own if np.min(np.linalg.norm(card_roots - g[0], axis=1)) > fill_gap]
+    out = out + kept
+    print("VF GUIDES", len(card_roots), "from cards +", len(kept), "of our own", len(own), "where no card is near",
+          flush=True)
+    old = scalp.guides
+    scalp.guides = lambda *_a, **_k: out
+    try:
+        groom = scalp.make(body, "short taper")
+    finally:
+        scalp.guides = old
+    pg.colour_scalp(groom)
+    groom.hide_render = False
+    cid = body.juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("VF GUIDES", bust, len(out), "guides from the cut's cards", flush=True)
+
+
 def _vf_card_material(hair, head_centre, alpha_name: str = "") -> bpy.types.Material:
     """Each card's own length (vf_t, 0 at the root) and width (vf_s) as attributes, and a card material from them: strands
     along the card (a stretched noise), alpha-cut, faded at the tip and the edges; brown, darker at the root."""
@@ -3461,6 +3609,13 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("vfcards*"):  # vfcards*B4[*6000*7*hair02] (cards along our strands, a CC0 sheet) - --alone
+        bits = name.split("*")
+        return lambda built: vfcards(built, bits[1], *(int(bits[2]),) if len(bits) > 2 else (),
+                                     *(float(bits[3]),) if len(bits) > 3 else (), *(bits[4],) if len(bits) > 4 else ())
+    if name.startswith("vfguides*"):  # vfguides*B4 (our strands grown from the free cut's cards) - --alone
+        bits = name.split("*")
+        return lambda built: vfguides(built, bits[1], *(float(bits[2]) / 1000.0,) if len(bits) > 2 else ())
     if name.startswith("vfhair*"):  # vfhair*B4[*tex] (a bust of VincentFreelance's male collection 01) - --alone
         bits = name.split("*")
         return lambda built: vfhair(built, bits[1], textured=len(bits) > 2 and bits[2] == "tex",

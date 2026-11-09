@@ -1072,6 +1072,55 @@ booked with just-direct-mocap.
   for all - the creator's, not in the free download), but along-card correlation with U or V only ~0.13 - his
   texture's strands don't follow our per-card axis; our own per-card mapping kept. Round 3 (`batch_vfcap.sh`, waits for
   family-release's CPU): the cap fix, hair02 (straight, fine) and hair08. Hair box: until ~18:30, then its verdict.
+- **17:5x, the face relief's "can't" re-checked against every free source on disk** (the deciding gap; `bs_heads.py`):
+  Blender Studio's CC0 bundle - its realistic heads (`GEO-head_sculpting_realistic` 3,307 vertices, `..._animation_
+  realistic` 3,242) carry ONE Multires level: sculpting bases, no wrinkles; its realistic bodies three levels (~1.6 mm,
+  form and folds, measured 11-08). On disk besides: the three scans already tried (hsr0040, hsr0112, lps), Ten24's
+  sample (its pores are the shared tile), MakeHuman's skins02 normals (body). **The verdict stands: the face's
+  mid-scale relief at HD Aaron's level - no free source here.**
+- **17:4x, hair round 3 (`row_vfc_{face,three_quarter,hair_back}.png`): the cap a plain greyish band on the forehead
+  and a dark painted patch on the nape; the cards with hair02 / hair08 glossy sculpted waves - the cut's SHAPE right,
+  its LOOK plastic beside HD Aaron's; at the back our own strands read more like hair than these cards.** The creator's
+  textures (the cards' real look) are not in the free download. Route 2 (the standard "cards to curves"): our own
+  strand groom grown from the cut's cards as guides (`vfguides*B4`: each card's centreline, root seated on our skin,
+  into `scalp.make`'s Interpolate Hair Curves) - the artist's shape with our strands (`batch_vfguides.sh`). **17:48
+  (`row_vfg_{face,three_quarter,hair_back}.png`, 802 guides from the cards, 145,707 strands): our strands take the
+  cut's shape - a swept top, real strands at the back; bare patches at the temples and the nape (the cut's cap covered
+  them, no card does) and a ragged hairline.** Mixed guides (`vfguides` round 2): the cards' plus our own short taper's
+  wherever no card root lies within 12 mm (`batch_vfguides2.sh`). **17:52 (`row_vfg2_*.png`; 802 + 425 guides): the nape fuller; still
+  bare patches at the temples and the front hairline, a parting line at the crown, and our strands' grey haze in the
+  live view (the known renderer limit: 11-07 no `hair_shading` setting met Cycles; the approved rule Q-HAIR-7 - cards
+  in the live view).** Last route in the box: our OWN cards, as CC5 and MetaHuman make card hair - flat strips along
+  our strands (the cut's shape), each a random slice of a CC0 strand sheet (`vfcards*B4*<count>*<mm>*<sheet>`,
+  `batch_vfcards.sh`: 6,000 x 7 mm hair02; 9,000 x 5 mm hair08). **17:59 (`row_vfk_{face,three_quarter,hair_back}.png`): blocky and
+  scaly - flat strips with white patches where they overlap, the scalp through gaps; worse than our strands.** A good
+  card groom is an artist's layered work (the cards' order, flow and the cut's own texture set) - three automatic routes
+  from the free pieces failed: the cut's cards with our or CC0 textures (plastic), our strands to the cut's shape (the
+  live view's haze, bare patches), our cards along our strands (scaly). Last check in the box: the shaped strands in
+  the film render (Cycles, the repo's oracle) beside his (`batch_vfcycles.sh`) - whether the content holds and only the
+  live view's drawing of strands falls short. **18:08 (`row_vfcy_{face,hair_back}.png`): in Cycles our shaped strands
+  read as real dark hair - browner, no grey haze, strand texture at the back: the content holds; the live view's
+  drawing (EEVEE's strand haze, `hair_shading` NOT STANDARD) is what falls short. Coverage faults in both: a ragged
+  front hairline, bare temples, a parting line at the crown - grooming, not assets.** One round on coverage
+  (`vfguides*B4*6`: our own guides fill where no card root is within 6 mm, `batch_vfgap.sh`). **18:12 (`row_vfgap_*.png`):
+  hardly changed - the temple patch stays bare. Box spent.**
+- **18:1x, THE HAIR'S VERDICT (the box spent; 16:47-18:12 on the free cut, after 11-07/08's strands):** in the LIVE
+  VIEW (EEVEE, the gate's engine) **not reached with free assets - CAN'T with the free pieces in hand.** Missing: an
+  artist-authored card groom - the cards AND their texture set (the free cut's creator textures are not in the free
+  download; our cards from CC0 strand sheets read scaly; the cut's cards with substitute textures plastic) - or the
+  live view drawing strands as the film does (our strands' grey haze: `hair_shading` NOT STANDARD, 11-07 no setting
+  met Cycles; Blender's own EEVEE hair closure not landed). In the FILM render (Cycles) our strands read as real hair
+  and take the free cut's shape (`vfguides`): the content holds there; its coverage (the temples, the hairline, a
+  crown parting) is grooming work, open. Kept as tools (not in the product): `factors vfhair*`, `vfguides*`,
+  `vfcards*`; the cut's busts in `.dev/downloads/vincent_hair_2026-11-09/m01_busts.blend` (CC BY 4.0 - an ATTRIBUTION
+  row before any of it ships).
+- **THE PROOF'S VERDICT, 2026-11-09 18:1x: our character does NOT reach CC5 (HD Aaron) quality with free assets.**
+  The deciding gaps, each with what's missing: (1) the face's mid-scale relief (wrinkles, folds) - no free source (three
+  scans, a made layer, Blender Studio's CC0 heads re-checked today: one Multires level) - a paid scan or an artist's
+  sculpt; (2) the live-view hair - an artist-authored card groom with its textures, or a live-view strand renderer.
+  Everything else is close or matches (the verdict table): skin texture on the cheek, nose and forehead matches; dark
+  skin matches measured skin within ~3 delta-E (ISSA); eyes, lips, brows, lashes, ears, nails, teeth, hands, feet and
+  torso close, each with its named remainder.
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
@@ -1108,12 +1157,12 @@ booked with just-direct-mocap.
 | Cheek, nose skin (texture) | **matches** (men); women's finer (03:4x) | `PORES_BY_SEX` (0.7 a woman) | - |
 | Forehead skin | **matches** (orange peel gone) | forehead pores x1 | - |
 | Face skin relief (wrinkles, folds) | **CAN'T with free assets in hand** | - | a wrinkle-rich face relief at his level - a paid scan or an artist's sculpt (three free scans' relief and a made layer tried) |
-| Face colour | close; **every character (11-09)** - no patch where the scans end, no rim smudges on the jaws | the eyes' surround darker (`maps._eye_layer`); the scans' edge faded (`skin_base.faded_out`, multi-band) and their dark rims weighed out (`rim_weight`) - six scan skins; the Heavy woman at melanin 0.1 (was 0.25, ashy) | the regions' redness; on dark skin the scans' own blood redness (chromophore maps - a job); the tone model's dark end (ISSA, waiting for the download) |
+| Face colour | close; **every character (11-09)** - no patch where the scans end, no rim smudges on the jaws; **dark skin matches measured skin within ~3 delta-E (ISSA, 11-09 16:4x)** | the eyes' surround darker (`maps._eye_layer`); the scans' edge faded (`skin_base.faded_out`, multi-band) and their dark rims weighed out (`rim_weight`) - six scan skins; the Heavy woman at melanin 0.1 (was 0.25, ashy) | the regions' redness; on dark skin the scans' own blood redness (chromophore maps - a job); the slider's dark end ~2-4 delta-E warm (eumelanin share 0.6 -> 0.9 would close half) |
 | Face shape | identity, not a fault | - | (three real scans' shapes read no more real - not the doll look's cause) |
 | Brows | close | dark brown 0.8 / 0.3 (11-09; near-black read as a grey bar on women); a woman's 0.7 of the hairs, live by the gender slider (`DENSITY_BY_SEX`); the gate shows a character's own brows | the live view's strand haze -> cards; the blocky shape beside his soft brows |
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
-| Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
+| Scalp hair | **live view: CAN'T with the free pieces in hand (11-09 18:1x)**; film: our strands read as real hair | the hairline one ring | an artist-authored card groom with its textures (the free cut's are not free; CC0-sheet cards read scaly), or a live-view strand renderer; the film's coverage (temples, hairline) is grooming |
 | Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); a soft sheen (`LIP_ROUGHNESS, LIP_COAT` 0.4 / 0.2, 11-09 midday - not clay, not cellophane); the lines thin creases (`LIP_CREASE`, 15:3x - no crepe crinkle); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | the upper lip a uniform coral against his red deepest at the line; his few deep furrows and fine cells |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`); the tear film's fleck on the ledge gone (`TEAR_FADE_OUT`, 11-09) | the lower lid's rim: a wide ledge with its colour stretched (a thinner margin; the colour unstretched by a static stretch map); the closed lid's streaks (expression-driven detail); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
@@ -1122,7 +1171,7 @@ booked with just-direct-mocap.
 | Hands | close | - | tone (a setting) |
 | Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out; the neck / chest patch gone on every character (11-09) | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out`; the scans' edge faded | definition (MakeHuman's CC0 normal as a slider, its seams) |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
-| **Whole character** | **not CC5 quality with free assets** | the above | the deciding gap: the face's mid-scale relief (can't, free); then the live-view hair (cards + a cut - a route) |
+| **Whole character** | **not CC5 quality with free assets (verdict 11-09 18:1x)** | the above | the face's mid-scale relief (can't, free: a paid scan or an artist) and the live-view hair (can't with the free pieces: an artist's card groom with textures, or a live-view strand renderer) |
 
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
 
