@@ -369,13 +369,19 @@ booked with just-direct-mocap.
   rebuilt, the library man's foot rendered with no trial (`.dev/gate/parts/2026-11-08feetprod`), then every suite.
 - **22:3x, the torso (the verdict table's "two blotches by the sternum"):** at close-up (this session's scratchpad
   `torso_chest_crop.png`) our right areola is a flat disc and a second, darker areola-like oval sits beside the
-  sternum. The torso's colour detail (`body_1002_colour.png`, Artec's scan) holds two solid dark blobs (ratio < 0.6) -
-  the scanned man's own areolae, laid over ours (the tone model paints ours). Fix: `body_scan._dark_blobs_out`
-  (`areolae_out` on the Artec source): blobs darker than x0.75 over 2 mm, at least 5 mm in radius (a mole stays), take
-  the level of the skin round them (30 mm) and the fine texture (< 3 mm) of a whole patch beside them - a first try
-  with their own texture left a smooth disc with a rim (`torso_ratio_out3.png`), the copy none (`..._out4.png`); its
-  test in `tests/tools/test_body_scan.py`. `batch_torso.sh` (post, skins, characters, the torso and front views)
-  runs after the feet's end run. Our own areola's flatness (no nipple relief, a painted disc) is next.
+  sternum. The torso's colour detail (`body_1002_colour.png`, Artec's scan) holds two solid dark blobs (ratio < 0.6).
+  **First guess, wrong: "the scanned man's areolae laid over ours"** - built `_dark_blobs_out` to take them out; mapped
+  to our body (UV -> our mesh) they sit at x -0.113 / +0.110 m, z 1.28 m - our nipples: they ARE our areolae (the
+  design: the scan's own areolas where it covers, MakeHuman's mask off - `build_skins._body_tiles`). Removed (code and
+  test) before any use. **The real cause:** the oval maps (the torso view: 0.56 m over 2048 px, centred) to x +0.016,
+  z 1.24 m - UV texel (894, 1071) of 1002 - a FLAT HOLE in the relief: `post`'s debris filter (tilt > 0.3 grown 8
+  texels) flattened it, and a flat patch on the scan's sloped chest shades as an oval; the same filter flattened both
+  nipples' bumps (tilt p50 0.000 there) - our areola reads painted. Fix: `body_scan._debris_filled` (debris filled from
+  the relief round it, Telea, for every body source) and Artec's `debris_limit` 0.8; dry run in texture space
+  (`torso_dry/compare.png`): the holes gone, the nipples' bumps back (tilt p50 0.31); one strong slope near the
+  sternum is now kept - to judge on the render. `batch_torso.sh` (every body source posted again, skins, characters,
+  the torso, front, foot and hand views, the tools and Blender suites) runs after the feet's end run. Mistake: I built
+  a fix on a guess about what a blob was - map a texel to the body before deciding what it is.
 
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 

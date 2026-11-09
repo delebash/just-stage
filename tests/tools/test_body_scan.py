@@ -51,21 +51,17 @@ def test_the_smoothed_move_leaves_unmoved_vertices_alone():
     assert np.allclose(out[18:], co[18:])
 
 
-def test_a_scanned_areola_leaves_the_colour_and_a_mole_stays():
-    px_per_mm = 2.4  # the torso tile's
-    rng = np.random.default_rng(1)
-    n = 400
-    ratio_log = np.repeat((rng.normal(0.0, 0.03, (n, n)) - 0.05)[..., None], 3, -1).astype(np.float32)
+def test_a_debris_hole_takes_the_slope_round_it_not_a_flat_disc():
+    n = 200
+    hp = np.zeros((n, n, 2), np.float32)
+    hp[..., 0] = 0.15  # a chest's broad slope
     yy, xx = np.mgrid[0:n, 0:n]
-    areola = (yy - 200) ** 2 + (xx - 200) ** 2 < (14 * px_per_mm) ** 2  # a 28 mm areola, x0.55
-    mole = (yy - 60) ** 2 + (xx - 60) ** 2 < (2 * px_per_mm) ** 2  # a 4 mm mole
-    ratio_log[areola] -= 0.6
-    ratio_log[mole] -= 0.6
-    out, count = body_scan._dark_blobs_out(ratio_log, np.ones((n, n), bool), px_per_mm)
-    assert count == 1
-    assert abs(out[areola].mean() - (-0.05)) < 0.03  # the skin's level round it
-    assert out[areola].std() > 0.5 * 0.03  # textured, not a flat disc
-    assert out[mole].mean() < -0.5  # the mole is the person's mark at its own size: kept
+    ring = np.abs(np.hypot(yy - 100, xx - 100) - 10) < 1.5  # a ring at a scan's hole, far steeper
+    hp[ring, 0] = 0.9
+    out = body_scan._debris_filled(hp, 0.3)
+    inside = np.hypot(yy - 100, xx - 100) < 14
+    assert np.abs(out[inside, 0] - 0.15).max() < 0.05  # the slope carried in, the ring gone
+    assert np.allclose(out[np.hypot(yy - 100, xx - 100) > 40], hp[np.hypot(yy - 100, xx - 100) > 40])
 
 
 def test_a_foot_reaches_its_toes_on_its_own_side_only():
