@@ -1806,6 +1806,65 @@ def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey:
     print("BROWS", int(count), "coarse,", int(fine), "fine at", fine_melanin, "grey", grey, flush=True)
 
 
+MH_BODY_NORMAL = Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "mh_skins02" / "x" / "skins" / \
+    "mindfront_skin_male_african_middleage" / "skin_male_african_middleage_NRM.png"  # CC0 (MINDFRONT, MakeHuman's skins02)
+
+
+def mhbody(built: dict, strength: float) -> None:
+    """The body's definition (step 1's fault: our torso flat and smooth, his defined - the plan's §11 Q-BODY-1, a
+    definition layer on a strength slider): MakeHuman's CC0 community skin normal map (MINDFRONT's "skin male african
+    middleage", on our disk from skins02 - sculpted muscle definition in hm08's own UVs) on the body tiles - its normal
+    (hm08's "UVMap") added to ours as a world-space detail, n = normalize(ours + s (mh - geometry)), the head tile left
+    as ours (tile index 0)."""
+    maps = _maps()
+    img = bpy.data.images.load(str(MH_BODY_NORMAL), check_existing=True)
+    img.colorspace_settings.name = "Non-Color"
+    n = 0
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        fine = nt.nodes.get(maps.NODE + "height_bump")
+        ours_map = nt.nodes.get(maps.NODE + "normal_map")
+        which = nt.nodes.get(maps.NODE + "tile_index")
+        if fine is None or ours_map is None or which is None:
+            continue
+        uv = nt.nodes.new("ShaderNodeUVMap")
+        uv.uv_map = "UVMap"
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image = img
+        nt.links.new(uv.outputs["UV"], tex.inputs["Vector"])
+        mh = nt.nodes.new("ShaderNodeNormalMap")
+        mh.space, mh.uv_map = "TANGENT", "UVMap"
+        nt.links.new(tex.outputs["Color"], mh.inputs["Color"])
+        geo = nt.nodes.new("ShaderNodeNewGeometry")
+        diff = nt.nodes.new("ShaderNodeVectorMath")
+        diff.operation = "SUBTRACT"
+        nt.links.new(mh.outputs["Normal"], diff.inputs[0])
+        nt.links.new(geo.outputs["Normal"], diff.inputs[1])
+        body = nt.nodes.new("ShaderNodeMath")  # 1 on the body tiles, 0 on the head's
+        body.operation = "GREATER_THAN"
+        nt.links.new(which.outputs[0], body.inputs[0])
+        body.inputs[1].default_value = 0.5
+        amount = nt.nodes.new("ShaderNodeMath")
+        amount.operation = "MULTIPLY"
+        nt.links.new(body.outputs[0], amount.inputs[0])
+        amount.inputs[1].default_value = strength
+        scaled = nt.nodes.new("ShaderNodeVectorMath")
+        scaled.operation = "SCALE"
+        nt.links.new(diff.outputs["Vector"], scaled.inputs[0])
+        nt.links.new(amount.outputs[0], scaled.inputs["Scale"])
+        added = nt.nodes.new("ShaderNodeVectorMath")
+        added.operation = "ADD"
+        nt.links.new(ours_map.outputs["Normal"], added.inputs[0])
+        nt.links.new(scaled.outputs["Vector"], added.inputs[1])
+        unit = nt.nodes.new("ShaderNodeVectorMath")
+        unit.operation = "NORMALIZE"
+        nt.links.new(added.outputs["Vector"], unit.inputs[0])
+        nt.links.new(unit.outputs["Vector"], fine.inputs["Normal"])
+        mod.sync_live(mat)
+        n += 1
+    print("MH BODY NORMAL strength", strength, "on", n, "skins (film and live)", flush=True)
+
+
 def regiontint(built: dict, k: float = 1.0) -> None:
     """Regional colour in our skin (18:59, the layer diagnostic: HD Aaron's skin on our head took the doll look away -
     redder nose and cheeks, darker reddish lids and under-eyes; ours one flat peach): by the region map's smooth ramps,
@@ -2627,6 +2686,8 @@ def factor(name: str):
         return lambda built: lidsmooth(built, int(rings), int(passes))
     if name.startswith("browtrial*"):  # browtrial*1200*2000*0.92*0 (coarse, fine, fine melanin, grey) - --alone
         return lambda built: browtrial(built, *(float(x) for x in name.split("*")[1:5]))
+    if name.startswith("mhbody*"):  # mhbody*1.0 (MakeHuman's CC0 body normal on the body tiles, its strength)
+        return lambda built: mhbody(built, float(name.split("*")[1]))
     if name.startswith("regiontint"):  # regiontint, regiontint*1.5 (how far from 1)
         return lambda built: regiontint(built, *(float(x) for x in name.split("*")[1:2]))
     if name.startswith("aoshade*"):  # aoshade*0.6[*15] (strength, reach in mm)

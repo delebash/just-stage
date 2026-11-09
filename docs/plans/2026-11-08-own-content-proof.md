@@ -298,6 +298,15 @@ booked with just-direct-mocap.
   wrinkle normal layer), its own job.** `skin_base._relief`'s `relief_mode: "first"` stays (the plan's method, off by
   default; no shipped skin uses it yet).
 
+- **20:37, the body's definition (`.dev/gate/parts/2026-11-08body`, `row_body_{torso,three_quarter}.png`):**
+  MakeHuman's CC0 community skin normal (MINDFRONT's "skin male african middleage", in `.dev/downloads/mh_skins02`,
+  "License: CC0" printed on the map) - sculpted muscle definition in hm08's own UVs - on our body tiles (`mhbody*0.6`,
+  `*1.2`): the chest and abdomen read as a real athletic body (at 1.2 a bodybuilder). Faults: dark lines at hm08's UV
+  island borders (the chest's side, the armpit) - the map's own seams; and definition is a build, not skin quality -
+  the approved design: "HD detail as displacement faded by a strength slider, not a default on everyone" (Q-BODY-1).
+  **The route works - a definition slider from this CC0 map, its seams fixed (the border blend the body tiles use).**
+  Its face has no wrinkles worth taking (both MINDFRONT maps looked at: the head is pores and noise).
+
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
 
 | Part | Verdict | Kept in the product | What's missing / the route |
