@@ -86,7 +86,19 @@ def main(params: Params) -> Result:
     build.apply_macros(obj, values)
     build.keep_on_floor(obj)
     _refit(obj)
+    if params.slider == "gender":  # a mapped skin's pores follow the sex (the skin module's maps.PORES_BY_SEX)
+        _repore(obj)
     return Result(status="ok", value=float(params.value))
+
+
+def _repore(obj) -> None:
+    try:
+        from ..skin import maps
+    except ImportError:
+        return
+    mat = obj.juststage.skin_material
+    if mat is not None and mat.juststage.has_maps:
+        maps.set_pores(mat, obj)
 
 
 def _refit(obj) -> None:

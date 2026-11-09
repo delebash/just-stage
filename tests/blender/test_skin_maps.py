@@ -453,3 +453,21 @@ def test_the_lips_and_the_mouths_lining_have_no_pores(human, tmp_path):
     micro = _upstream(nodes[maps.NODE + "micro_depth"].inputs[0])
     assert {maps.NODE + "lips_mask", maps.NODE + "mouth_mask"} <= pores
     assert maps.NODE + "mouth_mask" in micro and maps.NODE + "lips_mask" not in micro
+
+
+def test_the_pores_follow_the_characters_sex(tmp_path):
+    """Women's facial pores are finer: the shared pore tile read cobbled on the Average woman's bare cheek (2026-11-09) -
+    a mapped skin's pore depth is PORES_BY_SEX by the gender macro, and follows the slider."""
+    path = _mapped_skin(tmp_path, melanin=0.05)
+    made = api.run("juststage.body.create", name="Pore test", gender=0.0)
+    body = bpy.data.objects[made.object]
+    try:
+        api.run("juststage.library.add", path=path, character=made.character)
+        depth = body.juststage.skin_material.node_tree.nodes[maps.NODE + "pore_depth"]
+        assert depth.inputs[1].default_value == pytest.approx(maps.PORE_DISTANCE * maps.PORES_BY_SEX[0])
+        api.run("juststage.body.set_slider", character=made.character, slider="gender", value=1.0)
+        assert depth.inputs[1].default_value == pytest.approx(maps.PORE_DISTANCE * maps.PORES_BY_SEX[1])
+    finally:
+        for obj in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
+            bpy.data.objects.remove(obj)
+        bpy.data.objects.remove(body)

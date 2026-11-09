@@ -56,6 +56,10 @@ PORE_TOOL = ".dev/venv-rdf/Scripts/python -I tools/face_test/pore_tile.py"
 #: 2026-11-06, the clean skins with Ten24's tile: 0.15 mm brings the cheek's pore / fold bands to HD Aaron's (1.135 /
 #: 0.884 vs 1.154 / 0.894; at 0.3 mm 1.74 / 1.31 - an orange peel); the gate's cheek view, scratchpad pore_tune.py
 PORE_STRENGTH, PORE_DISTANCE = 1.0, 0.00015
+#: the pores' depth by sex (the character's gender macro: 0 a woman, 1 a man) - women's facial pores are finer; the
+#: shared pore tile, judged against HD Aaron on the men, read cobbled on the Average woman's bare cheek, x0.7 as her
+#: skin (2026-11-09, `.dev/gate/parts/2026-11-09womanpores`, by eye; x0.5 near too smooth)
+PORES_BY_SEX = (0.7, 1.0)
 #: per-pore shine: the specular scaled by PORE_SHINE[0] + PORE_SHINE[1] x the pore tile's height (darker in the pits)
 PORE_SHINE = (0.4, 0.6)
 #: the face's regions (tools/make_face_regions.py): the relief's depth scaled by region on the head tile - a forehead
@@ -840,6 +844,14 @@ def refresh(mat: bpy.types.Material) -> None:
         if obj.type == "MESH" and obj.juststage.kind == "HUMAN" and mat.name in obj.data.materials:
             if TEXEL not in obj.data.attributes:
                 add_texel(obj)
+
+
+def set_pores(mat: bpy.types.Material, character: bpy.types.Object) -> None:
+    """The pores' depth on a mapped skin for its character's sex (PORES_BY_SEX by the gender macro)."""
+    node = mat.node_tree.nodes.get(NODE + "pore_depth")
+    if node is not None:
+        node.inputs[1].default_value = PORE_DISTANCE * float(np.interp(character.juststage.gender, (0.0, 1.0),
+                                                                       PORES_BY_SEX))  # fmt: skip
 
 
 def set_oiliness(mat: bpy.types.Material, oiliness: float) -> None:

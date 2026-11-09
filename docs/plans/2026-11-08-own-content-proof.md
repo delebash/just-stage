@@ -573,7 +573,13 @@ booked with just-direct-mocap.
 - **03:2x, the woman's coarse skin (`row_womanrelief_{cheek,lips,face}.png`):** her scan relief finer than 7 mm at
   0.6 / 0.4 smooths it a little; the cobbled pattern (cells ~2 mm) stays - it is the shared pore tile (judged a match
   on the men's darker, stubbled cheek), coarse on her lighter bare skin; women's facial pores are finer than men's -
-  trial `pores*0.7` / `*0.5` on her (`batch_womanpores.sh`).
+  trial `pores*0.7` / `*0.5` on her (`batch_womanpores.sh`). **03:3x (`row_womanpores_cheek.png`): x0.7 the cobbling
+  mostly gone, pores still read; x0.5 soft, near too smooth - KEPT x0.7 for women.** Into the product as a value
+  derived from the character, no stored field (attacked: a skin-record field is a data-model change; a per-skin
+  depth would give a woman in a man's skin his pores): `maps.PORES_BY_SEX` (0.7, 1.0) by the gender macro,
+  `maps.set_pores` from `material.apply` (every tone change and library load) and from `body_set_slider` when gender
+  moves; the men stay at 1.0 (everything tuned against HD Aaron unchanged). Its test
+  (`test_the_pores_follow_the_characters_sex`); the woman's cheek rendering.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
