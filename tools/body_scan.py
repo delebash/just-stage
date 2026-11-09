@@ -62,6 +62,15 @@ SOURCES = {
               "source": "Ten24, the free sample scan (3dscanstore.com - the page saved 2026-11-04)",
               "licence": "Ten24's grant: 'Feel free to use this scan as you wish for both commercial and personal projects. "
                          "All we ask is that you provide us with a credit wherever it's used'"},
+    # the feet (2026-11-08, the own-content proof: ours smooth plastic beside HD Aaron's tendons and veins; no detailed
+    # donor until this): Thunk3D's "Leg-foot", a left leg and foot, geometry only (the original STL, millimetres, lying
+    # on its side) - placed by our left foot, our foot wrapped onto it, its relief baked onto the legs' tile as a part
+    "thunk3d_foot": {"scan": ROOT / ".dev" / "downloads" / "sketchfab_leg_foot_2026-11-08" / "foot" / "left_foot_02.stl",
+                     "scale": 0.001, "tiles": (3,), "fit": "foot", "part": "feet", "geometry_only": True,
+                     "work": WORK_ROOT / "thunk3d_foot", "edge_fade": 24.0, "relief_hp_mm": 12.0,
+                     "source": "Thunk3D, 'Leg-foot' (sketchfab.com/3d-models/leg-foot-37e2802a104141b982e15eda21d425ec, by "
+                               "Diana Liu: 'Leg-foot scan by Thunk3D Fisher's 3D scanner')",
+                     "licence": "CC Attribution (Sketchfab's CC BY 4.0): 'Author must be credited. Commercial use is allowed'"},
 }  # fmt: skip
 SIZE = 2048
 RELIEF_HP_MM = 40.0  # the relief kept below this scale (the fit's leftover above it)
@@ -115,7 +124,10 @@ def export(src: str = "artec") -> None:
     np.savez(work / "ours.npz", co=co, tris=tris, tuv=tuv, tile=tile,
              joint_names=np.array(list(joints)), joint_co=np.array(list(joints.values())))  # fmt: skip
     forward, up = spec.get("axes", ("Y", "Z"))  # Ten24's OBJ is Y-up, facing +Z
-    bpy.ops.wm.obj_import(filepath=str(spec["scan"]), forward_axis=forward, up_axis=up)
+    if spec["scan"].suffix.lower() == ".stl":  # geometry only (the placement turns it)
+        bpy.ops.wm.stl_import(filepath=str(spec["scan"]))
+    else:
+        bpy.ops.wm.obj_import(filepath=str(spec["scan"]), forward_axis=forward, up_axis=up)
     scan = bpy.context.selected_objects[0]
     sm = scan.data
     sv = np.empty(len(sm.vertices) * 3, np.float64)
@@ -127,6 +139,12 @@ def export(src: str = "artec") -> None:
     sm.calc_loop_triangles()
     sf = np.empty(len(sm.loop_triangles) * 3, np.int64)
     sm.loop_triangles.foreach_get("vertices", sf)
+    if spec.get("geometry_only"):  # no UVs, no colour: the bake reads its surface alone
+        np.savez(work / "scan.npz", co=sv, faces=sf.reshape(-1, 3), uv=np.zeros((len(sf) // 3, 3, 2), np.float32),
+                 image="")  # fmt: skip
+        print(f"EXPORT {src}: ours {len(co)} v, {len(tris)} tris, {len(joints)} joints; scan {len(sv)} v, "
+              f"{len(sf) // 3} faces, geometry only")
+        return
     sl = np.empty(len(sm.loop_triangles) * 3, np.int64)
     sm.loop_triangles.foreach_get("loops", sl)
     suv = np.empty(len(sm.loops) * 2, np.float32)
@@ -205,6 +223,8 @@ def fit(src: str = "artec") -> None:
     o, s = np.load(work / "ours.npz"), np.load(work / "scan.npz", allow_pickle=True)
     if spec["fit"] == "anny":
         return fit_anny(src, o, s)
+    if spec["fit"] == "foot":
+        return fit_foot(src, o, s)
     co, tris, tile = o["co"], o["tris"], o["tile"]
     sv, sf = s["co"].astype(np.float64), s["faces"]
     torso_tris = tris[tile == spec["tiles"][0]]
@@ -215,6 +235,86 @@ def fit(src: str = "artec") -> None:
     idx[tv] = np.arange(len(tv))
     fitted = _wrap(co[tv], idx[torso_tris], svp, sf, "torso")
     np.savez(work / "fit.npz", place=place, fitted=fitted, moved_v=tv)
+
+
+def _foot_vertices(o, side: str = "l") -> np.ndarray:
+    """Our vertices of one foot: below its ankle joint plus 1 cm (a fade lands on the ankle), on its side."""
+    names = [str(n) for n in o["joint_names"]]
+    jc = dict(zip(names, o["joint_co"], strict=True))
+    co = o["co"]
+    ankle = jc[f"joint-{side}-ankle"]
+    return (co[:, 2] < ankle[2] + 0.01) & (np.linalg.norm(co[:, :2] - ankle[:2], axis=1) < 0.16)
+
+
+def fit_foot(src: str, o, s) -> None:
+    """A lone leg-and-foot scan onto our left foot (Thunk3D's lies on its side, in no body's frame): its long axis
+    (the leg, by PCA) stood up with the foot - the wider end - at the bottom, the foot's reach from the leg turned to
+    ours (-Y, the character faces -Y), its sole on our sole and its heel under our ankle; then rigid ICP on our foot,
+    then our foot wrapped onto it (`_wrap`, as the limbs)."""
+    import trimesh
+    from trimesh import registration
+
+    spec = SOURCES[src]
+    work = spec["work"]
+    co, tris = o["co"].astype(np.float64), o["tris"]
+    sv, sf = s["co"].astype(np.float64), s["faces"]
+    on_foot = _foot_vertices(o, "l")
+    foot_tris = tris[on_foot[tris].all(axis=1)]
+    fv = np.unique(foot_tris)
+    ours = co[fv]
+    rng = np.random.default_rng(0)
+    pts = sv[rng.choice(len(sv), min(200000, len(sv)), replace=False)]
+    c = pts.mean(0)
+    _, _, vt = np.linalg.svd(pts - c, full_matrices=False)
+    axis = vt[0]
+    along = (pts - c) @ axis
+    lo, hi = along < np.percentile(along, 15), along > np.percentile(along, 85)
+
+    def spread(m):
+        q = pts[m] - c
+        q = q - np.outer(q @ axis, axis)
+        return np.linalg.norm(q - q.mean(0), axis=1).mean()
+
+    if spread(hi) > spread(lo):  # the foot (the wider end) at the bottom
+        axis = -axis
+        along = -along
+        lo, hi = hi, lo
+    up = -axis  # the leg runs up from the foot
+    bottom = pts[lo]
+    reach = (bottom - c) - np.outer((bottom - c) @ up, up)
+    fwd_s = reach.mean(0)
+    fwd_s = fwd_s - (fwd_s @ up) * up
+    fwd_s /= np.linalg.norm(fwd_s)
+    side_s = np.cross(fwd_s, up)
+    rot_scan = np.stack([side_s, fwd_s, up])  # rows: the scan's (side, forward, up)
+    fwd_o, up_o = np.array([0.0, -1.0, 0.0]), np.array([0.0, 0.0, 1.0])
+    rot_ours = np.stack([np.cross(fwd_o, up_o), fwd_o, up_o])
+    r = rot_ours.T @ rot_scan  # scan frame -> ours
+    turned = (sv - c) @ r.T
+    # translate: its sole on ours, its foot's middle on ours (x, y of the lowest 3 cm)
+    sole_s, sole_o = turned[:, 2].min(), ours[:, 2].min()
+    low_s = turned[turned[:, 2] < sole_s + 0.03]
+    low_o = ours[ours[:, 2] < sole_o + 0.03]
+    t = np.array([np.median(low_o[:, 0]) - np.median(low_s[:, 0]), np.median(low_o[:, 1]) - np.median(low_s[:, 1]),
+                  sole_o - sole_s])  # fmt: skip
+    place = np.eye(4)
+    place[:3, :3] = r
+    place[:3, 3] = -r @ c + t
+    part = trimesh.Trimesh(co, foot_tris, process=False)
+    near = trimesh.proximity.ProximityQuery(part)
+    for it in range(3):
+        svp = (np.c_[sv, np.ones(len(sv))] @ place.T)[:, :3]
+        sample = rng.choice(len(svp), min(120000, len(svp)), replace=False)
+        _, dist, _ = near.on_surface(svp[sample])
+        crop = svp[sample[dist < (0.03 if it == 0 else 0.015)]]
+        m, _moved, cost = registration.icp(crop, ours, threshold=1e-6, max_iterations=40, reflection=False, scale=False)
+        place = m @ place
+        print(f"FOOT ICP round {it}: {len(crop)} points, mean {cost * 1000:.1f} mm", flush=True)
+    svp = (np.c_[sv, np.ones(len(sv))] @ place.T)[:, :3]
+    idx = -np.ones(len(co), int)
+    idx[fv] = np.arange(len(fv))
+    fitted = _wrap(co[fv], idx[foot_tris], svp, sf, "foot")
+    np.savez(work / "fit.npz", place=place, fitted=fitted, moved_v=fv)
 
 
 def fit_anny(src: str, o, s) -> None:
@@ -333,10 +433,11 @@ def bake(src: str = "artec") -> None:
     sm.polygons.foreach_set("use_smooth", np.ones(len(sm.polygons), bool))
     sm.uv_layers.new(name="UV").data.foreach_set("uv", s["uv"].reshape(-1, 2).astype(np.float32).ravel())
     smat = bpy.data.materials.new("scan colour")
-    tex = smat.node_tree.nodes.new("ShaderNodeTexImage")
-    tex.image = bpy.data.images.load(str(s["image"]))
     bsdf = next(n for n in smat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
-    smat.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    if not spec.get("geometry_only"):
+        tex = smat.node_tree.nodes.new("ShaderNodeTexImage")
+        tex.image = bpy.data.images.load(str(s["image"]))
+        smat.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
     if "normal" in spec:  # the scan's detail is in its normal map (Ten24's 100k mesh + 8K map): the bake reads it there
         ntex = smat.node_tree.nodes.new("ShaderNodeTexImage")
         ntex.image = bpy.data.images.load(str(spec["normal"]))
@@ -381,7 +482,8 @@ def bake(src: str = "artec") -> None:
         scan.select_set(True)
         ours.select_set(True)
         bpy.context.view_layer.objects.active = ours
-        for kind, extra in (("NORMAL", {"normal_space": "TANGENT"}), ("DIFFUSE", {"pass_filter": {"COLOR"}})):
+        kinds = (("NORMAL", {"normal_space": "TANGENT"}), ("DIFFUSE", {"pass_filter": {"COLOR"}}))
+        for kind, extra in kinds[:1] if spec.get("geometry_only") else kinds:
             img = bpy.data.images.new(kind, SIZE, SIZE, alpha=False, float_buffer=True)
             img.colorspace_settings.name = "Non-Color"
             img.generated_color = (0.5, 0.5, 1.0, 1.0) if kind == "NORMAL" else (0.0, 0.0, 0.0, 1.0)
@@ -391,7 +493,7 @@ def bake(src: str = "artec") -> None:
             px = np.array(img.pixels[:], np.float32).reshape(SIZE, SIZE, 4)[::-1, :, :3]
             np.save(work / f"bake_{kind.lower()}_{1001 + number}.npy", px)
             print(f"BAKED {kind} {1001 + number}")
-        if spec["fit"] == "anny":  # the fit's gap on this tile (our own surface's attribute, emitted)
+        if spec["fit"] in ("anny", "foot"):  # the fit's gap on this tile (our own surface's attribute, emitted)
             img = bpy.data.images.new("GAP", SIZE, SIZE, alpha=False, float_buffer=True)
             img.colorspace_settings.name = "Non-Color"
             g_node.image = img
@@ -434,12 +536,16 @@ def _hand_vertices(o) -> np.ndarray:
 
 def _hand_cover(o, number: int) -> np.ndarray:
     """The texels of tile `number` on our hands (_hand_vertices)."""
+    return _cover(o, number, _hand_vertices(o))
+
+
+def _cover(o, number: int, on_part: np.ndarray) -> np.ndarray:
+    """The texels of tile `number` on the faces whose vertices are all in `on_part`."""
     import cv2
 
     tris, tuv, tile = o["tris"], o["tuv"], o["tile"]
-    on_hand = _hand_vertices(o)
     cover = np.zeros((SIZE, SIZE), np.uint8)
-    sel = (tile == number) & on_hand[tris].all(axis=1)
+    sel = (tile == number) & on_part[tris].all(axis=1)
     for tri in tuv[sel]:
         pts = np.round(np.c_[(tri[:, 0] - number) * SIZE, (1 - tri[:, 1]) * SIZE]).astype(np.int32)
         cv2.fillConvexPoly(cover, pts, 1)
@@ -462,7 +568,10 @@ def post(src: str = "artec") -> None:
         nrm_path = work / f"bake_normal_{name}.npy"
         nrm = np.load(nrm_path if nrm_path.exists() else legacy).astype(np.float32)
         col_path = work / f"bake_diffuse_{name}.npy"
-        col = np.load(col_path if col_path.exists() else work / "bake_diffuse.npy").astype(np.float32)
+        if spec.get("geometry_only"):  # no colour: a flat grey - the colour ratio comes out 1 (the skin's own colour kept)
+            col = np.full((SIZE, SIZE, 3), 0.5, np.float32)
+        else:
+            col = np.load(col_path if col_path.exists() else work / "bake_diffuse.npy").astype(np.float32)
         cover = np.zeros((SIZE, SIZE), np.uint8)
         for tri in tuv[tile == number]:
             pts = np.round(np.c_[(tri[:, 0] - number) * SIZE, (1 - tri[:, 1]) * SIZE]).astype(np.int32)
@@ -474,6 +583,8 @@ def post(src: str = "artec") -> None:
         baked &= ~fabric
         if spec.get("part") == "hands":  # only the hands (Ten24's forearms carry hair and a sweater's cuff)
             baked &= _hand_cover(o, number) > 0
+        if spec.get("part") == "feet":  # only the foot the scan was placed on
+            baked &= _cover(o, number, _foot_vertices(o, "l")) > 0
         baked = cv2.erode(baked.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
         px_per_mm = SIZE / _mm_per_uv(name)
         w = baked.astype(np.float32)

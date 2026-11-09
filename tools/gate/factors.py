@@ -195,7 +195,8 @@ def regioncontrast(built: dict, k: float) -> None:
     print("REGION CONTRAST x", k, flush=True)
 
 
-def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
+def handspart(built: dict, strength: float = 1.0, colour: bool = False, tile: int = 1003,
+              part: str = "hands") -> None:
     """A body part's donor relief (`tools/body_scan.py texture`: `body_1003_hands_*`) over the skin's own on the arm
     tile, by its weight, in the shader - nothing rebuilt before the part is measured. `strength` scales its tilt;
     `colour` multiplies in its colour detail by the same weight."""
@@ -211,16 +212,16 @@ def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
         return node.outputs["Color"]
 
     for nt in _skin_trees(built):
-        vec, on = _tile_uv(nt, 1003)
+        vec, on = _tile_uv(nt, tile)
         weight = nt.nodes.new("ShaderNodeMath")
         weight.operation = "MULTIPLY"
         nt.links.new(nt.nodes.new("ShaderNodeSeparateColor").outputs[0], weight.inputs[0])
         sep = weight.inputs[0].links[0].from_node
-        nt.links.new(tex(nt, "body_1003_hands_weight.png", vec), sep.inputs["Color"])
+        nt.links.new(tex(nt, f"body_{tile}_{part}_weight.png", vec), sep.inputs["Color"])
         nt.links.new(on, weight.inputs[1])
         scaled = nt.nodes.new("ShaderNodeVectorMath")  # (part - 0.5) * strength + 0.5
         scaled.operation = "MULTIPLY_ADD"
-        nt.links.new(tex(nt, "body_1003_hands_relief.png", vec), scaled.inputs[0])
+        nt.links.new(tex(nt, f"body_{tile}_{part}_relief.png", vec), scaled.inputs[0])
         scaled.inputs[1].default_value = (strength, strength, 1.0)
         scaled.inputs[2].default_value = (0.5 - 0.5 * strength, 0.5 - 0.5 * strength, 0.0)
         normal = nt.nodes[maps.NODE + "normal"]
@@ -235,7 +236,7 @@ def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
             base = nt.nodes[maps.NODE + "base_color"]
             ratio = nt.nodes.new("ShaderNodeVectorMath")
             ratio.operation = "MULTIPLY"
-            nt.links.new(tex(nt, "body_1003_hands_colour.png", vec), ratio.inputs[0])
+            nt.links.new(tex(nt, f"body_{tile}_{part}_colour.png", vec), ratio.inputs[0])
             ratio.inputs[1].default_value = (2.0, 2.0, 2.0)
             gain = nt.nodes.new("ShaderNodeMix")
             gain.data_type = "RGBA"
@@ -2907,6 +2908,9 @@ def factor(name: str):
         return lambda built: hairthrough(built, float(name.split("*")[1]))
     if name.startswith("reliefband"):  # reliefband*2
         return lambda built: reliefband(built, float(name.split("*")[1]))
+    if name.startswith("feetpart"):  # feetpart*1.0 (body_scan.py thunk3d_foot: body_1004_feet_*)
+        k = float(name.split("*")[1]) if "*" in name else 1.0
+        return lambda built: handspart(built, k, tile=1004, part="feet")
     if name.startswith("handspart"):  # handspart*1.5, handspartc*1.5 (with the donor's colour)
         k = float(name.split("*")[1]) if "*" in name else 1.0
         return lambda built: handspart(built, k, colour=name.startswith("handspartc"))
