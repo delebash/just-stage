@@ -124,7 +124,13 @@ LIP_TINT, LIP_STRENGTH = (1.0, 0.56, 0.90), 1.0  # at 0.74 / 0.79 still paler th
 #: the lips darker and redder toward the closed mouth's line (linear, x the colour at the line; by the seam's band,
 #: MOUTH_TOOL's mouth_seam.png) - real lips deepen into the line, ours were one flat pink (the own-content proof,
 #: 2026-11-08: HD Aaron's dark red at the seam)
-LIP_SEAM_TINT, LIP_SEAM_STRENGTH = (0.70, 0.48, 0.50), 1.0
+LIP_SEAM_TINT, LIP_SEAM_STRENGTH = (0.70, 0.48, 0.50), 1.5  # 1.5: the line between the lips deepens at full
+#: resolution, most at the corners (a 10 mm band, `.dev/gate/parts/2026-11-08lashes`)
+#: the skin round the eyes darker and a little red-brown (linear, x the colour; by REGIONS_TOOL's face_eyes.png, the
+#: eyes region within 17 mm of a pupil, softened) - real lids and under-eyes are darker; ours read the cheek's flat
+#: colour and the eyes looked pasted on (the own-content proof 2026-11-08: `factors eyedark` at 0.65 / 0.5 beside HD
+#: Aaron's - the eyes set in at both; the scan composition's EYE_DARK only caps a scan's own darkening, it can't add it)
+EYE_SURROUND_TINT = (0.60, 0.54, 0.51)
 #: 2026-11-06, the clean-input gate's lips view: ours matte orange (L* a* b* 58.6 / 23.4 / 23.5), HD Aaron's redder and
 #: less yellow (56.4 / 30.4 / 15.1) and his lower lip shining - the tint from the two lips' linear ratio (0.70 / 0.75 x
 #: 0.80 / 1.22), the vermilion smoother and lightly coated
@@ -135,7 +141,10 @@ LIP_ROUGHNESS, LIP_COAT = 0.33, 0.3
 #: the smooth "rubber" lips read as lips. In hm08's own UVs ("UVMap", the mask's) so the lines ride the lips through
 #: every expression: across the lip V runs ~1,602 mm a unit on hm08's base (measured 2026-11-08 on base.obj's faces under
 #: the mask), the lines are bands along V. (period mm, depth m, distortion, how much the noise varies the lines)
-LIP_LINES = (1.3, 0.0004, 4.0, 0.8)
+#: 2026-11-08 late, at full resolution (`.dev/gate/parts/2026-11-08lipset`): (1.3, 0.4 mm, 4, 0.8) read as an even rib -
+#: corduroy - beside HD Aaron's sparse soft creases; sparser, shallower, more irregular and fading in patches reads as
+#: lip skin (half the depth alone was still a rib)
+LIP_LINES = (1.8, 0.00015, 8.0, 1.0)
 LIP_MM_PER_V, LIP_NOISE_MM = 1602.0, 4.0
 #: the ears' redness - MPFB2's CC0 ears mask (`mpfb_ears.jpg`, hm08's own UVs), the colour x EAR_TINT inside it: ours
 #: read pale beside HD Aaron's red, translucent ear (2026-11-08, `.dev/gate/parts/2026-11-08ears`, by eye; the plan's
@@ -503,6 +512,30 @@ def face_regions() -> bpy.types.Image:
     return image
 
 
+def face_eyes() -> bpy.types.Image:
+    """The eyes region's share on the head tile (REGIONS_TOOL), loaded once and shared."""
+    path = paths.generated("skin", "face_eyes.png", tool=REGIONS_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _eye_layer(nt, bsdf, uv) -> None:
+    """The skin round the eyes x EYE_SURROUND_TINT by the eyes region's share, on the head tile (after the mouth's
+    layers, before the lid margin's)."""
+    nodes = nt.nodes
+    mask = _node(nt, "ShaderNodeTexImage", "eyes_mask", (-1600, -3800))
+    mask.image, mask.interpolation, mask.extension = face_eyes(), "Linear", "CLIP"
+    nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
+    share = _math(nt, "eyes_share", "MULTIPLY", mask.outputs["Color"], nodes[NODE + "mouth_on_head"].outputs["Value"])
+    tint = _mix(nt, "eyes_tint", "RGBA", share, (1.0, 1.0, 1.0), EYE_SURROUND_TINT)
+    tinted = _node(nt, "ShaderNodeVectorMath", "eyes_colour", (-150, -3800))
+    tinted.operation = "MULTIPLY"
+    nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, tinted.inputs[0])
+    nt.links.new(tint, tinted.inputs[1])
+    nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
+
+
 def face_share() -> bpy.types.Image:
     """The face's share on the head tile (REGIONS_TOOL; 0 on its neck, which is body skin), loaded once and shared - a
     map of its own: packed in the region map's alpha, the live view divided the region map's R, G, B by it."""
@@ -757,6 +790,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     _lip_layer(nt, bsdf)
     _mouth_layer(nt, bsdf, uv, which)
     _seam_layer(nt, bsdf, uv)
+    _eye_layer(nt, bsdf, uv)
     _relief_off_mouth(nt)
     bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS
     bsdf.inputs["Coat IOR"].default_value = COAT_IOR
