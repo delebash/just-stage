@@ -579,7 +579,8 @@ booked with just-direct-mocap.
   depth would give a woman in a man's skin his pores): `maps.PORES_BY_SEX` (0.7, 1.0) by the gender macro,
   `maps.set_pores` from `material.apply` (every tone change and library load) and from `body_set_slider` when gender
   moves; the men stay at 1.0 (everything tuned against HD Aaron unchanged). Its test
-  (`test_the_pores_follow_the_characters_sex`); the woman's cheek rendering.
+  (`test_the_pores_follow_the_characters_sex`). **03:4x: skin-maps tests 19 passed; the woman's cheek in the
+  product (`row_womanprod.png`) smoother, the cobbling gone - KEPT.**
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -609,7 +610,7 @@ booked with just-direct-mocap.
 
 | Part | Verdict | In the product today | What's missing / the route left |
 |---|---|---|---|
-| Cheek, nose skin (texture) | **matches** | - | - |
+| Cheek, nose skin (texture) | **matches** (men); women's finer (03:4x) | `PORES_BY_SEX` (0.7 a woman) | - |
 | Forehead skin | **matches** (orange peel gone) | forehead pores x1 | - |
 | Face skin relief (wrinkles, folds) | **CAN'T with free assets in hand** | - | a wrinkle-rich face relief at his level - a paid scan or an artist's sculpt (three free scans' relief and a made layer tried) |
 | Face colour | close | the eyes' surround darker (`maps._eye_layer`, 23:5x) | the regions' redness (head and body match in base colour - checked 00:53) |
