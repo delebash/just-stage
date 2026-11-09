@@ -589,6 +589,26 @@ booked with just-direct-mocap.
   red glow at each mouth corner** (the lining's red mucosa at the corner, lit through by the scattering); **(2) the lips
   crinkled cellophane** - their lines catch wet highlights (LIP_ROUGHNESS 0.33, LIP_COAT 0.3) beside his soft matte
   lips - trial `lipshine` 0.5 / 0.15 and 0.6 / 0.05 (`batch_lipgloss.sh`, the Average and Muscular men).
+  **04:1x (`.dev/gate/parts/2026-11-09lipgloss`, by eye at full resolution): 0.6 / 0.05 reads as lip skin up close and
+  no drier at the lips view; 0.5 / 0.15 kept glints on a darker lip - KEPT 0.6 / 0.05 (`maps.LIP_ROUGHNESS, LIP_COAT`;
+  mine).** The corner glow's cause (`make_mouth_mask.py`): the lining is the faces near, behind and facing the mouth's
+  front at its MIDDLE, so the corner's outer crease (far behind the middle, facing in) counted as lining and its red
+  mucosa glowed through the scattering. Fix (mine, boxed 30 min): `CORNER_FADE` 4 mm - within 4 mm of the lips' widest
+  point the lining fades out only where it sits within 1-3 mm of the corner's own depth; the deeper inner-cheek lining
+  stays, so an open mouth shows no pale rim (a first version faded all corner lining - 217 of 316 vertices, attacked as
+  too much). Trial masks (`-- --out`, `.dev/gate/mouthmasks/corner`): 294 lining vertices against 316; the diff
+  (`mask_changed.png`) is the two corner tips on the face (0.60 -> 0.30) and a few faint spots of the inner island
+  (1.00 -> 0.91); trial `mouthmask*corner` on the Muscular man, lips crop and open mouth (`batch_corner.sh`).
+  **04:2x (`row_corner_crop.png`, `row_corner_open.png`): the bright red glow at the corner gone (a faint dark-red
+  crease left - HD Aaron's own corner has one, `row_lipgloss_cornercrop.png`); the open mouth's red specks at both
+  corners gone, no pale rim - KEPT (mine).** Measured on the masks (`corner_measure.py`): the corner crease's lining
+  p90 0.95 -> 0.19, mean 0.24 -> 0.05; the inner lining's mean 0.31 both. Shipped (backup
+  `.dev/backup/mouthmasks_2026-11-09`; regenerated masks byte-identical to the trial's); its test
+  `test_the_lining_stays_out_of_the_mouths_corners`, and the lips' values asserted in
+  `test_the_wet_layers_keep_their_coat_and_the_lips_shine`. End run `batch_end3.sh` (the shipped lips and open mouth
+  on the Muscular man and a New human, then every suite) - running. Seen at the same crop, still open (not worked):
+  the lips' lines read deep and even at this extreme crop where his are soft - the `lipset` trial of 2026-11-09 kept
+  them; a new look only on a new measured fact.
   **The ashy dark skin, measured (`diffcol_measure.py`; `core/skin_optics.py` swept):** her face's base colour R/G
   1.46, G/B 1.44 against her skin's own scan tone (623) R/G 2.26 at 4.5x her luminance; the Muscular man 1.97 against
   2.29, the Older man 1.79 against 1.87. The skin model's hue falls with melanin at the library's eumelanin share and
@@ -596,6 +616,16 @@ booked with just-direct-mocap.
   skin keeps ~2 (our scans 2.26 at L* ~39). Likely the epidermis's own reflection (r1, near-flat in the two-layer
   Kubelka-Munk) greying the dark end. **Open - a job of its own: calibrate the model's dark end against the scans'
   measured tones** (it moves every tone and has its own tests and RESEARCH; not within a box tonight).
+  **04:3x, taken now (mine: the worst visible fault left on the four-characters check, "a darker skin" is in the
+  plan's bar; boxed 2 h):** measured (RESEARCH §14.10 "The model's dark end greys"): NIST's darkest fitted skin is
+  L* 43; the Heavy woman's preset 0.25 is L* 17.6 at chroma 7 (past any real skin); the model's b* at L* 31 is 11.8
+  where measured Black adults keep b* ~20 (Everett 2012, SD 2.3); the cause - past melanin ~0.1 no light reaches
+  the dermis and back, the epidermis's own near-flat reflection is the colour. Routes, in order: (1) the presets
+  inside measured skin - trial `skintone*0.14/0.1/0.065` on the Heavy woman (`batch_tone.sh`, after the end run);
+  (2) calibrate the dark end on dark spectra - ISSA (CC BY 4.0, 9.3 MB xlsx; the download asked of the user) through
+  `tools/calibrate_skin.py`, NIST's fit kept; (3) the tone slider's range ends at the darkest measured skin.
+  Attacked: "lighter changes her identity" - L* 17.6 is no real person's, so a fault, not identity; "a clamp alone
+  hides it" - the slider's top still greys at L* 25-31 (b* 9-12), so (2) is the fix and (1)/(3) only bound it.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -634,7 +664,7 @@ booked with just-direct-mocap.
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
 | Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
-| Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`) | his crisper border |
+| Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); matte (`LIP_ROUGHNESS, LIP_COAT` 0.6 / 0.05, 11-09 04:1x - no cellophane up close); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | his crisper border; the lines read deep at an extreme crop |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`) | the lid's rim (shape and glow, not colour); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
 | Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask; skin-maps tests 18 passed) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault) |

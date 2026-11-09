@@ -48,6 +48,12 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-09 04:3x:** kept - the lips matte (`maps.LIP_ROUGHNESS, LIP_COAT` 0.6 / 0.05) and the lining out of the
+  mouth's corners (`make_mouth_mask.CORNER_FADE`; masks regenerated, backup `.dev/backup/mouthmasks_2026-11-09`);
+  end run `scratchpad/batch_end3.sh` (unit 45, tools 51 passed; Blender running). Now: **dark skin reads ashy** - the
+  tone model greys past NIST's darkest fitted skin (RESEARCH §14.10 "The model's dark end greys"); trial
+  `batch_tone.sh` (the Heavy woman at melanin 0.14 / 0.1 / 0.065 against her preset 0.25) queued after the end run;
+  asked of the user: the ISSA spreadsheet (CC BY 4.0, 9.3 MB) + openpyxl to calibrate the dark end, and the hair cut.
 - **2026-11-09 03:5x (the working doc's entries from 22:3x on; its verdict table current; the end run green 03:51 -
   unit 45, tools 51, Blender 199):** kept and verified tonight
   - the feet (Thunk3D), the torso (debris fill: nipples, the sternum oval; the scanned man's scar out), the upper

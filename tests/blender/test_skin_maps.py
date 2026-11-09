@@ -229,6 +229,41 @@ def test_the_mouths_lining_is_wet_mucosa_on_the_head_tile(human, tmp_path):
     assert (band[0::4] > 0.05).mean() < 0.1  # and no further than the mouth
 
 
+def test_the_lining_stays_out_of_the_mouths_corners(human):
+    """The lining's red mucosa glowed through the scattering at each mouth corner at close-up (2026-11-09): the corner's
+    outer crease, behind the mouth's middle and facing in, counted as lining. make_mouth_mask.py fades it there
+    (CORNER_FADE) and keeps the deeper lining inside the cheeks (an open mouth shows no pale rim). Measured on the
+    shipped masks: the crease's p90 0.95 before, 0.19 after; the inner lining's mean 0.31 both."""
+    made, body = human
+    stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    co = build.shaped_coords(body)
+    me = body.data
+    lips = stubble._lips_per_vertex(body)
+    side = np.abs(co[:, 0] - np.median(co[lips > 0.3, 0]))
+    reach = side[lips > 0.3].max()  # the lips' corners, out from the middle
+    corner = (lips > 0.3) & (side > reach - 0.002)
+    corner_y = np.median(co[corner, 1])  # their depth (the character faces -Y)
+    crease = ((np.abs(side - reach + 0.0005) < 0.0025) & (np.abs(co[:, 1] - corner_y + 0.001) < 0.003)
+              & (np.abs(co[:, 2] - np.median(co[corner, 2])) < 0.004))  # fmt: skip
+    inside = (side < reach - 0.006) & (co[:, 1] > corner_y + 0.006)
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    loop_vert = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_vert)
+    image = maps.mouth_mask()
+    w, h = image.size
+    px = np.empty(w * h * 4, np.float32)
+    image.pixels.foreach_get(px)
+    at = px.reshape(h, w, 4)[(uv[:, 1] * h).astype(int).clip(0, h - 1), (uv[:, 0] * w).astype(int).clip(0, w - 1), 0]
+    head = uv[:, 0] < 1.0
+    at_crease = at[head & crease[loop_vert]]
+    assert len(at_crease) > 100 and np.percentile(at_crease, 90) < 0.4  # no lining in the corner's crease
+    deep = at[head & inside[loop_vert] & (at > 0.01)]
+    assert len(deep) > 100 and deep.mean() > 0.25  # the lining inside the cheeks kept
+
+
 def test_the_lid_margin_is_wet_pink_tissue_on_a_mapped_skin(human, tmp_path):
     """Base v2's margin rows (`js_margin`) tint the skin pink, glossy and wet (maps._margin_layer) - over the colour
     the other layers set, last."""
@@ -318,8 +353,8 @@ def test_the_neck_on_the_head_tile_is_body_skin(human, tmp_path):
 
 def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
     """The nails', the mouth's and the lips' coat reach the BSDF (the base coat was linked after the nails' and the
-    mouth's, replacing both - found 2026-11-06); the lips are smoother and coated (HD Aaron's lower lip shines, ours was
-    matte orange: a* 23 / b* 24 against his 30 / 15 at the gate's lips view)."""
+    mouth's, replacing both - found 2026-11-06); the lips take their own roughness and a trace of coat (2026-11-09: matte -
+    at 0.33 / 0.3 their lines caught wet glints at extreme close-up, crinkled cellophane beside HD Aaron's soft lips)."""
     made, body = human
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
@@ -339,6 +374,9 @@ def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
     for name in ("nail_coat", "mouth_coat", "lips_coat", "coat"):
         assert name in coat, coat
     assert "lips_rough" in chain("Roughness")
+    for key, value in (("lips_rough", maps.LIP_ROUGHNESS), ("lips_coat", maps.LIP_COAT)):
+        assert next(i for i in nodes[maps.NODE + key].inputs if i.identifier == "B_Float").default_value == pytest.approx(value)
+    assert maps.LIP_COAT < 0.1  # a trace: a wet sheen read as crinkled cellophane at extreme close-up
     tint = maps.LIP_TINT
     assert tint[1] < tint[2]  # redder, less yellow: blue kept above green
 

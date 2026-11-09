@@ -2860,6 +2860,34 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
 
   The library's eight tones solve L* 74 down to 25 in steps of 7: melanin 0.00457, 0.01239, 0.02164, 0.03288,
   0.04705, 0.06597, 0.09366, 0.14102. *Computed, 2026-11-04.*
+- **The model's dark end greys - past the data it was fitted on** (2026-11-09, the own-content proof: the library's
+  Heavy woman, preset melanin 0.25, read ashy; `scratchpad/dark_sweep.py`, `dark_parts.py`; computed):
+  - The model at eumelanin 0.6, blood 0.016 (L* / a* / b*, R/G in linear Rec.709): melanin 0.05 gives 44.8 / 13.6 /
+    19.1, R/G 2.11; 0.07 gives 37.8 / 12.5 / 15.8, 2.13; 0.10 gives 30.8 / 9.6 / 11.8, 1.97; 0.14 gives 25.1 / 6.3 /
+    8.9, 1.72; 0.25 gives 17.6 / 2.9 / 6.4, 1.45 (chroma 7).
+  - NIST's 100 measured spectra stop at L* 43.2 (person #43: 43.2 / 12.5 / 17.4, R/G 2.04 - the model at L* 44.8 is
+    close). Nothing darker was fitted.
+  - Why it greys: past melanin ~0.1 almost no light crosses the epidermis to the blood-red dermis and back (at 0.25
+    the epidermis's own reflection is 94-100% of the total at 450-650 nm, at 0.03 only 30% at 650 nm), and that own
+    reflection is nearly flat (450 : 550 : 650 nm = 1 : 1.39 : 1.98). The colour then is the scattering layer's,
+    not skin's.
+  - Measured dark skin keeps its chroma: Everett, Budescu & Sommers, "Making Sense of Skin Color in Clinical Care",
+    Clin Nurs Res 2012 21(4):495-516 (https://pmc.ncbi.nlm.nih.gov/articles/PMC3465481, Table 1, read 2026-11-09;
+    a ColorTec spectrophotometer, illuminant and specular not stated): Black / African American adults (n = 101),
+    upper inner arm L* 46.49 (SD 8.07), a* 9.84 (1.13), b* 20.13 (2.31) - b* barely varies while L* spans ~30-60;
+    the model's b* at L* 31 is 11.8.
+  - The data to calibrate the dark end: **the International Skin Spectra Archive (ISSA)** - Lu ... Wuerger,
+    Scientific Data 2025, doi:10.1038/s41597-025-04857-5; data on Figshare doi:10.6084/m9.figshare.28228571.v4
+    (read through Figshare's API 2026-11-09): **CC BY 4.0**, one spreadsheet `ISSA_17_Jan_2025_Yan_Lu.xlsx` (9.3 MB),
+    15,256 records of 2,113 people from eleven datasets in eight countries (UK, Spain, China, Japan, Pakistan,
+    Thailand, Iraq, Saudi Arabia), spectra 360-780 nm, CIE colorimetry under D65 / 1931 2°, ethnicity, sex, age group,
+    body site and instrument (specular included or not) per record. Not downloaded yet. Unread: how many dark-skinned
+    (African) people it holds - the UK sets are the likely source.
+  - Queries run (2026-11-09): "darkest skin colour measured CIELAB L* a* b* African spectrophotometer study" (Wang et
+    al. CIC 2015 - its PDF's text is in a custom font encoding, unreadable here; Wright et al. 2015, South Africa, ITA
+    only in the abstract); "skin reflectance spectra Fitzpatrick type VI dataset" (ISSA; a 29-person hyperspectral
+    set; NIST); "constitutive skin colour Black African adults mean L* b* ITA inner arm spectrophotometer PMC"
+    (Everett 2012).
 - **MetaHuman's skin materials, read from the installed plugin** (Unreal 5.8, `Engine/Plugins/MetaHuman/
   MetaHumanCharacter/Content/Lookdev_UHM/Skin/Materials/`, 2026-11-04, names read from the `.uasset` files; nothing
   copied): presets use `MI_skin_unified_MH_preset_Baked` on parent `M_skin_unified` with region masks

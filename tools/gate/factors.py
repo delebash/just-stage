@@ -1643,8 +1643,9 @@ def _skin_node_inputs(built: dict, node_name: str):
 
 
 def lipshine(built: dict, rough: float, coat: float) -> None:
-    """The lips' roughness and coat (`maps.LIP_ROUGHNESS` 0.33, `LIP_COAT` 0.3) - step 1's fault: a broad plastic sheen
-    over our lips where his show a small wet highlight on a matte lip."""
+    """The lips' roughness and coat (`maps.LIP_ROUGHNESS`, `LIP_COAT`; 0.6 / 0.05 since 2026-11-09, 0.33 /
+    0.3 before) - step 1's fault: a broad plastic sheen over our lips where his show a small wet highlight on a matte lip;
+    2026-11-09 the lines' wet glints at extreme close-up."""
     n = 0
     for key, value in (("lips_rough", rough), ("lips_coat", coat)):
         for node in _skin_node_inputs(built, key):
@@ -1723,6 +1724,37 @@ def lipset(built: dict, period: float, depth: float, distortion: float, vary: fl
         gain.inputs[1].default_value, gain.inputs[2].default_value = vary, 1.0 - vary
         n += 1
     print("LIP SET", (period, depth, distortion, vary), "on", n, "trees", flush=True)
+
+
+def skintone(built: dict, melanin: float) -> None:
+    """The character's skin tone set to `melanin` through the product's own command (`juststage.skin.set_tone`), its
+    eumelanin share, blood and oiliness kept: 2026-11-09, the Heavy woman's preset melanin 0.25 sits at L* 17.6 - past
+    NIST's darkest measured skin (L* 43) and the library's darkest tone (L* 25), where the model's colour greys."""
+    body = built["body"]
+    props = body.juststage
+    api = importlib.import_module("bl_ext.system.juststage.api")
+    made = api.run("juststage.skin.set_tone", character=props.character_id, melanin=melanin, eumelanin=props.eumelanin,
+                   blood=props.blood, oiliness=props.oiliness)  # fmt: skip
+    print("SKIN TONE melanin", melanin, "linear", [round(c, 4) for c in made.linear_rgb], flush=True)
+
+
+MOUTH_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "mouthmasks"
+
+
+def mouthmask(built: dict, stem: str) -> None:
+    """The mouth's lining and seam masks swapped for a variant (`.dev/gate/mouthmasks/<stem>/`, made by
+    `tools/make_mouth_mask.py -- --out ...`): 2026-11-09, the lining faded out of the mouth's corner crease (a red glow
+    at each corner at close-up)."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        for node_name, file in (("mouth_mask", "mouth.png"), ("lips_seam_mask", "mouth_seam.png")):
+            node = nt.nodes.get(maps.NODE + node_name)
+            if node is not None:
+                node.image = bpy.data.images.load(str(MOUTH_TRIALS / stem / file), check_existing=False)
+                node.image.colorspace_settings.name = "Non-Color"
+                n += 1
+    print("MOUTH MASK", stem, "on", n, "nodes", flush=True)
 
 
 def eyetint(built: dict, r: float, g: float, b: float) -> None:
@@ -2881,6 +2913,10 @@ def factor(name: str):
         return lambda built: lipseam(built, float(name.split("*")[1]))
     if name.startswith("lipset*"):  # lipset*1.8*0.0002*6*0.95 (maps.LIP_LINES' place: period mm, depth m, distortion,
         return lambda built: lipset(built, *(float(x) for x in name.split("*")[1:5]))  # vary)
+    if name.startswith("skintone*"):  # skintone*0.1 (melanin)
+        return lambda built: skintone(built, float(name.split("*", 1)[1]))
+    if name.startswith("mouthmask*"):  # mouthmask*corner (a variant folder under .dev/gate/mouthmasks)
+        return lambda built: mouthmask(built, name.split("*", 1)[1])
     if name.startswith("eyetint*"):  # eyetint*1*1*1 (maps.EYE_SURROUND_TINT's place; 1,1,1 = off)
         return lambda built: eyetint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("margintint*"):  # margintint*1*1*1 (maps.MARGIN_TINT's place, linear RGB; 1,1,1 = the skin's)

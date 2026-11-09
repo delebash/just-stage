@@ -9,7 +9,9 @@ layout; modules/skin/maps.py colours it as wet mucosa.
     python tools/dev.py blender -b --python tools/make_mouth_mask.py
 
 The lining: the body's vertices behind the lips' front, within the mouth's width and height round the front teeth,
-facing into the mouth; softened over their neighbours. Writes `extension/juststage/data/generated/skin/mouth.png`
+facing into the mouth - out of the corners' outer crease (CORNER_FADE: there the lining's red glowed through the
+scattering at close-up, 2026-11-09), the deeper lining inside the cheeks kept; softened over their neighbours.
+`-- --out DIR` writes a trial's masks there instead (tools/gate/factors.py `mouthmask*<name>`). Writes `extension/juststage/data/generated/skin/mouth.png`
 (8-bit grey, 2048², the head tile's UV square).
 
 The seam: the band of the lips in front of the lining, by each vertex's distance along the surface (Dijkstra over the
@@ -42,8 +44,22 @@ HEAD_TILE = 1001
 BEHIND = 0.002  # m behind the lips' frontmost point: the lining starts here
 HALF_WIDTH, HALF_HEIGHT = 0.032, 0.022  # m round the front teeth's centre
 DEPTH = 0.05  # m behind the lips' front: the lining ends (the throat)
+#: m: the lining fades out over this before the lips' corners - BEHIND is measured from the mouth's front at its middle,
+#: so at the corners (the mouth curving back) the outer crease, facing in, counted as lining: a red glow at each corner
+#: at close-up, lit through by the scattering (2026-11-09)
+CORNER_FADE = 0.004
 UPPER_SOFT_UV = 0.002  # the upper lip's mask fades in over this across the slit (head-tile UV units, ~1.4 mm)
 SEAM_MM = 10.0  # the lips' darkening reaches this far in front of the lining (4 mm stayed on the lips' inner side)
+
+
+def _out_dir():
+    """`-- --out DIR`: a trial's variant written there (tools/gate/factors.py `mouthmask*<name>` swaps it in); none:
+    the shipped folder."""
+    import sys
+    from pathlib import Path
+
+    args = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    return Path(args[args.index("--out") + 1]) if "--out" in args else paths.GENERATED / "skin"
 
 
 def main() -> None:
@@ -66,7 +82,18 @@ def main() -> None:
     to_centre /= np.linalg.norm(to_centre, axis=1, keepdims=True)
     facing = np.einsum("ij,ij->i", normals, to_centre) > 0.2
     lining = near & behind & facing
-    weight = lining.astype(np.float32)
+    stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
+    lips = stubble._lips_per_vertex(body)
+    # the corner's outer crease out, the mouth's inside kept (the lining inside the cheeks shows when it opens): near
+    # the lips' corners, only what lies within 1-3 mm of the corner's own depth fades
+    side = np.abs(co[:, 0] - centre[0])
+    reach = side[lips > 0.3].max()  # the lips' corners, out from the middle
+    corner_y = np.median(co[(lips > 0.3) & (side > reach - 0.002), 1])  # the corners' depth (the character faces -Y)
+    at_corner = np.clip((side - (reach - CORNER_FADE)) / CORNER_FADE + 0.5, 0.0, 1.0)
+    shallow = np.clip((corner_y + 0.003 - co[:, 1]) / 0.002, 0.0, 1.0)  # 1 at the corner's depth, 0 from 3 mm deeper
+    keep = 1.0 - at_corner * shallow
+    weight = (lining * keep * keep * (3 - 2 * keep)).astype(np.float32)
+    lining = weight > 0.5
     # softened over the neighbours (two rounds of averaging along the edges)
     edges = np.array([e.vertices for e in me.edges])
     for _ in range(2):
@@ -77,17 +104,17 @@ def main() -> None:
         np.add.at(cnt, edges[:, 1], 1)
         weight = np.maximum(weight, acc / cnt)
     image, count = _raster(me, weight)
-    out = paths.GENERATED / "skin" / "mouth.png"
+    folder = _out_dir()
+    folder.mkdir(parents=True, exist_ok=True)
+    out = folder / "mouth.png"
     maps.write_png(out, np.repeat(image[..., None], 3, axis=2))  # Blender's rows bottom first, as write_png expects
     print(f"wrote {out}: {int((weight > 0.5).sum())} lining vertices, {count} polygons, "
           f"{(image > 0.5).mean():.2%} of the head tile")
     seam = np.clip(1.0 - _distance_from(co, edges, lining) / (SEAM_MM / 1000.0), 0.0, 1.0) ** 2
     image, count = _raster(me, seam.astype(np.float32))
-    out = paths.GENERATED / "skin" / "mouth_seam.png"
+    out = folder / "mouth_seam.png"
     maps.write_png(out, np.repeat(image[..., None], 3, axis=2))
     print(f"wrote {out}: {int(((seam > 0) & ~lining).sum())} vertices in front of the lining, {count} polygons")
-    stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
-    lips = stubble._lips_per_vertex(body)
     # which lip: the side of the mouth's slit in the head tile's UVs - the lining's hole, long and thin, runs between
     # the two lips there (by height alone the lower lip's top, rolled up to the line, came out upper)
     uv = np.empty(len(me.loops) * 2, np.float32)
@@ -110,7 +137,7 @@ def main() -> None:
           f"{co[lip & (side * upper_sign > 0), 2].mean():.4f}), lower {int((lip & (side * upper_sign < 0)).sum())} "
           f"(mean z {co[lip & (side * upper_sign < 0), 2].mean():.4f})")
     image, count = _raster(me, upper)
-    out = paths.GENERATED / "skin" / "lips_upper.png"
+    out = folder / "lips_upper.png"
     maps.write_png(out, np.repeat(image[..., None], 3, axis=2))
     print(f"wrote {out}: {int((upper > 0.5).sum())} upper-lip vertices, {count} polygons")
 
