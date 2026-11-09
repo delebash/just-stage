@@ -48,13 +48,15 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
-- **2026-11-09 01:4x (the working doc's entries from 22:3x on; its verdict table updated 01:0x):** kept and verified
-  tonight - the feet (Thunk3D), the torso's debris fill (nipples, the sternum oval), the upper lashes smooth, the
-  lips (seam band, soft patchy lines), the eyes' surround, the chin's pores x0.6, the border detail fade, the stubble
-  in patches; ruled out with measures - the face/body colour gap (a bad mask of mine), the ears' depth, the eye rim's
-  tint. Running: `scratchpad/batch_end2.sh` (library rebuilt, final renders, every suite). Waiting for the user: the
-  hair cut's download (VincentFreelance, CC BY 4.0, glTF 18 MB - the standing go in TASKS is noted; the per-download
-  rule still asks), the face relief (paid scan or artist).
+- **2026-11-09 02:3x (the working doc's entries from 22:3x on; its verdict table current):** kept and verified tonight
+  - the feet (Thunk3D), the torso (debris fill: nipples, the sternum oval; the scanned man's scar out), the upper
+  lashes smooth, the lips (seam band, soft patchy lines, the upper lip deeper red), the eyes' surround, the chin's pores
+  x0.6, the border detail fade, the stubble in patches; ruled out with measures - the face/body colour gap (a bad mask
+  of mine), the ears' depth, the eye rim's tint, the neck patch as beard shadow. Open, minor: the lower lashes' kinks,
+  the New human's neck patch and cheek blotches (the composition's coverage), Amara's chest seam (her legacy skin), the
+  ears' darkness. Running: the end run (unit, tools, Blender). Waiting for the user: the hair cut's download
+  (VincentFreelance, CC BY 4.0, glTF 18 MB - the standing go in TASKS noted; the per-download rule still asks), the
+  face relief (a paid scan or an artist).
 - **2026-11-08 22:3x: the feet work** - Thunk3D's CC BY scan as the "feet" part on UDIM 1003 + 1004 (most of our foot
   is on 1003; the first bake was 1004 only), the wrap smoothed, the debris limit 0.8: the foot's top shows real tendons
   and veins at x1 (working doc, "21:47-, the feet"). Into the product: `build_skins.BODY_PARTS` + "feet", ATTRIBUTION;
