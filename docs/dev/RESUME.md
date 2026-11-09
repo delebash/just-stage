@@ -48,6 +48,14 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
+  outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
+  standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured
+  dark skin within ~3 delta-E, no calibration job (RESEARCH 14.10 corrected); VincentFreelance's free cuts
+  (`.dev/downloads/vincent_hair_2026-11-09/`, CC BY 4.0; male collection 01 split per bust into `m01_busts.blend`).
+  Running: the cut fitted onto the gate's man (`scratchpad/batch_vfhair.sh`, `vfhair*B4[*tex]`). Global rule added:
+  while a job runs, work the next piece; a blocking question goes first. The closed lid's streaks: blink-driven relief
+  (pixel-equal open eye) not enough, the colour smoothing made a plastic sheet - removed, open.
 - **2026-11-09 14:0x:** committed since 10:1x - the lips a soft sheen 0.4 / 0.2 (ab851d6), toenails a short plate on
   top of the toe (7eead78), the tear film faded out toward the lids (e1fd9f8), the lids' stretched margins smoothed
   (4758683); tried and removed: the closed lid's fold mask (the open lid went glossy - the working doc's 11:18).

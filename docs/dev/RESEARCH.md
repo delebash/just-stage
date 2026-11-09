@@ -2860,7 +2860,24 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
 
   The library's eight tones solve L* 74 down to 25 in steps of 7: melanin 0.00457, 0.01239, 0.02164, 0.03288,
   0.04705, 0.06597, 0.09366, 0.14102. *Computed, 2026-11-04.*
-- **The model's dark end greys - past the data it was fitted on** (2026-11-09, the own-content proof: the library's
+- **The model's dark end - measured against ISSA: it does NOT grey; real dark skin is low in chroma** (2026-11-09
+  16:4x, corrected below; the first part of this note, from the morning, claimed the opposite and was wrong):
+  - **ISSA, read** (`.dev/downloads/issa_2026-11-09/ISSA_17_Jan_2025_Yan_Lu.xlsx`, CC BY 4.0, figshare 52744241,
+    9,320,520 bytes; `scratchpad/issa_fit.py`): 15,256 records; 941 African (146 people, origin UK3, SCI, 400-700 nm at
+    10 nm), L* p5 / p50 / p95 30.0 / 38.9 / 53.0, min 22.7; 666 records under L* 40 in all.
+  - **The model fits real dark spectra** (melanin, eumelanin share and blood free, backscatter 0.22 kept, least
+    squares 400-700 nm as calibrate_skin.py): RMS median 0.0020 at L* 20-35, 0.0022 at 35-40, 0.0031 at 40-45 (NIST's
+    lighter people: 0.0098 mean). Fitted eumelanin share 0.86-1.0 for dark skin (the slider's 0.6).
+  - **Measured dark skin's colour** (median a* / b*): L* 20-30 6.6 / 6.5; 30-35 8.6 / 9.6; 35-40 10.3 / 13.5; 40-45
+    11.3 / 17.0; 45-55 11.4 / 19.4. Chroma falls with lightness - Everett 2012's b* ~20 holds near L* 46 only.
+  - **The tone slider (eumelanin 0.6, blood 0.016) at each measured person's own L*, minus the measurement**: da*
+    +2.0 to +2.2 and db* +1.0 to +3.7 at L* 20-55 (delta-E ab median 2.6-4.5) - a touch WARMER and more saturated
+    than real skin, not ashy. So: no recalibration needed for L* 23-55. The Heavy woman's ashy look came from her
+    old preset (melanin 0.25, L* 17.6) - darker than any measured person (ISSA's darkest 22.7); fixed (0.1, L* 31).
+  - Open, small: the slider's dark end ~2-4 delta-E too warm (a fitted eumelanin share by melanin would close it -
+    0.86-1.0 against 0.6); below L* 22.7 no data.
+  - The morning's note, kept as the record (its hue claim wrong; its numbers right):
+- *(superseded)* **The model's dark end greys - past the data it was fitted on** (2026-11-09, the own-content proof: the library's
   Heavy woman, preset melanin 0.25, read ashy; `scratchpad/dark_sweep.py`, `dark_parts.py`; computed):
   - The model at eumelanin 0.6, blood 0.016 (L* / a* / b*, R/G in linear Rec.709): melanin 0.05 gives 44.8 / 13.6 /
     19.1, R/G 2.11; 0.07 gives 37.8 / 12.5 / 15.8, 2.13; 0.10 gives 30.8 / 9.6 / 11.8, 1.97; 0.14 gives 25.1 / 6.3 /
@@ -2881,8 +2898,7 @@ Sapiens2 pose weights (only `sapiens2_1b_normal`), RealDenseFace's face-box weig
     (read through Figshare's API 2026-11-09): **CC BY 4.0**, one spreadsheet `ISSA_17_Jan_2025_Yan_Lu.xlsx` (9.3 MB),
     15,256 records of 2,113 people from eleven datasets in eight countries (UK, Spain, China, Japan, Pakistan,
     Thailand, Iraq, Saudi Arabia), spectra 360-780 nm, CIE colorimetry under D65 / 1931 2°, ethnicity, sex, age group,
-    body site and instrument (specular included or not) per record. Not downloaded yet. Unread: how many dark-skinned
-    (African) people it holds - the UK sets are the likely source.
+    body site and instrument (specular included or not) per record. Downloaded 16:40 - read: see the note above.
   - Queries run (2026-11-09): "darkest skin colour measured CIELAB L* a* b* African spectrophotometer study" (Wang et
     al. CIC 2015 - its PDF's text is in a custom font encoding, unreadable here; Wright et al. 2015, South Africa, ITA
     only in the abstract); "skin reflectance spectra Fitzpatrick type VI dataset" (ISSA; a 29-person hyperspectral

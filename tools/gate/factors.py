@@ -1809,6 +1809,308 @@ def browedge(built: dict, sd: float) -> None:
 MASK_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "masks"
 
 
+VF_BUSTS = Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "vincent_hair_2026-11-09" / "m01_busts.blend"
+
+
+def vfhair(built: dict, bust: str, textured: bool = False, alpha: str = "") -> None:
+    """An artist's free cut on our head (2026-11-09): VincentFreelance's "FREE Male Fashion Hair collection 01" (CC BY
+    4.0, Sketchfab 2735370f...; split per bust into `.dev/downloads/.../m01_busts.blend`: vf_hair_<bust>, vf_head_<bust>)
+    - its source head's cranium (the top 8 cm) fitted to ours by scale per axis and offset, the cards moved with it,
+    any card point inside our skin pushed 1 mm out; our scalp groom hidden. The cards plain (a first look at the shape:
+    the creator's strand textures are not free). A shape: --alone."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+
+    body = built["body"]
+    with bpy.data.libraries.load(str(VF_BUSTS), link=False) as (src, dst):
+        dst.objects = [n for n in src.objects if n in (f"vf_hair_{bust}", f"vf_head_{bust}")]
+    hair, head = (next(o for o in dst.objects if o.name.startswith(k)) for k in ("vf_hair", "vf_head"))
+    scene = bpy.context.scene
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = body.evaluated_get(dg)
+    mesh = ev.to_mesh()
+    ours = np.array([body.matrix_world @ v.co for v in mesh.vertices])
+    ev.to_mesh_clear()
+    theirs = np.array([head.matrix_world @ v.co for v in head.data.vertices])
+
+    def cap(points, centre_x):
+        top = points[:, 2].max()
+        near = np.abs(points[:, 0] - centre_x) < 0.12
+        return points[near & (points[:, 2] > top - 0.08)]
+
+    ours_cap = cap(ours, float(np.median(ours[ours[:, 2] > ours[:, 2].max() - 0.05, 0])))
+    theirs_cap = cap(theirs, float(np.median(theirs[:, 0])))
+    lo_o, hi_o, lo_t, hi_t = ours_cap.min(0), ours_cap.max(0), theirs_cap.min(0), theirs_cap.max(0)
+    sx, sy = (hi_o[0] - lo_o[0]) / (hi_t[0] - lo_t[0]), (hi_o[1] - lo_o[1]) / (hi_t[1] - lo_t[1])
+
+    def nose_tip(points):  # the head's most forward point (the character faces -Y), the head only
+        head_pts = points[points[:, 2] > points[:, 2].max() - 0.25]
+        return head_pts[np.argmin(head_pts[:, 1])]
+
+    nose_o, nose_t = nose_tip(ours), nose_tip(theirs)
+    sz = (hi_o[2] - nose_o[2]) / (hi_t[2] - nose_t[2])  # the face's height: the cut's hairline lands on ours
+    scale = np.array([sx, sy, sz])
+    anchor_t = np.array([(lo_t[0] + hi_t[0]) / 2, (lo_t[1] + hi_t[1]) / 2, hi_t[2]])
+    anchor_o = np.array([(lo_o[0] + hi_o[0]) / 2, (lo_o[1] + hi_o[1]) / 2, hi_o[2]])
+    # the source bust's brow cards out (in front, 2.5-6.5 cm above its nose tip, near the face's middle)
+    import bmesh
+
+    hp = np.array([hair.matrix_world @ v.co for v in hair.data.vertices])
+    ed = np.array([e.vertices for e in hair.data.edges])
+    lab = np.arange(len(hp))
+    while True:
+        mn = np.minimum(lab[ed[:, 0]], lab[ed[:, 1]])
+        new = lab.copy()
+        np.minimum.at(new, ed[:, 0], mn)
+        np.minimum.at(new, ed[:, 1], mn)
+        new = new[new]
+        if np.array_equal(new, lab):
+            break
+        lab = new
+    _parts, part_of, counts = np.unique(lab, return_inverse=True, return_counts=True)
+    cent = np.zeros((len(counts), 3))
+    np.add.at(cent, part_of, hp)
+    cent /= counts[:, None]
+    mid_x = float(np.median(theirs[theirs[:, 2] > hi_t[2] - 0.05, 0]))
+    brow = ((cent[:, 1] < nose_t[1] + 0.04) & (cent[:, 2] > nose_t[2] + 0.025) & (cent[:, 2] < nose_t[2] + 0.065)
+            & (np.abs(cent[:, 0] - mid_x) < 0.07))  # fmt: skip
+    drop = brow[part_of]
+    bm = bmesh.new()
+    bm.from_mesh(hair.data)
+    bm.verts.ensure_lookup_table()
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if drop[v.index]], context="VERTS")
+    bm.to_mesh(hair.data)
+    bm.free()
+    pts = np.array([hair.matrix_world @ v.co for v in hair.data.vertices])
+    pts = (pts - anchor_t) * scale + anchor_o
+    tree = BVHTree.FromObject(body, dg)
+    inv = np.array(body.matrix_world.inverted())
+    fwd = np.array(body.matrix_world)
+    pushed = 0
+    for i, p in enumerate(pts):
+        q = inv[:3, :3] @ p + inv[:3, 3]
+        near, normal = (np.array(x) for x in tree.find_nearest(Vector(q))[:2])
+        if (q - near) @ normal < 0.001:
+            q = near + 0.001 * normal
+            pts[i] = fwd[:3, :3] @ q + fwd[:3, 3]
+            pushed += 1
+    hair.matrix_world = Matrix_identity()
+    hair.data.vertices.foreach_set("co", pts.astype(np.float32).ravel())
+    hair.data.update()
+    scene.collection.objects.link(hair)
+    bpy.data.objects.remove(head)
+    for o in bpy.data.objects:  # our scalp groom out of the way
+        if o.juststage.part == "scalp":
+            o.hide_render = True
+    hair.data.materials.clear()
+    if textured or alpha:
+        _vf_card_material(hair, anchor_o - np.array([0.0, 0.0, 0.09]), alpha)  # appends the cards' and the cap's
+    else:
+        mat = bpy.data.materials.new("vf plain")
+        bsdf = mat.node_tree.nodes.get("Principled BSDF")
+        bsdf.inputs["Base Color"].default_value = (0.045, 0.03, 0.022, 1.0)
+        bsdf.inputs["Roughness"].default_value = 0.45
+        hair.data.materials.append(mat)
+    built.setdefault("objects", []).append(hair)
+    print("VF HAIR", bust, "scale", np.round(scale, 3), len(pts), "points,", pushed, "pushed out of the skin,",
+          int(brow.sum()), "brow cards dropped", flush=True)
+
+
+def _vf_card_material(hair, head_centre, alpha_name: str = "") -> bpy.types.Material:
+    """Each card's own length (vf_t, 0 at the root) and width (vf_s) as attributes, and a card material from them: strands
+    along the card (a stretched noise), alpha-cut, faded at the tip and the edges; brown, darker at the root."""
+    me = hair.data
+    n = len(me.vertices)
+    co = np.empty(n * 3, np.float32)
+    me.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    ed = np.empty(len(me.edges) * 2, np.int64)
+    me.edges.foreach_get("vertices", ed)
+    ed = ed.reshape(-1, 2)
+    lab = np.arange(n)
+    while True:  # each card a loose part (label propagation with pointer jumping)
+        m = np.minimum(lab[ed[:, 0]], lab[ed[:, 1]])
+        new = lab.copy()
+        np.minimum.at(new, ed[:, 0], m)
+        np.minimum.at(new, ed[:, 1], m)
+        new = new[new]
+        if np.array_equal(new, lab):
+            break
+        lab = new
+    t = np.zeros(n, np.float32)
+    w = np.zeros(n, np.float32)
+    for part in np.unique(lab):
+        idx = np.where(lab == part)[0]
+        if len(idx) < 3:  # a stray point or edge: no card
+            continue
+        pts = co[idx]
+        c = pts.mean(0)
+        _u, _sv, vt = np.linalg.svd(pts - c, full_matrices=False)
+        along, across = (pts - c) @ vt[0], (pts - c) @ vt[1]
+        if np.linalg.norm(pts[np.argmax(along)] - head_centre) < np.linalg.norm(pts[np.argmin(along)] - head_centre):
+            along = -along  # the root (the end nearer the head) at 0
+        span = max(along.max() - along.min(), 1e-6)
+        t[idx] = (along - along.min()) / span
+        half = max(np.abs(across).max(), 1e-6)
+        w[idx] = across / half
+    for name, values in (("vf_t", t), ("vf_s", w)):
+        attr = me.attributes.get(name) or me.attributes.new(name, "FLOAT", "POINT")
+        attr.data.foreach_set("value", values)
+    mat = bpy.data.materials.new("vf hair (cards)")
+    nt = mat.node_tree
+    nodes, links = nt.nodes, nt.links
+    bsdf = nodes.get("Principled BSDF")
+    at_t, at_s = (nodes.new("ShaderNodeAttribute") for _ in range(2))
+    at_t.attribute_name, at_s.attribute_name = "vf_t", "vf_s"
+    vec = nodes.new("ShaderNodeCombineXYZ")  # strands: fine across the card, long along it
+    links.new(_mul(nt, at_s.outputs["Fac"], 18.0), vec.inputs["X"])
+    links.new(_mul(nt, at_t.outputs["Fac"], 0.6), vec.inputs["Y"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value, noise.inputs["Detail"].default_value = 1.0, 3.0
+    links.new(vec.outputs["Vector"], noise.inputs["Vector"])
+    strands = nodes.new("ShaderNodeMapRange")
+    strands.inputs["From Min"].default_value, strands.inputs["From Max"].default_value = 0.42, 0.56
+    links.new(noise.outputs["Fac"], strands.inputs["Value"])
+    tip = nodes.new("ShaderNodeMapRange")  # 1 to 0.7 of the length, fading to 0 at the tip
+    tip.inputs["From Min"].default_value, tip.inputs["From Max"].default_value = 1.0, 0.7
+    links.new(at_t.outputs["Fac"], tip.inputs["Value"])
+    edge_abs = nodes.new("ShaderNodeMath")
+    edge_abs.operation = "ABSOLUTE"
+    links.new(at_s.outputs["Fac"], edge_abs.inputs[0])
+    edge = nodes.new("ShaderNodeMapRange")
+    edge.inputs["From Min"].default_value, edge.inputs["From Max"].default_value = 1.0, 0.75
+    links.new(edge_abs.outputs[0], edge.inputs["Value"])
+    alpha = _mul(nt, _mul(nt, strands.outputs["Result"], tip.outputs["Result"]), edge.outputs["Result"])
+    if alpha_name:  # a CC0 strand sheet instead: across the card its lit width, along it root (top) to tip
+        img = nodes.new("ShaderNodeTexImage")
+        img.image = bpy.data.images.load(str(OGA_ALPHAS / f"{alpha_name}.png"), check_existing=True)
+        uv = nodes.new("ShaderNodeCombineXYZ")
+        across01 = nodes.new("ShaderNodeMapRange")
+        across01.inputs["From Min"].default_value, across01.inputs["From Max"].default_value = -1.0, 1.0
+        across01.inputs["To Min"].default_value, across01.inputs["To Max"].default_value = 0.10, 0.78
+        links.new(at_s.outputs["Fac"], across01.inputs["Value"])
+        along01 = nodes.new("ShaderNodeMapRange")
+        along01.inputs["To Min"].default_value, along01.inputs["To Max"].default_value = 0.98, 0.28
+        links.new(at_t.outputs["Fac"], along01.inputs["Value"])
+        links.new(across01.outputs["Result"], uv.inputs["X"])
+        links.new(along01.outputs["Result"], uv.inputs["Y"])
+        links.new(uv.outputs["Vector"], img.inputs["Vector"])
+        alpha = img.outputs["Alpha"]
+    links.new(alpha, bsdf.inputs["Alpha"])
+    ramp = nodes.new("ShaderNodeMix")  # darker at the root, lighter to the tip
+    ramp.data_type = "RGBA"
+    links.new(at_t.outputs["Fac"], ramp.inputs["Factor"])
+    next(i for i in ramp.inputs if i.identifier == "A_Color").default_value = (0.025, 0.016, 0.011, 1.0)
+    next(i for i in ramp.inputs if i.identifier == "B_Color").default_value = (0.075, 0.052, 0.036, 1.0)
+    links.new(next(o for o in ramp.outputs if o.identifier == "Result_Color"), bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.38
+    mat.surface_render_method = "DITHERED"
+    # the base cap - the largest part, a shell over the cranium - is no card: darkened skin under the cards (a
+    # second material on its faces), so it reads as the scalp seen through the hair, not a band
+    sizes = np.bincount(np.searchsorted(np.unique(lab), lab))
+    cap_label = np.unique(lab)[np.argmax(sizes)]
+    cap_mat = bpy.data.materials.new("vf hair (cap)")
+    cap_bsdf = cap_mat.node_tree.nodes.get("Principled BSDF")
+    cap_bsdf.inputs["Base Color"].default_value = (0.05, 0.032, 0.024, 1.0)
+    cap_bsdf.inputs["Roughness"].default_value = 0.7
+    me.materials.append(mat)
+    me.materials.append(cap_mat)
+    poly_v = np.empty(len(me.polygons), np.int64)
+    me.polygons.foreach_get("loop_start", poly_v)
+    loop_v = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_v)
+    on_cap = (lab[loop_v[poly_v]] == cap_label).astype(np.int32)
+    me.polygons.foreach_set("material_index", on_cap)
+    print("VF CARDS", len(np.unique(lab)), "cards; the cap", int(sizes.max()), "verts,", int(on_cap.sum()), "faces", flush=True)
+    return mat
+
+
+OGA_ALPHAS = Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "other_samples" / "oga_hair_alphas" / "x"
+
+
+def _mul(nt, a, b):
+    m = nt.nodes.new("ShaderNodeMath")
+    m.operation = "MULTIPLY"
+    for k, v in enumerate((a, b)):
+        if isinstance(v, float):
+            m.inputs[k].default_value = v
+        else:
+            nt.links.new(v, m.inputs[k])
+    return m.outputs[0]
+
+
+def Matrix_identity():
+    from mathutils import Matrix
+
+    return Matrix.Identity(4)
+
+
+def lidblink(built: dict, stem: str) -> None:
+    """The relief layers (pores, microrelief, the scans' relief) faded inside each eye's blink stretch
+    (`.dev/gate/masks/<stem>.png`: the left eye's red, the right's green - tools/make_lid_mask.py) by that eye's own blink
+    key, through drivers - MetaHuman's and CC5's expression-driven detail: the open eye unchanged, the closing lid's
+    stretched detail gone (2026-11-09: a mask applied always made the open lid smooth and glossy)."""
+    maps = _maps()
+    body = built["body"]
+    keys = body.data.shape_keys
+    image = bpy.data.images.load(str(MASK_TRIALS / f"{stem}.png"), check_existing=False)
+    image.colorspace_settings.name = "Non-Color"
+    n = 0
+    for mat, _bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        nodes, links = nt.nodes, nt.links
+        tex = nodes.new("ShaderNodeTexImage")
+        tex.image, tex.extension = image, "CLIP"
+        links.new(nodes[maps.NODE + "uv"].outputs["UV"], tex.inputs["Vector"])
+        sep = nodes.new("ShaderNodeSeparateColor")
+        links.new(tex.outputs["Color"], sep.inputs["Color"])
+        total = None
+        for channel, key in (("Red", "eyeBlinkLeft"), ("Green", "eyeBlinkRight")):
+            value = nodes.new("ShaderNodeValue")
+            value.name = f"lidblink_{key}"
+            fc = value.outputs[0].driver_add("default_value")
+            fc.driver.type = "AVERAGE"
+            var = fc.driver.variables.new()
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "KEY"
+            var.targets[0].id = keys
+            var.targets[0].data_path = f'key_blocks["{key}"].value'
+            m = nodes.new("ShaderNodeMath")
+            m.operation = "MULTIPLY"
+            links.new(sep.outputs[channel], m.inputs[0])
+            links.new(value.outputs[0], m.inputs[1])
+            if total is None:
+                total = m.outputs[0]
+            else:
+                a = nodes.new("ShaderNodeMath")
+                a.operation = "ADD"
+                links.new(total, a.inputs[0])
+                links.new(m.outputs[0], a.inputs[1])
+                total = a.outputs[0]
+        on_head = nodes.new("ShaderNodeMath")
+        on_head.operation = "MULTIPLY"
+        links.new(total, on_head.inputs[0])
+        links.new(nodes[maps.NODE + "mouth_on_head"].outputs["Value"], on_head.inputs[1])
+        keep = nodes.new("ShaderNodeMath")
+        keep.operation, keep.use_clamp = "SUBTRACT", True
+        keep.inputs[0].default_value = 1.0
+        links.new(on_head.outputs[0], keep.inputs[1])
+        for key in ("pore", "micro"):
+            depth = nodes[maps.NODE + f"{key}_depth"]
+            src = depth.inputs[0].links[0].from_socket
+            cut = nodes.new("ShaderNodeMath")
+            cut.operation = "MULTIPLY"
+            links.new(src, cut.inputs[0])
+            links.new(keep.outputs[0], cut.inputs[1])
+            links.new(cut.outputs[0], depth.inputs[0])
+        relief = nodes[maps.NODE + "relief_off_stretched"]
+        links.new(keep.outputs[0], relief.inputs[0])  # its number was 1: the scans' relief x keep
+        mod.sync_live(mat)
+        n += 1
+    bpy.context.view_layer.update()
+    print("LID BLINK", stem, "on", n, "skins", flush=True)
+
+
 def maskshow(built: dict, stem: str) -> None:
     """A head-tile mask (`.dev/gate/masks/<stem>.png`) painted red over the skin's colour - where a mask lands on the face
     (2026-11-09: the lids' stretch mask)."""
@@ -3159,6 +3461,12 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("vfhair*"):  # vfhair*B4[*tex] (a bust of VincentFreelance's male collection 01) - --alone
+        bits = name.split("*")
+        return lambda built: vfhair(built, bits[1], textured=len(bits) > 2 and bits[2] == "tex",
+                                    alpha=f"hair{bits[2][3:]}" if len(bits) > 2 and bits[2].startswith("oga") else "")
+    if name.startswith("lidblink*"):  # lidblink*lid_blink (the relief faded by each eye's blink in a mask's R / G)
+        return lambda built: lidblink(built, name.split("*", 1)[1])
     if name.startswith("maskshow*"):  # maskshow*stretched (a head-tile mask under .dev/gate/masks painted red)
         return lambda built: maskshow(built, name.split("*", 1)[1])
     if name.startswith("tearfade*"):  # tearfade*0.7 (the film fades out from this share to its lid-side rim)
