@@ -178,6 +178,23 @@ def redmottle(built: dict, k: float) -> None:
     _rewrite_colour(built, change)
 
 
+def regioncontrast(built: dict, k: float) -> None:
+    """The head tile colour's regional variation (5-60 mm: redder cheeks, nose and ears, darker lids) scaled by `k` in
+    log space - our composed skins average 2-3 scanned people's regional colour (`skin_base.compose`, "colour": "scans"),
+    which washes their zones out; the layer diagnostic (19:0x) showed HD Aaron's skin colour on our head takes much of
+    the doll look away. The composition's own content, boosted - a trial of the amount before the compose changes."""
+    def change(rgb, mm_per_px):
+        log = np.log(np.clip(rgb, 1e-4, 1.0))
+        band = np.stack([_fft_blur(log[..., c], 5.0 / mm_per_px / 2.0) - _fft_blur(log[..., c], 60.0 / mm_per_px / 2.0)
+                         for c in range(3)], -1)  # fmt: skip
+        skin = rgb.sum(-1) > 0.02
+        out = np.exp(log + (k - 1.0) * band)
+        return np.where(skin[..., None], np.clip(out, 0.0, 1.0), rgb)
+
+    _rewrite_colour(built, change)
+    print("REGION CONTRAST x", k, flush=True)
+
+
 def handspart(built: dict, strength: float = 1.0, colour: bool = False) -> None:
     """A body part's donor relief (`tools/body_scan.py texture`: `body_1003_hands_*`) over the skin's own on the arm
     tile, by its weight, in the shader - nothing rebuilt before the part is measured. `strength` scales its tilt;
@@ -2711,6 +2728,8 @@ def factor(name: str):
     if name.split("*")[0] in EYE_SLIDERS:  # eyebag*0 (the slider's value, both eyes)
         key, value = name.split("*")
         return lambda built: eye_slider(built, key, float(value))
+    if name.startswith("regioncontrast*"):  # regioncontrast*1.6 (the colour's 5-60 mm variation scaled)
+        return lambda built: regioncontrast(built, float(name.split("*")[1]))
     if name.startswith("redmottle"):  # redmottle*1.3 (the red variation at 0.5-5 mm scaled)
         return lambda built: redmottle(built, float(name.split("*")[1]))
     if name.startswith("poretile"):  # poretile*aaron_cheek (the candidate tile's stem)

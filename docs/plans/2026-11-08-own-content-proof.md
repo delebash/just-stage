@@ -258,6 +258,17 @@ booked with just-direct-mocap.
   trial only confirmed the haze is the model: **scalp, brows, stubble and lashes in the live view need the cards - the
   route, an asset job of its own.**
 - Next (`batch_best.sh`): today's best - every kept change on the gate's man at once - beside HD Aaron, for the user.
+- **19:40, today's best (`.dev/gate/parts/2026-11-08best`, `scratchpad/today_best_face.png`, sent to the user):**
+  against this morning it reads more like a person - dark real brows, lighter stubble, a smoother forehead; against HD
+  Aaron still clearly made: the grey helmet hair, the flat peach skin, the pink lips. The regional tint at its new hue
+  (k 1) is subtle - a little more life round the eyes and nose. Caught: the regrown scalp kept the file's existing scalp
+  mask (two rings, packed with the library's groom - `scalp_mask` returns it by name), so the higher hairline is not in
+  this render; a fresh character and the library rebuild make the mask at one ring.
+- **What is left, from the layer diagnostic (each is content we make; none shown impossible):** (1) the live-view hair
+  - cards from our own strands (the approved rule) and an artist's cut; (2) the skin's regional colour - his skin on our
+  head proved its weight; ours comes from the scan composition (`tools/face_test/skin_base.py` compose), where the
+  regional redness and the eye zone (EYE_DARK) are set; (3) the lips' colour (darker to the seam) and the lip lines
+  in the product (UV space).
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
