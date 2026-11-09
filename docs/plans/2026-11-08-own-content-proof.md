@@ -307,6 +307,25 @@ booked with just-direct-mocap.
   **The route works - a definition slider from this CC0 map, its seams fixed (the border blend the body tiles use).**
   Its face has no wrinkles worth taking (both MINDFRONT maps looked at: the head is pores and noise).
 
+- **20:42, the lip lines IN THE PRODUCT (`maps.LIP_LINES`, on hm08's own UVs - `.dev/gate/parts/2026-11-08lipprod`,
+  `row_lipprod.png`): the library character's lips, no trial, show fine uneven vertical lines - they read as lips.**
+  Committed (2b5d1fd) with its test; the colour to the seam still open. Next: the face's wrinkle source - Lee
+  Perry-Smith's scan (CC BY, in our scan set as `lps`, known for its fine lines) as the one relief source
+  (`batch_relief3.sh`, rendered through the same `--skin` path as `shippedskin`).
+
+- **20:45-20:58, the face's wrinkle source, the last free routes:** Lee Perry-Smith's relief (CC BY, `lps`, the
+  same `--skin` path, `row_relief3_*.png`) - no visible change, as the other two scans. Our own made wrinkle layer
+  (`tools/make_wrinkles.py`: forehead lines, the frown's, crow's feet, the lower lid's crease, the nose-to-mouth fold,
+  from the face's landmarks, rays onto the head tile's skin faces only - hm08's helpers took the first map's rays; the
+  `wrinkles*w1*1 / *2` trial, `.dev/gate/parts/2026-11-08wrinkles`, `row_wr_*.png`): lines show at x2 - frown lines,
+  crow's feet, faint forehead lines - but read drawn-on, and the face still reads made: his relief is irregular creasing
+  all over, not a few grooves. Not kept. RESEARCH §14.7 (re-checked 2026-11-08) found no free scanned wrinkle-rich face
+  maps (FaceScape non-commercial, ICT-3DRFE behind a EULA, Reallusion's own).
+  **FACE SKIN RELIEF - CAN'T WITH FREE ASSETS IN HAND. Missing: a wrinkle-rich face relief map at HD Aaron's level
+  (his relief on our head is what reads real). Tried: three free scans' relief (hsr0040, hsr0112 aged 60, lps), our
+  relief boosted (11-07), a made wrinkle layer. Left, outside "free": a paid scan, an artist's sculpt; or a research pass
+  on a skin-buckling simulation (RESEARCH §14.7's unexplored route).**
+
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
 
 | Part | Verdict | Kept in the product | What's missing / the route |

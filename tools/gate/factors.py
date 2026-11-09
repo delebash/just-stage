@@ -1760,6 +1760,38 @@ def eyedark(built: dict, k: float) -> None:
     print("EYE DARK tint", tint, "on", n, "skins (film and live)", flush=True)
 
 
+WRINKLE_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "wrinkles"
+
+
+def wrinkles(built: dict, stem: str, strength: float = 1.0) -> None:
+    """Our own wrinkle layer (`tools/make_wrinkles.py`: forehead lines, the frown's, crow's feet, the lower lid's crease,
+    the nose-to-mouth fold - grooves drawn in the head tile's UVs from the face's landmarks) as a bump at the end of the
+    skin's normal chain, sampled through the region map's own head-tile coordinates; its depth x `strength`. 20:4x: no
+    free scan gives wrinkles at HD Aaron's strength, and his relief is what makes his skin read real on our head."""
+    maps = _maps()
+    img = bpy.data.images.load(str(WRINKLE_TRIALS / stem / "wrinkles.png"), check_existing=False)
+    img.colorspace_settings.name = "Non-Color"
+    n = 0
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        regions = nt.nodes.get(maps.NODE + "face_regions")
+        if regions is None or not regions.inputs["Vector"].is_linked:
+            continue
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image, tex.interpolation, tex.extension = img, "Cubic", "EXTEND"
+        nt.links.new(regions.inputs["Vector"].links[0].from_socket, tex.inputs["Vector"])
+        bump = nt.nodes.new("ShaderNodeBump")
+        bump.inputs["Strength"].default_value = 1.0
+        bump.inputs["Distance"].default_value = 0.0004 * strength  # make_wrinkles.DEPTH_M
+        nt.links.new(tex.outputs["Color"], bump.inputs["Height"])
+        if bsdf.inputs["Normal"].is_linked:
+            nt.links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
+        nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+        mod.sync_live(mat)
+        n += 1
+    print("WRINKLES", stem, "x", strength, "on", n, "skins (film and live)", flush=True)
+
+
 def aoshade(built: dict, strength: float, distance_mm: float = 15.0) -> None:
     """The skin darkened in its creases by Blender's Ambient Occlusion shader node (EEVEE's horizon scan, Cycles' AO) -
     the plan's §10 "Cavity: TO BUILD (flat 1.0 on every composed skin today)" and CC5's own AO map. 2026-11-08: with the
@@ -2690,6 +2722,9 @@ def factor(name: str):
         return lambda built: mhbody(built, float(name.split("*")[1]))
     if name.startswith("regiontint"):  # regiontint, regiontint*1.5 (how far from 1)
         return lambda built: regiontint(built, *(float(x) for x in name.split("*")[1:2]))
+    if name.startswith("wrinkles*"):  # wrinkles*w1[*1.5] (the map's folder under .dev/gate/wrinkles, its strength)
+        stem, *k = name.split("*")[1:]
+        return lambda built: wrinkles(built, stem, *(float(x) for x in k))
     if name.startswith("aoshade*"):  # aoshade*0.6[*15] (strength, reach in mm)
         return lambda built: aoshade(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("eyedark*"):  # eyedark*0.8 (the tint's level round the eyes)
