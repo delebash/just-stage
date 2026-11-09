@@ -434,7 +434,9 @@ booked with just-direct-mocap.
   17 mm of a pupil, softened) - not the trial's ramps on the region map's channel values (they would break when a
   region's factor is retuned); run into the scratchpad, its face_regions / face_share identical to the shipped ones,
   only the new mask copied in (1.7% of the head tile). Applied between `batch_lash_lip.sh`'s renders and its suite
-  (one suite for the lashes, the lips and the eyes); rendered after by `batch_eyelayer.sh`.
+  (one suite for the lashes, the lips and the eyes); rendered after by `batch_eyelayer.sh`. **23:5x, in the product
+  (`row_eyelayer_{eye,face}.png`): the lids and under-eyes darker, the eyes set in - as the trial; its test passed in
+  the 23:36 suite (195 passed). Kept.**
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -474,12 +476,12 @@ booked with just-direct-mocap.
 | Stubble | close | 100 a cm2 | the beard region higher on the cheeks than his |
 | Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
 | Lips | close | the lines (UV) | the colour darker to the seam |
-| Eyes | close | - | the lids' surround (with the face colour) |
+| Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`) | the lid's rim (shape and glow, not colour); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | - | a little large and white beside his |
 | Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask; skin-maps tests 18 passed) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault) |
 | Nails | close | - | - |
 | Hands | close | - | tone (a setting) |
-| Torso | not reached as built | - | definition: MakeHuman's CC0 community normal works as a slider (its seams to fix); two light blotches by the sternum, a patch on the neck (the scan composition) |
+| Torso | **close (23:2x)** - the oval by the sternum gone, the nipples' bumps back | the body relief's debris filled (`body_scan._debris_filled`), Artec's debris limit 0.8 | definition (MakeHuman's CC0 normal as a slider, its seams); a small mark below the navel; the neck patch |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
 | **Whole character** | **not CC5 quality with free assets** | the above | the deciding gap: the face's mid-scale relief (can't, free); then the live-view hair (cards + a cut - a route) |
 
