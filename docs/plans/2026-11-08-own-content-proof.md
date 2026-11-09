@@ -536,7 +536,8 @@ booked with just-direct-mocap.
   (`scar_dry/scar_compare.png`): Telea drew a star of flat wedges; a 3 mm texture left a smooth disc with a rim; 14 mm
   left the scar's end; the fade inside the mark leaked its dark back; the copy's offset overshot the image (its test
   caught the last two). Its test in `tests/tools/test_body_scan.py` (5 passed). `batch_scar.sh`: posted, skins and
-  characters rebuilt, the torso views.
+  characters rebuilt, the torso views. **02:31 (`row_scar.png`): the scar gone on the Average man and the Older man,
+  the skin there continuous - KEPT.**
 - **02:2x, the New human's neck patch (`row_final2_three_quarter.png`):** a grey-brown smudge on the front of the neck
   (mapped: 0.024, -0.077, 1.47 m - the throat under the chin; a scan's coverage on the head tile's neck island, its own
   tone against the fill). Guessed the beard shadow (the skin's beard region runs down the throat past the stubble's
@@ -588,7 +589,7 @@ booked with just-direct-mocap.
 | Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask; skin-maps tests 18 passed) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault) |
 | Nails | close | - | - |
 | Hands | close | - | tone (a setting) |
-| Torso | **close (23:2x)** - the oval by the sternum gone, the nipples' bumps back | the body relief's debris filled (`body_scan._debris_filled`), Artec's debris limit 0.8 | definition (MakeHuman's CC0 normal as a slider, its seams); a small mark below the navel; the neck patch |
+| Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out` | definition (MakeHuman's CC0 normal as a slider, its seams); the neck patch (the composition's coverage) |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
 | **Whole character** | **not CC5 quality with free assets** | the above | the deciding gap: the face's mid-scale relief (can't, free); then the live-view hair (cards + a cut - a route) |
 
