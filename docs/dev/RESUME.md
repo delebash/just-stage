@@ -48,6 +48,12 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-09 05:4x:** kept and committed (6882eed) - the Heavy woman at melanin 0.1 (was 0.25, past measured skin:
+  ashy); the gate's variants point the skin at their copy. Kept on trial, rolling out - the neck / chest patch: the
+  composer cut its low layer where the scans end (`skin_base.faded_out`: carried past the edge, then OpenCV's
+  multi-band blend; the pores' colour feathered) - `scratchpad/batch_cover_all.sh` (all six skins, library, six
+  characters' renders, every suite; backups `.dev/backup/compositions_2026-11-09b`, `skins_2026-11-09`,
+  `library_2026-11-09g`). Next: commit it, then the verdict table's open items (the working doc).
 - **2026-11-09 04:3x:** kept - the lips matte (`maps.LIP_ROUGHNESS, LIP_COAT` 0.6 / 0.05) and the lining out of the
   mouth's corners (`make_mouth_mask.CORNER_FADE`; masks regenerated, backup `.dev/backup/mouthmasks_2026-11-09`);
   end run `scratchpad/batch_end3.sh` (unit 45, tools 51 passed; Blender running). Now: **dark skin reads ashy** - the

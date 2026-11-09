@@ -657,7 +657,31 @@ booked with just-direct-mocap.
   measures the change by distance on 623 itself (`compare_compose.py`); (3) "a real neck is darker" - it stays darker
   near the face; it only no longer ends in a line. Test `tests/tools/test_skin_base.py`. Trial `batch_cover.sh` (623
   composed and built again, backups `compositions_2026-11-09b`, `skins_2026-11-09`, `library_2026-11-09g`) - queued
-  after `batch_heavy`'s suites.
+  after `batch_heavy`'s suites. (`batch_cover.sh` void - its compose never ran, Mistakes; `batch_cover2.sh` ran it.)
+  **05:2x (`row_cover_chest.png`, `diffcol_heavy_faded.png`): the strip under the chin gone, the lobe fainter but its
+  stepped outline still there.** Measured (`compare_compose.py`, `edge_parts.py`): the face unchanged past 200 texels
+  (0.9%, the cover's mean renormalised); at the edge the broad step down (log, p10 -0.107 -> -0.066) and what still
+  draws the line is the pores' colour - inside the edge 2-8x the flat fill's texture beside it (`fine / got`
+  undoes its feather, mirror_fill runs it to the cover's edge at full strength). Second change (mine, reusing the
+  file's own `_feathered`): `fine *= _feathered(inside)` - the pores' colour fades in over ~2 FEATHER (~16 mm) from
+  where the scans end. Its test beside the first. `batch_cover3.sh`.
+  **05:2x (`row_cover3_chest.png`): fainter again, the stepped line still there** (texture inside / outside 3.1 ->
+  1.6). The profile across the worst stretch (`edge_crop.py`, row 2863 col 1655, log luminance): before +0.10 outside
+  to -0.50 inside; after the blend a ramp outside but still -0.17 -> -0.47 AT the edge. Why: the blender takes each
+  image as valid across the seam, and the low layer itself dropped to 0 at the cover's edge - its fine bands kept the
+  drop. Third change (the blender's documented use): the layer carried past its edge first (the file's own
+  `smooth_fill`), then blended - on the test's disc the profile runs -0.08 (60 texels out) -> -0.14 (edge) -> -0.26
+  (120 in), no jump; the test now builds the real case (nothing past the cover) and holds the edge's texel steps to
+  the layer's own. `batch_cover4.sh`.
+  **05:35 (`row_cover4_chest.png`, `row_cover4_three_quarter.png`, `diffcol_heavy_faded3.png`): the chest patch GONE -
+  in base colour and in the render; the neck continuous - KEPT (mine).** Measured on 623: the worst stretch's profile
+  now a ramp (-0.106 at 40 texels out ... -0.392 at 40 in, no jump); edge stretches off by >5% 74% -> 11%; broad step
+  p10 -0.107 -> -0.032; the face past 200 texels shifted 1.8% evenly (the cover's mean renormalised). Into all six:
+  `batch_cover_all.sh` (the other five skins backed up into `.dev/backup/skins_2026-11-09`; compose + build all six;
+  the library's characters; the New human, the library man, Older man, Average woman, Muscular man, Young woman
+  against their earlier renders; every suite) - running. 05:49 all six composed and built (`cover_step.py`, edge
+  stretches off by >5%, before -> after: 611 35% -> 2%, 612 55% -> 7%, 613 62% -> 5%, 621 33% -> 2%, 622 40% -> 3%,
+  623 74% -> 11%; p10 now 0.947-0.972); the library's six characters rebuilt 05:50.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -894,3 +918,7 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   `skin.set_tone`, which writes through `obj.juststage.skin_material` - the gate's variants had swapped the slots to
   copies and left that pointer on the built material: four identical renders. Fixed in `parts_gate.render` (the
   pointer follows the slot's copy); only `skintone` was affected - the other trials edit the slots' materials).
+- A batch step's own exit is read before what follows is trusted (2026-11-09 05:1x: `batch_cover.sh` called the venv's
+  Python by a relative path from a here-doc - Windows couldn't start it, the composition stayed as it was, and the
+  skin, library and renders after it ran on the old one; the measure's "change 0.0000" was the tell). Executables by
+  their path from the repo root on the command line, never from inside an embedded script.

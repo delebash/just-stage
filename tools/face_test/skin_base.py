@@ -54,6 +54,11 @@ BROAD_LUM, BROAD_HUE = 0.45, 0.15
 LOW_RANGE = 0.6  # 1.0 let a collar's edge and a fill's leftovers through as patches (composition 503's neck)
 LOW_FILL, LOW_FEATHER = 24.0, 16.0
 LOW_NEAR = 0.4  # the share of skin round a texel it needs: holes filled only well inside the skin (0.15 reached edges)
+#: where the scans end (the head tile's neck and chest, the back of the head) the low layer fades to the flat tone band
+#: by band - multi-band blending (Burt & Adelson 1983, OpenCV's detail::MultiBandBlender), each band over its own
+#: width: cut there at once, it left a step (2026-11-09: 623's colour 10% darker just inside its cover's edge on the
+#: median, 33% at the 10th percentile - a jagged patch on the Heavy woman's chest)
+LOW_EDGE_BANDS = 7
 #: HAIR OUT, CC5's way (docs/plans/2026-11-06-inputs-audit.md: CC5's skin colour carries no hair - lashes, brows and
 #: stubble are meshes): every scan has its own lashes and stray brow hairs round the eye and brow holes its skin mask
 #: leaves (scan_skin.py labels eyes and brows, not the lashes on the lids or the hairs beside the brows) - a band of
@@ -361,6 +366,24 @@ def noise(shape, rng, sigma):
     return n / max(float(n.std()), 1e-6)
 
 
+def faded_out(layer, inside, bands):
+    """`layer` (log, H x W x 3) inside `inside`, faded to 0 outside it band by band - OpenCV's multi-band blender (Burt
+    & Adelson 1983) of the layer and a zero layer on their two masks: the broad colour crosses the edge over a wide
+    span, fine detail over a narrow one, so no step and no blurred band. The layer is first carried past its edge
+    (smooth_fill) - the blender takes each image as valid across the seam; a layer that drops at its own edge keeps
+    that drop in its fine bands (2026-11-09: 623's chest still stepped 0.3 of 0.6 at the edge). Fixed point at 1e-4
+    (16-bit, as the blender takes)."""
+    scale = 1e4
+    carried = smooth_fill(layer, inside, np.ones(inside.shape, bool))
+    blender = cv2.detail_MultiBandBlender(0, bands)
+    blender.prepare((0, 0, layer.shape[1], layer.shape[0]))
+    blender.feed(np.clip(carried * scale, -32000, 32000).round().astype(np.int16), (inside * 255).astype(np.uint8),
+                 (0, 0))
+    blender.feed(np.zeros(layer.shape, np.int16), ((~inside) * 255).astype(np.uint8), (0, 0))
+    out, _ = blender.blend(None, None)
+    return out.astype(np.float32) / scale
+
+
 def _feathered(valid):
     """A scan's coverage with its edge faded in over FEATHER texels (inside its own texels only)."""
     v = valid.astype(np.float32)
@@ -469,6 +492,10 @@ def compose(seed, params=None):
     have = got > 0.5
     inside = _inside(got > 0.05)
     fine = _hair().mirror_fill(fine / np.maximum(got, 1e-6)[..., None], have, inside)
+    # and where the scans stop (the head tile's neck and chest, the back of the head) the pores' colour fades out over
+    # ~2 FEATHER, not cut: at full strength to the cover's edge it drew a jagged outline on the Heavy woman's chest
+    # (2026-11-09: the texture inside the edge 2-8x the flat fill's beside it)
+    fine *= _feathered(inside)[..., None]
     mid_fill = _hair().mirror_fill(mid_fill / np.maximum(got, 1e-6)[..., None], have, inside)
     cover = inside
     # mid: the chosen scans' weighted sum over sqrt(sum of squared weights) - for unrelated patterns that keeps one
@@ -522,7 +549,7 @@ def compose(seed, params=None):
             tot_l += a
         have_l = tot_l > 0.25
         low = smooth_fill(num_l / np.maximum(tot_l, 1e-6)[..., None], have_l, inside)  # no edge where scans end
-        low[~inside] = 0.0
+        low = faded_out(low, inside, LOW_EDGE_BANDS)  # nor where they stop: to the flat tone band by band
         # no makeup or baked socket shade round the eyes: darkening there held to EYE_DARK, its hue to the skin's
         zone_w = cv2.GaussianBlur(eye_zone(shape[0]).astype(np.float32), (0, 0), 24.0)
         luma = np.array([0.2126, 0.7152, 0.0722], np.float32)
