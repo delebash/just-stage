@@ -39,6 +39,11 @@ RADIUS, TIP = 0.000035, 0.15  # m at the root (~0.07 mm across: 0.09 read as a b
 JITTER = 0.0002  # m: each root's own offset
 WIDEN = 1.25  # the band's half-height over the region roots' (their 85th percentile)
 TAIL_DENSITY = 0.35  # the tail's density as a share of the body's
+#: the roots' spread across the band's height, a bell of EDGE_SD half-heights - densest along the middle, thinning to
+#: the edges, a few strays above (to EDGE_ABOVE), none below the band (the lid the blink moves). Even (None) gave hard
+#: upper and lower edges, a block beside HD Aaron's soft brows; 0.55 soft, 0.4 a thin line (2026-11-09,
+#: `.dev/gate/parts/2026-11-09browedge`, the gate's man and the Average woman)
+EDGE_SD, EDGE_ABOVE = 0.55, 1.25
 #: 2026-11-06, the clean-input gate's eye view: ours a black bar with a brush of upright hairs at its head, each hair
 #: straight; HD Aaron's dark grey with about a quarter white, sparser at the head, each hair arching toward the tail
 HEAD_DENSITY, HEAD_TO = 0.45, 0.2  # the head's density as a share of the body's, rising to it by HEAD_TO
@@ -141,7 +146,7 @@ def strands(body: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHA
         for k_hair, s0 in enumerate(s_all):
             fine = k_hair >= COUNT  # the soft body's hairs after the coarse ones
             b0 = min(int(s0 * 8), 7)
-            t0 = rng.uniform(-1.0, 1.0)
+            t0 = rng.uniform(-1.0, 1.0) if EDGE_SD is None else _across(rng)
             place = head + s0 * span * axis + (np.interp(s0, (np.arange(8) + 0.5) / 8, middle)
                                                + t0 * WIDEN * np.interp(s0, (np.arange(8) + 0.5) / 8, half)) * across
             root, normal = nearest(place + rng.normal(0.0, JITTER, 3))
@@ -212,6 +217,15 @@ def rimmed(character: bpy.types.Object, seed: int = 11, grey_share: float = GREY
             total[side] = total.get(side, 0.0) + dz
         found, radii, melanin = strands(character, seed, grey_share, total)
     return found, radii, melanin
+
+
+def _across(rng) -> float:
+    """A root's place across the band (half-heights from its middle): a bell of EDGE_SD, redrawn past the band's lower
+    edge or EDGE_ABOVE."""
+    while True:
+        t = rng.normal(0.0, EDGE_SD)
+        if -1.0 <= t <= EDGE_ABOVE:
+            return t
 
 
 def make(character: bpy.types.Object, seed: int = 11, grey_share: float = GREY_SHARE) -> bpy.types.Object:

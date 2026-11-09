@@ -1726,6 +1726,21 @@ def lipset(built: dict, period: float, depth: float, distortion: float, vary: fl
     print("LIP SET", (period, depth, distortion, vary), "on", n, "trees", flush=True)
 
 
+def browedge(built: dict, sd: float) -> None:
+    """Our brows grown again with their roots in a bell across the band (`brows.EDGE_SD`; 0 = today's even spread):
+    2026-11-09, ours a block with hard edges beside HD Aaron's soft brows. A new groom: --alone."""
+    brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
+    old = brows.EDGE_SD
+    brows.EDGE_SD = sd or None
+    try:
+        brows.make(built["body"], grey_share=pg.BROW_GREY if built["body"].juststage.gender > 0.5 else 0.0)
+    finally:
+        brows.EDGE_SD = old
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("BROW EDGE", sd, flush=True)
+
+
 def eartintset(built: dict, r: float, g: float, b: float) -> None:
     """The shipped ear layer's tint (`maps.EAR_TINT`) set to (r, g, b) - (1, 1, 1) turns it off: 2026-11-09, the
     Muscular man's ear glowed orange-red beside his dark skin."""
@@ -2944,6 +2959,8 @@ def factor(name: str):
         return lambda built: lipset(built, *(float(x) for x in name.split("*")[1:5]))  # vary)
     if name.startswith("hide*"):  # hide*eyebrows (a groom's part: eyebrows, eyelashes, scalp, beard)
         return lambda built: _hide_part(built, name.split("*", 1)[1])
+    if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
+        return lambda built: browedge(built, float(name.split("*")[1]))
     if name.startswith("eartintset*"):  # eartintset*1*1*1 (the shipped ear tint; 1, 1, 1 off)
         return lambda built: eartintset(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("scatter*"):  # scatter*0.3 (the live view's scattering distance x k)

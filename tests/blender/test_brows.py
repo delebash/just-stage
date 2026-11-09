@@ -171,3 +171,40 @@ def test_a_womans_brows_are_sparser_and_follow_the_gender_slider():
         assert obj.modifiers[0].name == brows.DENSITY_MODIFIER  # before the surface deform
     finally:
         _remove(made)
+
+
+def test_the_brows_thin_toward_their_edges(man):
+    """Roots even across the band gave hard edges - a block beside HD Aaron's soft brows (2026-11-09): a bell
+    (EDGE_SD). The sampler: none below the band (the lid the blink moves) or past EDGE_ABOVE, the middle third denser
+    than an even spread's; each brow: more of its roots near its own middle line than with the even spread (measured
+    2026-11-09: 0.49 / 0.45 against 0.43 / 0.42)."""
+    rng = np.random.default_rng(0)
+    t = np.array([brows._across(rng) for _ in range(20000)])
+    assert t.min() >= -1.0 and t.max() <= brows.EDGE_ABOVE
+    assert np.mean(np.abs(t) < 1 / 3) > 0.42  # even over [-1, 1]: 0.33
+    _made, body = man
+
+    def near_middle(found):
+        roots = np.array([s[0] for s in found])
+        out = []
+        for side in (-1.0, 1.0):
+            mine = roots[np.sign(roots[:, 0]) == side]
+            lateral = np.abs(mine[:, 0])
+            lo_l, hi_l = np.quantile(lateral, [0.25, 0.65])
+            part = mine[(lateral > lo_l) & (lateral < hi_l)]
+            place = np.clip(np.digitize(np.abs(part[:, 0]), np.linspace(lo_l, hi_l, 9)) - 1, 0, 7)
+            off = np.empty(len(part))
+            for b in range(8):  # height off the band's own middle at its place (the arch out)
+                off[place == b] = part[place == b, 2] - np.median(part[place == b, 2])
+            lo, hi = np.quantile(off, [0.02, 0.98])
+            out.append(np.mean(np.abs(off - (lo + hi) / 2) < (hi - lo) / 6))
+        return np.array(out)
+
+    bell = near_middle(brows.strands(body)[0])
+    old = brows.EDGE_SD
+    brows.EDGE_SD = None
+    try:
+        even = near_middle(brows.strands(body)[0])
+    finally:
+        brows.EDGE_SD = old
+    assert (bell > even + 0.02).all(), (bell, even)

@@ -788,7 +788,22 @@ booked with just-direct-mocap.
   `row_bs2_face.png`): the Average and Heavy women's brows lighter and finer, skin between the hairs, softer at the
   face view; the men unchanged - KEPT.** End run: unit 45, tools 54, Blender 202 passed, 1 failed - the blink test
   reshaped every hair's points (a woman now keeps 4,450 of 6,400); reshaped by the hairs kept (the same ones before
-  and after, culled by index) - its rerun running.
+  and after, culled by index) - rerun: test_brows 7 passed. Committed dae067b.
+- **09:3x, the brows' blocky shape (box 30 min):** the roots are spread evenly across the band's height
+  (`t0 = uniform(-1, 1)`) - hard upper and lower edges, a block at the face view beside HD Aaron's soft brows. Trial
+  (`brows.EDGE_SD`, `browedge*`): a bell across the band (0.55 and 0.4 half-heights; redrawn below the band - the lid
+  the blink moves - and past 1.25 above, a few strays) against today's, on the gate's man beside HD Aaron and the
+  Average woman (`batch_browedge.sh`). **09:46 (`row_be_{man,woman}_{eye,face}.png`): even - a band with hard edges;
+  0.55 - narrower, a soft upper edge, a few strays, much nearer HD Aaron's at the eye and face views; 0.4 - a thin line
+  (nearest his own thin brow, a groomed arch on the woman). KEPT 0.55 (mine)** - attacked: "0.4 matches him" - his
+  thinness is his identity; the fault was the block, which 0.55 removes without thinning everyone's brows. Test
+  `test_the_brows_thin_toward_their_edges` (the band's middle third holds > 0.45 of the hairs; even: 0.33).
+  `batch_browedge_prod.sh` (backup `library_2026-11-09k`; hair and characters rebuilt; the product; every suite).
+  **09:57 (`row_bep_{eye,face}.png`): the product's brows softer and narrower on the Average woman, the Older man and
+  the gate's man - KEPT.** End run: unit 45, tools 54, Blender 203 passed, 1 failed - my new test measured raw
+  height in a slice of the arched brow (one side 0.28, under an even spread's 0.33); rewritten to the sampler (none
+  below the band, the middle third > 0.42 against 0.33 even) and each brow against its own middle line, the bell
+  against the even spread (0.49 / 0.45 against 0.43 / 0.42) - test_brows 8 passed.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -814,26 +829,26 @@ booked with just-direct-mocap.
   a smooth, glossy lip; trial `lipset` (half the depth; sparser 1.8 mm, distortion 6, patchy 0.95; and further) in
   `batch_lipset.sh`.
 
-### THE VERDICT PER PART, 2026-11-08 21:3x, updated 2026-11-09 01:0x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
+### THE VERDICT PER PART, 2026-11-08 21:3x, updated 2026-11-09 09:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 
 | Part | Verdict | In the product today | What's missing / the route left |
 |---|---|---|---|
 | Cheek, nose skin (texture) | **matches** (men); women's finer (03:4x) | `PORES_BY_SEX` (0.7 a woman) | - |
 | Forehead skin | **matches** (orange peel gone) | forehead pores x1 | - |
 | Face skin relief (wrinkles, folds) | **CAN'T with free assets in hand** | - | a wrinkle-rich face relief at his level - a paid scan or an artist's sculpt (three free scans' relief and a made layer tried) |
-| Face colour | close | the eyes' surround darker (`maps._eye_layer`, 23:5x) | the regions' redness (head and body match in base colour - checked 00:53) |
+| Face colour | close; **every character (11-09)** - no patch where the scans end, no rim smudges on the jaws | the eyes' surround darker (`maps._eye_layer`); the scans' edge faded (`skin_base.faded_out`, multi-band) and their dark rims weighed out (`rim_weight`) - six scan skins; the Heavy woman at melanin 0.1 (was 0.25, ashy) | the regions' redness; on dark skin the scans' own blood redness (chromophore maps - a job); the tone model's dark end (ISSA, waiting for the download) |
 | Face shape | identity, not a fault | - | (three real scans' shapes read no more real - not the doll look's cause) |
-| Brows | close | 1200 / 2000 at 0.92 | the live view's strand haze -> cards |
+| Brows | close | dark brown 0.8 / 0.3 (11-09; near-black read as a grey bar on women); a woman's 0.7 of the hairs, live by the gender slider (`DENSITY_BY_SEX`); the gate shows a character's own brows | the live view's strand haze -> cards; the blocky shape beside his soft brows |
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
 | Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
 | Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); matte (`LIP_ROUGHNESS, LIP_COAT` 0.6 / 0.05, 11-09 04:1x - no cellophane up close); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | his crisper border; the lines read deep at an extreme crop |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`) | the lid's rim (shape and glow, not colour); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
-| Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask; skin-maps tests 18 passed) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault) |
+| Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask), by tone since 11-09 (`ear_tint`: melanin hides the blood - the Muscular man's orange-red ear now red-brown) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault); a dark skin's ear still redder (the scans' own - chromophore maps); the ears' gloss |
 | Nails | close | - | - |
 | Hands | close | - | tone (a setting) |
-| Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out` | definition (MakeHuman's CC0 normal as a slider, its seams); the neck patch (the composition's coverage) |
+| Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out; the neck / chest patch gone on every character (11-09) | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out`; the scans' edge faded | definition (MakeHuman's CC0 normal as a slider, its seams) |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
 | **Whole character** | **not CC5 quality with free assets** | the above | the deciding gap: the face's mid-scale relief (can't, free); then the live-view hair (cards + a cut - a route) |
 
