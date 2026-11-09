@@ -95,6 +95,11 @@ NAIL_SIDE, NAIL_EDGE_SOFT = 0.8, 0.06  # |across| inside this; the edges' softne
 #: square plate painted white (2026-11-08)
 NAIL_TIP_CURVE = 0.35
 NAIL_FREE_EDGE = (0.92, 0.97)  # along: the free edge - a thin pale rim on a short nail - fades in over this
+#: the toes' plate, a share of the fingers' length and its half-width: hm08's toe islands run over the toe's tip, so the
+#: fingers' plate covered the whole tip - a large pale sticker beside HD Aaron's short plate on top of the toe
+#: (2026-11-09, `.dev/gate/parts/2026-11-09toenail`); 1.0 / NAIL_SIDE is the fingers' plate. 0.6 / 0.7: a short plate
+#: on top of the toe with its free edge, as his (`.dev/gate/parts/2026-11-09toeplate`; 0.5 / 0.65 left slivers)
+TOE_PLATE_LENGTH, TOE_PLATE_SIDE = 0.6, 0.7
 NAIL_LUNULA_FINGERS = (0.25, 0.03)  # lunula length = first - second * digit (thumb 0.22 ... little 0.10)
 NAIL_LUNULA_TOES = (0.06, 0.0)  # the big toe's, the others' (rarely seen)
 NAIL_BED, NAIL_BED_SHARE = (0.50, 0.30, 0.27), 0.25  # linear: mixed into the skin's colour
@@ -350,6 +355,19 @@ def _mix(nt, name: str, kind: str, factor, a, b):
     return next(o for o in node.outputs if o.identifier == "Result_" + suffix)
 
 
+def nail_plate(along: np.ndarray, across: np.ndarray, digit: np.ndarray, inside: np.ndarray) -> np.ndarray:
+    """The nail plate's share in the nail coordinates (numpy) - the same plate as `_nail_layer` draws, for the nail bed's
+    shape (nail_bed.py): past the curved cuticle, inside the rounded sides, before the free edge; a toe's shorter and
+    narrower (TOE_PLATE_*)."""
+    soft = 1.0 / NAIL_EDGE_SOFT
+    toes = digit > 5.5
+    length = np.where(toes, TOE_PLATE_LENGTH, 1.0)
+    side = np.where(toes, TOE_PLATE_SIDE, NAIL_SIDE)
+    cut = NAIL_CUTICLE + NAIL_CUTICLE_CURVE * across * across
+    tip = np.clip(((1.0 - NAIL_TIP_CURVE * across * across) * length - along) * soft, 0, 1)
+    return np.clip((along - cut) * soft, 0, 1) * np.clip((side - np.abs(across)) * soft, 0, 1) * tip * inside
+
+
 def _nail_layer(nt, bsdf, uv, which) -> None:
     """The nail plate over the skin on tile 1005 (the NAIL_* constants): colour, roughness, specular and coat mixed by
     the plate's mask, its edge raised by a bump at the end of the normal chain."""
@@ -372,28 +390,32 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
     across2 = _math(nt, "nail_across2", "MULTIPLY", across, across)
     on_tile = _math(nt, "nail_on_tile", "COMPARE", which.outputs["Value"], float(NAIL_TILE_INDEX), 0.5)
     inside = _math(nt, "nail_inside", "MULTIPLY", coords.outputs["Alpha"], on_tile)
-    # the plate: past the curved cuticle edge, inside the rounded sides
+    # the plate: past the curved cuticle edge, inside the rounded sides - a toe's shorter and narrower (TOE_PLATE_*)
+    toes = _math(nt, "nail_toes", "GREATER_THAN", digit, 5.5)
+    length = _mix(nt, "nail_plate_length", "FLOAT", toes, 1.0, TOE_PLATE_LENGTH)
+    side = _mix(nt, "nail_plate_side", "FLOAT", toes, NAIL_SIDE, TOE_PLATE_SIDE)
     cut = _math(nt, "nail_cut", "MULTIPLY_ADD", across2, NAIL_CUTICLE_CURVE, NAIL_CUTICLE)
     start = _clamp01(nt, "nail_start", _math(nt, "nail_past_cut", "SUBTRACT", along, cut), 1 / NAIL_EDGE_SOFT)
-    sides = _clamp01(nt, "nail_sides", _math(nt, "nail_side_room", "SUBTRACT", NAIL_SIDE,
+    sides = _clamp01(nt, "nail_sides", _math(nt, "nail_side_room", "SUBTRACT", side,
                                              _math(nt, "nail_abs", "ABSOLUTE", across)), 1 / NAIL_EDGE_SOFT)
-    tip_cut = _math(nt, "nail_tip_cut", "MULTIPLY_ADD", across2, -NAIL_TIP_CURVE, 1.0)
+    tip_cut = _math(nt, "nail_tip_cut", "MULTIPLY", _math(nt, "nail_tip_round", "MULTIPLY_ADD", across2,
+                                                           -NAIL_TIP_CURVE, 1.0), length)
     before_tip = _math(nt, "nail_before_tip", "SUBTRACT", tip_cut, along)
     tip_room = _clamp01(nt, "nail_tip_room", before_tip, 1 / NAIL_EDGE_SOFT)
     plate = _math(nt, "nail_plate", "MULTIPLY", _math(nt, "nail_plate_a", "MULTIPLY",
                                                        _math(nt, "nail_plate_b", "MULTIPLY", start, sides), tip_room),
                   inside)  # fmt: skip
     # the lunula: a half-moon from the cuticle, as long as its digit's
-    toes = _math(nt, "nail_toes", "GREATER_THAN", digit, 5.5)
     finger_len = _math(nt, "nail_len_f", "MULTIPLY_ADD", digit, -NAIL_LUNULA_FINGERS[1], NAIL_LUNULA_FINGERS[0])
     big_toe = _math(nt, "nail_big_toe", "COMPARE", digit, 6.0, 0.5)
     toe_len = _mix(nt, "nail_len_t", "FLOAT", big_toe, NAIL_LUNULA_TOES[1], NAIL_LUNULA_TOES[0])
-    length = _mix(nt, "nail_len", "FLOAT", toes, finger_len, toe_len)
+    luna_len = _mix(nt, "nail_len", "FLOAT", toes, finger_len, toe_len)
     round_ = _math(nt, "nail_round", "SQRT", _math(nt, "nail_round_a", "MAXIMUM",
                                                     _math(nt, "nail_round_b", "SUBTRACT", 1.0, across2), 0.0))
-    edge = _math(nt, "nail_lunula_edge", "MULTIPLY_ADD", length, round_, cut)
+    edge = _math(nt, "nail_lunula_edge", "MULTIPLY_ADD", luna_len, round_, cut)
     lunula = _clamp01(nt, "nail_lunula", _math(nt, "nail_lunula_d", "SUBTRACT", edge, along), 1 / 0.04)
-    tip = _clamp01(nt, "nail_tip", _math(nt, "nail_tip_d", "SUBTRACT", along, NAIL_FREE_EDGE[0]),
+    free_edge = _math(nt, "nail_free_edge", "MULTIPLY", length, NAIL_FREE_EDGE[0])  # the rim moves with the plate's end
+    tip = _clamp01(nt, "nail_tip", _math(nt, "nail_tip_d", "SUBTRACT", along, free_edge),
                    1 / (NAIL_FREE_EDGE[1] - NAIL_FREE_EDGE[0]))
     # faint lengthwise ridges: noise stretched along the nail
     ridge_at = _node(nt, "ShaderNodeCombineXYZ", "nail_ridge_at", (-1100, -1900))

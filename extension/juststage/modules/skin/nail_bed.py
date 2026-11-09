@@ -58,11 +58,7 @@ def height_mm(dome_mm: float = DOME_MM, groove_mm: float = GROOVE_MM, lip_mm: fl
     img.pixels.foreach_get(px)
     px = px.reshape(h, w, 4)
     along, across, inside = px[..., 0], px[..., 1] * 2.0 - 1.0, px[..., 3] > 0.5
-    soft = 1.0 / maps.NAIL_EDGE_SOFT
-    cut = maps.NAIL_CUTICLE + maps.NAIL_CUTICLE_CURVE * across * across
-    tip = np.clip((1.0 - maps.NAIL_TIP_CURVE * across * across - along) * soft, 0, 1)  # the rounded free edge
-    plate = np.clip((along - cut) * soft, 0, 1) * np.clip((maps.NAIL_SIDE - np.abs(across)) * soft, 0, 1) * tip * inside
-    # (the same plate as the shader's, `maps._nail_layer` - the two change together)
+    plate = maps.nail_plate(along, across, px[..., 2] * 10.0, inside)  # the shader's own plate (its digit: blue x 10)
     band = 4.0 * plate * (1.0 - plate)  # 1 on the plate's edge
     near = _blur(plate.astype(np.float32), LIP_BLUR_PX) * (1.0 - plate) * inside
     height = dome_mm * plate * (1.0 - np.clip(across * across, 0, 1)) - groove_mm * band

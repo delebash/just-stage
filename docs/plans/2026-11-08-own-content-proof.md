@@ -857,7 +857,28 @@ booked with just-direct-mocap.
   0.4 / 0.2.** The morning's pick was judged at the corner crop and the lips view alone; the face views beside him
   today show the clay - the new measured fact. The test now holds it between clay and cellophane. Still open on the
   lips: our upper lip a saturated coral against his softer pink, and a crisp painted border (his softer) - the
-  colour job.
+  colour job. Committed ab851d6; end run `batch_end4.sh` - running. (A measure of the upper and lower lip apart by
+  redness took the cheek's warm skin in - void; by eye the colour gap is moderate and lip colour is identity - the
+  lips stay "close".)
+- **11:4x, the toenails (box 30 min; `row_toe_crop.png`):** ours pale whitish-pink plates with a dark outline, flat,
+  large on the small toes - stickers; his small, skin-toned, a curved free edge. The plate is the shader's on tile 1005
+  (`maps._nail_layer`): the bed colour mixed 0.25 into the skin, a paler free edge, the border darkened by
+  `NAIL_GROOVE` 0.45 - the outline. Trial (`batch_toenail.sh`, after the end run; new factors `nailgroove*`,
+  `nailbed*`): the border's darkening 0.15 and 0, the bed share 0.08 - at the foot and nails views. End run for ab851d6 green (11:43: unit 45, tools 54, Blender 204).
+  **11:47 (`row_tn_foot.png`, `row_tn_bigtoe.png`): the outline softer at 0.15 / 0, the bed share no visible change -
+  neither is the fault: zoomed in, our big toe's plate is a large pale rounded rectangle over the toe's whole tip
+  (front and top), his a SHORT plate on top of the toe with a raised free edge. Box spent; next route (new box, 45
+  min): the toes' plate shorter and narrower.** hm08's toe islands run over the toe's tip, so the fingers' plate
+  (along to 0.97, half-width 0.8) covered it. `maps.TOE_PLATE_LENGTH, TOE_PLATE_SIDE` (1.0 / 0.8 = the fingers'),
+  the shader by digit (toes > 5.5; the free edge's rim moves with the plate's end) and the nail bed's shape from ONE
+  numpy plate (`maps.nail_plate` - nail_bed.py had its own copy of the formula); fingers unchanged by construction.
+  Trial `toeplate*` (`batch_toeplate.sh`, --alone): 1 / 0.8 against 0.6 / 0.7 and 0.5 / 0.65, the foot view beside
+  HD Aaron and the hand view (the fingers unchanged). **11:57 (`row_tp_foot.png`, `row_tp_hand.png`): 0.6 / 0.7 short
+  plates on top of the toes with a free edge, as his; 0.5 / 0.65 slivers on the small toes; the hand: 1,330 pixels
+  changed, all in the frame's top-right corner (a few toes in that view) - the fingers untouched. KEPT 0.6 / 0.7
+  (mine).** Test `test_a_toes_nail_plate_is_short_and_on_top`. `batch_toeprod.sh` (backup `library_2026-11-09m`;
+  characters rebuilt - the nail bed is made with the character; the foot, hand and nails in the product, the Average
+  woman's foot; every suite) - running.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

@@ -529,3 +529,28 @@ def test_the_ears_redness_fades_where_melanin_hides_the_blood(human, tmp_path):
     assert maps.EAR_TINT[1] < middle[1] < 1.0  # between: some of it shows
     api.run("juststage.skin.set_tone", character=made.character, melanin=0.008)
     assert tint() == pytest.approx(list(maps.EAR_TINT), abs=0.005)  # lighter: never past the judged tint
+
+
+def test_a_toes_nail_plate_is_short_and_on_top(human, tmp_path):
+    """hm08's toe islands run over the toe's tip, so the fingers' plate covered it - a large pale sticker beside HD
+    Aaron's short toenail (2026-11-09): a toe's plate is TOE_PLATE_LENGTH of the fingers' long and TOE_PLATE_SIDE wide,
+    in the shader and the nail bed's shape alike (one plate, `maps.nail_plate`); the fingers' as before."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    for key, value in (("nail_plate_length", maps.TOE_PLATE_LENGTH), ("nail_plate_side", maps.TOE_PLATE_SIDE)):
+        node = nodes[maps.NODE + key]
+        assert next(i for i in node.inputs if i.identifier == "B_Float").default_value == pytest.approx(value)
+        assert next(i for i in node.inputs if i.identifier == "A_Float").default_value == pytest.approx(
+            1.0 if key == "nail_plate_length" else maps.NAIL_SIDE)  # the fingers'
+    img = maps.nail_coords()
+    w, h = img.size
+    px = np.empty(w * h * 4, np.float32)
+    img.pixels.foreach_get(px)
+    px = px.reshape(h, w, 4)
+    along, across, digit, inside = px[..., 0], px[..., 1] * 2 - 1, px[..., 2] * 10, px[..., 3] > 0.5
+    plate = maps.nail_plate(along, across, digit, inside)
+    toes, fingers = inside & (digit > 5.5), inside & (digit < 5.5)
+    assert toes.any() and fingers.any()
+    assert (plate[toes] > 0.5).mean() < 0.7 * (plate[fingers] > 0.5).mean()  # a toe's plate covers less of its island
+    assert along[toes & (plate > 0.5)].max() < maps.TOE_PLATE_LENGTH + 0.05  # and ends short of the toe's tip

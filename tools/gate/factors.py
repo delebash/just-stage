@@ -1741,6 +1741,47 @@ def browedge(built: dict, sd: float) -> None:
     print("BROW EDGE", sd, flush=True)
 
 
+def toeplate(built: dict, length: float, side: float) -> None:
+    """The toes' nail plate shorter and narrower (`maps.TOE_PLATE_LENGTH`, `TOE_PLATE_SIDE`) in the shader and the nail
+    bed's shape together - 2026-11-09, the fingers' plate covered the toe's whole tip. A shape: --alone."""
+    maps = _maps()
+    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
+    n = 0
+    for nt in _skin_trees(built):
+        for key, value in (("nail_plate_length", length), ("nail_plate_side", side)):
+            node = nt.nodes.get(maps.NODE + key)
+            if node is not None:
+                next(i for i in node.inputs if i.identifier == "B_Float").default_value = value
+                n += 1
+    old = maps.TOE_PLATE_LENGTH, maps.TOE_PLATE_SIDE
+    maps.TOE_PLATE_LENGTH, maps.TOE_PLATE_SIDE = length, side
+    try:
+        nail_bed.add(built["body"])
+    finally:
+        maps.TOE_PLATE_LENGTH, maps.TOE_PLATE_SIDE = old
+    print("TOE PLATE", length, side, "on", n, "nodes", flush=True)
+
+
+def nailgroove(built: dict, k: float) -> None:
+    """The nail plate's border darkening (`maps.NAIL_GROOVE`, 0.45) set to k - 2026-11-09, the toenails read as stickers
+    with a dark outline beside HD Aaron's."""
+    maps = _maps()
+    nodes = [nt.nodes[maps.NODE + "nail_groove_shade"] for nt in _skin_trees(built) if maps.NODE + "nail_groove_shade" in nt.nodes]
+    for node in nodes:
+        node.inputs[1].default_value = -4 * k
+    print("NAIL GROOVE", k, "on", len(nodes), "nodes", flush=True)
+
+
+def nailbed(built: dict, share: float) -> None:
+    """The nail bed colour's share in the plate (`maps.NAIL_BED_SHARE`, 0.25) - 2026-11-09, the toenails pale beside his
+    skin-toned ones."""
+    maps = _maps()
+    nodes = [nt.nodes[maps.NODE + "nail_bed"] for nt in _skin_trees(built) if maps.NODE + "nail_bed" in nt.nodes]
+    for node in nodes:
+        node.inputs["Factor"].default_value = share
+    print("NAIL BED", share, "on", len(nodes), "nodes", flush=True)
+
+
 def eartintset(built: dict, r: float, g: float, b: float) -> None:
     """The shipped ear layer's tint (`maps.EAR_TINT`) set to (r, g, b) - (1, 1, 1) turns it off: 2026-11-09, the
     Muscular man's ear glowed orange-red beside his dark skin."""
@@ -2961,6 +3002,13 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("toeplate*"):  # toeplate*0.6*0.65 (the toes' plate length share and half-width) - --alone
+        _k, length, side = name.split("*")
+        return lambda built: toeplate(built, float(length), float(side))
+    if name.startswith("nailgroove*"):  # nailgroove*0.2 (the plate's border darkening)
+        return lambda built: nailgroove(built, float(name.split("*")[1]))
+    if name.startswith("nailbed*"):  # nailbed*0.1 (the bed colour's share in the plate)
+        return lambda built: nailbed(built, float(name.split("*")[1]))
     if name.startswith("eartintset*"):  # eartintset*1*1*1 (the shipped ear tint; 1, 1, 1 off)
         return lambda built: eartintset(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("scatter*"):  # scatter*0.3 (the live view's scattering distance x k)
