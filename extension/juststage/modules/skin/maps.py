@@ -161,6 +161,12 @@ LIP_MM_PER_V, LIP_NOISE_MM = 1602.0, 4.0
 #: read pale beside HD Aaron's red, translucent ear (2026-11-08, `.dev/gate/parts/2026-11-08ears`, by eye; the plan's
 #: §5 "a map on MPFB2's CC0 ears mask only if the ear view shows a gap")
 EAR_TINT = (1.0, 0.78, 0.76)
+#: the ears' redness is blood showing, and melanin hides it: EAR_TINT is the tint at EAR_TINT_MELANIN (the gate's man,
+#: where it was judged beside HD Aaron); on another tone it is scaled by how much EAR_BLOOD x the blood moves the
+#: skin model's green there against at EAR_TINT_MELANIN - at melanin 0.15 nothing (2026-11-09: the Muscular man's ear
+#: glowed orange-red beside his dark skin, its base colour R/G 4.3 against his neck's 2.5; skin_optics: blood x 2.5
+#: lowers green 13% at melanin 0.03, 2% at 0.1, 0% at 0.15)
+EAR_TINT_MELANIN, EAR_BLOOD = 0.03, 2.5
 OILINESS_DEFAULT = 0.5  # the oiliness slider's default (skin_set_tone.Params): the chain's factor is 1 there
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
@@ -855,6 +861,30 @@ def set_pores(mat: bpy.types.Material, character: bpy.types.Object) -> None:
     if node is not None:
         node.inputs[1].default_value = PORE_DISTANCE * float(np.interp(character.juststage.gender, (0.0, 1.0),
                                                                        PORES_BY_SEX))  # fmt: skip
+
+
+def ear_tint(melanin: float, eumelanin: float, blood: float) -> tuple[float, float, float]:
+    """EAR_TINT at this tone: its pull from 1 scaled by how visible extra blood is here (EAR_TINT_MELANIN, EAR_BLOOD)."""
+    from ...core import skin_optics
+
+    tables = skin_optics.load_tables(paths.FETCHED / "optics")
+
+    def green_drop(m):
+        own = skin_optics.Skin(m, eumelanin, blood).linear_rgb(tables)[1]
+        return 1.0 - skin_optics.Skin(m, eumelanin, blood * EAR_BLOOD).linear_rgb(tables)[1] / own
+
+    # never past the judged tint on lighter skin: its hue (blue down more than green) is orange, not blood's
+    seen = min(max(green_drop(melanin) / green_drop(EAR_TINT_MELANIN), 0.0), 1.0)
+    return tuple(1.0 - (1.0 - c) * seen for c in EAR_TINT)
+
+
+def set_ear_tint(mat: bpy.types.Material) -> None:
+    """The ears' tint on a mapped skin for its tone (ear_tint, from the material's own record)."""
+    node = mat.node_tree.nodes.get(NODE + "ears_tint")
+    if node is not None:
+        record = mat.juststage
+        tint = ear_tint(record.melanin, record.eumelanin, record.blood)
+        next(i for i in node.inputs if i.identifier == "B_Color").default_value = (*tint, 1.0)
 
 
 def set_oiliness(mat: bpy.types.Material, oiliness: float) -> None:

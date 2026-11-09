@@ -1726,6 +1726,28 @@ def lipset(built: dict, period: float, depth: float, distortion: float, vary: fl
     print("LIP SET", (period, depth, distortion, vary), "on", n, "trees", flush=True)
 
 
+def eartintset(built: dict, r: float, g: float, b: float) -> None:
+    """The shipped ear layer's tint (`maps.EAR_TINT`) set to (r, g, b) - (1, 1, 1) turns it off: 2026-11-09, the
+    Muscular man's ear glowed orange-red beside his dark skin."""
+    nodes = _skin_node_inputs(built, "ears_tint")
+    for node in nodes:
+        next(i for i in node.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+    print("EAR TINT", (r, g, b), "on", len(nodes), "nodes", flush=True)
+
+
+def scatter(built: dict, k: float) -> None:
+    """The live view's scattering distance x k (the EEVEE BSDF's Subsurface Scale) - a diagnostic of how much of a
+    part's glow is light through it (2026-11-09: the Muscular man's orange-red ear)."""
+    material = importlib.import_module("bl_ext.system.juststage.modules.skin.material")
+    n = 0
+    for mat, _bsdf, _mod in _skin_materials(built):
+        live = mat.node_tree.nodes.get(material.LIVE_BSDF)
+        if live is not None:
+            live.inputs["Subsurface Scale"].default_value *= k
+            n += 1
+    print("SCATTER x", k, "on", n, "materials", flush=True)
+
+
 def skintone(built: dict, melanin: float) -> None:
     """The character's skin tone set to `melanin` through the product's own command (`juststage.skin.set_tone`), its
     eumelanin share, blood and oiliness kept: 2026-11-09, the Heavy woman's preset melanin 0.25 sits at L* 17.6 - past
@@ -2922,6 +2944,10 @@ def factor(name: str):
         return lambda built: lipset(built, *(float(x) for x in name.split("*")[1:5]))  # vary)
     if name.startswith("hide*"):  # hide*eyebrows (a groom's part: eyebrows, eyelashes, scalp, beard)
         return lambda built: _hide_part(built, name.split("*", 1)[1])
+    if name.startswith("eartintset*"):  # eartintset*1*1*1 (the shipped ear tint; 1, 1, 1 off)
+        return lambda built: eartintset(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("scatter*"):  # scatter*0.3 (the live view's scattering distance x k)
+        return lambda built: scatter(built, float(name.split("*")[1]))
     if name.startswith("skintone*"):  # skintone*0.1 (melanin)
         return lambda built: skintone(built, float(name.split("*", 1)[1]))
     if name.startswith("mouthmask*"):  # mouthmask*corner (a variant folder under .dev/gate/mouthmasks)

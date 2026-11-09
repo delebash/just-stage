@@ -95,5 +95,6 @@ def apply(obj: bpy.types.Object, skin: skin_optics.Skin, oiliness: float) -> bpy
         maps.set_gain(mat, rgb)
         maps.set_oiliness(mat, oiliness)
         maps.set_pores(mat, obj)
+        maps.set_ear_tint(mat)  # the record above holds this tone
     sync_live(mat)
     return mat

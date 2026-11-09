@@ -192,7 +192,8 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     ears = next(i for i in mouth.inputs if i.identifier == "A_Color").links[0].from_node  # the ears' redness
     assert ears == nodes[maps.NODE + "ears_colour"]
     tint = next(i for i in nodes[maps.NODE + "ears_tint"].inputs if i.identifier == "B_Color").default_value
-    assert tuple(tint)[:3] == pytest.approx(maps.EAR_TINT)
+    record = body.juststage.skin_material.juststage  # the tint for this tone (maps.ear_tint)
+    assert tuple(tint)[:3] == pytest.approx(maps.ear_tint(record.melanin, record.eumelanin, record.blood), abs=1e-4)
     assert nodes[maps.NODE + "ears_mask"].inputs["Vector"].links[0].from_node == nodes[maps.NODE + "lips_uv"]
     lips = ears.inputs[0].links[0].from_node  # the lips' vermilion
     assert lips == nodes[maps.NODE + "lips_colour"]
@@ -509,3 +510,21 @@ def test_the_pores_follow_the_characters_sex(tmp_path):
         for obj in [o for o in bpy.data.objects if o.juststage.part_of == made.character]:
             bpy.data.objects.remove(obj)
         bpy.data.objects.remove(body)
+
+
+def test_the_ears_redness_fades_where_melanin_hides_the_blood(human, tmp_path):
+    """EAR_TINT was judged beside HD Aaron's light ear; on the Muscular man (melanin 0.15) it glowed orange-red (base
+    colour R/G 4.3 against his neck's 2.5, 2026-11-09). At EAR_TINT_MELANIN the tint is EAR_TINT; dark, none."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    node = body.juststage.skin_material.node_tree.nodes[maps.NODE + "ears_tint"]
+    tint = lambda: list(next(i for i in node.inputs if i.identifier == "B_Color").default_value)[:3]
+    api.run("juststage.skin.set_tone", character=made.character, melanin=maps.EAR_TINT_MELANIN)
+    assert tint() == pytest.approx(list(maps.EAR_TINT), abs=0.005)
+    api.run("juststage.skin.set_tone", character=made.character, melanin=0.15)
+    assert tint() == pytest.approx([1.0, 1.0, 1.0], abs=0.03)
+    api.run("juststage.skin.set_tone", character=made.character, melanin=0.065)
+    middle = tint()
+    assert maps.EAR_TINT[1] < middle[1] < 1.0  # between: some of it shows
+    api.run("juststage.skin.set_tone", character=made.character, melanin=0.008)
+    assert tint() == pytest.approx(list(maps.EAR_TINT), abs=0.005)  # lighter: never past the judged tint

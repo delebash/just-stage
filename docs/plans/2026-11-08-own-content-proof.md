@@ -740,7 +740,37 @@ booked with just-direct-mocap.
   (`row_rim_{tq,face}_*.png`): the Young woman's jaw streak and blotch down to a faint shade, the Average woman's chin
   smudge much reduced, the others unchanged - KEPT (mine).** Seen on the same sheets: the Muscular man's new brown
   brows read auburn on his dark skin (redness 0.3) - trial 0.8 / 0.3 against 0.86 / 0.18 and 0.9 / 0.12 on him and
-  the Average woman (`batch_browred.sh`, after the suite).
+  the Average woman (`batch_browred.sh`, after the suite). Committed 0359462 (end run green: unit 45, tools 54,
+  Blender 201). **08:16 (`row_brd_{eye,face}_*.png`): on him the three colours look alike at the eye view - dark
+  brown, not auburn (the three-quarter's light made it); on her 0.8 / 0.3 the most natural, darker drifts grey - KEPT
+  0.8 / 0.3 (no change).** What shows on his dark skin is a grey veil over the brow's body - the fine hairs' highlights
+  (the known strand haze; route: cards).
+- **08:2x, the Muscular man's ear (`row_ear_muscular.png`):** bright orange-red and glossy beside his dark brown skin -
+  plastic; the Young woman's mildly orange. Diagnosis (`batch_ear.sh`, ear view, Diffuse Color pass): the shipped ear
+  tint off (`eartintset*1*1*1`) and the live view's scattering x 0.3 (`scatter*0.3`) against today's - running.
+  Suspects: the tint (EAR_TINT 1.0 / 0.78 / 0.76); the light through the thin ear (the scattering radius comes from
+  the dermis alone - the same on dark skin as on light); the regions' gloss.
+  **08:2x (`row_ear_{Muscular_man,Young_woman}.png`, `diffcol_ear_Muscular_man.png`): neither the tint off nor the
+  scattering x 0.3 takes the red away - it is in the BASE COLOUR.** Measured (Diffuse Color pass, ear against neck):
+  him R/G 4.34 against 2.47, ear / neck (1.09, 0.62, 0.58) = EAR_TINT x his scans' own ear redness (his colour from
+  hsr0040 and yaro13, lighter-skinned scans); her (1.00, 0.77, 0.73) = EAR_TINT alone. EAR_TINT was judged beside HD
+  Aaron's light ear and applied on every tone; ear redness is blood showing, and melanin hides it - the skin model:
+  blood x 2.5 lowers green 13% at melanin 0.03, 2% at 0.1, 0% at 0.15. Fix (mine): `maps.ear_tint` - EAR_TINT's pull
+  scaled by that visibility against EAR_TINT_MELANIN 0.03 (the gate's man, where it was judged), capped at 1 (its hue
+  is orange, not blood's: deepening it on lighter skin would deepen the orange); `set_ear_tint` from `material.apply`
+  (every tone change and library load). Tint at 0.03 / 0.065 / 0.1 / 0.15: (1, 0.78, 0.76) / (1, 0.89, 0.88) /
+  (1, 0.96, 0.96) / (1, 0.99, 0.99). Attacked: "derive the tint from the blood model outright" - it changes the light
+  skin's judged look (blood lowers green, not blue) - a separate trial; "the scans' own ear redness stays on dark
+  skin" - yes, next if it still shows. Test `test_the_ears_redness_fades_where_melanin_hides_the_blood`.
+  `batch_eartone.sh` (the product's ears against this morning's; the gate's man beside HD Aaron; every suite).
+  **08:3x (`row_et_ear.png`, `row_et_ear2.png`): the Muscular man's ear a deeper red-brown, no longer bright
+  orange-red - better, still redder than his skin and glossy; the Heavy woman's brown; the Young woman's and the
+  gate's man's unchanged (his as HD Aaron's) - KEPT. Box spent.** Open, routed: the rest is his scans' own ear redness
+  (x 0.79 green, hsr0040 / yaro13 - lighter-skinned) carried onto dark skin; the standard is chromophore maps - each
+  scan's colour split into melanin and haemoglobin (Tsumura et al. 2003, ICA on log RGB; Jimenez et al. 2010) and
+  rebuilt at the character's tone through the skin model; NOT STANDARD and cheap: the texture's hue deviation scaled
+  by the blood's visibility at the tone (as `ear_tint`) - treats every hue change as blood. A job of its own (it moves
+  every dark skin), with the ears' gloss.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
