@@ -486,9 +486,14 @@ def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, sa
         for m in pristine.values():
             m.use_fake_user = True
         shown = {obj.name: obj.hide_render for obj in scene.objects}  # a variant may hide a part (factors' tear0)
+        # a character's pointer to its skin follows its slot's copy - the product's commands (skin.set_tone) write
+        # through it; left on the built material, a variant's tone change never reached the render (2026-11-09)
+        skin_of = {obj.name: obj.juststage.skin_material for obj in scene.objects if hasattr(obj, "juststage")}
         for vtag, vprepare in variants:
             for obj, i, m in slots:
-                obj.material_slots[i].material = pristine[m.name].copy()
+                copy = obj.material_slots[i].material = pristine[m.name].copy()
+                if m is not None and skin_of.get(obj.name) == m:
+                    obj.juststage.skin_material = copy
             for obj in scene.objects:
                 obj.hide_render = shown.get(obj.name, obj.hide_render)
             vprepare(built)

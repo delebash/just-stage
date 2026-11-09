@@ -626,6 +626,38 @@ booked with just-direct-mocap.
   `tools/calibrate_skin.py`, NIST's fit kept; (3) the tone slider's range ends at the darkest measured skin.
   Attacked: "lighter changes her identity" - L* 17.6 is no real person's, so a fault, not identity; "a clamp alone
   hides it" - the slider's top still greys at L* 25-31 (b* 9-12), so (2) is the fix and (1)/(3) only bound it.
+  04:39, the first tone trial void (four identical renders: the gate's variants left the skin pointer on the built
+  material - Mistakes); fixed in `parts_gate.render`, rerun `batch_tone2.sh`.
+  **04:4x (`row_tone_{face,three_quarter,cheek}.png`): 0.25 ashy grey-brown with a frosty grey sheen on the cheek;
+  0.14 browner, the cheek still frosty; 0.1 a warm dark brown that reads real; 0.065 a medium tan. KEPT 0.1 for her
+  preset (mine; `build_library.PRESETS`).** Attacked: (1) "the library loses its darkest person" - L* 31 is deep brown
+  and Amara (scanned dark skin) stays; (2) "0.14, the library's darkest tone, keeps her intent" - its cheek still
+  frosts, the model's b* 8.9 there; (3) "the Muscular man at 0.15 is as far out" - he read warm by eye at 03:5x (his
+  scan's own warmth carries through the gain); left, recorded for the calibration. Checked that nothing else gets
+  worse: at 0.1 a lobe-shaped patch on her upper chest shows plainly (`row_tone_chest.png`) - present at 0.25 too
+  (dimmer); not colour: base colour (Diffuse Color pass, `batch_tonecol.sh`) forehead / chest 1.28 at both tones, and
+  at the head tile's border with the torso tile every scan skin matches (head / torso 1.00-1.01 at the 72 seam
+  vertices, `seam_colour.py`); a crisp outline of the head tile's island in the relief or shine - the open "neck
+  patch" item, now seen on a second character. Into the library: `batch_heavy.sh` (backup
+  `.dev/backup/library_2026-11-09f`, characters rebuilt, the product rendered, every suite). **04:55: the product
+  (`row_heavy_three_quarter.png`) warm brown, not ashy; unit 45, tools 51 passed; Blender running.**
+- **04:5x, the neck / chest patch, reopened (new facts: a second character, seen at the three-quarter view, not only
+  close up; boxed 60 min):** the Diffuse Color pass (`diffcol_heavy01.png`) shows the lobe in BASE COLOUR - a darker
+  region with a stair-stepped outline down the sternum, and a jagged strip under the chin. Not the head / torso tile
+  border (the torso tile is one flat colour; the seam matches 1.00). The cause, read and measured: `skin_base.compose`
+  ("colour": "scans") cuts the scans' low layer to 0 outright where their cover ends (`low[~inside] = 0.0`) - at the
+  cover's edge every composition steps (`cover_step.py`, inside / outside luminance 6-20 texels each side: 611 median
+  0.986 / p10 0.907; 612 0.984 / 0.865; 613 0.941 / 0.757; 621 0.964 / 0.913; 622 0.956 / 0.867; **623 0.902 /
+  0.674, 74% of the edge off by more than 5%**). The New human's throat patch (02:2x, box spent then) is the same cut.
+  Fix (mine): the low layer faded out band by band - multi-band blending (Burt & Adelson 1983), OpenCV's
+  `detail_MultiBandBlender` as-is (`skin_base.faded_out`, `LOW_EDGE_BANDS` 7: on a synthetic step ~15 mm wide at 6
+  texels a mm; 6 bands ~7 mm). Attacked: (1) "a plain wider feather" - one width blurs fine detail at the edge or
+  leaves a broad step; per-band widths are the standard for seams; (2) "it shifts the face" - the coarse band reaches
+  in: the test holds the layer within 0.01 at 350 texels (~6 cm) inside on a cover the scans' size, and the trial
+  measures the change by distance on 623 itself (`compare_compose.py`); (3) "a real neck is darker" - it stays darker
+  near the face; it only no longer ends in a line. Test `tests/tools/test_skin_base.py`. Trial `batch_cover.sh` (623
+  composed and built again, backups `compositions_2026-11-09b`, `skins_2026-11-09`, `library_2026-11-09g`) - queued
+  after `batch_heavy`'s suites.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -858,3 +890,7 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   `batch_scar.sh` rebuilt the skins - its Scan man A had read it 2 min before; checked by the files' times, not luck).
 - Check a mask covers what it should before measuring with it (2026-11-09: a "face" mask that took the tile's empty
   background made a 0.55 face/body gap that wasn't there; I changed the composition on it before checking).
+- A trial that calls a product command runs where the command writes (2026-11-09: `skintone*` called
+  `skin.set_tone`, which writes through `obj.juststage.skin_material` - the gate's variants had swapped the slots to
+  copies and left that pointer on the built material: four identical renders. Fixed in `parts_gate.render` (the
+  pointer follows the slot's copy); only `skintone` was affected - the other trials edit the slots' materials).

@@ -65,7 +65,10 @@ PRESETS = (
         "Scan man B",
         "A tall muscular man",
     ),
-    ("Heavy woman", {"gender": 0.0, "weight": 0.9, "age": 0.6}, 0.25, "Scan woman C", "A heavy-set woman"),
+    # 0.1 (L* 31, dark brown): at 0.25 (L* 17.6, past any measured skin - NIST's darkest is L* 43, Black adults' mean
+    # less two SD ~30) the tone model greys and she read ashy (2026-11-09, `.dev/gate/parts/2026-11-09tone`;
+    # RESEARCH 14.10 "The model's dark end greys")
+    ("Heavy woman", {"gender": 0.0, "weight": 0.9, "age": 0.6}, 0.1, "Scan woman C", "A heavy-set woman"),
 )
 #: the face test's people (tools/face_test/face_character.py; `man_a` its first man): folder -> name, description
 SCANNED = {
