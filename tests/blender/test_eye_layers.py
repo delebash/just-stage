@@ -97,3 +97,15 @@ def test_the_tear_film_adds_its_gloss_over_the_eye(human):
     assert top.type == "ADD_SHADER"
     kinds = {lk.from_node.type for s in top.inputs for lk in s.links}
     assert kinds == {"BSDF_TRANSPARENT", "BSDF_GLOSSY"}
+
+
+def test_the_tear_film_fades_out_toward_the_lids(human):
+    """The film's lid-side edge lay on the lower lid's ledge - a white fleck there and specks through the closed lid
+    (2026-11-09): it fades out from TEAR_FADE_OUT to its rim under the lids, as it fades in from its rim on the
+    eyeball."""
+    _made, body = human
+    nt = eye_layers.layers_of(body)["eyeEdge"].data.materials[0].node_tree
+    out = nt.nodes["fade_out"]
+    assert out.inputs["From Min"].default_value == 1.0
+    assert out.inputs["From Max"].default_value == eye_layers.TEAR_FADE_OUT < 1.0
+    assert out.inputs["Value"].links[0].from_node.attribute_name == "share"

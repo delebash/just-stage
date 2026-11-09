@@ -1741,6 +1741,65 @@ def browedge(built: dict, sd: float) -> None:
     print("BROW EDGE", sd, flush=True)
 
 
+def tearfade(built: dict, start: float) -> None:
+    """The tear film faded out toward its rim under the lids too (from share `start` to 0 at 1), not only in from its
+    rim on the eyeball (`eye_layers.TEAR_FADE`): 2026-11-09, its lid-side edge showed as a white fleck on the lower
+    lid's ledge (the ledge turn moved the lid out; 24-27 film vertices 1-2.3 mm off the eyeball)."""
+    n = 0
+    for obj in bpy.data.objects:
+        if obj.juststage.part != "eyeEdge":
+            continue
+        for slot in obj.material_slots:
+            nt = slot.material.node_tree
+            attr = next(x for x in nt.nodes if x.type == "ATTRIBUTE" and x.attribute_name == "share")
+            wet = next(x for x in nt.nodes if x.type == "MATH" and x.operation == "MULTIPLY")
+            out_fade = nt.nodes.new("ShaderNodeMapRange")
+            out_fade.interpolation_type = "SMOOTHSTEP"
+            out_fade.inputs["From Min"].default_value, out_fade.inputs["From Max"].default_value = 1.0, start
+            nt.links.new(attr.outputs["Fac"], out_fade.inputs["Value"])
+            both = nt.nodes.new("ShaderNodeMath")
+            both.operation = "MULTIPLY"
+            nt.links.new(wet.outputs["Value"], both.inputs[0])
+            nt.links.new(out_fade.outputs["Result"], both.inputs[1])
+            gloss = next(x for x in nt.nodes if x.type == "BSDF_GLOSSY")
+            nt.links.new(both.outputs["Value"], gloss.inputs["Color"])
+            n += 1
+    print("TEAR FADE from", start, "on", n, "materials", flush=True)
+
+
+def marginrelief(built: dict, kept: float) -> None:
+    """The lid margin's relief (pores, microrelief, the scans' relief) x `kept` by base v2's `js_margin` (the shader's
+    margin_attr): 2026-11-09, the lower margin a wide band of stretched, streaky skin texture at the eye view - real
+    margins are smooth wet tissue. Material-only: each depth factor and the normal map's strength scaled there."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        nodes, links = nt.nodes, nt.links
+        attr = nodes.get(maps.NODE + "margin_attr")
+        if attr is None:
+            continue
+        keep = nodes.new("ShaderNodeMath")
+        keep.operation = "MULTIPLY_ADD"  # 1 - (1 - kept) * margin
+        links.new(attr.outputs["Fac"], keep.inputs[0])
+        keep.inputs[1].default_value, keep.inputs[2].default_value = -(1.0 - kept), 1.0
+        for key in ("pore", "micro"):
+            depth = nodes[maps.NODE + f"{key}_depth"]
+            src = depth.inputs[0].links[0].from_socket
+            cut = nodes.new("ShaderNodeMath")
+            cut.operation = "MULTIPLY"
+            links.new(src, cut.inputs[0])
+            links.new(keep.outputs[0], cut.inputs[1])
+            links.new(cut.outputs[0], depth.inputs[0])
+        strength = nodes[maps.NODE + "normal_map"].inputs["Strength"]
+        cut = nodes.new("ShaderNodeMath")
+        cut.operation = "MULTIPLY"
+        cut.inputs[0].default_value = strength.default_value
+        links.new(keep.outputs[0], cut.inputs[1])
+        links.new(cut.outputs[0], strength)
+        n += 1
+    print("MARGIN RELIEF kept", kept, "on", n, "trees", flush=True)
+
+
 def toeplate(built: dict, length: float, side: float) -> None:
     """The toes' nail plate shorter and narrower (`maps.TOE_PLATE_LENGTH`, `TOE_PLATE_SIDE`) in the shader and the nail
     bed's shape together - 2026-11-09, the fingers' plate covered the toe's whole tip. A shape: --alone."""
@@ -3002,6 +3061,10 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("tearfade*"):  # tearfade*0.7 (the film fades out from this share to its lid-side rim)
+        return lambda built: tearfade(built, float(name.split("*")[1]))
+    if name.startswith("marginrelief*"):  # marginrelief*0 (the lid margin's relief kept: 0 none)
+        return lambda built: marginrelief(built, float(name.split("*")[1]))
     if name.startswith("toeplate*"):  # toeplate*0.6*0.65 (the toes' plate length share and half-width) - --alone
         _k, length, side = name.split("*")
         return lambda built: toeplate(built, float(length), float(side))

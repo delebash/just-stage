@@ -39,6 +39,11 @@ TEAR_ROUGHNESS = 0.3  # CC5's Tear Line examples: 0.25 and 0.45
 #: the film fades in over this share of the strip from its edge on the eyeball (CC5's Edge Fadeout); 0.25 left a grey
 #: band lying on the eyeball (gate run 9; HD Aaron's a thin wet line at the lid)
 TEAR_FADE = 0.6
+#: and fades out again from this share to its rim under the lids: since the lower lid became a ledge (the contact's
+#: LEDGE_TURN, 2026-11-07) the film's lid-side edge lay on top of it, 1-2.3 mm off the eyeball - a white fleck on the
+#: ledge at the eye view and specks through the closed lid (2026-11-09, `.dev/gate/parts/2026-11-09tearfade`: 0.5
+#: took them, the wet line between kept)
+TEAR_FADE_OUT = 0.5
 TEAR_IOR = 1.336  # water
 LAYERS = {"eyeshell": "occlusion", "eyeEdge": "tearline"}
 #: each vertex's place about its eye (point attributes): which eye, azimuth and elevation (degrees), height off it (m)
@@ -246,7 +251,7 @@ def _occlusion_material(name: str) -> bpy.types.Material:
 
 def _tearline_material(name: str) -> bpy.types.Material:
     """A tear film: water's Fresnel reflection over a transparent film, CC5's example roughness, faded in from its edge
-    on the eyeball (CC5's Edge Fadeout)."""
+    on the eyeball (CC5's Edge Fadeout) and out toward its edge under the lids (TEAR_FADE_OUT)."""
     mat = bpy.data.materials.new(name)
     nt = mat.node_tree
     nt.nodes.clear()
@@ -257,12 +262,21 @@ def _tearline_material(name: str) -> bpy.types.Material:
     fade.interpolation_type = "SMOOTHSTEP"
     fade.inputs["From Max"].default_value = TEAR_FADE
     nt.links.new(attr.outputs["Fac"], fade.inputs["Value"])
+    fade_out = nt.nodes.new("ShaderNodeMapRange")
+    fade_out.name = "fade_out"
+    fade_out.interpolation_type = "SMOOTHSTEP"
+    fade_out.inputs["From Min"].default_value, fade_out.inputs["From Max"].default_value = 1.0, TEAR_FADE_OUT
+    nt.links.new(attr.outputs["Fac"], fade_out.inputs["Value"])
+    window = nt.nodes.new("ShaderNodeMath")
+    window.operation = "MULTIPLY"
+    nt.links.new(fade.outputs["Result"], window.inputs[0])
+    nt.links.new(fade_out.outputs["Result"], window.inputs[1])
     fresnel = nt.nodes.new("ShaderNodeFresnel")
     fresnel.inputs["IOR"].default_value = TEAR_IOR
     wet = nt.nodes.new("ShaderNodeMath")
     wet.operation = "MULTIPLY"
     nt.links.new(fresnel.outputs["Fac"], wet.inputs[0])
-    nt.links.new(fade.outputs["Result"], wet.inputs[1])
+    nt.links.new(window.outputs["Value"], wet.inputs[1])
     gloss = nt.nodes.new("ShaderNodeBsdfGlossy")
     gloss.inputs["Roughness"].default_value = TEAR_ROUGHNESS
     nt.links.new(wet.outputs["Value"], gloss.inputs["Color"])  # the reflection's strength: water's Fresnel, faded in

@@ -878,7 +878,36 @@ booked with just-direct-mocap.
   changed, all in the frame's top-right corner (a few toes in that view) - the fingers untouched. KEPT 0.6 / 0.7
   (mine).** Test `test_a_toes_nail_plate_is_short_and_on_top`. `batch_toeprod.sh` (backup `library_2026-11-09m`;
   characters rebuilt - the nail bed is made with the character; the foot, hand and nails in the product, the Average
-  woman's foot; every suite) - running.
+  woman's foot; every suite). **12:18 (`row_tpp_foot.png`): the product's toenails short plates on top of the toes,
+  the Average woman's too - KEPT; end run green (unit 45, tools 54, Blender 205); committed 7eead78.** Seen there: the
+  woman's foot has none of the man's tendons and veins - the body scans' relief goes on men's skins only
+  (`build_skins`: `_body_scan() if man`), the plan's Q-BODY-3 ("the women's torso relief is below the bar,
+  unmeasured" - Blender Studio's CC0 `realistic_body_female` first) - its own job, recorded there.
+- **12:2x, the lower lid's rim at the eye view (`row_sclera_ours.png`, `row_sclera_his.png`):** ours a thick glassy
+  orange ledge with a dark gap against the eye; his a soft pink wet rim on the eyeball (11-08's fault list; 11-08
+  23:1x: "not the margin's tint - the lid's shape and the skin's glow through the thin ledge"; the shape worked
+  11-07 - `lidledge`, `lidsmooth`, `lidcarry`, the contact's LEDGE_TURN). The glow never measured at the open eye:
+  `batch_rimglow.sh` - the live view's scattering x 0.3 and x 0.05, and the tearline hidden, against today's. The
+  eye's white: the vessels there, faint (rec 12's map) - not the fault. **12:3x (`row_rg.png`, `row_rg_zoom.png`):** the scattering
+  down takes the rim's orange glow but hardens every skin (a diagnostic, not a fix); the tearline hidden takes a white
+  fleck lying ON the ledge. Zoomed, the ledge itself: a wide flat band from the eye to the lash line with the skin's
+  texture stretched into streaks - the closed lid's cause, but here always on (the contact key pulls these vertices
+  in the open eye). Real margins are smooth wet tissue, and base v2 marks them (`js_margin`, the shader's
+  `margin_attr`) - so the relief cut there is right in itself, with no hidden-region premise. Trial
+  (`marginrelief*`, `batch_marginrelief.sh`): the margin's relief kept 0 and 0.3 against today's. **12:28 (`row_mr_zoom.png`): barely a change - the streaks are
+  the colour stretched over the band, and the band's width is the lid's shape. The rim: open - what's missing is a
+  thinner lower margin (hm08's thick lid, turned into a wide ledge by the 11-07 contact) and the colour unstretched
+  there (a static stretch map of the contact key; colour smoothed in it - right here, as the band is always seen and
+  always stretched).** One part concrete: the white fleck - the tear film's lid-side edge on the ledge
+  (`tear_fleck.py` on the library man: 24-27 of each eye's 204 film vertices 1-2.3 mm off the eyeball; the film's
+  opacity rises in from its eyeball rim and stays full to its lid rim). Trial `tearfade*` (`batch_tearfade.sh`): the
+  film also faded out toward its lid rim from share 0.7 / 0.5, against today's and no film - eye and blink views.
+  **12:35 (`row_tf_{zoom,eye,blink}.png`): from 0.5 the fleck on the ledge gone (as with no film), the wet line
+  between kept, the whole eye view otherwise unchanged; in the blink most specks gone (one stays with no film too -
+  not the tear film). KEPT (mine): `eye_layers.TEAR_FADE_OUT` 0.5 - the film's window by its share, fading in from the
+  eyeball rim (TEAR_FADE) and out toward the lid rim.** Test `test_the_tear_film_fades_out_toward_the_lids`.
+  `batch_tearprod.sh` (backup `library_2026-11-09n`; characters rebuilt - the film's material is made with the eye
+  parts; the product's eye and blink; every suite) - running.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
