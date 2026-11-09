@@ -125,6 +125,14 @@ LIP_TINT, LIP_STRENGTH = (1.0, 0.56, 0.90), 1.0  # at 0.74 / 0.79 still paler th
 #: less yellow (56.4 / 30.4 / 15.1) and his lower lip shining - the tint from the two lips' linear ratio (0.70 / 0.75 x
 #: 0.80 / 1.22), the vermilion smoother and lightly coated
 LIP_ROUGHNESS, LIP_COAT = 0.33, 0.3
+#: the lips' fine vertical lines - our own (no free scan resolves them: Ten24's lips are ~220 texels across): a wave in
+#: bands across the lip, its distortion and a noise of ~4 mm cells making the furrows uneven, as a bump inside the lips'
+#: mask. Judged by eye beside HD Aaron (2026-11-08, `.dev/gate/parts/2026-11-08ao`, `factors liplines*1.3*0.4*4*0.8`):
+#: the smooth "rubber" lips read as lips. In hm08's own UVs ("UVMap", the mask's) so the lines ride the lips through
+#: every expression: across the lip V runs ~1,602 mm a unit on hm08's base (measured 2026-11-08 on base.obj's faces under
+#: the mask), the lines are bands along V. (period mm, depth m, distortion, how much the noise varies the lines)
+LIP_LINES = (1.3, 0.0004, 4.0, 0.8)
+LIP_MM_PER_V, LIP_NOISE_MM = 1602.0, 4.0
 OILINESS_DEFAULT = 0.5  # the oiliness slider's default (skin_set_tone.Params): the chain's factor is 1 there
 SPECULAR_FROM_CAVITY = 0.5  # Blender's standard specular level where the cavity map is 1
 #: the body's mottling below the head tile (its maps are plain colour there): a seamless 3D noise in the object's own
@@ -406,6 +414,26 @@ def _lip_layer(nt, bsdf) -> None:
     for name, value, key in (("Roughness", LIP_ROUGHNESS, "rough"), ("Coat Weight", LIP_COAT, "coat")):
         own = bsdf.inputs[name].links[0].from_socket if bsdf.inputs[name].is_linked else bsdf.inputs[name].default_value
         nt.links.new(_mix(nt, f"lips_{key}", "FLOAT", share, own, value), bsdf.inputs[name])
+    period, depth, distortion, vary = LIP_LINES
+    wave = _node(nt, "ShaderNodeTexWave", "lips_wave", (-1400, -2700))
+    wave.wave_type, wave.bands_direction, wave.wave_profile = "BANDS", "Y", "SIN"
+    wave.inputs["Scale"].default_value = LIP_MM_PER_V / period
+    wave.inputs["Distortion"].default_value = distortion
+    wave.inputs["Detail"].default_value, wave.inputs["Detail Scale"].default_value = 3.0, 1.5
+    nt.links.new(uvmap.outputs["UV"], wave.inputs["Vector"])
+    noise = _node(nt, "ShaderNodeTexNoise", "lips_vary", (-1400, -2950))
+    noise.inputs["Scale"].default_value = LIP_MM_PER_V / LIP_NOISE_MM
+    noise.inputs["Detail"].default_value = 2.0
+    nt.links.new(uvmap.outputs["UV"], noise.inputs["Vector"])
+    gain = _math(nt, "lips_gain", "MULTIPLY_ADD", noise.outputs["Fac"], vary, 1.0 - vary)  # 1 - vary + vary x noise
+    lines = _math(nt, "lips_lines_height", "MULTIPLY", _math(nt, "lips_varied", "MULTIPLY", wave.outputs["Fac"], gain),
+                  share)
+    bump = _node(nt, "ShaderNodeBump", "lips_lines", (-150, -2700))
+    bump.inputs["Strength"].default_value, bump.inputs["Distance"].default_value = 1.0, depth
+    nt.links.new(lines, bump.inputs["Height"])
+    if bsdf.inputs["Normal"].is_linked:
+        nt.links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
+    nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
 
 
 def _relief_off_mouth(nt) -> None:

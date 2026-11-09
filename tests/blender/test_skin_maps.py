@@ -178,7 +178,9 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     rough = next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node
     assert rough == nodes[maps.NODE + "lips_rough"]
     assert next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node == nodes[maps.NODE + "nail_rough"]
-    assert bsdf.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
+    lines = bsdf.inputs["Normal"].links[0].from_node  # the lips' lines last, over the nails' raise
+    assert lines == nodes[maps.NODE + "lips_lines"]
+    assert lines.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
     coords = nodes[maps.NODE + "nail_coords"].image  # each nail's own coordinates, made once (make_nail_coords.py)
     alpha = np.empty(coords.size[0] * coords.size[1] * 4, np.float32)
     coords.pixels.foreach_get(alpha)
@@ -309,6 +311,25 @@ def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
     assert "lips_rough" in chain("Roughness")
     tint = maps.LIP_TINT
     assert tint[1] < tint[2]  # redder, less yellow: blue kept above green
+
+
+def test_the_lips_have_fine_lines_that_ride_them(human, tmp_path):
+    """Our own lip lines (2026-11-08: our lips read as smooth rubber beside HD Aaron's lined ones): a bump of uneven
+    bands inside the lips' mask, on hm08's own UVs (so they move with the lips), its distance LIP_LINES' depth, and the
+    lines' scale from the lip's measured millimetres a V unit."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    period, depth, _, vary = maps.LIP_LINES
+    bump = nodes[maps.NODE + "lips_lines"]
+    assert bump.inputs["Distance"].default_value == pytest.approx(depth)
+    height = bump.inputs["Height"].links[0].from_node  # the varied lines times the lips' share
+    assert height.inputs[1].links[0].from_node == nodes[maps.NODE + "lips_share"]
+    wave = nodes[maps.NODE + "lips_wave"]
+    assert wave.inputs["Vector"].links[0].from_node == nodes[maps.NODE + "lips_uv"]
+    assert nodes[maps.NODE + "lips_uv"].uv_map == "UVMap"  # hm08's own, the mask's
+    assert wave.inputs["Scale"].default_value == pytest.approx(maps.LIP_MM_PER_V / period)
+    assert nodes[maps.NODE + "lips_gain"].inputs[1].default_value == pytest.approx(vary)
 
 
 def test_the_nail_plate_is_matte_like_his(human, tmp_path):
