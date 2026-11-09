@@ -1669,6 +1669,44 @@ def lipseam(built: dict, k: float) -> None:
     print("LIP SEAM", k, "on", len(nodes), "nodes", flush=True)
 
 
+def upperlip(built: dict, r: float, g: float, b: float) -> None:
+    """The upper lip deeper red than the lower (HD Aaron's; ours one pink on both, 2026-11-09): the base colour x (r, g,
+    b) on the lips' share above the mouth's line (world height over the gate's mouth anchor, -0.5 to +2 mm) - a trial
+    on a still render; the product would need a mask in UV that follows the lips."""
+    maps = _maps()
+    mouth_z = pg.anchors("ours", built)["mouth"][2]
+    n = 0
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        share = nt.nodes.get(maps.NODE + "lips_share")
+        if share is None or not bsdf.inputs["Base Color"].is_linked:
+            continue
+        geo = nt.nodes.new("ShaderNodeNewGeometry")
+        sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+        nt.links.new(geo.outputs["Position"], sep.inputs["Vector"])
+        ramp = nt.nodes.new("ShaderNodeMapRange")
+        ramp.clamp = True
+        nt.links.new(sep.outputs["Z"], ramp.inputs["Value"])
+        ramp.inputs["From Min"].default_value, ramp.inputs["From Max"].default_value = mouth_z - 0.0005, mouth_z + 0.002
+        upper = nt.nodes.new("ShaderNodeMath")
+        upper.operation = "MULTIPLY"
+        nt.links.new(ramp.outputs["Result"], upper.inputs[0])
+        nt.links.new(share.outputs["Value"], upper.inputs[1])
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        nt.links.new(upper.outputs["Value"], mix.inputs["Factor"])
+        next(i for i in mix.inputs if i.identifier == "A_Color").default_value = (1.0, 1.0, 1.0, 1.0)
+        next(i for i in mix.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+        times = nt.nodes.new("ShaderNodeVectorMath")
+        times.operation = "MULTIPLY"
+        nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, times.inputs[0])
+        nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Color"), times.inputs[1])
+        nt.links.new(times.outputs["Vector"], bsdf.inputs["Base Color"])
+        mod.sync_live(mat)
+        n += 1
+    print("UPPER LIP", (r, g, b), "at mouth z", round(mouth_z, 4), "on", n, "skins", flush=True)
+
+
 def lipset(built: dict, period: float, depth: float, distortion: float, vary: float) -> None:
     """The product's lip lines (`maps.LIP_LINES` (1.3, 0.0004, 4.0, 0.8)) set on its own nodes - at full resolution they
     read as a dense even rib, corduroy, beside HD Aaron's sparse irregular creases on a smooth lip (2026-11-08)."""
@@ -2828,6 +2866,8 @@ def factor(name: str):
         return lambda built: liptint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("stubblepatch*"):  # stubblepatch*0.8*140 (patchy share, density a cm2) - --alone
         return lambda built: stubblepatch(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("upperlip*"):  # upperlip*0.8*0.6*0.62 (linear RGB, x the colour on the upper lip)
+        return lambda built: upperlip(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("lipseam*"):  # lipseam*1.5 (maps.LIP_SEAM_STRENGTH's place; 0 = none)
         return lambda built: lipseam(built, float(name.split("*")[1]))
     if name.startswith("lipset*"):  # lipset*1.8*0.0002*6*0.95 (maps.LIP_LINES' place: period mm, depth m, distortion,
