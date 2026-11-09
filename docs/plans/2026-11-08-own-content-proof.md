@@ -403,7 +403,7 @@ booked with just-direct-mocap.
   (no visible change), the surround darker (a small gain - the composition's EYE_DARK is the place). Trial: the margin's
   tint off and lighter (`factors margintint`, `.dev/gate/parts/2026-11-08margin`, in `batch_torso.sh`) - how much of the
   rim is colour, how much the lid's shape.
-- **23:0x-23:1x, results (`batch_torso.sh`; tools 50 passed):** **torso FIXED** (`row_debris_torso.png`: the oval by
+- **23:0x-23:1x, results (`batch_torso.sh`; tools 50, Blender 195 passed at 23:25 - the debris fill, the rebuilt skins and the seam layer verified; the lash change came after that suite loaded):** **torso FIXED** (`row_debris_torso.png`: the oval by
   the sternum gone, both nipples real bumps, the navel reads as a navel; a small curved mark below-left of the navel
   left to trace). **Lips' seam at 4 mm: no visible change at 0 / 1 / 1.5** (`row_lipseam_lips.png`) - the band stays on
   the lips' inner side; widened to 10 mm (`SEAM_MM`), one more round, then the box is spent. **The eye's rim is not
