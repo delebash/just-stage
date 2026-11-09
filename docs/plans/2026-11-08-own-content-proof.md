@@ -490,6 +490,11 @@ booked with just-direct-mocap.
   0-1, 1 mm apart p90 0.023), sharpened (smoothstep 0.3-0.7), scaling each root's keep chance; patches lower the
   mean, so the trial gives the density too: `stubblepatch*0.8*100` / `*0.8*150` (about today's mean) beside today's
   (`batch_stubble.sh`, --alone, after the border batch).
+- **01:23, the border batch (`row_border_3q.png`, `row_border_torso.png`):** the scan skins rebuilt with the border
+  detail fade - no visible regression; the faint reddish line across the Older man's upper chest at three-quarter is
+  unchanged (not mid-scale mottling - a narrow line, unseen in the front view; left as minor). Kept (its test passed
+  in the 01:09 suite). Also on every man: a small curved mark below-left of the navel - the one Artec torso's own
+  (every man shares it); minor, open.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
