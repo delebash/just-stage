@@ -435,6 +435,19 @@ booked with just-direct-mocap.
   region's factor is retuned); run into the scratchpad, its face_regions / face_share identical to the shipped ones,
   only the new mask copied in (1.7% of the head tile). Applied between `batch_lash_lip.sh`'s renders and its suite
   (one suite for the lashes, the lips and the eyes); rendered after by `batch_eyelayer.sh`.
+- **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
+  (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
+  a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
+  library man's - they predate EYE_OPEN; a user's eye slider does the same) leave the surface-bound lashes tilted -
+  on a New human only 1 of 360 went upright (`lash_refit_check.py`), so the cluster is probed on the gate's man
+  himself (`upright_probe.py`, which groom it is). Built meanwhile: `build.refit_lashes` (from `refit_riders`, after
+  any shape change: our lashes made again on the new lids, the strands' colour kept - a lash style the user chose
+  stays; 1.84 s) - kept only if the probe shows it's the cause. **The lips' seam at 10 mm:** at full resolution
+  (`lips_seam_crop.png`) the line between the lips deepens, most at the corners (44,539 pixels changed, up to 30/255
+  at x1; more at 1.5) - a small real gain: LIP_SEAM_STRENGTH -> 1.5 with the next lips change. **A bigger lips fault at
+  full resolution: the lip lines read as corduroy** - a dense, even vertical rib beside his sparse irregular creases on
+  a smooth, glossy lip; trial `lipset` (half the depth; sparser 1.8 mm, distortion 6, patchy 0.95; and further) in
+  `batch_lipset.sh`.
 
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 

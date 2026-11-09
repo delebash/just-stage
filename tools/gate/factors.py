@@ -1669,6 +1669,24 @@ def lipseam(built: dict, k: float) -> None:
     print("LIP SEAM", k, "on", len(nodes), "nodes", flush=True)
 
 
+def lipset(built: dict, period: float, depth: float, distortion: float, vary: float) -> None:
+    """The product's lip lines (`maps.LIP_LINES` (1.3, 0.0004, 4.0, 0.8)) set on its own nodes - at full resolution they
+    read as a dense even rib, corduroy, beside HD Aaron's sparse irregular creases on a smooth lip (2026-11-08)."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        nodes = nt.nodes
+        if maps.NODE + "lips_wave" not in nodes:
+            continue
+        nodes[maps.NODE + "lips_wave"].inputs["Scale"].default_value = maps.LIP_MM_PER_V / period
+        nodes[maps.NODE + "lips_wave"].inputs["Distortion"].default_value = distortion
+        nodes[maps.NODE + "lips_lines"].inputs["Distance"].default_value = depth
+        gain = nodes[maps.NODE + "lips_gain"]
+        gain.inputs[1].default_value, gain.inputs[2].default_value = vary, 1.0 - vary
+        n += 1
+    print("LIP SET", (period, depth, distortion, vary), "on", n, "trees", flush=True)
+
+
 def margintint(built: dict, r: float, g: float, b: float) -> None:
     """The lid margin's tint over the skin (`maps.MARGIN_TINT` (0.86, 0.62, 0.62)) - our margin reads as a thick
     orange-pink rim round the eye beside HD Aaron's thin wet line (2026-11-08)."""
@@ -2794,6 +2812,8 @@ def factor(name: str):
         return lambda built: liptint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("lipseam*"):  # lipseam*1.5 (maps.LIP_SEAM_STRENGTH's place; 0 = none)
         return lambda built: lipseam(built, float(name.split("*")[1]))
+    if name.startswith("lipset*"):  # lipset*1.8*0.0002*6*0.95 (maps.LIP_LINES' place: period mm, depth m, distortion,
+        return lambda built: lipset(built, *(float(x) for x in name.split("*")[1:5]))  # vary)
     if name.startswith("margintint*"):  # margintint*1*1*1 (maps.MARGIN_TINT's place, linear RGB; 1,1,1 = the skin's)
         return lambda built: margintint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("eyewhite*"):  # eyewhite*0.85
