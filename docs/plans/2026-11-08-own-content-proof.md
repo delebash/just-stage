@@ -455,6 +455,13 @@ booked with just-direct-mocap.
   than the face) - the hairline, on the render. `batch_facetone.sh`: compose and build the six skins, the face/body
   ratio printed, the library backed up (`library_2026-11-09a`) and its characters rebuilt, four characters rendered.
   Also seen: the woman's chin with a beard-shadow texture; a light line down Amara's chest.
+  **00:36: WRONG - the fix didn't move the number (still 0.55-0.59), so I checked my measure: `face_share.png` is 1 over
+  the tile's empty background, my "face" mask counted black texels (77.9% of the tile). On skin texels the face/body is
+  1.01 / 1.01 / 0.98 (Scan man A, C, woman A) - the textures match, and the composed ratio over the face was already
+  0.985 of 1. The premise false: the normalisation change reverted (code identical to before 9b1db1d; the compositions
+  restored from the backup and the skins and characters rebuilt, `batch_restore.sh`).** The brown face on the
+  Older man is not in the maps: the tone gain multiplies every tile alike - the diagnostic next: the face view's
+  Diffuse Color pass (the base colour before light), forehead against chest, Older man and Average man.
 - **00:11, the lips in the product (`row_lipsprod2_lips.png`): softer, the corduroy gone, the line at the seam deeper
   - KEPT.** The same sheet: **our chin under the stubble reads coarse and bumpy** (the region table's chin pores x1.5)
   beside his smooth chin - `batch_chin.sh` (region variants chin pores 1.0 / 0.6) after the face tone.
@@ -686,3 +693,5 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   report had voided on 11-07, and from the forehead view with the fringe on).
 - A transplant is not a verdict. A side fix (speed, tooling, layout) is not the job unless the proof step needs it.
 - Read the code before saying what a test used (I said the gate had its own lights - it uses the app's stage).
+- Check a mask covers what it should before measuring with it (2026-11-09: a "face" mask that took the tile's empty
+  background made a 0.55 face/body gap that wasn't there; I changed the composition on it before checking).
