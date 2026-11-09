@@ -67,3 +67,24 @@ def test_stubble_is_short_hair_on_the_beard_not_on_the_lips_or_nose(man):
     inv = np.array(body.matrix_world.inverted())
     gaps = [tree.find_nearest(Vector(inv[:3, :3] @ r + inv[:3, 3]))[3] for r in roots[::50]]
     assert max(gaps) < 0.0003
+
+
+def test_stubble_grows_in_patches_not_an_even_mat(man):
+    """An even density read as a uniform mat beside HD Aaron's patchy stubble (2026-11-09): with PATCHY the hairs per
+    2 cm cell over the beard vary well beyond an even density's chance spread."""
+    _made, body = man
+
+    def spread(patchy):
+        old = stubble.PATCHY
+        stubble.PATCHY = patchy
+        try:
+            roots = np.array([s[0] for s in stubble.strands(body)[0]])
+        finally:
+            stubble.PATCHY = old
+        cells = np.floor(roots[:, [0, 2]] / 0.02).astype(int)  # front-on 2 cm cells (x, z)
+        _keys, counts = np.unique(cells, axis=0, return_counts=True)
+        counts = counts[counts > np.percentile(counts, 25)]  # cells well inside the beard, not its edge
+        return counts.std() / counts.mean()
+
+    assert stubble.PATCHY > 0
+    assert spread(stubble.PATCHY) > 1.3 * spread(0.0), (spread(stubble.PATCHY), spread(0.0))

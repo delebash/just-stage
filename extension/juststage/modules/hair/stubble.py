@@ -49,8 +49,9 @@ CAVITY = 0.02  # m
 LIPS_AT = 0.4
 MELANIN, REDNESS, MELANIN_SPREAD = 0.9, 0.15, 0.05
 #: beards grow unevenly: the density x (1 - PATCHY + PATCHY x a smooth noise of PATCH_MM cells) - at an even density
-#: ours read as a uniform mat beside HD Aaron's patchy stubble (2026-11-09); 0 = even
-PATCHY, PATCH_MM = 0.0, 25.0
+#: ours read as a uniform mat beside HD Aaron's patchy stubble; at 0.8 (DENSITY kept) the chin's middle thins and the
+#: jaw stays dense, as his (2026-11-09, `.dev/gate/parts/2026-11-09stubble`, by eye at the chin and face views)
+PATCHY, PATCH_MM = 0.8, 25.0
 POINTS = lashes.POINTS
 
 

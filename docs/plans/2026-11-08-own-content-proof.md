@@ -495,6 +495,11 @@ booked with just-direct-mocap.
   unchanged (not mid-scale mottling - a narrow line, unseen in the front view; left as minor). Kept (its test passed
   in the 01:09 suite). Also on every man: a small curved mark below-left of the navel - the one Artec torso's own
   (every man shares it); minor, open.
+- **01:33, the stubble (`row_stubble_{chin,lips,face}.png`):** patchy 0.8 at 100 a cm2 thins the chin's middle and
+  keeps the jaw dense - his distribution at the chin and face views; at 150 denser with patches. **KEPT: PATCHY 0.8,
+  DENSITY 100** (fewer hairs on average, within the stubble test's 4,000-40,000); a test that the hairs per 2 cm cell
+  vary well beyond an even density's spread. His salt-and-pepper colour (many white hairs) is age - identity. The
+  library's men carry stubble grooms: rebuilt with the next end run.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -531,7 +536,7 @@ booked with just-direct-mocap.
 | Face shape | identity, not a fault | - | (three real scans' shapes read no more real - not the doll look's cause) |
 | Brows | close | 1200 / 2000 at 0.92 | the live view's strand haze -> cards |
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
-| Stubble | close | 100 a cm2; the chin's skin under it smoother (pores x0.6, 00:40) | denser and more even than his patchy grey-tipped stubble; the beard region higher on the cheeks |
+| Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
 | Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
 | Lips | close (00:1x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5) | his upper lip redder, a crisper border |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`) | the lid's rim (shape and glow, not colour); the lower lashes' kinks; the strand haze (cards) |
