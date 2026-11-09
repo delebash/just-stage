@@ -104,3 +104,52 @@ def test_the_border_blend_meets_both_tiles_colours_at_their_border(tmp_path):
     finally:
         scene.render.engine = engine
         bpy.data.objects.remove(strip)
+
+
+def test_the_border_blend_fades_a_scans_mottling_toward_a_plain_tile(tmp_path):
+    """A scan's mid-scale mottling running up to a plain body tile drew a texture line across Amara's upper chest
+    (2026-11-09): within the border band it fades out (none at the border), far from it it stays."""
+    maps = build_skins.maps
+    nx, ny = 40, 10  # the same strip: left half on 1001 (mottled), right half on 1002 (plain)
+    co = [(0.4 * i / nx, 0.1 * j / ny, 0.0) for j in range(ny + 1) for i in range(nx + 1)]
+    faces = [(j * (nx + 1) + i, j * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i)
+             for j in range(ny) for i in range(nx)]  # fmt: skip
+    me = bpy.data.meshes.new("strip")
+    me.from_pydata(co, [], faces)
+    uv = []
+    for f in faces:
+        right = np.mean([co[v][0] for v in f]) > 0.2
+        for v in f:
+            x, y, _z = co[v]
+            u = (x - 0.2) / 0.2 if right else x / 0.2
+            uv.append((0.25 + 0.5 * u + (1.0 if right else 0.0), 0.25 + 0.5 * y / 0.1))
+    me.uv_layers.new(name=maps.UV).data.foreach_set("uv", np.array(uv, np.float32).ravel())
+    strip = bpy.data.objects.new("strip", me)
+    bpy.context.scene.collection.objects.link(strip)
+    stems = {"base_color": "t.base_color"}
+    cols = np.arange(256)
+    mottle = 0.5 * (1.0 + 0.2 * np.sin(2 * np.pi * cols / 12.8))  # a 2 cm period on the strip (128 texels = 0.2 m)
+    maps.write_png(tmp_path / "t.base_color.1001.png", np.repeat(np.tile(mottle, (256, 1))[..., None], 3, 2).astype(np.float32))
+    maps.write_png(tmp_path / "t.base_color.1002.png", np.full((256, 256, 3), 0.5, np.float32))
+    scene = bpy.context.scene
+    engine = scene.render.engine
+    scene.render.engine = "CYCLES"
+    scene.cycles.device, scene.cycles.samples = "CPU", 1
+    try:
+        for o in bpy.context.selected_objects:
+            o.select_set(False)
+        bpy.context.view_layer.objects.active = strip
+        strip.select_set(True)
+        build_skins._border_blend(strip, tmp_path, stems)
+        left = build_skins._read_png(tmp_path / "t.base_color.1001.png")[128, :, 0]
+
+        def swing(a, b):
+            part = left[int(a * 256):int(b * 256)]
+            return part.std() / part.mean()
+
+        far, near = swing(0.30, 0.45), swing(0.70, 0.745)  # 12-18 cm from the border; its last 2 cm
+        assert far > 0.9 * mottle.std() / mottle.mean(), far
+        assert near < 0.5 * far, (near, far)
+    finally:
+        scene.render.engine = engine
+        bpy.data.objects.remove(strip)

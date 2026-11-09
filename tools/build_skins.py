@@ -361,6 +361,10 @@ def _border_colour(body, head_srgb: np.ndarray) -> np.ndarray | None:
 #: the border blend (_border_blend): each side of a tile border moves its colour to the two sides' mean within this
 #: 3D distance (m), the mean taken from colours low-passed over BORDER_LOW (m); worked at BORDER_RES texels a tile
 BORDER_WIDTH, BORDER_LOW, BORDER_RES, BORDER_SPREAD = 0.05, 0.01, 512, 0.015
+#: and within the same band each side's mid-scale colour detail (between these sizes, m) fades out toward the border -
+#: a scan's mottling ran up to a plain body tile: a texture line across Amara's upper chest (2026-11-09; her face-test
+#: skin, the composed skins fade their neck already); the fine detail (pores, marks) and the broad colour kept
+BORDER_DETAIL = (0.005, 0.04)
 BORDER_TILES = (1001, 1002, 1003, 1004)  # the nails' tile has its own colour
 
 
@@ -471,7 +475,10 @@ def _border_blend(body, out: Path, stems: dict) -> None:
         if valid.any():  # the low-pass's width in texels: BORDER_LOW over this tile's texel size
             texel_mm = maps.MM_PER_UV[number] / res
         low = _masked_blur(small, valid, max(BORDER_LOW * 1000.0 / max(texel_mm, 1e-6), 1.0))
-        tiles[number] = {"path": path, "full": full, "pos": pos, "valid": valid, "low": low}
+        fine, wide = (_masked_blur(small, valid, max(size * 1000.0 / max(texel_mm, 1e-6) / 2.0, 1.0))
+                      for size in BORDER_DETAIL)  # fmt: skip
+        tiles[number] = {"path": path, "full": full, "pos": pos, "valid": valid, "low": low, "fine": fine,
+                         "wide": wide}  # fmt: skip
     _bake_uv(body, 1001)
 
     def colour(number, uv):
@@ -498,6 +505,7 @@ def _border_blend(body, out: Path, stems: dict) -> None:
         idx = np.flatnonzero(t["valid"].ravel())
         pos = t["pos"].reshape(-1, 3)[idx]
         field = np.ones((res * res, 3))
+        band = np.zeros(res * res)  # 1 at the border, 0 from BORDER_WIDTH on
         for start in range(0, len(idx), 2048):
             chunk = pos[start : start + 2048]
             d = np.linalg.norm(chunk[:, None, :] - points[None, :, :], axis=2)
@@ -507,9 +515,13 @@ def _border_blend(body, out: Path, stems: dict) -> None:
             s = np.clip(1.0 - near / BORDER_WIDTH, 0.0, 1.0)
             fade = s * s * (3.0 - 2.0 * s)
             field[idx[start : start + 2048]] = 1.0 + fade[:, None] * (r - 1.0)
+            band[idx[start : start + 2048]] = fade
         field = field.reshape(res, res, 3)
         h, w = t["full"].shape[:2]
-        blended = t["full"] * _resize(field, h, w)
+        # the mid-scale detail (fine over wide, around 1) divided out by the band: none left at the border
+        mid = np.where(t["valid"][..., None], t["fine"] / np.maximum(t["wide"], 1e-4), 1.0)
+        out_of_band = np.exp(-band.reshape(res, res, 1) * np.log(np.clip(mid, 0.25, 4.0)))
+        blended = t["full"] * _resize((field * out_of_band).astype(np.float32), h, w)
         maps.write_png(t["path"], _encode(blended))
         moved = np.abs(field[t["valid"]] - 1.0).max() if t["valid"].any() else 0.0
         print(f"border blend {number}: {len(points)} border points, up to {moved:.3f} moved")

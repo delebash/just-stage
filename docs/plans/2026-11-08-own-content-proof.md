@@ -473,6 +473,14 @@ booked with just-direct-mocap.
   closest to his - KEPT** (`make_face_regions.REGIONS` chin 0.6; only the region map's R changes - no skin rebuild;
   `batch_chinprod.sh` after the restore: the map made again and checked against the shipped, the product's chin seen,
   then every suite - the end run for tonight's later changes).
+- **01:0x, the tile borders (`amara_chest.png`, `chest_pair.png` in this session's scratchpad):** across Amara's upper
+  chest a texture line - the head tile's scan mottling up to the plain body tile (the border blend matched the two
+  sides' low-pass colours but kept each side's detail); the Older man a faint reddish band; the Average woman clean.
+  Amara (with Daniel, Walter, Mei) wears the face test's AI-painted skin - not CC5's way, not built by default
+  (`build_library.py`) - out of the proof's scope; the fix is general: `build_skins._border_blend` now also fades each
+  side's mid-scale colour detail (5 mm - 4 cm, `BORDER_DETAIL`) out within the 5 cm band - none at the border, the
+  fine detail and the broad colour kept; its test (a 2 cm mottle against a plain tile). `batch_border.sh` after the
+  chin's end run: the six scan skins rebuilt, the characters, the Older man's and Average man's views.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
