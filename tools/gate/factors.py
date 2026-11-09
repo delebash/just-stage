@@ -1776,7 +1776,8 @@ def regiontint(built: dict, k: float = 1.0) -> None:
     redder nose and cheeks, darker reddish lids and under-eyes; ours one flat peach): by the region map's smooth ramps,
     the eyes' surround x (0.78, 0.66, 0.62) and the nose x (1.0, 0.86, 0.86), `k` scaling how far from 1."""
     maps = _maps()
-    tints = {"eyes": (0.78, 0.66, 0.62), "nose": (1.0, 0.86, 0.86)}
+    # 19:25: (0.78, 0.66, 0.62) x2 read as orange eye shadow on our peach base - his lids darker brown-red; less orange
+    tints = {"eyes": (0.80, 0.72, 0.72), "nose": (1.0, 0.88, 0.88)}
     n = 0
     for mat, bsdf, mod in _skin_materials(built):
         nt = mat.node_tree

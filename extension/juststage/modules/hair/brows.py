@@ -25,7 +25,11 @@ from . import lashes
 
 NAME = "JustStage brows"
 STYLE = "wild_eyebrow"  # its roots give the region
-COUNT = 800  # per brow (real brows: hundreds of hairs each; 600 read sparse beside HD Aaron's)
+#: per brow (real brows: hundreds of hairs each; 600 read sparse beside HD Aaron's). 800 -> 1200 on 2026-11-08 (with
+#: FINE 1400 -> 2000 at FINE_MELANIN 0.8 -> 0.92), judged by eye beside him at the face and eye views
+#: (`.dev/gate/parts/2026-11-08layers`): a layer diagnostic (his cards on our face) made our brows the eyes' main fault -
+#: grey, thin, floating; grown denser and darker they read as real brows
+COUNT = 1200
 HEAD_ANGLE, BODY_ANGLE, TAIL_ANGLE, BODY_AT = 70.0, 22.0, 8.0, 0.35  # degrees off the brow's line, toward up
 CONVERGE = 14.0  # degrees: the upper rows down, the lower up
 SPREAD = 7.0  # degrees of each hair's own randomness
@@ -47,7 +51,7 @@ MELANIN, REDNESS, MELANIN_SPREAD = 0.92, 0.12, 0.05
 #: strand brows hold fine short hairs among the coarse ones): FINE hairs a brow, at FINE_LENGTH x the coarse ones'
 #: length, FINE_RADIUS thick, lighter - with the painted brows gone from the skins (2026-11-06) the 800 coarse hairs
 #: alone read thin beside HD Aaron's
-FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 1400, 0.5, 0.000022, 0.8
+FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 2000, 0.5, 0.000022, 0.92
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
 #: the band's lower edge (its roots' 10th percentile) at least this many eyeball radii above the eye's centre - about
 #: the orbital rim, where a man's brow lies (RESEARCH 14.13 "Where a brow sits"). MakeHuman's region put our roots

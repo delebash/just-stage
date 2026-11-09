@@ -249,6 +249,15 @@ booked with just-direct-mocap.
   the brows' own settings are the lever (the gate's fifth white, 1,400 fine hairs at melanin 0.8, the counts). Regional
   colour at k 1: a gain, too weak. Round 2 (`batch_layers2.sh`): `regiontint*2`, brows grown with grey 0, then darker
   fine hairs and denser (`browtrial*1200*2000*0.92*0`), then all with the darker hair model.
+- **19:25 (rows `row_l2_{face,eye}.png`):** brows at 1200 coarse / 2000 fine at 0.92, grey 0 read as real brows at the
+  face and eye views - **KEPT** (`brows.COUNT`, `FINE`, `FINE_MELANIN`). Regional colour at k 2 reads as orange eye
+  shadow and a red nose - the hue was wrong (his lids brown-red); now (0.80, 0.72, 0.72) / (1.0, 0.88, 0.88).
+  **The live-view hair model NOT changed (mine, attacked):** its shares were calibrated against our own Cycles (the
+  repo's oracle rule, AGENTS.md); the 11-07 gate showed no setting meets it front and back - the model's angle is
+  wrong - and the approved rule for that failure is cards in the live view (Q-HAIR-7; his cards ran 54 fps here). The
+  trial only confirmed the haze is the model: **scalp, brows, stubble and lashes in the live view need the cards - the
+  route, an asset job of its own.**
+- Next (`batch_best.sh`): today's best - every kept change on the gate's man at once - beside HD Aaron, for the user.
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
