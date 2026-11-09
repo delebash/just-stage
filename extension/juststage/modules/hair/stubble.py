@@ -48,12 +48,38 @@ SPREAD = 10.0  # degrees
 CAVITY = 0.02  # m
 LIPS_AT = 0.4
 MELANIN, REDNESS, MELANIN_SPREAD = 0.9, 0.15, 0.05
+#: beards grow unevenly: the density x (1 - PATCHY + PATCHY x a smooth noise of PATCH_MM cells) - at an even density
+#: ours read as a uniform mat beside HD Aaron's patchy stubble (2026-11-09); 0 = even
+PATCHY, PATCH_MM = 0.0, 25.0
 POINTS = lashes.POINTS
 
 
 def _smooth(x, lo, hi):
     t = np.clip((x - lo) / (hi - lo), 0.0, 1.0)
     return t * t * (3 - 2 * t)
+
+
+def _patches(p: np.ndarray, seed: int, cell_mm: float = PATCH_MM) -> np.ndarray:
+    """A smooth value noise in 0-1 at points `p` (m): lattice values hashed from the cell and `seed`, blended
+    trilinearly with a smoothstep - patches about `cell_mm` across."""
+    g = p / (cell_mm / 1000.0)
+    i = np.floor(g).astype(np.int64)
+    f = g - i
+    f = f * f * (3.0 - 2.0 * f)
+
+    def lattice(ix, iy, iz):
+        n = (ix * 73856093) ^ (iy * 19349663) ^ (iz * 83492791) ^ (seed * 2654435761)
+        n &= 0xFFFFFFFF
+        n = ((n ^ (n >> 13)) * 1274126177) & 0xFFFFFFFF
+        return ((n ^ (n >> 16)) & 0xFFFF) / 65535.0
+
+    out = np.zeros(len(p))
+    for dx in (0, 1):
+        for dy in (0, 1):
+            for dz in (0, 1):
+                w = (f[:, 0] if dx else 1 - f[:, 0]) * (f[:, 1] if dy else 1 - f[:, 1]) * (f[:, 2] if dz else 1 - f[:, 2])
+                out += w * lattice(i[:, 0] + dx, i[:, 1] + dy, i[:, 2] + dz)
+    return out
 
 
 def _neckline(rel: np.ndarray) -> np.ndarray:
@@ -150,6 +176,8 @@ def strands(body: bpy.types.Object, seed: int = 5, density: float = DENSITY, len
     bary = np.stack([1 - s, s * (1 - r2), s * r2], axis=1)
     roots = bary[:, :1] * a[which] + bary[:, 1:2] * b[which] + bary[:, 2:] * c[which]
     own = (bary * weight[tris[which]]).sum(axis=1) * _neckline(roots - mid)  # a big neck triangle across the line
+    if PATCHY > 0:
+        own *= 1.0 - PATCHY + PATCHY * _smooth(_patches(roots - mid, seed), 0.3, 0.7)  # contrast: patches, not haze
     kept = rng.uniform(size=len(roots)) < own / np.maximum(w_max[which], 1e-9)
     roots, which = roots[kept], which[kept]
     n = normal[which]

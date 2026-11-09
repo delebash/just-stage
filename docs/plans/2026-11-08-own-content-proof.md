@@ -484,6 +484,12 @@ booked with just-direct-mocap.
 - **01:09, the end run green: unit 45, tools 50, Blender 197 passed (1 deselected: the AI test) - the lips' values,
   the chin, the eyes' surround, the lashes (its guard test), the composition's revert and the border code (its new
   test) verified.** The chin in the product (`row_chinprod.png`): smoother, fine pores - kept.
+- **01:1x, the stubble:** ours an even density over the beard region (Poisson at 100 a cm2) - a uniform mat beside
+  his patchy, grey-tipped stubble (sparse under the lip, denser at the jaw); real beards grow unevenly, grooming tools
+  paint density maps. `stubble.PATCHY` (off: 0) - a smooth value noise of 25 mm cells (`_patches`, seeded, checked:
+  0-1, 1 mm apart p90 0.023), sharpened (smoothstep 0.3-0.7), scaling each root's keep chance; patches lower the
+  mean, so the trial gives the density too: `stubblepatch*0.8*100` / `*0.8*150` (about today's mean) beside today's
+  (`batch_stubble.sh`, --alone, after the border batch).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the

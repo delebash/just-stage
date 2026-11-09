@@ -1713,6 +1713,22 @@ def eyewhite(built: dict, k: float) -> None:
     print("EYE WHITE x", k, "on", n, "nodes", flush=True)
 
 
+def stubblepatch(built: dict, patchy: float, density: float) -> None:
+    """Our stubble regrown patchy (`stubble.PATCHY`, 0 shipped: an even density read as a uniform mat beside HD Aaron's
+    patchy stubble, 2026-11-09) at a density (hairs a cm2, 100 shipped - patches lower the mean, so it is given too).
+    A new groom: --alone."""
+    stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
+    old = stubble.PATCHY
+    stubble.PATCHY = patchy
+    try:
+        stubble.make(built["body"], density=density)
+    finally:
+        stubble.PATCHY = old
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("STUBBLE PATCHY", patchy, "density", density, flush=True)
+
+
 def stubbletrial(built: dict, density: float, grey: float, length: float) -> None:
     """Our stubble regrown (`stubble.make`) at a density (hairs a cm2, 160 shipped), grey share (0.25) and length (mm,
     2.8) - step 1's fault: a dense dark mat over the lower face against his short, sparse, greying stubble. A new groom:
@@ -2810,6 +2826,8 @@ def factor(name: str):
         return lambda built: lipshine(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("liptint*"):  # liptint*0.9*0.55*0.6 (linear RGB)
         return lambda built: liptint(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("stubblepatch*"):  # stubblepatch*0.8*140 (patchy share, density a cm2) - --alone
+        return lambda built: stubblepatch(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("lipseam*"):  # lipseam*1.5 (maps.LIP_SEAM_STRENGTH's place; 0 = none)
         return lambda built: lipseam(built, float(name.split("*")[1]))
     if name.startswith("lipset*"):  # lipset*1.8*0.0002*6*0.95 (maps.LIP_LINES' place: period mm, depth m, distortion,
