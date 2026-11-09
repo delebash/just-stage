@@ -367,6 +367,15 @@ booked with just-direct-mocap.
   ankle (our top's upper third stays smooth - the scan's own ankle is smooth there), his darker tone (identity).
   Running `batch_feet_prod.sh`: the library backed up (`.dev/backup/library_2026-11-08e`), the skins and characters
   rebuilt, the library man's foot rendered with no trial (`.dev/gate/parts/2026-11-08feetprod`), then every suite.
+- **22:3x, the torso (the verdict table's "two blotches by the sternum"):** at close-up (this session's scratchpad
+  `torso_chest_crop.png`) our right areola is a flat disc and a second, darker areola-like oval sits beside the
+  sternum. The torso's colour detail (`body_1002_colour.png`, Artec's scan) holds two solid dark blobs (ratio < 0.6) -
+  the scanned man's own areolae, laid over ours (the tone model paints ours). Fix: `body_scan._dark_blobs_out`
+  (`areolae_out` on the Artec source): blobs darker than x0.75 over 2 mm, at least 5 mm in radius (a mole stays), take
+  the level of the skin round them (30 mm) and the fine texture (< 3 mm) of a whole patch beside them - a first try
+  with their own texture left a smooth disc with a rim (`torso_ratio_out3.png`), the copy none (`..._out4.png`); its
+  test in `tests/tools/test_body_scan.py`. `batch_torso.sh` (post, skins, characters, the torso and front views)
+  runs after the feet's end run. Our own areola's flatness (no nipple relief, a painted disc) is next.
 
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 

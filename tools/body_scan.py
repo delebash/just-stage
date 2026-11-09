@@ -40,7 +40,7 @@ SCAN = ROOT / ".dev" / "downloads" / "artec_body_scan" / "x" / "3D body scan" / 
 TEN24 = ROOT / ".dev" / "downloads" / "ten24_sample" / "x" / "OBJ Package"
 #: each source: its scan, the scale to metres, the UDIM tiles (index past 1001) it gives, its fit, its credit
 SOURCES = {
-    "artec": {"scan": SCAN, "scale": 0.001, "tiles": (1,), "fit": "torso", "work": WORK_ROOT,
+    "artec": {"scan": SCAN, "scale": 0.001, "tiles": (1,), "fit": "torso", "work": WORK_ROOT, "areolae_out": True,
               "source": "Artec 3D, Body scan (artec3d.com/3d-models/body-scan)",
               "licence": "CC BY 3.0 Unported ('Body scan by Artec 3D')"},
     "hsr0042": {"scan": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0042-Body-045" / "x" / "HSR0042-Body-045_LOD0.obj",
@@ -678,6 +678,9 @@ def post(src: str = "artec") -> None:
         marks = hair.spots(lin, baked, px_per_mm)  # the person's small red spots out (2026-11-07, the torso's gap)
         lin = np.maximum(hair.unred(lin, marks, baked, px_per_mm), 1e-4)  # their redness only: a fill left stains
         ratio_log = np.log(lin) - np.log(np.maximum(mblur(lin, COLOUR_HP_MM * px_per_mm / 2.0), 1e-4))
+        if spec.get("areolae_out"):  # the scanned person's own areolae (ours come from the tone model's regions)
+            ratio_log, blobs = _dark_blobs_out(ratio_log, baked, px_per_mm)
+            print(f"POST {name}: {blobs} dark blobs of an areola's size taken out of the colour")
         ratio_log = np.clip(ratio_log, -0.5, 0.3) * w[..., None] * edge[..., None]
         ratio = np.exp(ratio_log)
         OUT.mkdir(parents=True, exist_ok=True)
@@ -696,8 +699,58 @@ def post(src: str = "artec") -> None:
                 "colour": "a ratio around 1, stored halved (0.5 = 1)", "strands_filled": int(found.sum()),
                 "fabric_out": int(fabric.sum()), "spots_filled": int(marks.sum()), "covered": float(baked.mean())}  # fmt: skip
         (OUT / f"{stem}.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
-        print(f"POST {name}: relief and colour written; {found.sum()} strand texels, {marks.sum()} spot texels unreddened; {fabric.sum()} fabric "
+        wrote = "relief" if "part" in spec and spec.get("geometry_only") else "relief and colour"
+        print(f"POST {name}: {wrote} written; {found.sum()} strand texels, {marks.sum()} spot texels unreddened; {fabric.sum()} fabric "
               f"texels out; tile covered {baked.mean():.1%}")
+
+
+BLOB_DARK = -0.29  # log ratio (x0.75): darker than this over BLOB_SPAN_MM is a mark, not the skin's mottling
+BLOB_SPAN_MM, BLOB_MIN_MM, BLOB_FINE_MM = 2.0, 5.0, 3.0  # its blur; the smallest radius taken (a mole stays); the
+# texture kept inside it
+BLOB_AROUND_MM = 30.0  # the reach of the skin round a blob whose level fills it
+
+
+def _dark_blobs_out(ratio_log: np.ndarray, valid: np.ndarray, px_per_mm: float) -> tuple[np.ndarray, int]:
+    """A scan's large dark marks (its person's areolae - Artec's torso put a second areola beside our sternum,
+    2026-11-08) out of its colour detail (log ratio, H x W x 3): blobs darker than BLOB_DARK over BLOB_SPAN_MM, at
+    least BLOB_MIN_MM in radius, keep only their texture finer than BLOB_FINE_MM (around 1), faded in over 2 mm.
+    Returns the ratio and the blobs' count."""
+    import cv2
+
+    lum = ratio_log.mean(-1)
+    dark = (cv2.GaussianBlur(lum, (0, 0), BLOB_SPAN_MM * px_per_mm / 2.0) < BLOB_DARK) & valid.astype(bool)
+    count, labels, stats, _ = cv2.connectedComponentsWithStats(dark.astype(np.uint8), connectivity=8)
+    keep = np.flatnonzero(stats[:, cv2.CC_STAT_AREA] >= np.pi * (BLOB_MIN_MM * px_per_mm) ** 2)
+    keep = keep[keep > 0]
+    if not len(keep):
+        return ratio_log, 0
+    grow = int(round(4.0 * px_per_mm))
+    disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * grow + 1,) * 2)
+    blobs = cv2.dilate(np.isin(labels, keep).astype(np.uint8), disc)
+    fine = ratio_log - cv2.GaussianBlur(ratio_log, (0, 0), BLOB_FINE_MM * px_per_mm / 2.0)
+    around = ((1 - blobs) * valid).astype(np.float32)  # the skin round it, its level carried in
+    sigma = BLOB_AROUND_MM * px_per_mm / 2.0
+    level = cv2.GaussianBlur(ratio_log * around[..., None], (0, 0), sigma) / np.maximum(
+        cv2.GaussianBlur(around, (0, 0), sigma), 1e-6)[..., None]  # fmt: skip
+    out = ratio_log.copy()
+    for i in keep:  # each blob's texture from the nearest whole patch of skin beside it (no flat disc, no rim)
+        one = cv2.dilate((labels == i).astype(np.uint8), disc)
+        soft = np.clip(cv2.GaussianBlur(one.astype(np.float32), (0, 0), px_per_mm), 0, 1)
+        ys, xs = np.nonzero(soft > 1e-3)
+        reach = int(1.2 * max(np.ptp(ys), np.ptp(xs))) + 1
+        for dy, dx in ((0, reach), (0, -reach), (reach, 0), (-reach, 0), (reach, reach), (-reach, -reach),
+                       (reach, -reach), (-reach, reach)):  # fmt: skip
+            sy, sx = ys + dy, xs + dx
+            if (sy.min() < 0 or sx.min() < 0 or sy.max() >= len(valid) or sx.max() >= valid.shape[1]
+                    or not valid[sy, sx].all() or blobs[sy, sx].any()):  # fmt: skip
+                continue
+            w = soft[ys, xs][:, None]
+            out[ys, xs] = ratio_log[ys, xs] * (1 - w) + (level[ys, xs] + fine[sy, sx]) * w
+            break
+        else:  # no whole patch beside it: its own fine texture
+            w = soft[ys, xs][:, None]
+            out[ys, xs] = ratio_log[ys, xs] * (1 - w) + (level[ys, xs] + fine[ys, xs]) * w
+    return out, len(keep)
 
 
 HAND_HP_MM = 8.0  # the hands' detail kept from the donor's map: tendons, veins, creases (all narrower)
