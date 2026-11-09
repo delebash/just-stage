@@ -2908,9 +2908,9 @@ def factor(name: str):
         return lambda built: hairthrough(built, float(name.split("*")[1]))
     if name.startswith("reliefband"):  # reliefband*2
         return lambda built: reliefband(built, float(name.split("*")[1]))
-    if name.startswith("feetpart"):  # feetpart*1.0 (body_scan.py thunk3d_foot: body_1004_feet_*)
-        k = float(name.split("*")[1]) if "*" in name else 1.0
-        return lambda built: handspart(built, k, tile=1004, part="feet")
+    if name.startswith("feetpart"):  # feetpart*1.0 (body_scan.py thunk3d_foot: body_100{3,4}_feet_* - the foot's
+        k = float(name.split("*")[1]) if "*" in name else 1.0  # faces lie on both tiles, most of them on 1003)
+        return lambda built: [handspart(built, k, tile=t, part="feet") for t in (1003, 1004)]
     if name.startswith("handspart"):  # handspart*1.5, handspartc*1.5 (with the donor's colour)
         k = float(name.split("*")[1]) if "*" in name else 1.0
         return lambda built: handspart(built, k, colour=name.startswith("handspartc"))

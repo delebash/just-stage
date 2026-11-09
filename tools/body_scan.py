@@ -64,10 +64,14 @@ SOURCES = {
                          "All we ask is that you provide us with a credit wherever it's used'"},
     # the feet (2026-11-08, the own-content proof: ours smooth plastic beside HD Aaron's tendons and veins; no detailed
     # donor until this): Thunk3D's "Leg-foot", a left leg and foot, geometry only (the original STL, millimetres, lying
-    # on its side) - placed by our left foot, our foot wrapped onto it, its relief baked onto the legs' tile as a part
+    # on its side) - placed by our left foot (mirrored on our right), our feet wrapped onto it, their relief baked as a
+    # part onto both tiles a foot lies on (1003 holds most of its faces, 1004 the heel's strip, measured 2026-11-08);
+    # the wrap's move smoothed first (a soft wrap follows the tendons and the bake reads them flat), the debris limit
+    # past a tendon's slope, no fade at the islands' seams
     "thunk3d_foot": {"scan": ROOT / ".dev" / "downloads" / "sketchfab_leg_foot_2026-11-08" / "foot" / "left_foot_02.stl",
-                     "scale": 0.001, "tiles": (3,), "fit": "foot", "part": "feet", "geometry_only": True,
-                     "work": WORK_ROOT / "thunk3d_foot", "edge_fade": 24.0, "relief_hp_mm": 12.0,
+                     "scale": 0.001, "tiles": (2, 3), "fit": "foot", "part": "feet", "geometry_only": True,
+                     "work": WORK_ROOT / "thunk3d_foot", "edge_fade": 24.0, "relief_hp_mm": 25.0, "fit_smooth": 10,
+                     "debris_limit": 0.8, "island_fade": False,
                      "source": "Thunk3D, 'Leg-foot' (sketchfab.com/3d-models/leg-foot-37e2802a104141b982e15eda21d425ec, by "
                                "Diana Liu: 'Leg-foot scan by Thunk3D Fisher's 3D scanner')",
                      "licence": "CC Attribution (Sketchfab's CC BY 4.0): 'Author must be credited. Commercial use is allowed'"},
@@ -238,12 +242,18 @@ def fit(src: str = "artec") -> None:
 
 
 def _foot_vertices(o, side: str = "l") -> np.ndarray:
-    """Our vertices of one foot: below its ankle joint plus 1 cm (a fade lands on the ankle), on its side."""
+    """Our vertices of one foot: below its ankle joint plus 1 cm (a fade lands on the ankle), on its side of the body,
+    within FOOT_REACH of the ankle (0.16 m until 2026-11-08 cut off the forefoot and toes - the default man's reach
+    to 0.211 m)."""
     names = [str(n) for n in o["joint_names"]]
     jc = dict(zip(names, o["joint_co"], strict=True))
     co = o["co"]
     ankle = jc[f"joint-{side}-ankle"]
-    return (co[:, 2] < ankle[2] + 0.01) & (np.linalg.norm(co[:, :2] - ankle[:2], axis=1) < 0.16)
+    return ((co[:, 2] < ankle[2] + 0.01) & (np.sign(co[:, 0]) == np.sign(ankle[0]))
+            & (np.linalg.norm(co[:, :2] - ankle[:2], axis=1) < FOOT_REACH))  # fmt: skip
+
+
+FOOT_REACH = 0.3  # m from the ankle joint: past any foot's toes (the other foot is out by its side)
 
 
 def fit_foot(src: str, o, s) -> None:
@@ -432,6 +442,8 @@ def bake(src: str = "artec") -> None:
     moved = f["moved_v"] if "moved_v" in f.files else f["torso_v"]
     co[moved] = f["fitted"]  # our part wrapped onto the scan: the bake reads only the scan's detail
     tris, tuv, tile = o["tris"], o["tuv"], o["tile"]
+    if spec.get("fit_smooth"):  # the wrap's move smoothed: a soft wrap on a small part follows its tendons and
+        co = _smooth_move(o["co"], co, moved, tris, spec["fit_smooth"])  # veins, and the bake then reads them flat
     me = bpy.data.meshes.new("ours")
     me.from_pydata(co.tolist(), [], tris.tolist())
     me.polygons.foreach_set("use_smooth", np.ones(len(me.polygons), bool))
@@ -525,6 +537,27 @@ def bake(src: str = "artec") -> None:
             np.save(work / f"bake_fitgap_{1001 + number}.npy", px)
             me.materials[0] = mat
             print(f"BAKED GAP {1001 + number}")
+
+
+def _smooth_move(rest: np.ndarray, co: np.ndarray, moved: np.ndarray, tris: np.ndarray, steps: int) -> np.ndarray:
+    """`co` with each moved vertex's move (co - rest) averaged with its moved neighbours' `steps` times (Laplacian,
+    half a step each): the wrap's broad shape kept, its small-scale following of the scan taken out."""
+    on = np.zeros(len(co), bool)
+    on[moved] = True
+    edges = np.concatenate([tris[:, [0, 1]], tris[:, [1, 2]], tris[:, [2, 0]]])
+    edges = edges[on[edges].all(axis=1)]
+    move = co - rest
+    for _ in range(steps):
+        total = np.zeros_like(move)
+        count = np.zeros(len(co))
+        for a, b in ((0, 1), (1, 0)):
+            np.add.at(total, edges[:, a], move[edges[:, b]])
+            np.add.at(count, edges[:, a], 1.0)
+        mean = total / np.maximum(count, 1.0)[:, None]
+        move[moved] = np.where(count[moved, None] > 0, 0.5 * move[moved] + 0.5 * mean[moved], move[moved])
+    out = co.copy()
+    out[moved] = rest[moved] + move[moved]
+    return out
 
 
 def _mm_per_uv(tile_number: int) -> float:
@@ -623,11 +656,18 @@ def post(src: str = "artec") -> None:
         xy = nrm[..., :2] * 2 - 1
         hp = (xy - mblur(xy, spec.get("relief_hp_mm", RELIEF_HP_MM) * px_per_mm / 2.0)) * w[..., None]
         # faded out well inside the scan's reach and the tile's own island: no step where the detail ends
-        edge = np.clip(np.minimum(cv2.distanceTransform(baked.astype(np.uint8), cv2.DIST_L2, 5),
-                                  cv2.distanceTransform(cover, cv2.DIST_L2, 5)) / spec.get("edge_fade", EDGE_FADE), 0, 1)  # fmt: skip
+        # (a part laid over its tile's main relief takes no fade at the island's own edge: across a UV seam the
+        # other side carries the same part, and a seam down a foot's top faded its tendons out)
+        if spec.get("island_fade", True):
+            reach = np.minimum(cv2.distanceTransform(baked.astype(np.uint8), cv2.DIST_L2, 5),
+                               cv2.distanceTransform(cover, cv2.DIST_L2, 5))
+        else:  # the distance to the island's texels the part leaves out (the ankle's cut), not to its seams
+            reach = cv2.distanceTransform(np.where((cover > 0) & ~baked, 0, 1).astype(np.uint8), cv2.DIST_L2, 5)
+        edge = np.clip(reach / spec.get("edge_fade", EDGE_FADE), 0, 1)
         edge = edge * edge * (3 - 2 * edge)
         hp *= edge[..., None]
-        debris = hair.relief_debris(hp, 0.3, 8).astype(np.float32)  # rings and arcs at the scan's holes and edges
+        # rings and arcs at the scan's holes and edges; a foot's tendons and veins are steeper than a face's folds
+        debris = hair.relief_debris(hp, spec.get("debris_limit", 0.3), 8).astype(np.float32)
         hp *= (1.0 - np.clip(cv2.GaussianBlur(debris, (0, 0), 2.0) * 1.5, 0.0, 1.0))[..., None]
         z = np.sqrt(np.clip(1 - (hp**2).sum(-1), 0, 1))
         relief = np.dstack([hp * 0.5 + 0.5, z])

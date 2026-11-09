@@ -332,6 +332,33 @@ booked with just-direct-mocap.
   test)** - today's product changes verified. Then renders of the rebuilt library man and a fresh New human
   (`.dev/gate/parts/2026-11-08final`).
 
+- **21:47-, the feet (time box: one hour, to ~22:47).** Thunk3D's CC BY "Leg-foot" scan (`body_scan.py
+  thunk3d_foot`: STL, geometry only) placed on our left foot (PCA, sole, 3 ICP rounds) and on our right mirrored (the
+  gate's foot view shows the right; commits ba2222d, 0707d2d), our foot wrapped (p50 1.0 / p90 2.9 mm), baked onto the
+  legs' tile as the "feet" part; `factors feetpart*1 / *1.5` (`.dev/gate/parts/2026-11-08foot`, `row_foot2.png`): no
+  visible change. Diagnosed (22:0x-22:2x, one factor at a time): the raw scan rendered alone (`scan_look.py`, the
+  session scratchpad `F:/ClaudeCode/tmp/claude/bff537e12af9b769/d5c9db2e-247e-4952-9b73-5091de5df196/scratchpad/
+  scanlook/grid.png`) HAS the dorsum's tendons and veins and the ankle's bones - the source is good; the baked relief
+  (shaded, `foot_shade.png` there) holds only the scanner's ripple, no tendons - the soft wrap (NICP down to stiffness
+  4) follows the tendons, so the bake reads them flat. Fix on trial: the wrap's move smoothed before the bake
+  (`fit_smooth` 10 Laplacian steps: off the wrap p50 0.9 / p90 2.7 mm) and the relief kept below 25 mm (was 12)
+  (`batch_foot3.sh`, `.dev/gate/parts/2026-11-08foot3`). Result (`row_foot3.png`): the raw bake now holds the long
+  tendon ridges (shaded, `foot_shade3.png`; relief tilt p50 0.054 / p90 0.151, was 0.045 / 0.103) - but the render at
+  x1 and x2 still reads smooth beside his veined, shiny foot. `feetpart*4` (`row_foot4.png`): bumps only along the
+  inner edge, the top still smooth. Measured on our right foot's faces: the top's relief tilt p50 0.010 (the sides
+  0.026), its fit gap 2-5 mm (under FIT_GAP's 6) - the post step's debris filter (`hair.relief_debris`, tilt > 0.3
+  grown 8 texels: made for the rings round a face scan's nostrils and eyes) cut the tendons and veins out - the
+  relief's round holes. Fix: `debris_limit` per source, 0.8 for the foot: the top's tilt p50 0.069 / p90 0.242.
+  Rendering x1 / x2 (`.dev/gate/parts/2026-11-08foot5`): still smooth across the top. **The root cause (22:2x):
+  most of the foot is not on the legs' tile - our right foot's faces: 1675 on UDIM 1003, 330 on 1004 (the heel's
+  strip), 90 on 1005 (toenails); the bake was 1004 only.** And `_foot_vertices`' 0.16 m reach from the ankle cut the
+  forefoot and toes (578 of 1423 vertices; the foot reaches 0.211 m) - out of the fit too. Fixed: the source's tiles
+  (2, 3), `FOOT_REACH` 0.3 m on the ankle's side of the body, `feetpart` on both tiles; the seam fade off for the part
+  (`island_fade`: measured no change - kept as the right rule, the fade belongs at the ankle's cut only). Running
+  `batch_foot6.sh` (fit, bake, post, foot and toenail views; `.dev/gate/parts/2026-11-08foot6`). Mistake: the RESUME
+  had noted "the foot's 1003 fix" on 11-08 morning (the transplant) - read the earlier fixes for a part before
+  building its pipeline.
+
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 
 | Part | Verdict | In the product today | What's missing / the route left |
