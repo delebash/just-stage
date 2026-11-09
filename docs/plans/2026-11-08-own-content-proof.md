@@ -582,6 +582,13 @@ booked with just-direct-mocap.
   (`test_the_pores_follow_the_characters_sex`). **03:4x: skin-maps tests 19 passed; the woman's cheek in the
   product (`row_womanprod.png`) smoother, the cobbling gone - KEPT.** 03:51, the end run green: unit 45, tools 51,
   Blender 199 passed (1 deselected: the AI test).
+- **03:5x, the library's other composed characters (`row_chars3_{face,three_quarter,lips}.png`: Young woman, Heavy
+  woman, Muscular man):** the Young woman fine; the Muscular man's brown skin warm; the Heavy woman's dark skin reads
+  ashy grey-brown - her face's base-colour hue measured against her skin's own warm tone (the Diffuse Color pass,
+  `diffcol_measure.py`). At the extreme close-up the user's bar names (lip corners, `lip_corner.png`): **(1) a bright
+  red glow at each mouth corner** (the lining's red mucosa at the corner, lit through by the scattering); **(2) the lips
+  crinkled cellophane** - their lines catch wet highlights (LIP_ROUGHNESS 0.33, LIP_COAT 0.3) beside his soft matte
+  lips - trial `lipshine` 0.5 / 0.15 and 0.6 / 0.05 (`batch_lipgloss.sh`, the Average and Muscular men).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
