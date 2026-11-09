@@ -510,7 +510,12 @@ booked with just-direct-mocap.
   targets stay the plan's step 4 (Q-EAR-1).**
 - **01:37, the second end run (`batch_end2.sh`):** the library backed up (`.dev/backup/library_2026-11-09d`), its hair
   and characters rebuilt (the stubble in patches), the product rendered (`.dev/gate/parts/2026-11-09final`: the
-  library man and a fresh New human), every suite.
+  library man and a fresh New human), every suite. **01:58: green - the library 24 assets rebuilt; unit 45, tools 50,
+  Blender 198 passed (1 deselected: the AI test) - the stubble in patches verified.** The final sheets
+  (`scratchpad/row_final2_{face,three_quarter,eye,lips,chin}.png`). Seen on the fresh New human at full resolution
+  (this session's scratchpad `cheek_patch.png`): faint grey-green blotches on the cheek and chin - the composition's
+  beard shadow (BEARD_SHADOW 0.35, men's skins) on a pale, beardless face reads as uneven smudges rather than an even
+  shadow; minor, open.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
