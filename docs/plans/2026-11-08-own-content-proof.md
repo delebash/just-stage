@@ -499,7 +499,18 @@ booked with just-direct-mocap.
   keeps the jaw dense - his distribution at the chin and face views; at 150 denser with patches. **KEPT: PATCHY 0.8,
   DENSITY 100** (fewer hairs on average, within the stubble test's 4,000-40,000); a test that the hairs per 2 cm cell
   vary well beyond an even density's spread. His salt-and-pepper colour (many white hairs) is age - identity. The
-  library's men carry stubble grooms: rebuilt with the next end run.
+  library's men carry stubble grooms: rebuilt with the next end run. (Its patchiness test first compared raw cell
+  counts - the beard region's own fall-off swamped the patches (0.60 against 0.57); now per cell against an even run and
+  against chance (two even seeds): 2 passed.)
+- **01:3x, the ears (box 20 min):** ours small and flat-looking, his concha deep and dark (`row_ears.png`). Measured
+  (`ear_depth.py` in this session's scratchpad: the outermost rim against the concha floor along the ear's outward
+  axis, outward-facing points): hm08's 18.9 mm against HUTUBS's real ears 18.5-26.2 mm (pp10-pp12, both sides; CC BY
+  4.0, on disk) - no clear depth gap by this measure (crude: the selection can take skin beside the ear). The visible
+  difference: size (a slider - identity) and the concha's darkness. **The box spent: ears stay close; HUTUBS ear
+  targets stay the plan's step 4 (Q-EAR-1).**
+- **01:37, the second end run (`batch_end2.sh`):** the library backed up (`.dev/backup/library_2026-11-09d`), its hair
+  and characters rebuilt (the stubble in patches), the product rendered (`.dev/gate/parts/2026-11-09final`: the
+  library man and a fresh New human), every suite.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
