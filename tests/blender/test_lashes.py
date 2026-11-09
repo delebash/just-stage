@@ -104,3 +104,20 @@ def test_upper_lashes_fan_without_spikes_or_tight_clumps(woman):
     gaps_tip = np.linalg.norm(np.diff(tips, axis=0), axis=1)
     keep = gaps_root < 0.002  # neighbours along one lid
     assert np.median(gaps_tip[keep]) > 0.75 * np.median(gaps_root[keep]), (np.median(gaps_tip[keep]), np.median(gaps_root[keep]))
+
+
+def test_the_upper_lashes_curve_smoothly_out_of_the_lid(woman):
+    """No kinked wire: a lash that runs into its lid is turned whole, not bent at every joint (2026-11-08: joints up to
+    180 deg, most lashes over 20 - against a smooth curl's ~5 deg a joint)."""
+    _made, body = woman
+    made_strands, _radii, _melanin, _missed = lashes.strands(body, eyes.openings(body))
+    per = lashes.UPPER["count"] + lashes.LOWER["count"]
+    upper = [s for e in range(len(made_strands) // per) for s in made_strands[e * per:e * per + lashes.UPPER["count"]]]
+    sharpest = []
+    for s in upper:
+        seg = np.diff(np.asarray(s), axis=0)
+        seg /= np.linalg.norm(seg, axis=1, keepdims=True)
+        sharpest.append(np.degrees(np.arccos(np.clip((seg[1:] * seg[:-1]).sum(1), -1.0, 1.0))).max())
+    sharpest = np.array(sharpest)
+    assert np.percentile(sharpest, 90) < 15.0, np.percentile(sharpest, 90)
+    assert (sharpest > 20.0).mean() < 0.05, (sharpest > 20.0).mean()

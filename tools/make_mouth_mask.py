@@ -36,7 +36,7 @@ HEAD_TILE = 1001
 BEHIND = 0.002  # m behind the lips' frontmost point: the lining starts here
 HALF_WIDTH, HALF_HEIGHT = 0.032, 0.022  # m round the front teeth's centre
 DEPTH = 0.05  # m behind the lips' front: the lining ends (the throat)
-SEAM_MM = 4.0  # the lips' darkening reaches this far in front of the lining
+SEAM_MM = 10.0  # the lips' darkening reaches this far in front of the lining (4 mm stayed on the lips' inner side)
 
 
 def main() -> None:

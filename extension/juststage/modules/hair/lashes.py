@@ -53,9 +53,65 @@ FAN = ((1 / 6, 137.0), (0.5, 72.0), (5 / 6, 25.0))
 FACE_FORWARD = np.array([0.0, -1.0, 0.0])  # a JustStage character faces -Y
 POINTS = 12  # the research: 10+ points each for the curl (the pack's lashes have 5)
 TIP = 0.12  # the tip's radius as a share of the root's (0.25 read as blunt spikes at 4096 px)
+#: a lash that runs into its lid (most did, from ~1 mm out: 0.9 mm deep at the median, 2.6 at p90 - 2026-11-08) is
+#: turned whole about its root, CLEAR_STEP degrees at a time up to CLEAR_TRIES, away from the skin it is deepest in -
+#: its curl kept; bent at the joint where it meets the skin only if that fails (bending every lash read as kinked wire
+#: at close-up beside HD Aaron's even fan, joints up to 180 deg)
+CLEAR_STEP, CLEAR_TRIES = 5.0, 12
 REDNESS = 0.25  # with melanin 0.95, near black-brown
 NAME = "JustStage lashes"
 DEFORM = "JustStage Surface Deform"
+
+
+def _spun(points: np.ndarray, pivot: np.ndarray, axis: np.ndarray, angle: float) -> np.ndarray:
+    """`points` turned about `pivot` by `angle` (radians) about `axis` (Rodrigues)."""
+    k = axis / np.linalg.norm(axis)
+    kx = np.array([[0.0, -k[2], k[1]], [k[2], 0.0, -k[0]], [-k[1], k[0], 0.0]])
+    rot = np.eye(3) + np.sin(angle) * kx + (1.0 - np.cos(angle)) * (kx @ kx)
+    return pivot + (points - pivot) @ rot.T
+
+
+def _cleared(strand: np.ndarray, trees: list) -> np.ndarray:
+    """A lash out of the skin and the eye (`trees`: (BVH tree, to its space, back to world, gap)): turned whole about its
+    root away from the surface it is deepest in (CLEAR_STEP, CLEAR_TRIES); then, a last resort, bent at each joint that
+    still meets one (the groom's collision pass). The first point need only be out of the skin: the root sits 0.1 mm in
+    it (its base hidden), so the gap there bent most lower lashes at their first joint."""
+    from mathutils import Vector
+
+    def gap_at(i, gap):
+        return 0.0 if i == 1 else gap
+
+    def deepest(points):
+        worst = (0.0, 0, None)
+        for bvh, local, world, gap in trees:
+            for i in range(1, len(points)):
+                q = local[:3, :3] @ points[i] + local[:3, 3]
+                near, n_near = (np.array(x) for x in bvh.find_nearest(Vector(q))[:2])
+                depth = gap_at(i, gap) - (q - near) @ n_near
+                if depth > worst[0]:
+                    worst = (depth, i, world[:3, :3] @ n_near)
+        return worst
+
+    for _ in range(CLEAR_TRIES):
+        depth, i, n_out = deepest(strand)
+        if n_out is None:
+            return strand
+        axis = np.cross(strand[i] - strand[0], n_out)  # turning about it carries the point toward the outside
+        if np.linalg.norm(axis) < 1e-12:
+            break
+        strand = _spun(strand, strand[0], axis, np.radians(CLEAR_STEP))
+    for i in range(1, len(strand)):
+        for bvh, local, world, gap in trees:
+            q = local[:3, :3] @ strand[i] + local[:3, 3]
+            near, n_near = (np.array(x) for x in bvh.find_nearest(Vector(q))[:2])
+            if (q - near) @ n_near < gap_at(i, gap):
+                out = world[:3, :3] @ (near + gap_at(i, gap) * n_near) + world[:3, 3] - strand[i - 1]
+                was = strand[i] - strand[i - 1]
+                axis = np.cross(was, out)
+                if np.linalg.norm(axis) > 1e-12:  # bent at the last joint just enough, the rest turned with it
+                    cos = np.clip(was @ out / (np.linalg.norm(was) * np.linalg.norm(out)), -1.0, 1.0)
+                    strand[i:] = _spun(strand[i:], strand[i - 1], axis, float(np.arccos(cos)))
+    return strand
 
 
 def clump(strands: list, start: int) -> None:
@@ -166,15 +222,8 @@ def strands(body: bpy.types.Object, openings: dict, seed: int = 7):
                      + (np.abs(np.sin(theta)) * np.cos(fan))[:, None] * lateral)  # fmt: skip
                 d /= np.linalg.norm(d, axis=1, keepdims=True)
                 steps = np.vstack([np.zeros(3), d[:-1] * length / (POINTS - 1)])
-                strand = root + np.cumsum(steps, axis=0)
-                for i in range(1, POINTS):  # out of the skin (a groom's collision pass): by the nose
-                    for bvh, local, world, gap in [(tree, to_local, to_world, 0.0001), *eye_trees]:
-                        # and off the eye: a drooping lash meets the cornea
-                        q = local[:3, :3] @ strand[i] + local[:3, 3]
-                        near, n_near = (np.array(x) for x in bvh.find_nearest(Vector(q))[:2])
-                        if (q - near) @ n_near < gap:
-                            moved = near + gap * n_near - q
-                            strand[i:] += world[:3, :3] @ moved  # the rest of the lash follows
+                # out of the skin (by the nose, the lid it grows from) and off the eye (a drooping lash meets the cornea)
+                strand = _cleared(root + np.cumsum(steps, axis=0), [(tree, to_local, to_world, 0.0001), *eye_trees])
                 found.append(strand)
                 radii.append(spec["radius"] * np.interp(t, [0.0, 1.0], [1.0, TIP]))
                 melanin.append(spec["melanin"])

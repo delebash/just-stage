@@ -403,6 +403,26 @@ booked with just-direct-mocap.
   (no visible change), the surround darker (a small gain - the composition's EYE_DARK is the place). Trial: the margin's
   tint off and lighter (`factors margintint`, `.dev/gate/parts/2026-11-08margin`, in `batch_torso.sh`) - how much of the
   rim is colour, how much the lid's shape.
+- **23:0x-23:1x, results (`batch_torso.sh`; tools 50 passed):** **torso FIXED** (`row_debris_torso.png`: the oval by
+  the sternum gone, both nipples real bumps, the navel reads as a navel; a small curved mark below-left of the navel
+  left to trace). **Lips' seam at 4 mm: no visible change at 0 / 1 / 1.5** (`row_lipseam_lips.png`) - the band stays on
+  the lips' inner side; widened to 10 mm (`SEAM_MM`), one more round, then the box is spent. **The eye's rim is not
+  the margin's tint** (`row_margin.png`: off or lighter, the rim stays) - it is the lid's shape and the skin's glow
+  through the thin ledge; not kept.
+- **23:1x, a fault seen on the margin sheet - the LASHES at close-up are kinked wire** (this session's scratchpad
+  `eye_lash_crop.png`: zig-zag strands, a cluster standing straight up, some across the iris; HD Aaron's an even fan;
+  the New human's the same, `eye_lash_crop_newhuman.png`). Measured on a New human (`lash_kinks.py`): each upper
+  lash's sharpest joint p50 91 deg (a smooth 50 deg curl is ~5 a joint), 244 of 360 over 20; with the collision pass off
+  every lash is smooth (max 9.9), clumping not the cause - **the collision pass shifted the rest of a lash by each push,
+  folding it back**; the smooth lashes run into their own lid from ~1 mm out (`lash_hits.py`: 0.9 mm deep at the
+  median, 2.6 at p90; none touch the eye). Fix (`lashes._cleared`): a lash that meets the skin or eye is turned whole
+  about its root, 5 deg at a time (up to 12), away from the surface it is deepest in - its curl kept; bent only as a
+  last resort; the first point need only be out of the skin (the root sits 0.1 mm in it). Upper: p50 6.3, 11 of 360
+  over 20 deg (was 244). A first try - a 15 deg leaving angle at the root - changed nothing (they already left at more):
+  removed. **Open: the lower lashes still kink (59 of 160 over 20; more turning steps don't clear them - rooted in the
+  corner of the lower margin's wall); they are faint (melanin 0.6, 25 um).** Test `test_the_upper_lashes_curve_
+  smoothly_out_of_the_lid`. `batch_lash_lip.sh` (after the eye-surround trial `batch_eyes2.sh`): the seam mask again,
+  the library backed up (`library_2026-11-08f`) and its characters rebuilt, the eye / lips / face views, every suite.
 
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 
