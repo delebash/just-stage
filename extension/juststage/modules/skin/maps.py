@@ -131,6 +131,10 @@ LIP_SEAM_TINT, LIP_SEAM_STRENGTH = (0.70, 0.48, 0.50), 1.5  # 1.5: the line betw
 #: colour and the eyes looked pasted on (the own-content proof 2026-11-08: `factors eyedark` at 0.65 / 0.5 beside HD
 #: Aaron's - the eyes set in at both; the scan composition's EYE_DARK only caps a scan's own darkening, it can't add it)
 EYE_SURROUND_TINT = (0.60, 0.54, 0.51)
+#: the upper lip deeper red than the lower (linear, x the colour; by MOUTH_TOOL's lips_upper.png - the lips on the upper
+#: side of the mouth's slit): real upper lips are, HD Aaron's among them; ours were one pink on both (2026-11-09,
+#: `.dev/gate/parts/2026-11-09upperlip`, by eye: (0.85, 0.65, 0.68) and this, this the closer)
+LIP_UPPER_TINT = (0.75, 0.52, 0.55)
 #: 2026-11-06, the clean-input gate's lips view: ours matte orange (L* a* b* 58.6 / 23.4 / 23.5), HD Aaron's redder and
 #: less yellow (56.4 / 30.4 / 15.1) and his lower lip shining - the tint from the two lips' linear ratio (0.70 / 0.75 x
 #: 0.80 / 1.22), the vermilion smoother and lightly coated
@@ -601,6 +605,31 @@ def _seam_layer(nt, bsdf, uv) -> None:
     nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
 
 
+def lips_upper() -> bpy.types.Image:
+    """The upper lip's share on the head tile (MOUTH_TOOL), loaded once and shared."""
+    path = paths.generated("skin", "lips_upper.png", tool=MOUTH_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _upper_lip_layer(nt, bsdf, uv) -> None:
+    """The upper lip x LIP_UPPER_TINT: its mask on the head tile, on the lips only (their share), after the seam."""
+    nodes = nt.nodes
+    mask = _node(nt, "ShaderNodeTexImage", "lips_upper_mask", (-1600, -4100))
+    mask.image, mask.interpolation, mask.extension = lips_upper(), "Linear", "CLIP"
+    nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
+    on_lips = _math(nt, "lips_upper_on", "MULTIPLY", nodes[NODE + "lips_share"].outputs["Value"],
+                    nodes[NODE + "mouth_on_head"].outputs["Value"])  # fmt: skip
+    share = _math(nt, "lips_upper_share", "MULTIPLY", mask.outputs["Color"], on_lips)
+    tint = _mix(nt, "lips_upper_tint", "RGBA", share, (1.0, 1.0, 1.0), LIP_UPPER_TINT)
+    tinted = _node(nt, "ShaderNodeVectorMath", "lips_upper_colour", (-150, -4100))
+    tinted.operation = "MULTIPLY"
+    nt.links.new(bsdf.inputs["Base Color"].links[0].from_socket, tinted.inputs[0])
+    nt.links.new(tint, tinted.inputs[1])
+    nt.links.new(tinted.outputs["Vector"], bsdf.inputs["Base Color"])
+
+
 def _mouth_layer(nt, bsdf, uv, which) -> None:
     """Wet mucosa over the skin where the mouth's mask is, on the head tile: colour, roughness, specular and coat."""
 
@@ -790,6 +819,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     _lip_layer(nt, bsdf)
     _mouth_layer(nt, bsdf, uv, which)
     _seam_layer(nt, bsdf, uv)
+    _upper_lip_layer(nt, bsdf, uv)
     _eye_layer(nt, bsdf, uv)
     _relief_off_mouth(nt)
     bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS

@@ -516,6 +516,15 @@ booked with just-direct-mocap.
   (this session's scratchpad `cheek_patch.png`): faint grey-green blotches on the cheek and chin - the composition's
   beard shadow (BEARD_SHADOW 0.35, men's skins) on a pale, beardless face reads as uneven smudges rather than an even
   shadow; minor, open.
+- **02:0x, the upper lip (`row_upperlip_lips.png`):** his upper lip a deeper red than his lower, ours one pink; a
+  trial tint above the mouth's line (`factors upperlip`, by world height - a still render only) at (0.85, 0.65, 0.68)
+  and (0.75, 0.52, 0.55): the two-tone of real lips, the second closer to his - **KEPT (0.75, 0.52, 0.55)**. Into the
+  product as a mask that follows the lips: `make_mouth_mask.py` writes `lips_upper.png` - the lips on the upper side
+  of the mouth's slit in the head tile's UVs. Two first tries wrong, checked by drawing upper and lower: a height
+  split (a quadratic through the lining's front edge: the corners' lining dipped 2 cm; then the median height of the
+  lip vertices near the lining: the lower lip's top, rolled up to the line, came out upper) - the slit in UV divides
+  them cleanly (`lips_split_uv.png`: 112 upper, 96 lower; the slit's lining limited to the lips' own, the mouth's
+  island excluded). `maps._upper_lip_layer` (`LIP_UPPER_TINT`), the skin-maps test extended; `batch_upperprod.sh`.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -554,7 +563,7 @@ booked with just-direct-mocap.
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
 | Scalp hair | not reached | the hairline one ring | cards for the live view (the approved rule) + an artist's free cut (VincentFreelance, CC BY - the download needs the Chrome extension) |
-| Lips | close (00:1x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5) | his upper lip redder, a crisper border |
+| Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`) | his crisper border |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`) | the lid's rim (shape and glow, not colour); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
 | Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask; skin-maps tests 18 passed) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault) |

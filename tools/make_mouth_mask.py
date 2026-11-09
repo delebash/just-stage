@@ -15,7 +15,13 @@ facing into the mouth; softened over their neighbours. Writes `extension/juststa
 The seam: the band of the lips in front of the lining, by each vertex's distance along the surface (Dijkstra over the
 mesh's edges) from it - 1 at the lining, 0 at SEAM_MM - where real lips darken to a deep red into the closed mouth's
 line (HD Aaron's, the own-content proof 2026-11-08; ours one flat pink). Writes `mouth_seam.png` beside it; maps.py
-darkens the lips by it (LIP_SEAM_TINT)."""
+darkens the lips by it (LIP_SEAM_TINT).
+
+The upper lip: the lips (MakeHuman's mask on hm08's own UVs, per vertex) on the upper side of the mouth's slit in the
+head tile's UVs (the lining's long, thin hole runs between the two lips; the upper side is the one whose lips sit
+higher) - faded over UPPER_SOFT_UV. Writes `lips_upper.png`;
+maps.py tints it deeper red (LIP_UPPER_TINT: real upper lips, HD Aaron's among them, are a deeper red than the lower;
+ours were one pink)."""
 
 from __future__ import annotations
 
@@ -36,6 +42,7 @@ HEAD_TILE = 1001
 BEHIND = 0.002  # m behind the lips' frontmost point: the lining starts here
 HALF_WIDTH, HALF_HEIGHT = 0.032, 0.022  # m round the front teeth's centre
 DEPTH = 0.05  # m behind the lips' front: the lining ends (the throat)
+UPPER_SOFT_UV = 0.002  # the upper lip's mask fades in over this across the slit (head-tile UV units, ~1.4 mm)
 SEAM_MM = 10.0  # the lips' darkening reaches this far in front of the lining (4 mm stayed on the lips' inner side)
 
 
@@ -79,6 +86,33 @@ def main() -> None:
     out = paths.GENERATED / "skin" / "mouth_seam.png"
     maps.write_png(out, np.repeat(image[..., None], 3, axis=2))
     print(f"wrote {out}: {int(((seam > 0) & ~lining).sum())} vertices in front of the lining, {count} polygons")
+    stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
+    lips = stubble._lips_per_vertex(body)
+    # which lip: the side of the mouth's slit in the head tile's UVs - the lining's hole, long and thin, runs between
+    # the two lips there (by height alone the lower lip's top, rolled up to the line, came out upper)
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    loop_v = np.empty(len(me.loops), np.int32)
+    me.loops.foreach_get("vertex_index", loop_v)
+    vuv = np.zeros((len(co), 2))
+    np.add.at(vuv, loop_v, uv.reshape(-1, 2))
+    vuv /= np.maximum(np.bincount(loop_v, minlength=len(co)), 1)[:, None]
+    lip = (lips > 0.3) & ~lining
+    lips_uv = np.median(vuv[lip], axis=0)  # the lining round the lips on the face, not the mouth's own island
+    face = lining & (np.linalg.norm(vuv - lips_uv, axis=1) < 0.03)
+    centre = vuv[face].mean(axis=0)
+    axis = np.linalg.svd(vuv[face] - centre, full_matrices=False)[2][0]  # the slit's long direction
+    side = (vuv - centre) @ np.array([-axis[1], axis[0]])  # signed distance across it (UV units)
+    upper_sign = 1.0 if co[lip & (side > 0), 2].mean() > co[lip & (side < 0), 2].mean() else -1.0
+    across = side * upper_sign / UPPER_SOFT_UV
+    upper = (np.clip((lips - 0.2) / 0.3, 0.0, 1.0) * np.clip(across * 0.5 + 0.5, 0.0, 1.0) * ~lining).astype(np.float32)
+    print(f"lips: {int(lip.sum())} vertices; upper {int((lip & (side * upper_sign > 0)).sum())} (mean z "
+          f"{co[lip & (side * upper_sign > 0), 2].mean():.4f}), lower {int((lip & (side * upper_sign < 0)).sum())} "
+          f"(mean z {co[lip & (side * upper_sign < 0), 2].mean():.4f})")
+    image, count = _raster(me, upper)
+    out = paths.GENERATED / "skin" / "lips_upper.png"
+    maps.write_png(out, np.repeat(image[..., None], 3, axis=2))
+    print(f"wrote {out}: {int((upper > 0.5).sum())} upper-lip vertices, {count} polygons")
 
 
 def _distance_from(co: np.ndarray, edges: np.ndarray, sources: np.ndarray) -> np.ndarray:
