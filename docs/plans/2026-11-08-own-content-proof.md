@@ -537,6 +537,13 @@ booked with just-direct-mocap.
   left the scar's end; the fade inside the mark leaked its dark back; the copy's offset overshot the image (its test
   caught the last two). Its test in `tests/tools/test_body_scan.py` (5 passed). `batch_scar.sh`: posted, skins and
   characters rebuilt, the torso views.
+- **02:2x, the New human's neck patch (`row_final2_three_quarter.png`):** a grey-brown smudge on the front of the neck
+  (mapped: 0.024, -0.077, 1.47 m - the throat under the chin; a scan's coverage on the head tile's neck island, its own
+  tone against the fill). Guessed the beard shadow (the skin's beard region runs down the throat past the stubble's
+  neckline) - **measured false**: 611 composed again with its seed and no beard shadow (a different seed first - its
+  noise differed everywhere, void): the shadow is 5,315 texels on the upper lip, at most 4.3% darker, none on the
+  throat. The patch and the cheek blotches are the scans' own colour coverage - the composition's feathering, tuned
+  on 11-06 (LOW_RANGE) - **open, box spent**. 611 restored from `.dev/backup/compositions_2026-11-09` (byte-equal).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -765,5 +772,7 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   report had voided on 11-07, and from the forehead view with the fringe on).
 - A transplant is not a verdict. A side fix (speed, tooling, layout) is not the job unless the proof step needs it.
 - Read the code before saying what a test used (I said the gate had its own lights - it uses the app's stage).
+- Never write a file a running batch reads (2026-11-09: a diagnostic compose overwrote composition 611 while
+  `batch_scar.sh` rebuilt the skins - its Scan man A had read it 2 min before; checked by the files' times, not luck).
 - Check a mask covers what it should before measuring with it (2026-11-09: a "face" mask that took the tile's empty
   background made a 0.55 face/body gap that wasn't there; I changed the composition on it before checking).
