@@ -354,8 +354,8 @@ def test_the_neck_on_the_head_tile_is_body_skin(human, tmp_path):
 
 def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
     """The nails', the mouth's and the lips' coat reach the BSDF (the base coat was linked after the nails' and the
-    mouth's, replacing both - found 2026-11-06); the lips take their own roughness and a trace of coat (2026-11-09: matte -
-    at 0.33 / 0.3 their lines caught wet glints at extreme close-up, crinkled cellophane beside HD Aaron's soft lips)."""
+    mouth's, replacing both - found 2026-11-06); the lips take their own roughness and a light coat (2026-11-09: 0.33 / 0.3
+    caught wet glints in every line up close; 0.6 / 0.05 read as clay at the face views)."""
     made, body = human
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
@@ -377,7 +377,8 @@ def test_the_wet_layers_keep_their_coat_and_the_lips_shine(human, tmp_path):
     assert "lips_rough" in chain("Roughness")
     for key, value in (("lips_rough", maps.LIP_ROUGHNESS), ("lips_coat", maps.LIP_COAT)):
         assert next(i for i in nodes[maps.NODE + key].inputs if i.identifier == "B_Float").default_value == pytest.approx(value)
-    assert maps.LIP_COAT < 0.1  # a trace: a wet sheen read as crinkled cellophane at extreme close-up
+    # between clay (0.6 / 0.05: the lines unseen) and cellophane (0.33 / 0.3: wet glints in every line up close)
+    assert 0.35 <= maps.LIP_ROUGHNESS < 0.6 and 0.05 < maps.LIP_COAT < 0.3
     tint = maps.LIP_TINT
     assert tint[1] < tint[2]  # redder, less yellow: blue kept above green
 

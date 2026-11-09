@@ -48,6 +48,12 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-09 10:1x:** committed since 07:3x - the scans' darkened rims weighed out (0359462: no jaw smudges), the
+  ears' redness by tone (4a24557), women's sparser brows live by the gender slider (dae067b), the brows thinning to
+  their edges (060d447); the verdict table in the working doc updated. Running: a fresh side-by-side of every view
+  (`scratchpad/batch_allviews.sh` -> `scratchpad/all/row_<view>.png`) to pick the next worst fault. Open: the scans'
+  blood redness on dark skin (chromophore maps), the brows' fine-hair veil on dark skin (strand haze), the lower
+  lashes, the ears' gloss; waiting for the user: ISSA + openpyxl, the hair cut.
 - **2026-11-09 07:3x:** committed since 05:4x - the scans' edge faded (b978644: no neck / chest patch on any
   character), brown brows and the gate keeping a library character's own brows (afff11c). Running: the scans'
   darkened rims weighed out (`skin_base.rim_weight`; the women's jaw smudges) - `scratchpad/batch_rim.sh` (backups

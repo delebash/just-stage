@@ -143,9 +143,11 @@ LIP_UPPER_TINT = (0.75, 0.52, 0.55)
 #: less yellow (56.4 / 30.4 / 15.1) and his lower lip shining - the tint from the two lips' linear ratio (0.70 / 0.75 x
 #: 0.80 / 1.22), the vermilion smoother and lightly coated
 #: 2026-11-09 (`.dev/gate/parts/2026-11-09lipgloss`, by eye at full resolution): at 0.33 / 0.3 the lip lines caught
-#: wet highlights - crinkled cellophane at extreme close-up beside HD Aaron's soft matte lips; 0.6 / 0.05 reads as lip
-#: skin up close and no drier at the lips view (0.5 / 0.15 kept glints on a darker lip)
-LIP_ROUGHNESS, LIP_COAT = 0.6, 0.05
+#: wet highlights - crinkled cellophane at extreme close-up beside HD Aaron's soft matte lips; 0.6 / 0.05 then read as
+#: lip skin up close, but beside him at the face, lips and open-mouth views it read as matte clay, the lines unseen
+#: (`.dev/gate/parts/2026-11-09lipsheen`): 0.4 / 0.2 - a soft sheen on the lower lip, its lines catching the light as
+#: his do, no cellophane at the corner's crop
+LIP_ROUGHNESS, LIP_COAT = 0.4, 0.2
 #: the lips' fine vertical lines - our own (no free scan resolves them: Ten24's lips are ~220 texels across): a wave in
 #: bands across the lip, its distortion and a noise of ~4 mm cells making the furrows uneven, as a bump inside the lips'
 #: mask. Judged by eye beside HD Aaron (2026-11-08, `.dev/gate/parts/2026-11-08ao`, `factors liplines*1.3*0.4*4*0.8`):
@@ -430,8 +432,8 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
 
 
 def _lip_layer(nt, bsdf) -> None:
-    """The lips' vermilion: the colour scaled toward LIP_TINT by MPFB2's lips mask, read through hm08's own UVs; matte with
-    a trace of coat (LIP_ROUGHNESS, LIP_COAT: soft lip skin up close, not a wet sheen)."""
+    """The lips' vermilion: the colour scaled toward LIP_TINT by MPFB2's lips mask, read through hm08's own UVs; smoother
+    than the skin with a light coat (LIP_ROUGHNESS, LIP_COAT: a soft sheen, not a wet film)."""
     uvmap = _node(nt, "ShaderNodeUVMap", "lips_uv", (-1800, -2400))
     uvmap.uv_map = "UVMap"
     mask = _node(nt, "ShaderNodeTexImage", "lips_mask", (-1600, -2400))

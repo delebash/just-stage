@@ -1643,8 +1643,8 @@ def _skin_node_inputs(built: dict, node_name: str):
 
 
 def lipshine(built: dict, rough: float, coat: float) -> None:
-    """The lips' roughness and coat (`maps.LIP_ROUGHNESS`, `LIP_COAT`; 0.6 / 0.05 since 2026-11-09, 0.33 /
-    0.3 before) - step 1's fault: a broad plastic sheen over our lips where his show a small wet highlight on a matte lip;
+    """The lips' roughness and coat (`maps.LIP_ROUGHNESS`, `LIP_COAT`; 0.4 / 0.2 since 2026-11-09 midday,
+    0.6 / 0.05 that morning, 0.33 / 0.3 before) - step 1's fault: a broad plastic sheen over our lips where his show a small wet highlight on a matte lip;
     2026-11-09 the lines' wet glints at extreme close-up."""
     n = 0
     for key, value in (("lips_rough", rough), ("lips_coat", coat)):

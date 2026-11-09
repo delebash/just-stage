@@ -803,7 +803,61 @@ booked with just-direct-mocap.
   the gate's man - KEPT.** End run: unit 45, tools 54, Blender 203 passed, 1 failed - my new test measured raw
   height in a slice of the arched brow (one side 0.28, under an even spread's 0.33); rewritten to the sampler (none
   below the band, the middle third > 0.42 against 0.33 even) and each brow against its own middle line, the bell
-  against the even spread (0.49 / 0.45 against 0.43 / 0.42) - test_brows 8 passed.
+  against the even spread (0.49 / 0.45 against 0.43 / 0.42) - test_brows 8 passed. Committed 060d447.
+- **10:2x, a fresh side-by-side of every view (`scratchpad/all/row_<view>.png`, grids `now_grid_1-6.png`; the gate's
+  man as the product is now, HD Aaron's renders of 11-08):** the worst-looking faults now - (1) **the closed upper
+  lid** (`eye_blink`, `row_blink_crop.png`): vertical streaks (the lid's detail stretched as it closes), smooth and
+  shiny, a few white flecks, the lashes a blue-grey sheen - his a plain textured lid (11-08's fault list named it, never
+  worked); (2) **the lips** at the face, lips and mouth views: one flat salmon pink, smooth as clay since the matte
+  change - his lined, a soft border, a little wet; then the nails' and toenails' pale flat plates; the hair (waiting).
+  Taken: the closed lid (box 45 min) - `batch_blink.sh`: pores, microrelief, the scans' relief, the colour, the lashes
+  each off against today's. **10:3x (`row_blink_{a,b,c,d,e}.png`):** no single layer: each off left the streaks;
+  the films hidden (`tear0`) took the white flecks - the tearline pokes through the closed lid (the films sit by their
+  angles about the eyeball, they don't follow the blink); the scattering at 0.01 changed nothing; every detail layer
+  off TOGETHER - a smooth lid, no streaks; the colour alone and the relief alone each streak. Measured
+  (`lid_stretch.py`): the lid's faces at the blink - area p50 1.11, p90 2.49, max 3.26 (vertex stretch to 5.0), the
+  vertical edges 2.44 at p90, the horizontal 1.14 - the fold, hidden in the crease while the eye is open, opening out.
+  Fix (mine; box 45 min): a mask of the fold (`tools/make_lid_mask.py`: each vertex's largest face area ratio closed /
+  open, 1.3 -> 2.0, softened; `lid_fold.png`, reusing make_mouth_mask's `_raster` - its main() now guarded), and in
+  it (a) `maps._relief_off_lid` - pores, microrelief and the scans' relief cut; (b) `skin_base.lid_smoothed` - the
+  composed colour its own blur (LID_SMOOTH 24 texels, ~4 mm). Hidden while the eye is open, it loses nothing there.
+  Attacked: "a live tension map" (the standard for stretch: measure it each frame in Geometry Nodes, fade detail by
+  it) - heavier, every frame on the body; the fold is the one region this stretches and is hidden otherwise, so a
+  baked mask does the same here; "the closed lid will read too smooth" - HD Aaron's has fine texture; smooth beats
+  streaked, the microrelief's own scale could come back on it later; the relief strength now a number in
+  `relief_off_lid` (a rebuild can't loop it) - `relief0` / `relief*` trials set it there. Tests: the mask chain and
+  a rebuild (`test_the_lids_fold_has_no_relief_to_streak`), `test_the_lids_fold_is_smoothed_and_nothing_else`.
+  `batch_lid.sh` (backups `compositions_2026-11-09d`, `skins_2026-11-09c`, `library_2026-11-09l`). **11:18
+  (`row_lid_blink.png`, `row_lid_eyecrop.png`): the streaks gone - but the closed lid a smooth glossy plastic sheet,
+  and on the OPEN eye the visible lid band between the crease and the lashes smooth and glossy too: the premise
+  ("hidden while the eye is open") was false - the skin the blink stretches is mostly the visible lid itself. A
+  regression on the eye's main view - REMOVED, box spent (end run had passed: unit 45, tools 55, Blender 205).**
+  The code back to 060d447 (from `git show`), `make_lid_mask.py` and `lid_fold.png` deleted, the compositions, skins
+  and library put back from the 10:44 backups (`batch_lidrevert.sh`, after the lip trial, checked byte for byte).
+  **The closed lid's streaks: open, box spent - what's missing is detail that changes WITH the blink.** Routes, in
+  order: (1) MetaHuman's and CC5's own pattern - expression-driven maps: the stretch region's detail faded by the
+  blink keys' values (a driver into the material), with a pre-blurred colour copy to fade to - nothing changes while
+  the eye is open; (2) a live stretch map (deformed edge lengths against `rest_position` in Geometry Nodes, a named
+  attribute the shader reads) - a body modifier every frame, and it can't sit before Multires (which must come
+  first); (3) the lid's UVs laid out for the closed state (compression in the open fold hides, stretch shows) - a
+  base-mesh change. Also open: the films follow the blink (ICT's own blink shapes). The blink is a passing
+  expression; moved on to the lips. Checked (`ict/eyeBlink_L.obj` against
+  the neutral mesh): ICT's blink moves its left eye's tear strip (192 of 204 vertices) and occlusion (146 of 152) up
+  to 9.6 mm - the standard route exists: each film vertex's move as angles about the eye, a shape key on the film
+  object (the right eye mirrored), driven by the body's eyeBlink keys. Not started: a few small flecks against the
+  lips, seen in every face view - **routed, open**.
+- **11:0x, the lips (box 45 min):** measured on the fresh lips view (pixels a* > 30): ours L* a* b* 46.4 / 37.3 /
+  22.9, hue 31 deg; HD Aaron's 48.3 / 35.4 / 19.9, hue 28 - the colour is close (ours a touch yellower). The clay look
+  is the surface: his lower lip wet with a sheen and its lines catching light; ours matte since 0.6 / 0.05, its lines
+  invisible at the lips view. Trial (`batch_lipsheen.sh`, after `batch_lid`): 0.45 / 0.12 and 0.4 / 0.2 against
+  today's at the lips, lip_corner (the cellophane check), open mouth and face views. **11:25
+  (`row_ls_{lips,lip_corner,mouth_jawOpen,face}.png`): 0.6 / 0.05 matte clay; 0.45 / 0.12 a faint sheen; 0.4 / 0.2 a
+  soft sheen on the lower lip, its lines catching the light as his do - and at the corner's extreme crop texture, no
+  cellophane. CHANGED (mine, on the new comparison): `LIP_ROUGHNESS, LIP_COAT` 0.6 / 0.05 (this morning, 04:1x) ->
+  0.4 / 0.2.** The morning's pick was judged at the corner crop and the lips view alone; the face views beside him
+  today show the clay - the new measured fact. The test now holds it between clay and cellophane. Still open on the
+  lips: our upper lip a saturated coral against his softer pink, and a crisp painted border (his softer) - the
+  colour job.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
@@ -1051,3 +1105,6 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
 - Stopping a batch stops all of it (2026-11-09 08:58: TaskStop ended the outer shell, but the batch's own bash went on
   and started the next render): find the batch's shells and their Blender by command line, stop each, check none
   is left.
+- Trial a change on every view it touches before rolling it into the skins (2026-11-09 11:18: the lid-fold mask went
+  into all six skins and the library on the blink view's evidence alone; the open eye - the main view - regressed,
+  and the rollout had to be reverted from backups).
