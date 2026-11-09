@@ -1754,6 +1754,55 @@ def aoshade(built: dict, strength: float, distance_mm: float = 15.0) -> None:
     print("AO SHADE strength", strength, "reach", distance_mm, "mm on", n, "skins (film and live)", flush=True)
 
 
+def regiontint(built: dict, k: float = 1.0) -> None:
+    """Regional colour in our skin (18:59, the layer diagnostic: HD Aaron's skin on our head took the doll look away -
+    redder nose and cheeks, darker reddish lids and under-eyes; ours one flat peach): by the region map's smooth ramps,
+    the eyes' surround x (0.78, 0.66, 0.62) and the nose x (1.0, 0.86, 0.86), `k` scaling how far from 1."""
+    maps = _maps()
+    tints = {"eyes": (0.78, 0.66, 0.62), "nose": (1.0, 0.86, 0.86)}
+    n = 0
+    for mat, bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        split = nt.nodes.get(maps.NODE + "face_regions_split")
+        if split is None or not bsdf.inputs["Base Color"].is_linked:
+            continue
+
+        def ramp(out, lo, hi):
+            r = nt.nodes.new("ShaderNodeMapRange")
+            r.clamp = True
+            nt.links.new(split.outputs[out], r.inputs["Value"])
+            r.inputs["From Min"].default_value, r.inputs["From Max"].default_value = lo, hi
+            return r.outputs["Result"]
+
+        def times(a, b):
+            m = nt.nodes.new("ShaderNodeMath")
+            m.operation = "MULTIPLY"
+            nt.links.new(a, m.inputs[0])
+            nt.links.new(b, m.inputs[1])
+            return m.outputs[0]
+
+        low_pores = ramp("Red", 0.13, 0.09)  # eyes and nose 0.086; neck 0.125, cheek 0.144 out
+        masks = {"eyes": times(low_pores, ramp("Blue", 0.168, 0.105)),  # micro 0.101 round the eyes
+                 "nose": times(low_pores, times(ramp("Blue", 0.13, 0.16), ramp("Blue", 0.22, 0.19)))}  # 0.169
+        colour = bsdf.inputs["Base Color"].links[0].from_socket
+        for key, mask in masks.items():
+            mix = nt.nodes.new("ShaderNodeMix")
+            mix.data_type = "RGBA"
+            nt.links.new(mask, mix.inputs["Factor"])
+            next(i for i in mix.inputs if i.identifier == "A_Color").default_value = (1.0, 1.0, 1.0, 1.0)
+            next(i for i in mix.inputs if i.identifier == "B_Color").default_value = (
+                *(1.0 - k * (1.0 - c) for c in tints[key]), 1.0)
+            mul = nt.nodes.new("ShaderNodeVectorMath")
+            mul.operation = "MULTIPLY"
+            nt.links.new(colour, mul.inputs[0])
+            nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Color"), mul.inputs[1])
+            colour = mul.outputs["Vector"]
+        nt.links.new(colour, bsdf.inputs["Base Color"])
+        mod.sync_live(mat)
+        n += 1
+    print("REGION TINT k", k, tints, "on", n, "skins (film and live)", flush=True)
+
+
 def liplines(built: dict, period_mm: float = 1.2, depth_mm: float = 0.25, distortion: float = 6.0,
              vary: float = 0.0) -> None:
     """Vertical lip lines made in the shader (our own asset, the user's "making your own assets"; no free scan resolves
@@ -2523,6 +2572,8 @@ def factor(name: str):
     if name.startswith("lidsmooth"):  # lidsmooth*4*10 (rings, passes)
         _, rings, passes = name.split("*")
         return lambda built: lidsmooth(built, int(rings), int(passes))
+    if name.startswith("regiontint"):  # regiontint, regiontint*1.5 (how far from 1)
+        return lambda built: regiontint(built, *(float(x) for x in name.split("*")[1:2]))
     if name.startswith("aoshade*"):  # aoshade*0.6[*15] (strength, reach in mm)
         return lambda built: aoshade(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("eyedark*"):  # eyedark*0.8 (the tint's level round the eyes)

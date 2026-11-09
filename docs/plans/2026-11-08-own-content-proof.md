@@ -227,6 +227,23 @@ position would swim when the head moves) - UV space, to build; the shader is reb
 **Next: the layer diagnostic (`batch_diag.sh`) - one of his layers at a time on our face (skin, brow/lash/stubble cards,
 eyes at his size, then all three), to find which layer makes ours a doll - the plan's use of a transplant when fixes
 stall; then that layer fixed with our content.** Waits for just-voice's end run ("CPU free" ~18:55).
+- For the lip lines in the product (measured 18:2x on hm08's `base.obj`, the faces under MPFB2's lips mask > 0.6, its
+  "UVMap"): along V the lip runs across the face (an edge's vertical share 1.05 dm of 16.02 dm per V unit), along U up
+  it (12.31 dm per U unit) - so the lines are bands along V, ~1,600 mm per V unit: a 1.3 mm line is a wave scale of
+  ~1,230 on V; the noise's 4 mm cells ~400 on V, ~300 on U. In UV the lines ride the lips through every expression.
+
+**18:59, THE LAYER DIAGNOSTIC (`.dev/gate/parts/2026-11-08diag`, rows `row_diag_face*.png`; a transplant to find the
+wrong layer, never a verdict): his skin alone on our head takes much of the doll look away (redder nose and cheeks,
+darker reddish lids and under-eyes, forehead lines); his brow, lash and stubble cards alone make our eyes read natural
+(his brows dark, dense, low; ours grey, thin, floating; our lashes barely show); his eyes alone change little; all three
+on our shape and our hair read as a real man. So the face's shape was never it: the doll look is (1) our strand grooms
+and (2) our skin's flat colour.** (1) is the renderer, not the grooms' settings: our brows' melanin is 0.92 (near
+black), yet they read grey - the 11-07 report saw it on the scalp ("a grey haze over EEVEE's hair where Cycles' is
+dark"): `hair_shading.py`'s live-view model (NOT STANDARD, Q-HAIR-6) - its shares (diffuse 0.4, ambient 0.45) on trial
+(`hairmodel*0.2*1.0*0.3`, `*0.1*1.0*0.2`); the approved fallback is cards in the live view (Q-HAIR-7). (2) regional
+colour (`regiontint`: the eyes' surround darker and reddish, the nose redder, by the region map's smooth ramps) - the
+composition's own route (`skin_base` regional colour, EYE_DARK) once the trial shows the amount. `batch_layers.sh`,
+booked with just-direct-mocap.
 - Lips round 2 queued (`batch_lip2.sh`, `.dev/gate/parts/2026-11-08lip2`): our own lip lines in the shader (`liplines`:
   a Wave texture in bands across the lips, noise-distorted, masked by the lips' share, a bump - no free scan resolves
   lip lines), the lips thinner with a cupid's bow by our sliders (`faceshape*lipthin`), and all three together.
