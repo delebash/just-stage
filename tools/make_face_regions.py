@@ -13,8 +13,9 @@ the forehead to 0.98 and the cheek past his to 1.68.
 Regions by place on the default human (it faces -Y; from the pupils, the front teeth and the face's front): the
 forehead above the brows, the nose, the chin, round the eyes; elsewhere the cheek's values. Softened over the mesh's
 neighbours. Writes `extension/juststage/data/generated/skin/face_regions.png`: 8-bit RGB, 2048², R the relief factor /
-RELIEF_SCALE, G the roughness, B the microrelief factor / RELIEF_SCALE; and `face_share.png`, the face's share (0 on the
-neck)."""
+RELIEF_SCALE, G the roughness, B the microrelief factor / RELIEF_SCALE; `face_share.png`, the face's share (0 on the
+neck); and `face_eyes.png`, the eyes region's share (maps.py darkens the skin round the eyes by it - real lids and
+under-eyes are darker; ours read the cheek's flat colour, the own-content proof 2026-11-08)."""
 
 from __future__ import annotations
 
@@ -98,7 +99,8 @@ def main() -> None:
     near_eye = np.min(np.linalg.norm(co[:, None, :] - pupils[None, :, :], axis=2), axis=1) < 0.017
     region[front & near_eye] = "eyes"
     region[z < mouth_z - NECK_BELOW] = "neck"
-    table = {**{k: (*v, 1.0) for k, v in regions.items()}, "neck": (1.0, 1.0, material.ROUGHNESS, 0.0)}
+    table = {**{k: (*v, 1.0, float(k == "eyes")) for k, v in regions.items()},
+             "neck": (1.0, 1.0, material.ROUGHNESS, 0.0, 0.0)}  # fmt: skip
     values = np.array([table[r] for r in region], np.float32)
     me = body.data
     edges = np.array([e.vertices for e in me.edges])
@@ -114,6 +116,7 @@ def main() -> None:
     image[..., 0], image[..., 2] = (regions["cheek"][k] / RELIEF_SCALE for k in (0, 1))
     image[..., 1] = regions["cheek"][2]
     image[..., 3] = 1.0
+    eyes = np.zeros((SIZE, SIZE), np.float32)
     for p in me.polygons:
         uvs = np.array([[uv_layer[i].uv.x - (HEAD_TILE - 1001), uv_layer[i].uv.y] for i in p.loop_indices])
         if not ((uvs >= 0) & (uvs <= 1)).all():
@@ -138,11 +141,13 @@ def main() -> None:
             image[rows, cols, 2] = v[:, 1] / RELIEF_SCALE
             image[rows, cols, 1] = v[:, 2]
             image[rows, cols, 3] = v[:, 3]
+            eyes[rows, cols] = v[:, 4]
     out = (out_dir or paths.GENERATED / "skin") / "face_regions.png"
     out.parent.mkdir(parents=True, exist_ok=True)
     maps.write_png(out, image[..., :3])
     # the face's share in a map of its own (packed in the region map's alpha, the live view divided R, G, B by it)
     maps.write_png(out.with_name("face_share.png"), np.repeat(image[..., 3:4], 3, axis=2))
+    maps.write_png(out.with_name("face_eyes.png"), np.repeat(eyes[..., None], 3, axis=2))
     counts = {r: int((region == r).sum()) for r in table}
     print(f"wrote {out}: vertices by region {counts}")
 

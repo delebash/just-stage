@@ -420,9 +420,21 @@ booked with just-direct-mocap.
   last resort; the first point need only be out of the skin (the root sits 0.1 mm in it). Upper: p50 6.3, 11 of 360
   over 20 deg (was 244). A first try - a 15 deg leaving angle at the root - changed nothing (they already left at more):
   removed. **Open: the lower lashes still kink (59 of 160 over 20; more turning steps don't clear them - rooted in the
-  corner of the lower margin's wall); they are faint (melanin 0.6, 25 um).** Test `test_the_upper_lashes_curve_
+  corner of the lower margin's wall); they are faint (melanin 0.6, 25 um).** (The eyes' surround and the lashes'
+  results continue below.) Test `test_the_upper_lashes_curve_
   smoothly_out_of_the_lid`. `batch_lash_lip.sh` (after the eye-surround trial `batch_eyes2.sh`): the seam mask again,
   the library backed up (`library_2026-11-08f`) and its characters rebuilt, the eye / lips / face views, every suite.
+- **23:30, the eyes' surround (`batch_eyes2.sh`, `row_eyedark_{eye,face}.png`):** `eyedark` 0.65 and 0.5 give the
+  lower lid and socket a natural red-brown shade like his; in the face view the eyes sit in instead of looking pasted
+  on (0.5 closer to him). **Kept at 0.6 in the product.** Where - **my 18:04 decision changed on a measured fact**:
+  OLD "one way per job: tune the composition's EYE_DARK, not a second layer in the shader"; NEW a shader layer
+  (`maps._eye_layer`, `EYE_SURROUND_TINT` (0.60, 0.54, 0.51)) by an explicit mask - because EYE_DARK only CAPS a scan's
+  own darkening (to keep makeup out, `skin_base.compose`) and cannot add the ~40% this needs, and only scan-composed
+  skins have it. The mask: `make_face_regions.py` now also writes `face_eyes.png`, its "eyes" region's share (within
+  17 mm of a pupil, softened) - not the trial's ramps on the region map's channel values (they would break when a
+  region's factor is retuned); run into the scratchpad, its face_regions / face_share identical to the shipped ones,
+  only the new mask copied in (1.7% of the head tile). Applied between `batch_lash_lip.sh`'s renders and its suite
+  (one suite for the lashes, the lips and the eyes); rendered after by `batch_eyelayer.sh`.
 
 ### THE VERDICT PER PART, 2026-11-08 21:3x (the user's bar: a person can't tell at close-up; EEVEE beside HD Aaron)
 
