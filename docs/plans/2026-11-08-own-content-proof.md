@@ -561,6 +561,11 @@ booked with just-direct-mocap.
   (1) decided by the Diffuse Color pass (`woman_jaw_diffcol.png`): the base colour under the jaw only faintly darker -
   the band is the jaw's underside turning from the key light (his is shadowed there too): **not a fault, closed.**
   Seen there instead: the woman's chin skin coarse, bumps ~2-3 mm (larger than pores - her composed relief), open.
+  (2) decided by `eyetint` (`row_eyetint_{Older_man,Amara,Average_man}.png`: shipped 0.6 / 0.8 / off): the layer's
+  share is small on every skin; the bruised look is in the skins themselves - on the Older man a grey-blue smear over
+  the inner brow and upper lid in all three (Scan man C's brow band, dropped from the scans and filled), on Amara a
+  broad grey eyeshadow-like zone (her legacy AI-painted skin). **The eye layer kept; the brow band's fill on darker
+  composed skins open** (the composition's hue correction covers the eye zone, not the brow band).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
