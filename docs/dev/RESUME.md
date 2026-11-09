@@ -48,6 +48,16 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-08 21:0x (read the working doc's "evening's verdicts" table and the entries above it):** the user's plan
+  restated in my words at ~14:45 (TASKS) - the bar "a person can't tell at close-up", worst fault first, a time box per
+  part, "can't, X missing" when the routes are spent. Kept today: forehead pores x1, stubble 100 a cm2, the scalp one
+  ring, brows 1200/2000/0.92, the lips' lines in the shader. Verdicts: cheek and nose skin match; the face reads made -
+  the layer diagnostic and the split put it in the live-view strand haze (cards, the approved rule) and the skin's
+  mid-scale relief: **face skin relief - can't with free assets in hand** (three scans' relief, a made wrinkle layer);
+  hair needs cards + an artist's free cut (the Chrome extension disconnected at 16:02); body definition from MakeHuman's
+  CC0 normal works (a slider, seams to fix). Running 21:0x: the end run (`scratchpad/batch_end.sh`: the region map, the
+  library rebuilt with a backup at `.dev/backup/library_2026-11-08d`, then every suite). The job's scratchpad:
+  `F:/ClaudeCode/tmp/claude/bff537e12af9b769/5a1c3314-77f3-4a60-8d1a-9d80b40bc2f8/scratchpad`.
 - **2026-11-08 14:05: the computer locked up and restarted.** Lost: nothing on disk - round 2a (face skin) had not
   started (it waited for just voice's card). 14:2x: found the forehead region-map variants also differed from the
   shipped map at region borders (the map is made on today's New human), so `regions*base` (today's map, unchanged) was
