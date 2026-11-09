@@ -558,6 +558,9 @@ booked with just-direct-mocap.
   Older man's and Amara's eye surround a bruised grey-blue** - partly before the eye layer (the 11-06 render had grey
   sockets: the composition's eye zone), deepened by it - `factors eyetint` (`batch_eyetint.sh`: shipped, 0.8, off on
   the Older man, Amara and the Average man).
+  (1) decided by the Diffuse Color pass (`woman_jaw_diffcol.png`): the base colour under the jaw only faintly darker -
+  the band is the jaw's underside turning from the key light (his is shadowed there too): **not a fault, closed.**
+  Seen there instead: the woman's chin skin coarse, bumps ~2-3 mm (larger than pores - her composed relief), open.
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
