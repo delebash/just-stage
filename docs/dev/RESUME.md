@@ -48,6 +48,25 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
   every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+- **2026-11-09 18:3x:** the verdict committed (51bc0ab: not CC5 quality with free assets - the face's mid-scale
+  relief, the live-view hair). Then the face relief's "can't" REOPENED (the user: "never stop until you have proven or
+  disproven"): HSR0040 (HSRD-100, CC BY 4.0, in our scan set) is 50 and his COLOUR carries deep forehead lines and
+  crow's feet - only his mesh lost them. On trial (the working doc's 18:2x): Frangi line relief from his colour
+  (`wrinkles*photo40`, `photo40b`) rendering (`scratchpad/batch_photo40.sh` in the old scratchpad); Sapiens2's normals
+  of his colour in our head tile (`scratchpad/photorelief/sapiens_relief.py` -> `.dev/gate/wrinkles/sap40`) - they show
+  every crease; its height conversion being fixed. His 112 photos with RealityCapture cameras (`.xmp`) unpacked in
+  `.dev/downloads/hsrd100/HSR0040-Body-086/source/photos/` (a higher-resolution route if needed). Card: booked from
+  just-voice and family-release (family-release wants the whole PC in ~1 h - it asks first).
+  18:4x: **Sapiens2's relief of his colour at x2 makes the whole face read as real, older skin** (`row_sap40_*.png`) -
+  the free route makes the mid-scale relief; tuning its cut and depth against HD Aaron. Queue on the card (old
+  scratchpad): `batch_sap40f.sh` (the fine cut, eye area kept, pits out) -> `batch_vfbake.sh` (hair cards textured from
+  our own strands, `factors vfbake*B4`, new) -> `batch_cc5photo.sh` (HD Aaron in the same run, then `measure.py`).
+  19:0x: the colour relief INTO THE PRODUCT (my decision under the go, the working doc's 18:5x, NOT STANDARD):
+  `tools/face_test/colour_relief.py` per scan -> `skin_base._colour_relief` (one scan a texel, `COLOUR_RELIEF` 1.0);
+  running `batch_colourrelief.sh` (old scratchpad: the tool on 9 more scans, backups `*_2026-11-09cr`, the six skins
+  composed and built, the library's characters, renders of six characters + HD Aaron in
+  `.dev/gate/parts/2026-11-09colourrelief`, every suite). Don't edit skin_base.py / colour_relief.py / build tools
+  while it runs. The baked hair cards (round 1) read as scales; round 2 next (clump cards, our hair shading).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

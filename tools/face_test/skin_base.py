@@ -431,6 +431,31 @@ RELIEF_HP, RELIEF_FEATHER = 40.0, 16.0
 #: debris in a scan's relief (rings round its holes, arcs at its edges - gate run 7's gashes): steeper than this,
 #: and this many texels round it, the scan is dropped (hair.relief_debris)
 RELIEF_DEBRIS, RELIEF_DEBRIS_GROW = 0.3, 8
+#: the face's mid-scale relief read from each scan's COLOUR (colour_relief.py, 2026-11-09: its mesh lost the lines its
+#: photos kept), its depth (1.0 = the height Sapiens2's slopes integrate to - the gate's `wrinkles*sap40f*2`); one scan
+#: a texel - the heaviest relief scan first, the next only where it didn't reach (the plan's §9 "each region from one
+#: scan": a weighted mean of two people's lines cancels them, 11-08)
+COLOUR_RELIEF = 1.0
+
+
+def _colour_relief(sources, shape):
+    """The colour's relief (colour_relief.py's colour_relief.npy, tangent XY) of the relief scans, one scan a texel:
+    the heaviest first, each next only where those before left room; x COLOUR_RELIEF. XY or None."""
+    num, tot = np.zeros((*shape, 2), np.float32), np.zeros(shape, np.float32)
+    for n, _w in sorted(sources.items(), key=lambda kv: -kv[1]):
+        f = DIR / n / "colour_relief.npy"
+        if not f.exists():
+            continue
+        xy = np.load(f).astype(np.float32)
+        if xy.shape[:2] != shape:
+            xy = cv2.resize(xy, shape[::-1], interpolation=cv2.INTER_AREA)
+        # where the scan's colour gave relief at all (colour_relief.py's own skin mask: not `valid`, whose band round
+        # the eyes and brows would take the crow's feet out)
+        reach = cv2.GaussianBlur(np.clip(np.abs(xy).sum(-1) * 1e3, 0.0, 1.0), (0, 0), RELIEF_FEATHER)
+        a = np.clip(reach, 0.0, 1.0) * np.clip(1.0 - tot, 0.0, 1.0)
+        num += a[..., None] * xy * COLOUR_RELIEF
+        tot += a
+    return num if tot.any() else None
 
 
 def _relief(p, layers, shape, keep=None, scans=None, inside=None):
@@ -466,12 +491,15 @@ def _relief(p, layers, shape, keep=None, scans=None, inside=None):
             a = a * np.clip(1.0 - tot, 0.0, 1.0)
         num += a[..., None] * hp
         tot += a
+    colour = _colour_relief(sources, shape)  # added on top of the mesh's relief, at its own strength
     if not tot.any():
-        return None
+        return colour
     if inside is None:
-        return num / np.maximum(tot, 1e-6)[..., None] * np.clip(tot / 0.5, 0.0, 1.0)[..., None]
-    have = tot > 0.25
-    return _hair().mirror_fill(num / np.maximum(tot, 1e-6)[..., None], have, inside, neutral=0.0)  # flat past reach
+        mesh = num / np.maximum(tot, 1e-6)[..., None] * np.clip(tot / 0.5, 0.0, 1.0)[..., None]
+    else:
+        have = tot > 0.25
+        mesh = _hair().mirror_fill(num / np.maximum(tot, 1e-6)[..., None], have, inside, neutral=0.0)  # flat past reach
+    return mesh if colour is None else mesh + colour
 
 
 def compose(seed, params=None):

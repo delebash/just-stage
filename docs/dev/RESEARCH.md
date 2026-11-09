@@ -2672,6 +2672,24 @@ working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-resea
 
 ### 14.9 · Skin relief: mid-scale, pores, microrelief, regions
 
+- **The mid-scale relief is in our scans' COLOUR, not their meshes** (*measured, 2026-11-09 18:2x*; the own-content
+  proof's working doc, 18:2x): HSRD-100's `manifest/persons.jsonl` (fetched from the dataset, Hugging Face
+  `digitalrealitylab/HSRD-100`) gives HSR0040 age 50, male (HSR0112: 60, female; HSR0023: 62, male; HSR0161: 64, male) -
+  11-08's "hsr0040 is a young man with few lines" was wrong. His 16K colour (`HSR0040-Body-086_LOD0_u0_v0_diffuse.png`)
+  shows deep forehead lines, crow's feet and the eye's creases; his scan mesh (500k vertices) does not carry them, so
+  the relief we baked from it had none. Each pose's `source/<pose>-Photos.zip` (1.18 GB for 086) holds 112 photos
+  (5568 x 3712 JPEG), their masks and one RealityCapture `.xmp` per photo with the camera's pose (`xcr:Rotation`,
+  `xcr:Position`, `brown3` distortion, `FocalLength35mm` 61.5-167.4; 109 of 112 posed) - the manifest's separate
+  `Reality_Capture.zip` is not on the server (404). The scan's OBJ is z-up metres (0-1.853 m), the cameras within
+  +-2.6 m at 0.2-2.5 m height.
+  - **Sapiens2's normals of his colour** (`sapiens2_1b_normal`, the face cut upright from our head tile, one 1024 x 768
+    window): forehead lines, crow's feet, the creases under the eyes and the nose-to-mouth folds all read as relief
+    (`.dev/gate/wrinkles/sap40/normals.png`). **The Sapiens2 License, read at its source**
+    (`.dev/cache/src/sapiens2/LICENSE.md`, `facebookresearch/sapiens2` 7e5bae88): "a non-exclusive, worldwide,
+    non-transferable and royalty-free limited license ... to use, reproduce, distribute, copy, create derivative works
+    of"; no non-commercial clause; uses barred include "biometric processing", "to create deepfakes ... impersonating any
+    individual"; "you are and will be the owner of such derivative works"; redistributing the weights carries the
+    Agreement. A build-time tool: the weights never ship; the relief maps it reads are ours.
 - **MPFB2's region masks** (CC0, `src/mpfb/data/textures/mpfb_*.jpg` at 6ff1eb35, 2048², hm08's UVs): aureolae,
   crotch, ears, eyelids, face, fingernails, genitals, inside-mouth, lips, toenails - crisp white shapes. Its v2
   procedural skin (`entities/nodemodel/v2`, GPL-3 code) builds on its own services and would need MPFB2 installed and

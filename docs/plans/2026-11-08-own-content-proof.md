@@ -1121,6 +1121,78 @@ booked with just-direct-mocap.
   Everything else is close or matches (the verdict table): skin texture on the cheek, nose and forehead matches; dark
   skin matches measured skin within ~3 delta-E (ISSA); eyes, lips, brows, lashes, ears, nails, teeth, hands, feet and
   torso close, each with its named remainder.
+- **18:2x, the face relief's "can't" REOPENED - a free route never tried (the user, 16:4x: "never stop until you have
+  proven or disproven we can do this with free resources"; time box to ~20:30):** HSR0040 (HSRD-100, CC BY 4.0; in our
+  scan set) is a **50-year-old** man (the dataset's `persons.jsonl`: age 50, male), not "a young man with few lines" as
+  20:18 of 11-08 wrote - his COLOUR map (16K, the face ~15 px/mm; `scratchpad/hsr40_face_crop.jpg`) shows deep
+  forehead lines, crow's feet and the eye's creases, caught by the scan's photos as shading; only his scan's MESH (so
+  the relief we baked from it) lost them. Two ways to turn that into relief: (a) Frangi's Hessian line filter
+  (scikit-image; the standard detector of elongated dark lines, answers to lines not dots) on his colour in our head
+  tile -> a height map for `factors wrinkles*photo40` (`scratchpad/photorelief/lines_relief.py`); (b) Sapiens2's
+  normals on his photos (the face test's `view_normals.py` model; HSRD-100 ships each pose's 112 source photos - his
+  pose 086's downloading to `.dev/downloads/hsrd100/HSR0040-Body-086/source/`, 1.18 GB; the RealityCapture camera zips
+  the manifest lists are not on the server: 404). Card booked (just-voice, family-release: "card yours").
+  18:2x: the cameras ARE there - each photo's RealityCapture `.xmp` (pose, brown3 distortion, 35 mm focal 61.5-167.4;
+  109 of 112). Frangi maps: `photo40` (lines 6 mm and longer, 28 strokes - the forehead lines, a few creases by the eyes
+  and nose) and `photo40b` (4 mm, 133 strokes - adds stubble squiggles round the mouth: worse by eye) rendering
+  (`batch_photo40.sh`). **Sapiens2's normals of his colour (`.dev/gate/wrinkles/sap40/normals.png`) show every crease
+  - forehead lines, crow's feet, under-eye creases, the nose-to-mouth folds;** the first height kept the face's broad
+  shape (p1 -4.4 / p99 +7.8 mm, saturated) - fixed: the slopes' fine part (under 4 mm) integrated (Frankot-Chellappa),
+  then `batch_sap40.sh` (x1, x2 = the model's depth, x4). Its licence read (RESEARCH 14.9).
+- **18:3x, the hair's "can't" REOPENED too:** the plan's Cards row - "our own baker on Strands2Cards' published method"
+  (TO BUILD) - card textures baked from OUR strands (which read as real hair in Cycles), the way Unreal's groom-to-cards
+  generator bakes them, was never tried: round 3 used the creator's missing textures' substitutes and CC0 sheets. Next
+  after the face: a trial - strips of our strands rendered flat in Cycles (colour + coverage) as the card atlas,
+  `vfcards` textured with it. Its gap against the user's decision: Q-HAIR-7 approved "the 85 CC0 card alphas"; a
+  strand-baked atlas changes that - a trial answers feasibility; adopting it waits for the user.
+- **18:3x, the Frangi lines on the gate (`.dev/gate/parts/2026-11-09photo40`, `row_photo40_{face,three_quarter,eye,
+  forehead}.png`; HD Aaron's renders copied in from the day's latest runs):** at the forehead view `photo40` x2 gives
+  real forehead creases - his own lines' shapes, uneven, reddish in the groove like HD Aaron's - **not the drawn-on
+  grooves of 11-08's made layer**; x1 fainter; `photo40b` (shorter strokes) adds nothing at the forehead. The eye view:
+  a crease above the brow, the crow's feet barely there; the face and three-quarter views change little - HD Aaron's
+  relief is creasing all over, these are a few long lines. Next: Sapiens2's relief (`batch_sap40.sh`, running), which
+  reads every crease.
+- **18:4x, SAPIENS2'S RELIEF ON THE GATE (`row_sap40_{face,eye,forehead,three_quarter}.png`; the coarse cut - slopes
+  under 4 mm, +-0.4 mm clipped): at x2 the whole face carries real, uneven creasing - forehead lines, the frown's, the
+  nose-to-mouth folds, the cheeks' and the creases under the eyes - and no longer reads as a smooth doll: it reads as
+  an older man's real skin.** x1 faint; x4 too old, and at the eye view the clipped coarse cut draws crack-like lines.
+  **The free route makes the mid-scale relief** (HSRD-100's CC BY colour + Sapiens2 at build time); left: its cut and
+  depth against HD Aaron (younger - fewer, softer lines). Found on the way: the eye mask (`face_eyes.png` over 20) took
+  a ~50 mm disc round each eye - the crow's feet and the lower lid's creases were cut out; now only the opening (over
+  250) and the lid margins (`stretched` over 128); the nostrils' rims read as rings - masked; the stubble's pits out by
+  an area filter (3 mm2, scikit-image `area_closing` / `area_opening`). The fine cut with these: `sap40f`
+  (`batch_sap40f.sh`, queued), then the baked hair cards (`batch_vfbake.sh`).
+- **18:5x, the fine cut (`row_sap40f_*.png`) and the measure (HD Aaron rendered in the same run; `photo40_table.txt` in
+  the old scratchpad; the eye view's forehead window on the same skin in both, `windows_eevee_eye_*.png`):** by eye
+  `sap40f` x2 shows crow's feet, the lower lid's creases and forehead lines with real shapes, and the face reads as
+  real skin; x4 too old. Fold band (his = 1): none 0.58, x1 0.60, **x2 0.64**, x4 0.79 (the coarse cut x4 0.91); pore
+  band 0.50-0.56 throughout (a separate fault: the forehead's pores, open). His forehead is a dense net of fine creases;
+  the 50-year-old's colour gives fewer, deeper lines - so depth alone isn't the match: x2 kept, the rest left as the
+  scans' own character.
+- **18:5x, MY DECISION (under the go; attacked in passes) - the colour relief into the product:**
+  `tools/face_test/colour_relief.py` (the trial made proper: the scan's own `valid` from `layers.npz` as its skin mask -
+  the trial's hair-by-colour test would take dark skin for hair; the eye opening and lid margins, lips and nostrils
+  out; Sapiens2 loaded once, normals cached per scan) writes each scan's `colour_relief.npy`;
+  `skin_base._colour_relief` adds it on top of the mesh relief, one scan a texel (the heaviest first - the plan's §9),
+  `COLOUR_RELIEF` 1.0 (= the trial's x2). Attack passes: (1) past decisions - the plan's §9 "each region from one
+  scan" followed; the retired AI painting route is not this (it measures relief in real photos' colour, paints
+  nothing); Q-RIG-4 (expression wrinkles) untouched; (2) cost - a build-time model (the PyTorch environment and
+  Sapiens2's weights already on this machine for the face test), ~3 min a scan; nothing new ships but the maps;
+  (3) surprise - the characters look older where their scans are (HSR0040 is 50): the depth per character is a
+  slider's job if the user wants one (not built: no approved text); (4) edges - dark skin (the `valid` mask, not a
+  colour test), women's young scans give few lines, a scan's stubble pits out by the area filter; (5) simpler or more
+  standard - the industry's way is scanned displacement (Texturing.XYZ, 3D Scan Store: paid, their terms bar a free
+  app); the classical line filter (Frangi) gave only a few long lines. **NOT STANDARD** (the standard: a scanned
+  displacement map; the trade-off: a learned estimate of relief from colour, not a measurement). Blast radius (grep):
+  `_relief`'s one caller `compose` (skin_base.py); `relief_file`'s one reader `build_skins.py` (the head tile's normal
+  bake); the six library skins (611-613, 621-623 via `rebuild_scan_skins.py`) and every library character on them; no
+  other producer of `colour_relief.npy`. Tests: `tests/tools/test_colour_relief.py` (a groove's depth back, the XY's
+  directions, dots out / lines kept, one scan a texel). Rollout: `batch_colourrelief.sh` (backups
+  `compositions_2026-11-09cr`, `skins_2026-11-09cr`, `library_2026-11-09cr`).
+- **18:5x, the baked hair cards (`vfbake*B4`, `row_vfbake_*.png`; atlas `.dev/gate/hair_atlas/B4/colour.png` - 1,565 of
+  our strands in 8 strips, real strands):** still scales - flaky, greyer than the strands. Not the texture: thousands
+  of 7 mm ribbons each lit flat, no highlight along the hair, carrying very wavy strands. One more round after the
+  face: wider cards from clumps, a flow (tangent) highlight, the root-to-tip darkening.
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

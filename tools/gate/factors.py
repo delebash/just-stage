@@ -1916,6 +1916,174 @@ def vfhair(built: dict, bust: str, textured: bool = False, alpha: str = "") -> N
           int(brow.sum()), "brow cards dropped", flush=True)
 
 
+HAIR_ATLAS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "hair_atlas"
+ATLAS_STRIPS, ATLAS_STRIP_MM, ATLAS_LENGTH_MM, ATLAS_PX_PER_MM = 8, 16.0, 64.0, 16.0
+
+
+def _groom_arrays(groom) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
+    """The evaluated groom's points (world), curve offsets, point radii and float curve attributes (melanin ...)."""
+    cd = groom.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
+    pos = np.empty(len(cd.points) * 3, np.float32)
+    cd.attributes["position"].data.foreach_get("vector", pos)
+    mw = np.array(groom.matrix_world)
+    pos = pos.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3]
+    offs = np.empty(len(cd.curves) + 1, np.int64)
+    cd.curve_offset_data.foreach_get("value", offs)
+    rad = np.full(len(cd.points), 0.00004, np.float32)
+    if "radius" in cd.attributes:
+        cd.attributes["radius"].data.foreach_get("value", rad)
+    attrs = {}
+    for a in cd.attributes:
+        if a.domain == "CURVE" and a.data_type == "FLOAT" and not a.name.startswith("."):
+            v = np.empty(len(cd.curves), np.float32)
+            a.data.foreach_get("value", v)
+            attrs[a.name] = v
+    return pos, offs, rad, attrs
+
+
+def _bake_strips(groom, out: Path) -> Path:
+    """Card textures from our OWN strands - the way Unreal's groom-to-cards generator and Strands2Cards make them:
+    ATLAS_STRIPS clumps of the evaluated groom (the strands rooted within half a strip of a seed root), each turned
+    into its own frame (along its mean root-to-tip, across in the scalp's tangent plane, depth off the scalp), laid side
+    by side flat, roots at the top, and rendered from above in Cycles with the groom's own material (Principled Hair)
+    under an even white world: colour and coverage (alpha) in one RGBA picture, ATLAS_PX_PER_MM."""
+    pos, offs, rad, attrs = _groom_arrays(groom)
+    roots = pos[offs[:-1]]
+    tips = pos[offs[1:] - 1]
+    length = np.linalg.norm(tips - roots, axis=1)
+    centre = np.array([np.median(pos[:, 0]), np.median(pos[:, 1]), pos[:, 2].max() - 0.09])
+    rng = np.random.default_rng(11)
+    long_ = np.where(length > np.percentile(length, 60))[0]  # seeds among the longer strands: a strip shows a length
+    w, half = ATLAS_STRIP_MM / 1000.0, ATLAS_STRIP_MM / 2000.0
+    pts, rads, sizes, picked = [], [], [], []
+    for k, s in enumerate(rng.choice(long_, ATLAS_STRIPS, replace=False)):
+        near = np.where(np.linalg.norm(roots - roots[s], axis=1) < half)[0]
+        axis = (tips[near] - roots[near]).mean(0)
+        axis /= np.linalg.norm(axis)
+        nrm = roots[s] - centre
+        across = np.cross(axis, nrm)
+        across /= np.linalg.norm(across)
+        nrm = np.cross(across, axis)
+        for j in near:
+            p = pos[offs[j]:offs[j + 1]] - roots[s]
+            x, y, z = p @ across, p @ axis, p @ nrm
+            if np.abs(x).max() > half * 0.95:
+                continue
+            pts.append(np.stack([x + (k + 0.5) * w - ATLAS_STRIPS * w / 2, -y, z], 1))
+            rads.append(rad[offs[j]:offs[j + 1]])
+            sizes.append(len(p))
+            picked.append(j)
+    curves = bpy.data.hair_curves.new("atlas strands")
+    curves.add_curves(sizes)
+    curves.position_data.foreach_set("vector", np.concatenate(pts).astype(np.float32).ravel())
+    r = curves.attributes.get("radius") or curves.attributes.new("radius", "FLOAT", "POINT")
+    r.data.foreach_set("value", np.concatenate(rads).astype(np.float32))
+    for name, v in attrs.items():
+        a = curves.attributes.get(name) or curves.attributes.new(name, "FLOAT", "CURVE")
+        a.data.foreach_set("value", v[np.array(picked)].astype(np.float32))
+    for m in groom.data.materials:
+        curves.materials.append(m)
+    scene = bpy.data.scenes.new("hair atlas")
+    obj = bpy.data.objects.new("atlas strands", curves)
+    scene.collection.objects.link(obj)
+    cam_data = bpy.data.cameras.new("atlas camera")
+    cam_data.type = "ORTHO"
+    W, L = ATLAS_STRIPS * w, ATLAS_LENGTH_MM / 1000.0
+    cam_data.ortho_scale = max(W, L)
+    cam = bpy.data.objects.new("atlas camera", cam_data)
+    cam.location = (0.0, -L / 2, 0.2)
+    scene.collection.objects.link(cam)
+    scene.camera = cam
+    world = bpy.data.worlds.new("atlas white")
+    world.color = (1.0, 1.0, 1.0)
+    if world.node_tree is not None:
+        bg = next((n for n in world.node_tree.nodes if n.type == "BACKGROUND"), None)
+        if bg is not None:
+            bg.inputs["Color"].default_value = (1.0, 1.0, 1.0, 1.0)
+            bg.inputs["Strength"].default_value = 1.0
+    scene.world = world
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = 128
+    scene.cycles.device = "GPU" if bpy.context.scene.cycles.device == "GPU" else "CPU"
+    scene.render.film_transparent = True
+    scene.render.resolution_x = int(round(W * 1000 * ATLAS_PX_PER_MM))
+    scene.render.resolution_y = int(round(L * 1000 * ATLAS_PX_PER_MM))
+    scene.render.resolution_percentage = 100
+    scene.view_settings.view_transform = "Standard"
+    scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.color_mode = "RGBA"
+    scene.render.image_settings.color_depth = "16"
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "colour.png"
+    scene.render.filepath = str(path)
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+    print("ATLAS", len(sizes), "strands in", ATLAS_STRIPS, "strips ->", path, flush=True)
+    bpy.data.scenes.remove(scene)
+    return path
+
+
+def vfbake(built: dict, bust: str, count: int = 6000, width_mm: float = 7.0) -> None:
+    """Hair cards along our own strands (`vfguides`: grown from the free cut's cards) carrying a texture baked from
+    those same strands (`_bake_strips`) - the plan's Cards row ("our own baker on Strands2Cards' published method"),
+    tried 2026-11-09 after the CC0 sheets read scaly. Each card a random strip of the atlas at true scale (its width a
+    `width_mm` slice of the strip's ATLAS_STRIP_MM, its length the strand's own arc length), colour and coverage from
+    the atlas; the strand groom hidden. A new groom: --alone."""
+    vfguides(built, bust)
+    groom = next(o for o in bpy.data.objects if o.juststage.part == "scalp" and o.type == "CURVES")
+    atlas = _bake_strips(groom, HAIR_ATLAS / bust)
+    pos, offs, _rad, _a = _groom_arrays(groom)
+    rng = np.random.default_rng(3)
+    pick = rng.choice(len(offs) - 1, min(count, len(offs) - 1), replace=False)
+    centre = np.array([np.median(pos[:, 0]), np.median(pos[:, 1]), pos[:, 2].max() - 0.09])
+    du = width_mm / (ATLAS_STRIPS * ATLAS_STRIP_MM)
+    verts, faces, uvs = [], [], []
+    for k in pick:
+        p = pos[offs[k]:offs[k + 1]]
+        if len(p) < 3:
+            continue
+        tan = np.gradient(p, axis=0)
+        tan /= np.maximum(np.linalg.norm(tan, axis=1, keepdims=True), 1e-9)
+        side = np.cross(tan, p - centre)
+        side /= np.maximum(np.linalg.norm(side, axis=1, keepdims=True), 1e-9)
+        n = len(p)
+        half = side * (width_mm / 2000.0) * np.linspace(1.0, 0.55, n)[:, None]
+        s = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(p, axis=0), axis=1))]) * 1000.0
+        strip = rng.integers(ATLAS_STRIPS)
+        x0 = (strip + rng.uniform(0.05, 0.95 - width_mm / ATLAS_STRIP_MM)) / ATLAS_STRIPS
+        base = len(verts)
+        for i in range(n):
+            verts.append(p[i] - half[i])
+            verts.append(p[i] + half[i])
+            v = max(1.0 - s[i] / ATLAS_LENGTH_MM, 0.0)  # the atlas's roots at its top, at true length
+            uvs.append((x0, v))
+            uvs.append((x0 + du, v))
+        for i in range(n - 1):
+            a = base + 2 * i
+            faces.append((a, a + 1, a + 3, a + 2))
+    me = bpy.data.meshes.new("baked cards")
+    me.from_pydata([tuple(v) for v in verts], [], faces)
+    uv_layer = me.uv_layers.new(name="UVMap")
+    loop_v = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_v)
+    uv_layer.data.foreach_set("uv", np.array(uvs, np.float32)[loop_v].ravel())
+    obj = bpy.data.objects.new("baked cards", me)
+    bpy.context.scene.collection.objects.link(obj)
+    mat = bpy.data.materials.new("baked cards")
+    nt = mat.node_tree
+    bsdf = nt.nodes.get("Principled BSDF")
+    img = nt.nodes.new("ShaderNodeTexImage")
+    img.image = bpy.data.images.load(str(atlas), check_existing=False)
+    img.interpolation = "Cubic"
+    nt.links.new(img.outputs["Color"], bsdf.inputs["Base Color"])
+    nt.links.new(img.outputs["Alpha"], bsdf.inputs["Alpha"])
+    bsdf.inputs["Roughness"].default_value = 0.42
+    mat.surface_render_method = "DITHERED"
+    me.materials.append(mat)
+    groom.hide_render = True
+    built.setdefault("objects", []).append(obj)
+    print("VF BAKED CARDS", len(faces), "quads on", len(pick), "strands,", width_mm, "mm", flush=True)
+
+
 def vfcards(built: dict, bust: str, count: int = 6000, width_mm: float = 7.0, sheet: str = "hair02") -> None:
     """Hair cards the way CC5 and MetaHuman make them - flat strips carrying a strand texture - built along our own
     strands (`vfguides`: grown from the free cut's cards, so the artist's shape): `count` of the groom's strands each a
@@ -3609,6 +3777,10 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("vfbake*"):  # vfbake*B4[*6000*7] (cards along our strands, textured from our strands) - --alone
+        bits = name.split("*")
+        return lambda built: vfbake(built, bits[1], *(int(bits[2]),) if len(bits) > 2 else (),
+                                    *(float(bits[3]),) if len(bits) > 3 else ())
     if name.startswith("vfcards*"):  # vfcards*B4[*6000*7*hair02] (cards along our strands, a CC0 sheet) - --alone
         bits = name.split("*")
         return lambda built: vfcards(built, bits[1], *(int(bits[2]),) if len(bits) > 2 else (),
