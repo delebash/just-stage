@@ -71,20 +71,26 @@ def test_stubble_is_short_hair_on_the_beard_not_on_the_lips_or_nose(man):
 
 def test_stubble_grows_in_patches_not_an_even_mat(man):
     """An even density read as a uniform mat beside HD Aaron's patchy stubble (2026-11-09): with PATCHY the hairs per
-    2 cm cell over the beard vary well beyond an even density's chance spread."""
+    2 cm cell, over the same cells of an even run (the beard region's own fall-off cancels), vary well beyond what two
+    even runs with different seeds differ by (chance)."""
     _made, body = man
 
-    def spread(patchy):
+    def cells(patchy, seed):
         old = stubble.PATCHY
         stubble.PATCHY = patchy
         try:
-            roots = np.array([s[0] for s in stubble.strands(body)[0]])
+            roots = np.array([s[0] for s in stubble.strands(body, seed=seed)[0]])
         finally:
             stubble.PATCHY = old
-        cells = np.floor(roots[:, [0, 2]] / 0.02).astype(int)  # front-on 2 cm cells (x, z)
-        _keys, counts = np.unique(cells, axis=0, return_counts=True)
-        counts = counts[counts > np.percentile(counts, 25)]  # cells well inside the beard, not its edge
-        return counts.std() / counts.mean()
+        keys, counts = np.unique(np.floor(roots[:, [0, 2]] / 0.02).astype(int), axis=0, return_counts=True)
+        return {tuple(k): c for k, c in zip(keys, counts, strict=True)}
 
-    assert stubble.PATCHY > 0
-    assert spread(stubble.PATCHY) > 1.3 * spread(0.0), (spread(stubble.PATCHY), spread(0.0))
+    even, other, patchy = cells(0.0, 5), cells(0.0, 6), cells(stubble.PATCHY, 5)
+    full = [k for k, c in even.items() if c >= 30]  # cells well inside the beard
+
+    def spread(run):
+        ratio = np.array([run.get(k, 0) / even[k] for k in full])
+        return ratio.std()
+
+    assert stubble.PATCHY > 0 and len(full) > 20
+    assert spread(patchy) > 2.0 * spread(other), (spread(patchy), spread(other))
