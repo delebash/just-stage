@@ -566,6 +566,10 @@ booked with just-direct-mocap.
   the inner brow and upper lid in all three (Scan man C's brow band, dropped from the scans and filled), on Amara a
   broad grey eyeshadow-like zone (her legacy AI-painted skin). **The eye layer kept; the brow band's fill on darker
   composed skins open** (the composition's hue correction covers the eye zone, not the brow band).
+  03:1x, the brow band's grey (box 30 min, spent): Scan man C's baked head tile by saturation (`manC_grey.png`) - the
+  grey texels scattered small (38,663, no single blob at the brow); its face reads fuzzy and speckled all over (the
+  dark scans' fine layer). Not located cleanly - **open**, a composition job (the brow holes' fill, the eye zone's hue
+  correction reaching the brow).
 - **23:36, `batch_lash_lip.sh` (unit 45, tools 50; Blender running):** the library man's lashes
   (`row_lashes_eyecrop.png`): smoother than the kinked wire, but the cluster standing straight up is still there and
   a pale fan of straight strands now hangs over the upper iris. The eyes opened by sliders (the gate opens the
