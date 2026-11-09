@@ -250,15 +250,27 @@ def fit_foot(src: str, o, s) -> None:
     """A lone leg-and-foot scan onto our left foot (Thunk3D's lies on its side, in no body's frame): its long axis
     (the leg, by PCA) stood up with the foot - the wider end - at the bottom, the foot's reach from the leg turned to
     ours (-Y, the character faces -Y), its sole on our sole and its heel under our ankle; then rigid ICP on our foot,
-    then our foot wrapped onto it (`_wrap`, as the limbs)."""
+    then our foot wrapped onto it (`_wrap`, as the limbs). Both feet: the scan (a left foot) on our left, mirrored on
+    our right."""
+    spec = SOURCES[src]
+    work = spec["work"]
+    out = {}
+    for side in ("l", "r"):  # the scan is a left foot; mirrored (x), it is a right one
+        sv = s["co"].astype(np.float64) * (np.array([1.0, 1.0, 1.0]) if side == "l" else np.array([-1.0, 1.0, 1.0]))
+        sf = s["faces"] if side == "l" else s["faces"][:, ::-1]
+        place, fitted, fv = _place_foot(o, sv, sf, side)
+        out[f"place_{side}"], out[f"fitted_{side}"], out[f"moved_{side}"] = place, fitted, fv
+    np.savez(work / "fit.npz", place=out["place_l"], fitted=np.concatenate([out["fitted_l"], out["fitted_r"]]),
+             moved_v=np.concatenate([out["moved_l"], out["moved_r"]]), place_r=out["place_r"])  # fmt: skip
+
+
+def _place_foot(o, sv, sf, side: str):
+    """One foot: the scan placed on our `side` foot and our foot wrapped onto it - (placement, fitted, our vertices)."""
     import trimesh
     from trimesh import registration
 
-    spec = SOURCES[src]
-    work = spec["work"]
     co, tris = o["co"].astype(np.float64), o["tris"]
-    sv, sf = s["co"].astype(np.float64), s["faces"]
-    on_foot = _foot_vertices(o, "l")
+    on_foot = _foot_vertices(o, side)
     foot_tris = tris[on_foot[tris].all(axis=1)]
     fv = np.unique(foot_tris)
     ours = co[fv]
@@ -313,8 +325,8 @@ def fit_foot(src: str, o, s) -> None:
     svp = (np.c_[sv, np.ones(len(sv))] @ place.T)[:, :3]
     idx = -np.ones(len(co), int)
     idx[fv] = np.arange(len(fv))
-    fitted = _wrap(co[fv], idx[foot_tris], svp, sf, "foot")
-    np.savez(work / "fit.npz", place=place, fitted=fitted, moved_v=fv)
+    fitted = _wrap(co[fv], idx[foot_tris], svp, sf, f"foot {side}")
+    return place, fitted, fv
 
 
 def fit_anny(src: str, o, s) -> None:
@@ -428,10 +440,17 @@ def bake(src: str = "artec") -> None:
     ours.modifiers.new("sub", "SUBSURF").levels = 1
     place = f["place"]
     svp = (np.c_[s["co"], np.ones(len(s["co"]))] @ place.T)[:, :3]
+    faces, suv = s["faces"], s["uv"]
+    if "place_r" in f.files:  # a lone foot placed on both feet: the right one is the scan mirrored (fit_foot)
+        mirrored = s["co"] * np.array([-1.0, 1.0, 1.0])
+        svp_r = (np.c_[mirrored, np.ones(len(mirrored))] @ f["place_r"].T)[:, :3]
+        faces = np.concatenate([faces, faces[:, ::-1] + len(svp)])
+        suv = np.concatenate([suv, suv[:, ::-1]])
+        svp = np.concatenate([svp, svp_r])
     sm = bpy.data.meshes.new("scan")
-    sm.from_pydata(svp.tolist(), [], s["faces"].tolist())
+    sm.from_pydata(svp.tolist(), [], faces.tolist())
     sm.polygons.foreach_set("use_smooth", np.ones(len(sm.polygons), bool))
-    sm.uv_layers.new(name="UV").data.foreach_set("uv", s["uv"].reshape(-1, 2).astype(np.float32).ravel())
+    sm.uv_layers.new(name="UV").data.foreach_set("uv", suv.reshape(-1, 2).astype(np.float32).ravel())
     smat = bpy.data.materials.new("scan colour")
     bsdf = next(n for n in smat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
     if not spec.get("geometry_only"):
@@ -453,7 +472,7 @@ def bake(src: str = "artec") -> None:
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
-    scan_tree = BVHTree.FromPolygons(svp.tolist(), s["faces"].tolist())
+    scan_tree = BVHTree.FromPolygons(svp.tolist(), faces.tolist())
     gap = np.array([(Vector(p) - scan_tree.find_nearest(Vector(p))[0]).length if scan_tree.find_nearest(Vector(p))[0]
                     is not None else 1.0 for p in co], np.float32)  # fmt: skip
     me.attributes.new("fitgap", "FLOAT", "POINT").data.foreach_set("value", gap)
@@ -583,8 +602,8 @@ def post(src: str = "artec") -> None:
         baked &= ~fabric
         if spec.get("part") == "hands":  # only the hands (Ten24's forearms carry hair and a sweater's cuff)
             baked &= _hand_cover(o, number) > 0
-        if spec.get("part") == "feet":  # only the foot the scan was placed on
-            baked &= _cover(o, number, _foot_vertices(o, "l")) > 0
+        if spec.get("part") == "feet":  # only the feet the scan was placed on
+            baked &= _cover(o, number, _foot_vertices(o, "l") | _foot_vertices(o, "r")) > 0
         baked = cv2.erode(baked.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
         px_per_mm = SIZE / _mm_per_uv(name)
         w = baked.astype(np.float32)
