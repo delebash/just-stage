@@ -20,6 +20,10 @@ from ..body import build
 from . import part_materials
 
 TOOL = ".dev/venv-tools/Scripts/python libs/wrap/gnm_to_hm08.py, then tools/bind_parts.py"
+#: 2026-11-10 (`mouth_profile_mat.py`; `.dev/gate/parts/2026-11-10round4`, `round5`): from the front our open mouth
+#: showed our tongue ~32 mm behind the front teeth, HD Aaron's ~23 mm - past the stage's key light; moved forward whole
+#: its tip went through the lower incisors, sheared by height its top lights up behind the teeth
+TONGUE_SHEAR, TONGUE_RISE = 0.0090, 0.0030  # m at the tongue's top: forward, up
 
 
 def _folder():
@@ -222,6 +226,11 @@ def refit(character: bpy.types.Object) -> None:
         if part == "teeth" and obj.data.shape_keys:  # old jaw keys (the stand-in before the jaw joint): the fit
             obj.shape_key_clear()  # writes the vertices themselves
         co = mhclo.fit(_binding(part), base).astype(np.float32)
+        if part == "teeth":  # the tongue's top forward and up by height, tip and floor kept (the face looks down -Y)
+            tongue = co.reshape(-1, 3)[groups("teeth")["tongue"]]
+            share = (tongue[:, 2] - tongue[:, 2].min()) / max(float(np.ptp(tongue[:, 2])), 1e-6)
+            tongue += np.outer(share, [0.0, -TONGUE_SHEAR, TONGUE_RISE]).astype(np.float32)
+            co.reshape(-1, 3)[groups("teeth")["tongue"]] = tongue
         obj.data.vertices.foreach_set("co", co.ravel())
         obj.data.update()
     from ..body import base

@@ -136,6 +136,28 @@ def test_a_look_turns_the_eyeball_on_its_joint(human):
     assert np.abs(_evaluated(eye) - rest).max() < 1e-5
 
 
+def test_the_tongues_top_sits_forward_its_tip_kept(human):
+    """From the front our open mouth showed our tongue ~32 mm behind the front teeth, HD Aaron's ~23 mm - too deep for
+    the light; moved forward whole its tip went through the lower incisors (2026-11-10): its upper part is sheared
+    forward by height (TONGUE_SHEAR at its top), its lowest rows stay where the fit puts them."""
+    result, obj = human
+    api.run("juststage.head.add_parts", character=result.character)
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    mhclo = importlib.import_module("bl_ext.system.juststage.core.mhclo")
+    teeth = next(o for o in bpy.data.objects if o.juststage.part_of == result.character and o.juststage.part == "teeth")
+    tongue = _teeth_rows(teeth, "tongue")
+    co = np.empty(len(teeth.data.vertices) * 3)
+    teeth.data.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)[tongue]
+    fit = mhclo.fit(parts._binding("teeth"), build.shaped_coords(obj)).reshape(-1, 3)[tongue]  # the plain fit
+    forward = fit[:, 1] - co[:, 1]  # how far each row moved forward (-Y)
+    low, high = fit[:, 2] < np.percentile(fit[:, 2], 10), fit[:, 2] > np.percentile(fit[:, 2], 90)
+    assert parts.TONGUE_SHEAR > 0.0
+    assert forward[high].mean() > 0.8 * parts.TONGUE_SHEAR  # the top forward
+    assert abs(forward[low].mean()) < 0.2 * parts.TONGUE_SHEAR  # the floor and tip where the fit puts them
+
+
 def test_tongue_out_puts_the_tongue_out_on_its_joint(human):
     """The tongue is a joint (`FACIAL_C_Tongue1`, under the jaw; step 3f): our tongueOut unit moved only MakeHuman's
     hidden tongue helper (21.7 mm forward) and the visible tongue stayed - now the face rig moves the joint as the helper

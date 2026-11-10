@@ -1000,15 +1000,20 @@ def lashlower(built: dict, melanin: float) -> None:
     print("LOWER LASHES melanin", melanin, "on", n, "strands", flush=True)
 
 
-def lashlow(built: dict, long_mm: float, radius_mm: float, count: float | None = None) -> None:
+def lashlow(built: dict, long_mm: float, radius_mm: float, count: float | None = None, rise: float | None = None,
+            curl: float | None = None) -> None:
     """The lower lashes regrown longer / thicker (`lashes.LOWER`: the longest 3.8 mm, the root 0.04 mm, 80 an eye) -
     2026-11-10 at the eye view HD Aaron's lower lashes read long and distinct, ours faint and short. The short ones
     scale with the longest. A new groom: --alone."""
     lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
     old = dict(lashes.LOWER)
     lashes.LOWER.update(long=long_mm, short=old["short"] * long_mm / old["long"], radius=radius_mm / 1000.0)
-    if count is not None:
+    if count is not None and count > 0:  # 0: the shipped count
         lashes.LOWER.update(count=int(count))
+    if rise is not None:  # off straight ahead, away from the opening (down for the lower lid): 5 shipped
+        lashes.LOWER.update(rise=rise)
+    if curl is not None:  # 25 shipped
+        lashes.LOWER.update(curl=curl)
     try:
         lashes.make(built["body"])
     finally:
@@ -1016,7 +1021,7 @@ def lashlow(built: dict, long_mm: float, radius_mm: float, count: float | None =
         lashes.LOWER.update(old)
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
-    print("LASHES lower long", long_mm, "radius", radius_mm, "count", count, flush=True)
+    print("LASHES lower long", long_mm, "radius", radius_mm, "count", count, "rise", rise, "curl", curl, flush=True)
 
 
 def lashcap(built: dict, mm: float) -> None:
@@ -3743,7 +3748,7 @@ def stubbletrial(built: dict, density: float, grey: float, length: float, thin: 
     stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
     radius, turn, silver = stubble.RADIUS, stubble.CURL, stubble.GREY_MELANIN
     stubble.RADIUS = radius * thin
-    if grey_melanin is not None:  # the grey hairs' melanin (`stubble.GREY_MELANIN`, 0.12) - his read silver, ours beige
+    if grey_melanin is not None and grey_melanin >= 0:  # the greys' melanin (`stubble.GREY_MELANIN`); -1: the product's
         stubble.GREY_MELANIN = grey_melanin
     if curl is not None:  # degrees each hair turns along its length (`stubble.CURL`, 12) - 2026-11-10: his short hooks
         stubble.CURL = curl
@@ -4617,6 +4622,30 @@ def tonguedown(built: dict, down_mm: float, back_mm: float = 0.0) -> None:
     print("TONGUE DOWN", down_mm, "mm, back", back_mm, "mm,", len(idx), "vertices", flush=True)
 
 
+def tongueshear(built: dict, top_mm: float, up_mm: float = 0.0) -> None:
+    """The tongue's upper part forward, its tip and floor kept (2026-11-10 round 4: moved forward whole, 6 mm already
+    poked its tip below the lower incisors and 9 mm pushed it through them; from the front his tongue's surface sits ~23
+    mm behind the front teeth, ours ~32): each tongue vertex forward by `top_mm` x its height share over the tongue
+    (0 at its lowest, 1 at its highest) and up by `up_mm` x the same. A shape: --alone."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    teeth = parts.parts_of(built["body"])["teeth"]
+    idx = np.asarray(parts.groups("teeth")["tongue"], np.int64)
+    inv = np.linalg.inv(np.array(teeth.matrix_world))[:3, :3]
+    world = np.array(teeth.matrix_world)
+    blocks = list(teeth.data.shape_keys.key_blocks) if teeth.data.shape_keys else []
+    for target in [teeth.data.vertices] + [kb.data for kb in blocks]:
+        co = np.empty(len(target) * 3, np.float32)
+        target.foreach_get("co", co)
+        co = co.reshape(-1, 3)
+        z = (co[idx] @ world[:3, :3].T + world[:3, 3])[:, 2]
+        share = (z - z.min()) / max(z.max() - z.min(), 1e-6)
+        move = np.outer(share, [0.0, -top_mm / 1000.0, up_mm / 1000.0]) @ inv.T  # world: -y forward, +z up
+        co[idx] += move.astype(np.float32)
+        target.foreach_set("co", co.ravel())
+    teeth.data.update()
+    print("TONGUE SHEAR top", top_mm, "mm forward, up", up_mm, "mm,", len(idx), "vertices", flush=True)
+
+
 def tonguess(built: dict, weight: float) -> None:
     """Item 5's inner mouth, one factor: our tongue's subsurface weight (1.0 built) - does it darken our tongue
     where his (CC5's rl_tongue_shader, his diffuse darker than ours) reads pink?"""
@@ -4890,8 +4919,8 @@ def factor(name: str):
     if name.startswith("msahair") and "+" not in name:  # msahair[*long] (MotionStudioArts' CC BY hair) - --alone
         bits = name.split("*")[1:]
         return lambda built: msahair(built, *bits)
-    if name.startswith("lashlow*") and "+" not in name:  # lashlow*5.5*0.05[*count] (the lower lashes, mm) - --alone
-        return lambda built: lashlow(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("lashlow*") and "+" not in name:  # lashlow*5.5*0.05[*count (0 shipped)*rise*curl] (the lower lashes) - --alone
+        return lambda built: lashlow(built, *(float(x) for x in name.split("*")[1:6]))
     if name.startswith("lashup*") and "+" not in name:  # lashup*15*80[*long mm*radius mm*tries*clump] - --alone
         return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:7]))
     if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)
@@ -5085,6 +5114,8 @@ def factor(name: str):
     if name.startswith("tonguegrad*"):  # tonguegrad*1.318*0.195 (his shader's Front AO / Rear AO along our tongue)
         _k, front, rear = name.split("*")
         return lambda built: tonguegrad(built, float(front), float(rear))
+    if name.startswith("tongueshear*") and "+" not in name:  # tongueshear*8[*2] (its top mm forward, mm up) - --alone
+        return lambda built: tongueshear(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("tonguedown*") and "+" not in name:  # tonguedown*6[*3] (mm down, mm back) - --alone
         return lambda built: tonguedown(built, *(float(x) for x in name.split("*")[1:3]))
     if name == "tongueglow":  # our tongue flat green: in view or hidden (item 5's inner mouth)

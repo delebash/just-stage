@@ -91,10 +91,16 @@ NAIL_ATTR = "js_nail"  # the coordinates as a point colour attribute: along, (ac
 #: the arms' and hands' tile (1003): the microrelief x2 - HD Aaron's back of the hand against ours in EEVEE, the
 #: texture's excess over his own patch-to-patch (`tools/gate/dists.py --patches`) 0.071 -> 0.047 (2026-11-07; the
 #: torso's and the foot's didn't move with it, so only this tile)
-#: 2026-11-10 (`.dev/gate/parts/2026-11-10fingerskin*`): at the nails close-up the finger read cracked (the microrelief
-#: x2, set 11-07 from the back of the hand's texture 0.071 -> 0.047) and red-speckled (the face's pores); x1 / x0.5
-#: smooth it, the back of the hand at its view barely changes - a fingers-only region if the gate's hand measure drops
-ARM_TILE_INDEX, ARM_MICRO, ARM_PORES = 2, 1.0, 0.5
+ARM_TILE_INDEX, ARM_MICRO = 2, 2.0
+#: the hands on that tile (HANDS_ATTR: each vertex's share by the skeleton's hand and finger weights) their own: at the
+#: nails close-up the finger read cracked (the microrelief x2) and red-speckled (the face's pores); x1 / x0.5 smooth it
+#: and put the back of the hand's pores inside HD Aaron's spread at his tone (1.46 -> 0.91 of his), while on the whole
+#: tile they also moved the foot's form band out of his (1.08 -> 1.24) - hence the hands alone (2026-11-10,
+#: `.dev/gate/parts/2026-11-10fingerskin*`, `handtone2`, `handtone3`)
+HANDS_ATTR = "js_hands"
+HAND_PORES, HAND_MICRO = 0.5, 1.0
+#: the skeleton's bones whose weights make the hands' share (UE5's names, modules/rig: hand, metacarpals, fingers)
+HAND_BONES = ("hand_", "thumb_", "index_", "middle_", "ring_", "pinky_")
 #: where the plate starts: along > cuticle + curve * across^2 - the curve 0.35 drew a deep U over the whole fingertip,
 #: 0.12 his shallow arc (`factors nailobj`, 2026-11-10 round 2)
 NAIL_CUTICLE, NAIL_CUTICLE_CURVE = 0.08, 0.12
@@ -110,13 +116,16 @@ NAIL_FREE_EDGE = (0.92, 0.97)  # along: the free edge - a thin pale rim on a sho
 #: the toes' plate, its length and half-width: hm08's toe islands run over the toe's tip, so the fingers' plate covered
 #: the whole tip - a large pale sticker beside HD Aaron's short plate on top of the toe (2026-11-09,
 #: `.dev/gate/parts/2026-11-09toenail`). 0.6 / 0.7: a short plate on top of the toe with its free edge, as his
-#: (`.dev/gate/parts/2026-11-09toeplate`; 0.5 / 0.65 left slivers) - checked again over the whole toe tip 2026-11-10
-TOE_PLATE_LENGTH, TOE_PLATE_SIDE = 0.6, 0.7
+#: (`.dev/gate/parts/2026-11-09toeplate`; 0.5 / 0.65 left slivers). Over the whole toe tip (2026-11-10, the coordinates
+#: no longer the island's) 0.6 / 0.7 made the big toe's plate wider and longer than his; 0.45 / 0.55 his size
+#: (`.dev/gate/parts/2026-11-10round4`, the foot view)
+TOE_PLATE_LENGTH, TOE_PLATE_SIDE = 0.45, 0.55
 NAIL_LUNULA_FINGERS = (0.25, 0.03)  # lunula length = first - second * digit (thumb 0.22 ... little 0.10)
 NAIL_LUNULA_TOES = (0.06, 0.0)  # the big toe's, the others' (rarely seen)
-#: linear, mixed into the skin's colour: at 0.25 the plate's colour against the skin's sat ~3 b* cooler than HD Aaron's
-#: (Lab distance to his 3.2), at 0.12 2.7 (`factors nailobj`, 2026-11-10 round 2)
-NAIL_BED, NAIL_BED_SHARE = (0.50, 0.30, 0.27), 0.12
+#: linear, mixed into the skin's colour: the plate's colour against the skin's, Lab distance to HD Aaron's - (0.50, 0.30,
+#: 0.27) at 0.25 3.2, at 0.12 2.7 (cooler, less red); warmer (0.46, 0.33, 0.22) at 0.2 1.7 (2026-11-10 rounds 2 and 4,
+#: `factors nailobj`, `nailbedcolour`)
+NAIL_BED, NAIL_BED_SHARE = (0.46, 0.33, 0.22), 0.2
 #: the lunula's pale share: 0.35 read as a white crescent beside HD Aaron's barely-seen one; 0.05 as his (the gate's
 #: `nailluna`, 2026-11-08, sheet `scratchpad/sheet_D22_luna.png`)
 NAIL_LUNULA, NAIL_LUNULA_SHARE = (0.82, 0.72, 0.68), 0.05
@@ -364,6 +373,19 @@ def nail_coords() -> np.ndarray:
         return data["coords"]
 
 
+def add_hands_share(character: bpy.types.Object) -> None:
+    """Each vertex's hands share as the point attribute HANDS_ATTR: the sum of its weights in the skeleton's hand and
+    finger groups (HAND_BONES), up to 1 - 0 everywhere without a skeleton (the arms' tile's own levels then)."""
+    me = character.data
+    bones = {g.index for g in character.vertex_groups if g.name.startswith(HAND_BONES) and g.name[-2:] in ("_l", "_r")}
+    share = np.zeros(len(me.vertices), np.float32)
+    if bones:
+        for v in me.vertices:
+            share[v.index] = sum(g.weight for g in v.groups if g.group in bones)
+    attr = me.attributes.get(HANDS_ATTR) or me.attributes.new(HANDS_ATTR, "FLOAT", "POINT")
+    attr.data.foreach_set("value", np.clip(share, 0.0, 1.0))
+
+
 def add_nail_coords(character: bpy.types.Object) -> None:
     """The nail coordinates on the character as its point attribute NAIL_ATTR (again: replaced)."""
     me = character.data
@@ -484,9 +506,13 @@ def _nail_layer(nt, bsdf) -> None:
     nt.links.new(plated, groove.inputs[0])
     nt.links.new(_math(nt, "nail_groove_shade", "MULTIPLY_ADD", band, -4 * NAIL_GROOVE, 1.0), groove.inputs["Scale"])
     nt.links.new(groove.outputs["Vector"], bsdf.inputs["Base Color"])
+    from . import material
+
     for name, value, key in (("Roughness", NAIL_ROUGHNESS, "rough"), ("Specular IOR Level", NAIL_SPECULAR, "spec"),
                              ("Coat Weight", NAIL_COAT, "coat")):
         own = fed(name) if bsdf.inputs[name].is_linked else bsdf.inputs[name].default_value
+        if key == "rough":  # the skins paint MPFB2's nail region shinier (build_skins); on a fingertip the plain skin's
+            own = _mix(nt, "nail_skin_rough", "FLOAT", coords.outputs["Alpha"], own, material.ROUGHNESS)
         nt.links.new(_mix(nt, f"nail_{key}", "FLOAT", plate, own, value), bsdf.inputs[name])
     # the skin's fold beside the plate: the plate drawn wider past its cuticle and sides (the same free edge), its band
     # raised over the plate's edge
@@ -807,7 +833,8 @@ def face_share() -> bpy.types.Image:
 
 def _region_relief(nt, uv, which):
     """The relief's depth factors (pores, microrelief): the region map's on the head tile (R, B x
-    REGION_RELIEF_SCALE), ARM_MICRO and ARM_PORES on the arms' tile, 1 elsewhere (under a nail's plate the nail layer
+    REGION_RELIEF_SCALE), the microrelief ARM_MICRO on the arms' tile and HAND_PORES / HAND_MICRO on its hands (by
+    HANDS_ATTR), 1 elsewhere (under a nail's plate the nail layer
     flattens them)."""
     regions = _node(nt, "ShaderNodeTexImage", "face_regions", (-1600, -2700))
     regions.image, regions.interpolation, regions.extension = face_regions(), "Linear", "EXTEND"
@@ -816,10 +843,14 @@ def _region_relief(nt, uv, which):
     nt.links.new(regions.outputs["Color"], parts.inputs["Color"])
     on_head = _math(nt, "regions_on_head", "COMPARE", which.outputs["Value"], 0.0, 0.5)
     on_arms = _math(nt, "regions_on_arms", "COMPARE", which.outputs["Value"], float(ARM_TILE_INDEX), 0.5)
+    hands = _node(nt, "ShaderNodeAttribute", "hands_share", (-1600, -3000))  # add_hands_share's (0 when missing)
+    hands.attribute_type, hands.attribute_name = "GEOMETRY", HANDS_ATTR
     factors = []
     for channel, key in (("Red", "pore"), ("Blue", "micro")):
         head = _math(nt, f"regions_{key}", "MULTIPLY", parts.outputs[channel], REGION_RELIEF_SCALE)
-        body = _mix(nt, f"{key}_on_arms", "FLOAT", on_arms, 1.0, ARM_MICRO if key == "micro" else ARM_PORES)
+        on_tile = _mix(nt, f"{key}_hands", "FLOAT", hands.outputs["Fac"], ARM_MICRO if key == "micro" else 1.0,
+                       HAND_MICRO if key == "micro" else HAND_PORES)  # fmt: skip
+        body = _mix(nt, f"{key}_on_arms", "FLOAT", on_arms, 1.0, on_tile)
         factors.append(_mix(nt, f"{key}_factor", "FLOAT", on_head, body, head))
     return factors
 
@@ -1113,6 +1144,7 @@ def refresh(mat: bpy.types.Material) -> None:
             face_units.add_smile_props(obj)  # the crow's feet's smile values (likewise)
             if NAIL_ATTR not in obj.data.attributes:  # the nails' coordinates (a character saved before 2026-11-10)
                 add_nail_coords(obj)
+            add_hands_share(obj)  # the hands' share, again: the skeleton may have come after the skin
             bed = obj.modifiers.get("JustStage nail bed")  # its geometric bed on the tile's island, replaced that day
             if bed is not None:
                 obj.modifiers.remove(bed)
@@ -1176,6 +1208,7 @@ def apply(character: bpy.types.Object, skin: bpy.types.Material) -> bpy.types.Ma
     add_layout(character)
     add_texel(character)
     add_nail_coords(character)  # each nail's coordinates over its fingertip, for the nail layer
+    add_hands_share(character)  # the hands' share of the arms' tile, for their own tiled relief
     old = character.juststage.skin_material
     mine = skin.copy()
     mine.name = f"JustStage Skin ({character.name})"

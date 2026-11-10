@@ -43,8 +43,10 @@ UPPER = {"count": 180, "long": 6.5, "short": 3.53, "rise": 30.0, "curl": 20.0, "
 #: upper ones (2026-11-09, `.dev/gate/parts/2026-11-09lashlower`; HD Aaron's dark brown): 0.8. Their root radius 0.04 mm
 #: (0.08 mm across, a real lower lash's): at 0.025 they hardly showed beside his fan; 110 an eye showed more, but past
 #: the measured 75-80 (`.dev/gate/parts/2026-11-09lashthick`)
-LOWER = {"count": 80, "long": 3.8, "short": 1.8, "rise": 5.0, "curl": 25.0, "band": (0.2, 0.8), "radius": 0.00004,
-         "melanin": 0.8}  # fmt: skip
+#: 2026-11-10 (`.dev/gate/parts/2026-11-10round4`, `round5`): HD Aaron's lower lashes long and distinct, fanned down
+#: and away from the lid; ours (3.8 mm, 0.04, rise 5, curl 25) lay along it, faint - 5.5 mm, 0.05 mm, rise 35, curl 15
+LOWER = {"count": 80, "long": 5.5, "short": 2.61, "rise": 35.0, "curl": 15.0, "band": (0.2, 0.8),
+         "radius": 0.00005, "melanin": 0.8}  # fmt: skip
 #: Changed 2026-11-05 (the part-by-part gate): with the eyes opened to an adult's 9 mm (body_create.EYE_OPEN) the
 #: lashes read as a dark line along the lid, seen end-on - HD Aaron's and photographed men's sweep up into a fringe. The
 #: study's 61 deg "from vertical" read the other way (vertical up: ~29 deg ABOVE straight ahead) fits that: here they

@@ -2199,6 +2199,47 @@ booked with just-direct-mocap.
   | his nails): the tongue lit behind the lower teeth at the open mouth and the talk view, nothing poking through the
   closed lips; the nail plates warmer with no glossy band; the toenails smaller; the lower lashes fanned down - as in
   the trials.
+- 17:2x, queued after roll-out 3 (`batch_trials7.sh`): THE STUBBLE'S FLOW - a `stubble.CURL_SIDE` setting
+  (`apply_stubble_flow.py`: 0 keeps today's stubble exactly - the same random draws; +1 / -1 every hair the same way,
+  mirrored left to right), then the chin and lips at curl side 0 / +1 / -1 beside his.
+- **17:28, ROLL-OUT 2 GREEN: unit 45, tools 67, Blender 219 passed (the new tongue test among them)** - the nail
+  roughness, the nail bed's colour, the toes' plate, the lower lashes and the tongue's shear verified. Roll-out 3
+  applied the hands region at 17:28 (the same files) - one commit for both once its suites pass.
+- **17:3x, THE HANDS' OWN TILED RELIEF MEASURED at his tone (`f3_table.txt`): the foot 1.21 / 1.12 / 1.08 of his -
+  all inside his spread again (PROVEN restored); the back of the hand pore 0.91 (inside), fold 1.38, form 2.16 - the
+  improvement kept.** The hands region does what it was built for.
+- 17:4x, round 7's stubble flow (`r7_flow_a.jpg`: curl side 0 | +1 | his; `r7_flow_b.jpg`: +1 | -1 | his): +1 sweeps
+  every hair outward into an obvious combed fan, -1 bunches them toward the midline; his are mostly parallel and nearly
+  straight along the jaw, with random hooks only near the chin. **No gain - the remaining gap is the curl's amount by
+  region, not its direction. `CURL_SIDE` goes back out (an unused setting doesn't stay), edited back after roll-out 3's
+  suite; the stubble's box spent: CLOSE.**
+- 17:55, roll-out 3's suites: unit 45, tools 67, Blender 217 passed / 2 failed - `test_a_second_job_waits_behind_the_
+  first` (the AI image server "returned no results" while round 7's render shared the card - my waiter mistake) and my
+  new hands test (its 15% ceiling a guess; the share is exactly the hands - 40 hand / finger groups, the vertices over
+  0.5 at hand height out at the sides, none on the feet or torso; hm08's hands are 18.5% of its vertices,
+  `hands_share_check.py`) - the test now checks that. The end run after round 8 (`batch_end4_1110.sh`): the stubble
+  setting edited back (`stubble.py` equals the verified 3468dd0 file), every suite on a free card.
+- 18:0x, ROUND 8 (the brows' grey haze on the Heavy woman, `r8_brows_a.jpg` / `_b` / `_c`): fewer fine hairs (800 ->
+  300) thin the haze only a little - the inner brow still a grey veil at the eye and face views, so the fine hairs are
+  not its main cause. **The third variant (`browthick*1*1.0`, "coarse melanin 1.0") was VOID**: `browthick`'s melanin
+  sets the Principled Hair node's Melanin socket only where it is unlinked - `groom.hair_material` links it to the
+  strands' `melanin` attribute, and the live view's stand-in reads that attribute too - so it changed nothing (its
+  render is the product's, the same seed). The 11-10 morning's "x2.5 at melanin 0.95" was void the same way (its
+  darkening came from the radius). Next (`apply_brow_factors.py` after the end run's commit): `browmelanin` writes
+  the strands' `melanin` attribute (coarse and fine by root radius) and `browsheen` scales the brows' own glossy light
+  (the hair model's R / TT / TRT lobes) - one factor each, both printing what they changed and raising if nothing did;
+  `browthick` loses its dead melanin argument.
+- 18:1x, queued after the commit (`scratchpad/batch_r9_r10.sh`, this session's): round 9 (the brows: `browsheen` x0.3
+  / x0, `browmelanin` 0.95, both - the Heavy woman's eye and face, the Average man's eye), round 10 (the back of the
+  hand at his tone: `colourflat` / `relief0` - which layer makes the form 2.16 / fold 1.38; checked against his own
+  bands in `g2_table.txt`: his 0.821 / 1.004 / 1.491, ours 0.745 / 1.383 / 3.215), round 11 (`mouth_profile_rest.py`:
+  our upper lip at rest and open against his - is ours higher at rest, a slider's job, or does our jawOpen lift it),
+  round 12 (THE TORSO REOPENED on an untried route: the 13:29 trial set only the global muscle slider - MakeHuman's own
+  pectoral slider `torso/torso-muscle-pectoral-decr-incr`, shipped in the Body panel, was never tried; new factor
+  `mhslider` (any of MakeHuman's detail sliders), at the like build 0 / 0.5 / 1) and THE SMILE'S FOLD (row 9: his
+  fold is in his neutral face; MakeHuman's laugh-lines slider, never tried, -1 / 0 / +1). The same sweep for the
+  ear: MakeHuman's 11 ear sliders (`target.json`'s `ears`: lobe, shape, trans, rot, scale, flap, wing, depth) hold no
+  concha depth - `ear-scale-depth` moves the whole ear - so the ear's route stays ICT's head (Q-BASE-4).
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1
@@ -2536,3 +2577,12 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   went into `maps.py` while `batch_ship_1110c.sh` was between character renders; its map didn't exist yet, so every
   later render would have failed on load - caught by reading the batch's step times, the map generated at 11:40:29
   before the next render started). Write the change to a scratch patch and apply it between batches (as `apply_coat.py`).
+- A waiter on a batch's end marker matches it at the START of a line (`^TABLE-EXIT`), never anywhere (2026-11-10
+  17:28: roll-out 3's first line quoted roll-out 2's "TABLE-EXIT", so round 7's waiter started at once - two Blender
+  jobs on the card, and round 7's patch edited `stubble.py` while roll-out 3's Blender ran; harmless only because that
+  setting's default changes nothing).
+- A trial factor proves it changed something: it prints what it set and raises when it set nothing (2026-11-10 18:0x:
+  `browthick`'s melanin wrote the Principled Hair node's socket only where unlinked - groom links it to the strands'
+  attribute - so round 8's "melanin 1.0" and the morning's "melanin 0.95" were silently the product).
+- "Beyond the range" is said only after every shipped slider for that region was tried (2026-11-10 13:29: the torso's
+  box was closed on the global muscle slider alone; MakeHuman's pectoral slider was never tried).

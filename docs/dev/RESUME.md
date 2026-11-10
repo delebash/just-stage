@@ -161,6 +161,23 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   characters and hair rebuilt - backup `.dev/backup/library_2026-11-10final`; the lash / stubble / skin-map tests; THE
   FULL GATE -> `.dev/gate/parts/2026-11-10gate2`; every suite). Then: look at every sheet, the verdict doc, commit.
   For the user: the lashes' finer root (0.06 mm against the design's approved 0.08).
+  16:14: the end run GREEN on 3468dd0 (unit 45, tools 67, Blender 218). 17:1x: rounds 4-6 picked (working doc
+  15:5x-16:5x): the nail roughness on fingertips plain (`nail_skin_rough`), the nail bed (0.46, 0.33, 0.22) at 0.2,
+  the toes' plate 0.45 / 0.55, the lower lashes 5.5 mm / 0.05 / rise 35 / curl 15, the tongue sheared forward (top 9
+  mm, up 3 - `parts.TONGUE_SHEAR`, `TONGUE_RISE`). Roll-out 2 (`batch_final2_1110.sh`) running - uncommitted until its
+  Blender suite; then roll-out 3 (`batch_final3_1110.sh`: `apply_hands_region.py` - the hands alone take pores x0.5 /
+  micro x1 by the skeleton's weights, the arms and the foot back to micro x2; the hand and foot at his tone measured;
+  every suite). The verdict doc corrected to strict (hands CLOSE, feet NEAR - roll-out 3 should restore the feet).
+  17:5x: roll-out 2 GREEN (Blender 219). Roll-out 3 measured: the feet back inside his spread (1.21 / 1.12 / 1.08 -
+  PROVEN), the hand's pores inside; its suite 2 failures, both explained (the AI test while a render shared the card;
+  the new hands test's guessed bound - fixed). Round 7 (stubble flow): no gain, `CURL_SIDE` edited back. Running:
+  round 8 (the brows' haze on dark skin, the Heavy woman) -> `batch_end4_1110.sh` (the edit-back, every suite). Then
+  commit (the code since 3468dd0 is uncommitted: lashes.py, stubble.py, maps.py, parts.py, the tests, factors.py).
+  18:1x: round 8 judged - fewer fine hairs not the haze's cause; its darker-strands variant VOID (`browthick`'s
+  melanin never reached the strands). After the end run's commit: `scratchpad/batch_r9_r10.sh` (this session's
+  scratchpad) - round 9 (`apply_brow_factors.py`: `browmelanin`, `browsheen`; the brows' sheen and colour), round 10
+  (the hand's large-scale relief at his tone: `colourflat` / `relief0`), round 11 (`mouth_profile_rest.py`: our
+  upper lip at rest and open against his).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

@@ -432,6 +432,10 @@ def test_the_nail_plate_is_matte_like_his(human, tmp_path):
         return next(i for i in nodes[maps.NODE + f"nail_{key}"].inputs if i.identifier == "B_Float").default_value
 
     assert plate("rough") >= 0.5 and plate("coat") == 0.0 and plate("spec") <= 0.35
+    # round the plate the fingertip's skin is the body's plain skin, not the skins' shinier painted nail region
+    skin = nodes[maps.NODE + "nail_skin_rough"]
+    assert next(i for i in skin.inputs if i.identifier == "B_Float").default_value == pytest.approx(material.ROUGHNESS)
+    assert skin.inputs["Factor"].links[0].from_node == nodes[maps.NODE + "nail_coords"]
     share = nodes[maps.NODE + "nail_lunula_share"].inputs[1].default_value
     assert share <= 0.1  # a faint lunula, as his (0.35 read as a white crescent - `nailluna`, 2026-11-08)
 
@@ -471,19 +475,33 @@ def test_the_nail_plate_is_smooth_over_the_skins_relief(human, tmp_path):
         assert maps.NODE + f"{key}_off_nails" not in nodes
 
 
-def test_the_arms_tile_sets_its_own_tiled_relief(human, tmp_path):
-    """The arms' and hands' tile sets its own pores and microrelief (ARM_PORES, ARM_MICRO): the microrelief x2 there
-    (2026-11-07, the back of the hand's texture against HD Aaron's 0.071 -> 0.047) read as cracked facets on the
-    fingers at the nails close-up, and the face's pores as red speckle (2026-11-10) - both lower there now."""
+def test_the_hands_take_finer_tiled_relief_than_the_arms(human, tmp_path):
+    """The arms' tile keeps the microrelief x2 (2026-11-07, the back of the hand's texture against HD Aaron's 0.071 ->
+    0.047); its hands - their share by the skeleton's hand and finger weights - take HAND_PORES / HAND_MICRO
+    (2026-11-10: the finger read cracked and red-speckled at the nails close-up; on the whole tile the lower levels
+    also moved the foot's form band out of his spread)."""
     made, body = human
+    api.run("juststage.rig.add_skeleton", character=made.character)
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
     assert nodes[maps.NODE + "regions_on_arms"].inputs[1].default_value == maps.ARM_TILE_INDEX
-    for key, value in (("micro", maps.ARM_MICRO), ("pore", maps.ARM_PORES)):
-        arms = nodes[maps.NODE + f"{key}_on_arms"]
-        assert arms.name in _upstream(nodes[maps.NODE + f"{key}_depth"].inputs[0])
-        assert next(i for i in arms.inputs if i.identifier == "B_Float").default_value == pytest.approx(value)
-    assert maps.ARM_PORES < 1.0 and maps.ARM_MICRO <= 1.0
+    for key, arm, hand in (("micro", maps.ARM_MICRO, maps.HAND_MICRO), ("pore", 1.0, maps.HAND_PORES)):
+        mix = nodes[maps.NODE + f"{key}_hands"]
+        assert mix.name in _upstream(nodes[maps.NODE + f"{key}_depth"].inputs[0])
+        assert next(i for i in mix.inputs if i.identifier == "A_Float").default_value == pytest.approx(arm)
+        assert next(i for i in mix.inputs if i.identifier == "B_Float").default_value == pytest.approx(hand)
+        assert mix.inputs["Factor"].links[0].from_node == nodes[maps.NODE + "hands_share"]
+    assert maps.HAND_PORES < 1.0 and maps.HAND_MICRO < maps.ARM_MICRO
+    share = np.empty(len(body.data.vertices), np.float32)
+    body.data.attributes[maps.HANDS_ATTR].data.foreach_get("value", share)
+    co = np.empty(len(body.data.vertices) * 3)
+    body.data.vertices.foreach_get("co", co)
+    world = np.array(body.matrix_world)
+    co = co.reshape(-1, 3) @ world[:3, :3].T + world[:3, 3]
+    assert 0.1 < (share > 0.5).mean() < 0.25  # hm08's hands are dense: 18.5% of its vertices (2026-11-10)
+    assert share[co[:, 2] < 0.15].max() == 0.0  # not the feet, which share the arms' tile
+    assert share[np.abs(co[:, 0]) < 0.2].max() == 0.0  # nor the torso, the head or the legs
+    assert np.abs(co[share > 0.5, 0]).min() > 0.3  # the hands, out at the body's sides
 
 
 def _upstream(socket):
