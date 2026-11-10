@@ -173,3 +173,24 @@ def test_a_body_part_carries_detail_not_a_tint():
     w = np.asarray(buf.get_pixels(oiio.FLOAT), np.float32)[::-1, :, 0]
     ratio = found[1003]["ratio"]
     assert np.allclose(np.median(ratio[w > 0.9], axis=0), 1.0, atol=0.02)
+
+
+def test_a_womans_skin_takes_her_own_torso_relief_and_no_mans_scan():
+    """The plan's Q-BODY-3 (2026-11-10): a woman's body tiles take her torso's relief from Blender Studio's CC0
+    realistic_body_female sculpt (`body_1002_female_*`, tools/body_scan.py bs_female) - never the men's scans (design
+    piece 8: one man's body) - and no colour of its own (a ratio of 1: MakeHuman's areolas stay)."""
+    from pathlib import Path
+
+    import numpy as np
+
+    folder = Path(build_skins.paths.GENERATED) / "skin"
+    if not (folder / "body_1002_female_relief.png").exists():
+        pytest.skip("no women's torso relief made (tools/body_scan.py bs_female)")
+    hers = build_skins._body_scan("f")
+    assert set(hers) == {1002}  # the torso alone: the men's limbs and feet are a man's
+    assert not hers[1002]["cover"].any()  # no colour: the skin's own and MakeHuman's areolas kept
+    xy = hers[1002]["relief"][..., :2] * 2 - 1
+    assert 0.01 < float(np.abs(xy).max()) < 1.0  # a real relief, not a flat normal
+    his = build_skins._body_scan()
+    if his is not None and 1002 in his:
+        assert not np.array_equal(his[1002]["relief"], hers[1002]["relief"])

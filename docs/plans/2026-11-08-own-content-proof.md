@@ -1456,9 +1456,9 @@ booked with just-direct-mocap.
   expression, the first run void): at jawOpen 0.8 our opening is as tall as his V_Open's and the inner mouth reads as
   a mouth (lower teeth, the lining). The pairing was mine (plan §19.3) and never measured: `parts_gate.EXPRESSIONS`
   talk_aa ours 0.4 -> 0.8 (a gate setup fix). Teeth, mouth: close.**
-- **04:0x, the lips' colour measured (the gate's `lips` view, a mask of the most saturated reds - both on the lips):
+- **03:4x, the lips' colour measured (the gate's `lips` view, a mask of the most saturated reds - both on the lips):
   lips minus skin, L* a* b*: ours -24.3 / +26.9 / +7.8, his -25.5 / +26.1 / +9.5 - matches; "pinker" was my eye.**
-- **04:1x, Q-BASE-4's facts for the user (the eye's lid and the ear's concha are hm08's topology):** the approved texts
+- **03:5x, Q-BASE-4's facts for the user (the eye's lid and the ear's concha are hm08's topology):** the approved texts
   disagree - the design (`2026-11-05-character-design.md` L74-76): "the head alone moves to a new topology built to
   the measured references (option C), the body staying hm08"; the spec (`character-data-model.md` item 23): "Blender
   Studio's Human Base Meshes ... take hm08's place". Measured tonight (`scratchpad/bs_clay2_all.jpg`,
@@ -1472,6 +1472,33 @@ booked with just-direct-mocap.
   and every generated mask and skin redone). My rec: (B) with ICT's head - a production head (USC ICT's Light Stage
   model, the standard here) beats a topology of our own, and (A) can't make the fold or the pit from hm08's loops
   without inventing a topology anyway. The user's (it chooses between two approved texts).
+- **03:5x, Q-BODY-3's first step (approved: "First Blender Studio's CC0 `realistic_body_female` ... is looked at in
+  Blender"), done (`scratchpad/bsf_all.jpg`): `GEO-body_female_realistic` (10,582 vertices, Multires 3 levels) carries,
+  at its top level, real torso definition - the sternum, the rib cage's hints, the navel, the abdomen's soft forms,
+  the collarbones; the base level none.** A women's torso relief source (CC0) at the form / fold scale, as Artec's
+  scan is the men's. Next (approved): the options measured against HD Ariana once exported (Q-GATE-3 - not yet
+  exported); the build route: its top-over-base detail baked as a tangent normal, carried onto our body tiles for
+  women as `body_scan.py` carries the men's. (Times 03:4x-03:5x here were first written 04:xx - the machine's clock
+  read 03:56 at the export.) **03:56-, the build (box 90 min, to ~05:25):** `tools/export_bs_female.py` (the sculpt
+  at level 3 as OBJ, 40 MB); `body_scan` source `bs_female` (geometry only, our body exported as a woman, stem
+  "female" -> `body_1002_female_*`); running `batch_bsfemale.sh`. Then `build_skins` gives women their torso relief.
+  03:57: the four stages ran (the fit p50 2.0 / p90 4.1 mm; 47.8% of tile 1002). At 40 mm the relief kept the
+  sculpt's breast shape against ours - crescents under the breasts (`scratchpad/female_relief.jpg`); at 15 mm
+  (`relief_hp_mm`, debris 0.8) faint arcs, the nipple dots and two edge marks remain (`female_relief2.jpg`).
+  `build_skins._body_scan("f")`: a woman's skin her torso's relief alone (colour ratio 1, MakeHuman's areolas kept).
+  Trial `batch_womantorso.sh`: Scan woman A built with it (backups `*_2026-11-10wt`), the Average woman's torso and
+  three-quarter before / after - judged by eye (no CC5 woman: HD Ariana is the user's export, Q-GATE-3).
+  **04:06 (`row_wt_torso.png`, `row_wt_three_quarter.png`): the Average woman's torso carries a sternum line, soft
+  rib and abdomen forms and a shaded navel - the plain "before" reads plastic beside it; no crescents; a soft hip line
+  low on the right (anatomy-like). KEPT (mine, under the go: the approved Q-BODY-3 route's first source; its measure
+  against HD Ariana waits for her export - the user's, Q-GATE-3).** Rollout `batch_womenrollout.sh` (Scan woman B and
+  C, the library, the Young and Heavy women's torso before / after, every suite); a test
+  (`test_a_womans_skin_takes_her_own_torso_relief_and_no_mans_scan`); the ATTRIBUTION row (Blender Studio, CC0).
+  **04:34, rolled out and verified (unit 45, tools 63, Blender 212 - the new test with them); `row_wr_torso.png`: the
+  Heavy woman natural; on the slim Young woman a one-sided line low on the right abdomen (a scar's look).** Found in
+  the map: two marks at the island's side edge, ~2x the nipples' slope (0.42 / 0.41 against 0.31 / 0.29) - where the
+  sculpt's armpit and hip don't meet ours; out by `marks_out` (25 mm), as Artec's scar. `batch_womenmarks.sh` (post,
+  the three women's skins, the library, the Young woman again, tools and build-skins tests).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

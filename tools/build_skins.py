@@ -265,12 +265,14 @@ BODY_SCAN_SIZE = 2048
 BODY_PARTS = ("hands", "feet")
 
 
-def _body_scan() -> dict | None:
+def _body_scan(sex: str = "m") -> dict | None:
     """The body tiles' detail from bare-body scans (tools/body_scan.py: the torso's from Artec's, CC BY 3.0; the arms',
     hands', legs' and feet's from HSRD-100's HSR0042-Body-045, CC BY 4.0; the parts over them: the hands' relief and
     colour from Ten24's sample scan, the feet's relief from Thunk3D's "Leg-foot", CC BY 4.0 - geometry only, so the
     feet keep the tile's colour) - by tile number, its colour ratio around 1 and its relief, rows bottom first as
-    Blender's pixels; None when none is made."""
+    Blender's pixels; None when none is made. A woman (`sex` "f", the plan's Q-BODY-3): her torso's relief alone
+    (`body_1002_female_*`: Blender Studio's CC0 realistic_body_female sculpt, geometry only) - the men's scans are a
+    man's body (design piece 8)."""
     folder = paths.GENERATED / "skin"
     import OpenImageIO as oiio
 
@@ -279,6 +281,13 @@ def _body_scan() -> dict | None:
         return np.asarray(buf.get_pixels(oiio.FLOAT), np.float32)[::-1, :, :3]
 
     found = {}
+    if sex == "f":
+        for number in maps.TILES[1:4]:
+            if (folder / f"body_{number}_female_relief.png").exists():
+                colour = read(f"body_{number}_female_colour.png") * 2.0
+                found[number] = {"ratio": colour, "cover": np.abs(colour - 1.0).max(-1) > 1e-3,
+                                 "relief": read(f"body_{number}_female_relief.png")}  # fmt: skip
+        return found or None
     for number in maps.TILES[1:4]:
         if (folder / f"body_{number}_relief.png").exists():
             colour = read(f"body_{number}_colour.png") * 2.0
@@ -304,9 +313,10 @@ def _body_scan() -> dict | None:
 
 def _body_tiles(body, out: Path, stems: dict, body_srgb: np.ndarray, props, tables, scan: dict | None = None) -> None:
     """Tiles 1002-1005: the plain body skin with its coloured regions (areolae, nails, genitals) by the tone model,
-    the nails shinier; the other channels flat. `scan` (_body_scan, a man's skin): the torso's colour detail and
+    the nails shinier; the other channels flat. `scan` (_body_scan): a man's skin - the torso's colour detail and
     relief from a bare-body scan on 1002 - CC5's body maps carry real skin and definition (inputs audit row 10); its
-    own areolas there in place of MakeHuman's mask."""
+    own areolas there in place of MakeHuman's mask; a woman's - her torso's relief from a sculpt (no colour: its ratio
+    1, MakeHuman's areolas kept)."""
     own = np.array(skin_optics.Skin(props.melanin, props.eumelanin, props.blood).linear_rgb(tables))
     ratio = {}
     for region, (factor, added, blood) in REGIONS.items():
@@ -677,7 +687,8 @@ def build(key: str, colour: Path | None = None, name: str | None = None, library
         print(f"{name}: the body's colour from the head tile's border {np.round(border, 3)} (was {np.round(corner, 3)})")
         corner = border
     man = composed is not None and params.get("sex") == "m"  # one man's torso: men's skins only (design piece 8)
-    _body_tiles(body, out, stems, corner, props, tables, _body_scan() if man else None)
+    woman = composed is not None and params.get("sex") == "f"  # her torso's own relief (Q-BODY-3)
+    _body_tiles(body, out, stems, corner, props, tables, _body_scan() if man else _body_scan("f") if woman else None)
     _border_blend(body, out, stems)
     print(f"{name}: normal baked to tangent space")
     for layer in body.data.uv_layers:

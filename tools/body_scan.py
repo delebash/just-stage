@@ -79,6 +79,19 @@ SOURCES = {
                      "source": "Thunk3D, 'Leg-foot' (sketchfab.com/3d-models/leg-foot-37e2802a104141b982e15eda21d425ec, by "
                                "Diana Liu: 'Leg-foot scan by Thunk3D Fisher's 3D scanner')",
                      "licence": "CC Attribution (Sketchfab's CC BY 4.0): 'Author must be credited. Commercial use is allowed'"},
+    # the women's torso (the plan's Q-BODY-3, 2026-11-10): Blender Studio's CC0 realistic_body_female at its top
+    # Multires level (tools/export_bs_female.py) - a sculpt, not a scan: geometry only; our body exported as a woman;
+    # its relief written beside the men's as `body_1002_female_*` (build_skins gives it to women's skins)
+    "bs_female": {"scan": WORK_ROOT / "bs_female" / "bs_female_top.obj", "scale": 1.0, "tiles": (1,), "fit": "torso",
+                  "geometry_only": True, "gender": 0.0, "stem": "female", "work": WORK_ROOT / "bs_female",
+                  # only detail under 15 mm: at 40 the sculpt's breast shape against ours left crescents under the
+                  # breasts (a shape difference, not skin definition - 2026-11-10)
+                  "relief_hp_mm": 15.0, "debris_limit": 0.8,
+                  # two marks at the island's side edge, ~2x the nipples' slope - where the sculpt's armpit and hip
+                  # don't meet ours (a one-sided line low on a slim woman's abdomen, 2026-11-10): out, as Artec's scar
+                  "marks_out": [((1201, 313), 25.0), ((1032, 1822), 25.0)],
+                  "source": "Blender Studio, Human Base Meshes bundle v1.4.1 (studio.blender.org), GEO-body_female_realistic",
+                  "licence": "CC0-1.0"},
 }  # fmt: skip
 SIZE = 2048
 RELIEF_HP_MM = 40.0  # the relief kept below this scale (the fit's leftover above it)
@@ -104,7 +117,7 @@ def export(src: str = "artec") -> None:
     api = importlib.import_module("bl_ext.system.juststage.api")
     build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
     makehuman = importlib.import_module("bl_ext.system.juststage.core.makehuman")
-    made = api.run("juststage.body.create", name="Body scan", gender=1.0)
+    made = api.run("juststage.body.create", name="Body scan", gender=spec.get("gender", 1.0))
     body = bpy.data.objects[made.object]
     co = build.shaped_coords(body)
     skin = makehuman.skin_mask(len(co))
@@ -688,7 +701,8 @@ def post(src: str = "artec") -> None:
         ratio_log = np.clip(ratio_log, -0.5, 0.3) * w[..., None] * edge[..., None]
         ratio = np.exp(ratio_log)
         OUT.mkdir(parents=True, exist_ok=True)
-        stem = f"body_{name}" + (f"_{spec['part']}" if "part" in spec else "")  # a part beside the tile's main source
+        stem = f"body_{name}" + (f"_{spec['stem']}" if "stem" in spec else "")  # a sex's own source (women's torso)
+        stem += f"_{spec['part']}" if "part" in spec else ""  # a part beside the tile's main source
         cv2.imwrite(str(OUT / f"{stem}_relief.png"),
                     np.round(np.clip(relief[..., ::-1], 0, 1) * 65535).astype(np.uint16))  # fmt: skip
         if "part" in spec:  # its weight (the edge and fit fades): where build_skins takes this part over the main one
