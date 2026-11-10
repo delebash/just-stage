@@ -24,6 +24,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -2084,6 +2085,144 @@ def vfbake(built: dict, bust: str, count: int = 6000, width_mm: float = 7.0) -> 
     print("VF BAKED CARDS", len(faces), "quads on", len(pick), "strands,", width_mm, "mm", flush=True)
 
 
+def _hair_card_material(atlas: bpy.types.Image, mean_lum: float, melanin: float, redness: float) -> bpy.types.Material:
+    """A card material with OUR hair model - the strands' live-view shading (`hair_shading.build`: Marschner's lobes
+    per light, the body, the image light), its strand direction the card's V (the atlas's root-to-tip), its colour
+    the strands' own stand-in (groom.py's melanin model) times the atlas's strand-to-strand brightness, its coverage
+    the atlas's alpha. The flat Principled cards (round 1) lit each card as one sheet - the scales."""
+    groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    hs = importlib.import_module("bl_ext.system.juststage.modules.hair.hair_shading")
+    m = -math.log(max(1.0 - melanin, 1e-4))
+    eu, pheo = m * (1.0 - redness), m * redness
+    s = groom._roughness_scale(hs.ROUGHNESS) * groom.LIVE_EXPONENT
+    stand_in = [max(math.exp(-math.sqrt(pheo * p + eu * e) * s), groom.LIVE_FLOOR)
+                for e, p in zip(groom.EUMELANIN, groom.PHEOMELANIN, strict=True)]
+    mat = bpy.data.materials.new("hair cards (our model)")
+    nt = mat.node_tree
+    for node in [n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"]:
+        nt.nodes.remove(node)
+    img = nt.nodes.new("ShaderNodeTexImage")
+    img.image = atlas  # read as stored (Non-Color), as its mean was
+    img.interpolation = "Cubic"
+    # the atlas's strand-to-strand brightness, around 1 where it has hair
+    lum = nt.nodes.new("ShaderNodeRGBToBW")
+    nt.links.new(img.outputs["Color"], lum.inputs["Color"])
+    vary = nt.nodes.new("ShaderNodeMath")
+    vary.operation = "MULTIPLY"
+    nt.links.new(lum.outputs["Val"], vary.inputs[0])
+    vary.inputs[1].default_value = 1.0 / max(mean_lum, 1e-3)
+    colour = nt.nodes.new("ShaderNodeVectorMath")
+    colour.operation = "SCALE"
+    colour.inputs[0].default_value = stand_in
+    nt.links.new(vary.outputs[0], colour.inputs["Scale"])
+    shader = hs.build(nt, colour.outputs["Vector"], world_mean=hs.world_mean(bpy.context.scene))
+    # the strand's direction on a card: along its V (cross of the normal and the UV map's U tangent)
+    tan_u = nt.nodes.new("ShaderNodeTangent")
+    tan_u.direction_type, tan_u.uv_map = "UV_MAP", "UVMap"
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    along = nt.nodes.new("ShaderNodeVectorMath")
+    along.operation = "CROSS_PRODUCT"
+    nt.links.new(geo.outputs["Normal"], along.inputs[0])
+    nt.links.new(tan_u.outputs["Tangent"], along.inputs[1])
+    unit = nt.nodes.new("ShaderNodeVectorMath")
+    unit.operation = "NORMALIZE"
+    nt.links.new(along.outputs["Vector"], unit.inputs[0])
+    # root to tip on the card: 1 - V (the atlas's roots at its top), x2 (a strip is 64 mm, our strands ~32)
+    uv = nt.nodes.new("ShaderNodeUVMap")
+    uv.uv_map = "UVMap"
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(uv.outputs["UV"], sep.inputs[0])
+    tip = nt.nodes.new("ShaderNodeMath")
+    tip.operation, tip.use_clamp = "MULTIPLY_ADD", True
+    nt.links.new(sep.outputs["Y"], tip.inputs[0])
+    tip.inputs[1].default_value, tip.inputs[2].default_value = -2.0, 2.0
+    for node in list(nt.nodes):
+        if node.type == "NEW_GEOMETRY" and node is not geo:
+            for link in list(node.outputs["Tangent"].links):
+                nt.links.new(unit.outputs["Vector"], link.to_socket)
+        if node.type == "HAIR_INFO":
+            for link in list(node.outputs["Intercept"].links):
+                nt.links.new(tip.outputs[0], link.to_socket)
+    clear = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(img.outputs["Alpha"], mix.inputs["Fac"])
+    nt.links.new(clear.outputs[0], mix.inputs[1])
+    nt.links.new(shader, mix.inputs[2])
+    out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+    nt.links.new(mix.outputs[0], out.inputs["Surface"])
+    mat.surface_render_method = "DITHERED"
+    return mat
+
+
+def vfbake2(built: dict, bust: str, card_mm: float = 12.0, spacing: float = 0.5) -> None:
+    """Round 2 of the cards textured from our own strands (`vfbake`: scales): fewer, wider cards - one a clump,
+    `card_mm` wide, their roots at least `spacing` x card_mm apart (the way an artist lays a card per clump) - each a
+    strip of the atlas at true scale, shaded with our hair model along the card (`_hair_card_material`). --alone."""
+    vfguides(built, bust)
+    groom = next(o for o in bpy.data.objects if o.juststage.part == "scalp" and o.type == "CURVES")
+    atlas = bpy.data.images.load(str(_bake_strips(groom, HAIR_ATLAS / bust)), check_existing=False)
+    atlas.colorspace_settings.name = "Non-Color"
+    px = np.empty(atlas.size[0] * atlas.size[1] * 4, np.float32)
+    atlas.pixels.foreach_get(px)
+    px = px.reshape(-1, 4)
+    mean_lum = float((px[px[:, 3] > 0.5, :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)).mean())
+    pos, offs, _rad, attrs = _groom_arrays(groom)
+    roots = pos[offs[:-1]]
+    rng = np.random.default_rng(5)
+    gap = spacing * card_mm / 1000.0
+    cells: dict = {}
+    picked = []
+    for k in rng.permutation(len(roots)):  # roots spread: none closer than `gap` to one taken (a dart throw on a grid)
+        c = tuple((roots[k] // gap).astype(int))
+        near = [j for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)
+                for j in cells.get((c[0] + dx, c[1] + dy, c[2] + dz), ())]
+        if any(np.linalg.norm(roots[k] - roots[j]) < gap for j in near):
+            continue
+        cells.setdefault(c, []).append(k)
+        picked.append(k)
+    centre = np.array([np.median(pos[:, 0]), np.median(pos[:, 1]), pos[:, 2].max() - 0.09])
+    du = card_mm / (ATLAS_STRIPS * ATLAS_STRIP_MM)
+    verts, faces, uvs = [], [], []
+    for k in picked:
+        p = pos[offs[k]:offs[k + 1]]
+        if len(p) < 3:
+            continue
+        tan = np.gradient(p, axis=0)
+        tan /= np.maximum(np.linalg.norm(tan, axis=1, keepdims=True), 1e-9)
+        side = np.cross(tan, p - centre)
+        side /= np.maximum(np.linalg.norm(side, axis=1, keepdims=True), 1e-9)
+        n = len(p)
+        half = side * (card_mm / 2000.0) * np.linspace(1.0, 0.6, n)[:, None]
+        s = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(p, axis=0), axis=1))]) * 1000.0
+        strip = rng.integers(ATLAS_STRIPS)
+        x0 = (strip + rng.uniform(0.02, max(0.03, 0.98 - card_mm / ATLAS_STRIP_MM))) / ATLAS_STRIPS
+        base = len(verts)
+        for i in range(n):
+            verts.append(p[i] - half[i])
+            verts.append(p[i] + half[i])
+            v = max(1.0 - s[i] / ATLAS_LENGTH_MM, 0.0)
+            uvs.append((x0, v))
+            uvs.append((x0 + du, v))
+        for i in range(n - 1):
+            a = base + 2 * i
+            faces.append((a, a + 1, a + 3, a + 2))
+    me = bpy.data.meshes.new("clump cards")
+    me.from_pydata([tuple(v) for v in verts], [], faces)
+    uv_layer = me.uv_layers.new(name="UVMap")
+    loop_v = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_v)
+    uv_layer.data.foreach_set("uv", np.array(uvs, np.float32)[loop_v].ravel())
+    obj = bpy.data.objects.new("clump cards", me)
+    bpy.context.scene.collection.objects.link(obj)
+    melanin = float(np.median(attrs["melanin"])) if "melanin" in attrs else pg.SCALP_COLOUR["melanin"]
+    redness = float(np.median(attrs["redness"])) if "redness" in attrs else pg.SCALP_COLOUR["redness"]
+    me.materials.append(_hair_card_material(atlas, mean_lum, melanin, redness))
+    groom.hide_render = True
+    built.setdefault("objects", []).append(obj)
+    print("VF CLUMP CARDS", len(faces), "quads on", len(picked), "cards,", card_mm, "mm, melanin", round(melanin, 3),
+          flush=True)
+
+
 def vfcards(built: dict, bust: str, count: int = 6000, width_mm: float = 7.0, sheet: str = "hair02") -> None:
     """Hair cards the way CC5 and MetaHuman make them - flat strips carrying a strand texture - built along our own
     strands (`vfguides`: grown from the free cut's cards, so the artist's shape): `count` of the groom's strands each a
@@ -3777,6 +3916,10 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("vfbake2*"):  # vfbake2*B4[*12*0.5] (clump cards, our hair model, our strands' atlas) - --alone
+        bits = name.split("*")
+        return lambda built: vfbake2(built, bits[1], *(float(bits[2]),) if len(bits) > 2 else (),
+                                     *(float(bits[3]),) if len(bits) > 3 else ())
     if name.startswith("vfbake*"):  # vfbake*B4[*6000*7] (cards along our strands, textured from our strands) - --alone
         bits = name.split("*")
         return lambda built: vfbake(built, bits[1], *(int(bits[2]),) if len(bits) > 2 else (),

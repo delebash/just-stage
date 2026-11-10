@@ -41,7 +41,10 @@ FINE_MM, BROAD_MM = 2.0, 4.0  # the slopes' fine part kept; the height's broad p
 DOTS_MM2 = 3.0  # pits and bumps smaller than this out (pores, stubble follicles: the scan's colour, not relief)
 FACE_HALF_MM, FOREHEAD_MM, CHIN_MM = 68.0, 110.0, 45.0  # the face kept: its half width, above the eyes, below the mouth
 HOLE_MARGIN_MM = 2.0  # off the skin mask's holes (a brow's stray hairs)
-CROP_DROP_MM = 27.0  # the crop's centre below the eyes' midpoint (the face from chin to hairline in one window)
+CROP_DROP_MM = 20.0  # the crop's centre below the eyes' midpoint (the forehead to the hairline in the window; 27
+#: cut the upper forehead at 63 mm above the eyes, 19:3x)
+EDGE_FADE_MM = (3.0, 10.0)  # the relief fades out from this far inside the crop's edge to this far (no step: a step
+#: in the height is a line in the normals - Scan man A's seam down the temple, 19:3x)
 
 
 def _module(name: str, path: Path):
@@ -131,6 +134,15 @@ def skin_mask(d: Path, size: int, mm: float) -> np.ndarray:
     return cover & skin & (holes == 0)
 
 
+def edge_fade(bx: np.ndarray, by: np.ndarray, mm: float) -> np.ndarray:
+    """0 outside the crop and EDGE_FADE_MM[0] inside its edge, 1 from EDGE_FADE_MM[1] in, smooth between (smoothstep):
+    `bx`, `by` a texel's place in the crop."""
+    edge = np.minimum(np.minimum(bx, CROP_W - 1 - bx), np.minimum(by, CROP_H - 1 - by)) / mm  # mm inside the crop
+    lo, hi = EDGE_FADE_MM
+    t = np.clip((edge - lo) / (hi - lo), 0.0, 1.0)
+    return (t * t * (3.0 - 2.0 * t)).astype(np.float32)
+
+
 def keep_mask(valid: np.ndarray, mm: float) -> np.ndarray:
     """Where the colour's relief is kept on the head tile (0-1): the scan's own skin, inside the face, out of the eye
     openings (face_eyes over 250 - over 20 took a 50 mm disc with the crow's feet, 18:4x), the lid margins, the lips and
@@ -209,7 +221,7 @@ def relief(name: str) -> np.ndarray:
     yy, xx = np.mgrid[0:size, 0:size].astype(np.float32)
     bx = ((xx - centre[0]) * right[0] + (yy - centre[1]) * right[1] + CROP_W / 2).astype(np.float32)
     by = ((xx - centre[0]) * down[0] + (yy - centre[1]) * down[1] + CROP_H / 2).astype(np.float32)
-    inside = ((bx > 8) & (bx < CROP_W - 9) & (by > 8) & (by < CROP_H - 9)).astype(np.float32)
+    inside = edge_fade(bx, by, mm)
     tile_z = cv2.remap(z.astype(np.float32), bx, by, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
     tile_z = remove_dots(tile_z * keep_mask(skin_mask(d, size, mm), mm) * inside, mm)
     xy = tangent_xy(tile_z, mm)

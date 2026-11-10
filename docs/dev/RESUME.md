@@ -67,6 +67,9 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   composed and built, the library's characters, renders of six characters + HD Aaron in
   `.dev/gate/parts/2026-11-09colourrelief`, every suite). Don't edit skin_base.py / colour_relief.py / build tools
   while it runs. The baked hair cards (round 1) read as scales; round 2 next (clump cards, our hair shading).
+  19:3x: the first rollout stopped (a seam where the relief's crop ended - fixed by `EDGE_FADE_MM`, the crop moved up);
+  RERUN from 19:33 (the 19:21 backups `*_2026-11-09cr` are the true before - kept); then `batch_vfbake2.sh` (hair
+  round 2: `factors vfbake2*B4*12*0.5` / `*18*0.5`, new).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

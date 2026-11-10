@@ -84,3 +84,15 @@ def test_each_texels_lines_come_from_the_heaviest_scan(tmp_path, monkeypatch):
     got = skin_base._colour_relief({"light": 0.3, "heavy": 0.7}, shape)
     assert got[32, 10, 0] == pytest.approx(0.05 * skin_base.COLOUR_RELIEF, abs=0.002)  # the heavy one's, not a mean
     assert got[32, 60, 0] == pytest.approx(-0.05 * skin_base.COLOUR_RELIEF, abs=0.002)  # the next where it didn't reach
+
+
+def test_the_relief_fades_out_before_the_crops_edge():
+    """A step where the crop ends is a line in the normals (Scan man A's seam down the temple, 2026-11-09)."""
+    bx = np.arange(-5, colour_relief.CROP_W + 5, dtype=np.float32)
+    by = np.full_like(bx, colour_relief.CROP_H / 2)
+    f = colour_relief.edge_fade(bx, by, MM)
+    lo, hi = colour_relief.EDGE_FADE_MM
+    assert f[0] == 0.0 and f[-1] == 0.0
+    assert f[5 + int(lo * MM) - 1] == 0.0  # still out just inside the edge
+    assert f[5 + int(hi * MM) + 1] == 1.0  # whole past the fade
+    assert np.abs(np.diff(f)).max() < 0.05  # no step anywhere

@@ -1193,6 +1193,39 @@ booked with just-direct-mocap.
   our strands in 8 strips, real strands):** still scales - flaky, greyer than the strands. Not the texture: thousands
   of 7 mm ribbons each lit flat, no highlight along the hair, carrying very wavy strands. One more round after the
   face: wider cards from clumps, a flow (tangent) highlight, the root-to-tip darkening.
+- **19:0x-19:3x, the rollout (`batch_colourrelief.sh`):** the tool on all ten scans (the dark-skinned HSR0042's map:
+  real under-eye creases, no hair mistaken; the 21-year-old HSR0028's: smooth, her deep values only the nostril wings'
+  creases and the lid corners - real anatomy, judged on her render); then a seam in Scan man A's composed relief
+  (Mistakes) - stopped after two skins, `EDGE_FADE_MM` (3 -> 10 mm smooth fade inside the crop, its test) and the crop
+  7 mm higher (`CROP_DROP_MM` 27 -> 20: the old top cut the forehead 63 mm above the eyes); normals recomputed; rerun
+  from 19:33 (the 19:21 backups kept). Then the hair round 2 (`batch_vfbake2.sh`, queued after it).
+  19:4x, an open risk: HSR0015 (23, woman) wears winged eyeliner - Sapiens2 reads each wing as a crease at the outer
+  eye corner (`scans/hsr0015/colour_relief.png`). She is the second scan of Scan woman A and B, filling only where
+  HSR0027 / HSR0028 give none; the Young woman's eye render decides. Fix if it shows: an `eye_makeup` tag in
+  `scan_list.py` and that scan's eye corners out of its relief (not now: the rollout's compose reads scan_list).
+- **20:1x-20:2x, the product against the trial (the rollout's `.dev/gate/parts/2026-11-09colourrelief`; maps measured
+  as slope RMS, the scratch isolation `scratchpad/photorelief/iso`):** the forehead carries the same lines as the trial
+  (by eye); round the eyes the product reads fainter. Measured in the maps: crow's feet trial 0.20 / 0.25 -> the
+  tool's mask on the trial's own normals 0.16 / 0.19 -> the tool 0.14 / 0.17; under the eyes 0.057 / 0.070 -> 0.052 /
+  0.069 -> 0.047 / 0.059; the forehead 0.12 / 0.11 -> 0.12 / 0.11 -> 0.10 / 0.10. So the mask takes ~20% at the
+  crow's feet (the trial's colour test never took the brows out - it carried the brow hairs' relief, under our brow
+  strands anyway; the windows reach the brows' tails) and the 7 mm higher window ~10-15% everywhere (Sapiens2 sees a
+  different crop). Not the shader: the lid-margin cut (`_relief_off_stretched`) stays on the margins (its mask over
+  0.2 is 864 mm2, on the lid rims). The product sits between the trial's x1 and x2; COLOUR_RELIEF kept at 1.0 until
+  the measure against HD Aaron (the rollout's table) says otherwise.
+- **20:3x, THE ROLLOUT'S RESULT (`.dev/gate/parts/2026-11-09colourrelief`, `cr_table.txt`; unit 45 and tools 60 passed,
+  the Blender suite running):** the library man (Scan man A) carries the forehead lines, the frown and the folds; his
+  forehead window's fold band 0.58 -> **0.62** of HD Aaron's (the trial's x2 0.64), pore band 0.51 (unchanged - a
+  separate fault). The New human (the default skin, pale) shows the lines too; the Young woman (Scan woman B) smooth -
+  no eyeliner crease (the risk above closed); the dark-skinned Older man, Heavy woman and Muscular man natural creases
+  under the eyes. **Verdict: the face's mid-scale relief - "can't with free assets" is DISPROVEN: a free route (the
+  scans' own colour, CC BY 4.0, read by Sapiens2 at build time) puts real wrinkles in every skin.** It doesn't match
+  his yet in the forehead's fine net and pores (0.5-0.6 of his at that window).
+  The face's next candidates (after the hair): his 0.3-1.5 mm band is a fine crease net, not pores (pores x2 read as
+  orange peel, 11-08), so not the pore depth - (1) the dot filter at 1 mm2 (3 mm2 may take short crease pieces out);
+  (2) the colour read at the scans' own 16K resolution (~15 px/mm, two windows) instead of our head tile's 5.7 px/mm.
+  Also found: the 11-08 forehead-window numbers (ours pore 3.2 / fold 1.9 against his 1.69 / 1.09) were void - our
+  window held hair (ridges 0.024 against today's 0.002).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
@@ -1228,7 +1261,7 @@ booked with just-direct-mocap.
 |---|---|---|---|
 | Cheek, nose skin (texture) | **matches** (men); women's finer (03:4x) | `PORES_BY_SEX` (0.7 a woman) | - |
 | Forehead skin | **matches** (orange peel gone) | forehead pores x1 | - |
-| Face skin relief (wrinkles, folds) | **CAN'T with free assets in hand** | - | a wrinkle-rich face relief at his level - a paid scan or an artist's sculpt (three free scans' relief and a made layer tried) |
+| Face skin relief (wrinkles, folds) | **REACHED in kind with free assets (11-09 20:3x; was "can't")** - real creases from the scans' own colour (`colour_relief.py`, NOT STANDARD), in all six skins and the library | the forehead's fold band 0.58 -> 0.62 of his | his forehead's dense fine-crease net and its pores (pore band 0.51 at the eye view's forehead window) - doesn't match yet |
 | Face colour | close; **every character (11-09)** - no patch where the scans end, no rim smudges on the jaws; **dark skin matches measured skin within ~3 delta-E (ISSA, 11-09 16:4x)** | the eyes' surround darker (`maps._eye_layer`); the scans' edge faded (`skin_base.faded_out`, multi-band) and their dark rims weighed out (`rim_weight`) - six scan skins; the Heavy woman at melanin 0.1 (was 0.25, ashy) | the regions' redness; on dark skin the scans' own blood redness (chromophore maps - a job); the slider's dark end ~2-4 delta-E warm (eumelanin share 0.6 -> 0.9 would close half) |
 | Face shape | identity, not a fault | - | (three real scans' shapes read no more real - not the doll look's cause) |
 | Brows | close | dark brown 0.8 / 0.3 (11-09; near-black read as a grey bar on women); a woman's 0.7 of the hairs, live by the gender slider (`DENSITY_BY_SEX`); the gate shows a character's own brows | the live view's strand haze -> cards; the blocky shape beside his soft brows |
@@ -1243,7 +1276,7 @@ booked with just-direct-mocap.
 | Hands | close | - | tone (a setting) |
 | Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out; the neck / chest patch gone on every character (11-09) | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out`; the scans' edge faded | definition (MakeHuman's CC0 normal as a slider, its seams) |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
-| **Whole character** | **not CC5 quality with free assets (verdict 11-09 18:1x)** | the above | the face's mid-scale relief (can't, free: a paid scan or an artist) and the live-view hair (can't with the free pieces: an artist's card groom with textures, or a live-view strand renderer) |
+| **Whole character** | **not CC5 quality yet (11-09 20:3x)**; the face relief's "can't" disproven (free route in the product) | the above | the live-view hair (cards: round 2 on trial - clump cards with our hair model on our strands' atlas) and the remainders above |
 
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
 
@@ -1451,3 +1484,14 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   mask tool's own dressed human needed the mask - Blender exited 0 with no file; the compose, the skin build, the
   library and the render all ran on and failed after it; the failed skin build had rewritten Scan man A's normal map,
   restored from its backup).
+- A relief layer cut to a window fades out before the window's edge (2026-11-09 19:2x: the colour relief stopped in
+  a step where Sapiens2's crop ended - the face frame was exactly the crop's width - and a step in a height is a line
+  in the normals: Scan man A's composed relief showed a straight seam down the temple; the rollout was stopped after
+  two skins and rerun with `colour_relief.EDGE_FADE_MM`). Look at the composed map before the build, not after.
+- A rerun keeps the first run's backups (2026-11-09 19:3x: the rollout batch would have copied the half-rebuilt
+  skins and compositions over the 19:21 "before" - its backup lines now skip a backup that exists).
+- A scan's age and sex come from its dataset's own records (`persons.jsonl`), never from a guess at its face
+  (2026-11-08 20:18 called HSR0040 "a young man with few lines"; he is 50 and his colour holds deep lines - the
+  wrong guess kept the face relief's "can't" for a day).
+- Read the scan list's own notes before saying anything about a scan (2026-11-09: `scan_list.py` records HSR0040 as
+  "Male, Caucasian, 50" - the 11-08 "young man" claim contradicted our own data, not only the dataset's).
