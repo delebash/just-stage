@@ -1861,7 +1861,56 @@ booked with just-direct-mocap.
 - **13:0x, THE LIPS' BOX SPENT (no more trials - the user: "dont get stuck in a loop"): colour (mean) matches; the border
   soft in the product; the fine crinkle tried three ways (11-09 `lipcrease` read as crepe paper, `lipset`, today's
   deeper lines) - LIPS: CLOSER, NOT EQUAL; the route left is a scanned lip relief at his resolution (the scans' colour is
-  ~5.7 texels a mm at the lips - too coarse).** Seen in the end
+  ~5.7 texels a mm at the lips - too coarse).**
+- **13:1x, committed 0473837 (stubble 220, grey by age, the library's hair assets; unit 45, tools 67, Blender 218).
+  THE NAILS' GEOMETRY (`nailgeo.png`: product | dome only | level 3 | his): both soften the step; the plate stays a
+  small OCTAGON in the fingertip's middle whatever the geometry - his a rounded plate reaching the tip. The octagon is
+  the nail coords map (`make_nail_coords.py`: linear per coarse face). Last nail trial (box): `factors nailsoft*px`
+  (new: the map blurred inside each nail's own region) 6 / 12 texels - `batch_nailsoft.sh`; then the nails' verdict.**
+- **13:18, THE EYE ON ICT'S HEAD WITH OUR SKIN (`head6.png`: product | head6 | his, eye and face): the eye reads more
+  natural than on hm08 - open, no ledge, closer to his. The trial's own faults stay (the brow mostly hidden under ICT's
+  surface - our brows bound to our hidden skin; an orange line at the neck where ICT's mesh ends; ICT's own lips in the
+  face) - the rebuild's work, Q-BASE-4 (the user's to ship). EYE BOX SPENT: NEAR EQUAL on a free head (form proven in
+  clay; with skin the integration is the rebuild).**
+- 13:1x: MotionStudioArts' "White Long Wavy Hairs 016" (CC BY, Sketchfab d1e6d46...) fetched (Edge opened, tab and window
+  closed, rechecked after a minute: none) -> `.dev/downloads/msa_hair_long_2026-11-10/`; `factors msahair*long`
+  (MSA_HAIRS by name, fibres tinted mid brown) on the Average woman - `batch_msalong.sh`.
+- **13:2x, THE MOUTH UNDER THE IMAGE LIGHT ALONE (`mouthworld.png`: ours stage | ours world | his world | his stage): both
+  cavities dark under the image light; with the stage's key his tongue lights up and ours doesn't. The key's light
+  reaches his tongue (low, behind the lower teeth) and not ours (high, filling the opening, in the upper lip's shadow).
+  MOUTH BOX SPENT: NOT PROVEN - the cause is the mouth's SHAPE at jawOpen (the tongue's rest against the opening; the
+  face units' jaw), not material or light settings (the tongue moved 6-10 mm down didn't light it either, 11:07 - the
+  upper lip and opening still shade the cavity from the key); the route left: the opening's shape (the jaw units'
+  lips) - and ICT-FaceKit's scanned teeth (MIT, 32 individual teeth in its mesh) for the arch. Head6 clay: the narrower
+  keep kept head5's crease (`clay6.png`).**
+- **13:2x, THE LASHES INTO THE PRODUCT (mine, attacked): rise 0 -> 10, curl 50 -> 80, the longest 7 -> 5.5 mm (short 3.8 ->
+  3.0), the root 0.08 -> 0.06 mm (`apply_lashes.py`) - the curtain off the iris, finer, curling up as his (`lashup2.png`
+  bottom middle). The attack caught one: CLEAR_TRIES 0 was in the first patch - with joint bends alone the 11-08 kinked
+  wire returns (68% of lashes with a joint over 20 deg; `test_the_upper_lashes_curve_smoothly_out_of_the_lid` guards it;
+  `lashclear.png`'s short bunched lashes at 0 were that kink) - CLEAR_TRIES stays 12. Checked on the man and three
+  women and every suite by `batch_ship_1110f.sh` (after the long hair trial); a failing guard test (e.g. "few rise past
+  60 deg") would mean the curl stands lashes up - then not kept.**
+- **13:29, THE TORSO AT A LIKE BUILD (`torsobuild.png`: product | muscle 0.8 | 1.0 | his): with the app's own sliders the
+  torso widens and the abdomen and chest define; our skin keeps reading real. His pectoral MASS and its broad highlight
+  stay beyond MakeHuman's muscle range at 1.0 - a body-shape range, not the skin. TORSO BOX SPENT: skin CLOSE (texture,
+  colour); the form is the body's shape range (an athletic-chest target beyond MakeHuman's - the plan's body definition
+  route, Q-BODY-1).**
+- **13:32, THE NAILS' LAST TRIAL (`nailsoft.png`: product | coords blurred 6 | 12 | his): no rounder - at 12 the edge
+  frays. The octagon is the nail bed's displacement, computed from the coords when the skin is built (nail_bed.height_mm),
+  not the render-time map. NAILS BOX SPENT: NOT PROVEN - not a missing asset: the plate needs a smooth outline of its own
+  reaching the fingertip (a rounded plate drawn analytically in each nail's coords, for the shader and the bed's height
+  alike) - a build in `make_nail_coords.py` / `nail_bed.py` / `maps._nail_layer`.**
+  **Cause found 13:3x (`nail_island.png`): `make_nail_coords` normalises along / across to each nail's own tile island,
+  and the plate fills it - the island is a coarse polygon of hm08's fingertip faces (the largest's outline simplifies to
+  13 corners): the octagon IS the island. The build: the plate's shape on the fingertip's own surface, beyond the island
+  - per-vertex nail coordinates as a mesh attribute over each fingertip (the closed lid's object-space way), a rounded
+  plate drawn from it in the shader and the bed's height alike; queued as the next build after the batches.**
+- **13:35, THE SECOND FREE HAIR on a woman (`msalong.png`: MotionStudioArts' "White Long Wavy Hairs 016", CC BY, fibres
+  tinted mid brown, on the Average woman): despite its name a full curly volume - it reads as real curly hair
+  (strand-level curls, flyaways, depth). SCALP HAIR: REACHED IN KIND on a man and a woman with two free CC BY CC4 hairs;
+  the free set is curly / wavy / kinky - a straight short cut at this quality isn't in it (his style itself not matched).
+  Box spent. A cheap nail trial queued before any rebuild: the plate held inside its island (`nailplate*0.7*0.88`,
+  `*0.65*0.82`, the bed's dome alone) - `batch_nailplate.sh`, after the lashes' ship batch.** Seen in the end
   gate's nails view (`gate1110/row_nails.png`): **the NAILS are not proven by eye** - our plate reads pasted on (a
   darker drawn rim, no cuticle fold rolling over it) and the fingertip's skin carries a coarse red speckle; his nails
   sit under a soft proximal fold on smooth warm skin (the views' framing differs). Queued after the face's parts;

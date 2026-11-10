@@ -2150,11 +2150,17 @@ MASK_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "masks"
 VF_BUSTS = Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "vincent_hair_2026-11-09" / "m01_busts.blend"
 
 
-MSA_HAIR = (Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "msa_hair_2026-11-10" / "x" / "source" / "u"
-            / "02 Short Hairs Black Fuzzy")  # fmt: skip
+MSA_DL = Path(__file__).resolve().parents[2] / ".dev" / "downloads"
+#: MotionStudioArts' free CC BY hair (Sketchfab), by a short name: (folder, file stem, the fibres' colour multiplier)
+MSA_HAIRS = {
+    "fuzzy": (MSA_DL / "msa_hair_2026-11-10/x/source/u/02 Short Hairs Black Fuzzy", "Short Hairs Black Fuzzy",
+              (1.0, 1.0, 1.0)),  # its own near-black kept
+    "long": (MSA_DL / "msa_hair_long_2026-11-10/x/source/u/016 White Long Wavy Hairs", "White Long Wavy Hairs",
+             (0.16, 0.09, 0.05)),  # white fibres (sRGB 0.86) tinted a mid brown
+}
 
 
-def msahair(built: dict, melanin: float = 0.9) -> None:
+def msahair(built: dict, which: str = "fuzzy") -> None:
     """The scalp hair's last untried free source (2026-11-10): MotionStudioArts' "Black Short Hairs Fuzzy v2" (CC BY,
     Sketchfab b95196254b5e...; ZBrush FiberMesh hair made for Character Creator 4: a cap `Sclup` and fibre cards) - on
     our man: the OBJ (cm, Y up) imported, its cap's top 8 cm fitted to our cranium's by scale per axis and offset
@@ -2162,7 +2168,8 @@ def msahair(built: dict, melanin: float = 0.9) -> None:
     cap's too; our scalp groom hidden. A new groom: --alone."""
     body = built["body"]
     before = set(bpy.data.objects)
-    bpy.ops.wm.obj_import(filepath=str(MSA_HAIR / "Short Hairs Black Fuzzy.obj"), global_scale=0.01,
+    folder, stem_name, fibre_tint = MSA_HAIRS[which]
+    bpy.ops.wm.obj_import(filepath=str(folder / f"{stem_name}.obj"), global_scale=0.01,
                           forward_axis="NEGATIVE_Z", up_axis="Y", use_split_groups=True)  # its `g` groups: cap, fibres
     new = [o for o in bpy.data.objects if o not in before and o.type == "MESH"]
     print("MSA IMPORTED:", [o.name for o in new], flush=True)
@@ -2200,7 +2207,7 @@ def msahair(built: dict, melanin: float = 0.9) -> None:
             coll.objects.unlink(o)
         for coll in body.users_collection:
             coll.objects.link(o)
-    tex_dir = MSA_HAIR / "Short Hairs Black Fuzzy"
+    tex_dir = folder / stem_name
     for o, stem in [(cap_obj, "Sclup")] + [(f, "GoZMesh_Import_Material") for f in fibres]:
         mat = bpy.data.materials.new(f"msa {stem}")
         mat.use_nodes = True
@@ -2219,7 +2226,7 @@ def msahair(built: dict, melanin: float = 0.9) -> None:
         tint.inputs["Factor"].default_value = 1.0
         nt.links.new(diff.outputs["Color"], tint.inputs["A"])
         # the fibres' own colour is near-black (sRGB mean 0.06): kept; the cap's grey (0.54) darkened to it
-        tint.inputs["B"].default_value = (0.12, 0.10, 0.09, 1.0) if stem == "Sclup" else (1.0, 1.0, 1.0, 1.0)
+        tint.inputs["B"].default_value = (0.12, 0.10, 0.09, 1.0) if stem == "Sclup" else (*fibre_tint, 1.0)
         nt.links.new(tint.outputs["Result"], bsdf.inputs["Base Color"])
         nt.links.new(opac.outputs["Color"], bsdf.inputs["Alpha"])
         bsdf.inputs["Roughness"].default_value = 0.45
@@ -3866,6 +3873,57 @@ def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey:
     print("BROWS", int(count), "coarse,", int(fine), "fine at", fine_melanin, "grey", grey, flush=True)
 
 
+def nailplate(built: dict, side: float, length: float) -> None:
+    """The fingers' plate inside its tile island: `maps.NAIL_SIDE` (0.8 of the island's half-width) and its length (1.0
+    - the island's distal edge) set on the shader's own mixes - 2026-11-10: the plate filled the island, whose coarse
+    polygon (13 corners) cut it into an octagon; held inside, the plate's own rounded outline shows."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        for name, value in (("nail_plate_side", side), ("nail_plate_length", length)):
+            node = nt.nodes.get(maps.NODE + name)
+            if node is not None:
+                next(i for i in node.inputs if i.identifier == "A_Float").default_value = value
+                n += 1
+    if not n:
+        raise RuntimeError("no nail plate mixes")
+    print("NAIL PLATE side", side, "length", length, "on", n, "nodes", flush=True)
+
+
+def nailsoft(built: dict, px: float) -> None:
+    """The nails' own coordinates (`make_nail_coords.py`'s map on tile 1005, the shader's plate drawn inside them)
+    blurred by a three-pass box of `px` texels - 2026-11-10 (`nailgeo.png`): the plate an octagon in the middle of the
+    fingertip whatever the geometry (dome only, level 3); the map is linear per coarse face. Its alpha (the nail's own
+    region) kept."""
+    nodes = [n for nt in _skin_trees(built) for n in nt.nodes if n.name.endswith("nail_coords")]
+    if not nodes:
+        raise RuntimeError("no nail coords node")
+    src = nodes[0].image
+    w, h = src.size
+    a = np.empty(w * h * 4, np.float32)
+    src.pixels.foreach_get(a)
+    a = a.reshape(h, w, 4)
+    r = max(1, int(round(px)))
+
+    def box(x, axis):
+        c = np.cumsum(np.pad(x, [(r + 1, r) if k == axis else (0, 0) for k in range(x.ndim)], mode="edge"), axis=axis)
+        return (np.take(c, range(2 * r + 1, c.shape[axis]), axis=axis)
+                - np.take(c, range(0, c.shape[axis] - 2 * r - 1), axis=axis)) / (2 * r + 1)  # fmt: skip
+
+    inside = a[..., 3:4] > 0.5
+    rgb = a[..., :3] * inside
+    wsum = inside.astype(np.float32)
+    for _ in range(3):
+        rgb, wsum = box(box(rgb, 0), 1), box(box(wsum, 0), 1)
+    a[..., :3] = np.where(inside, rgb / np.maximum(wsum, 1e-6), a[..., :3])  # blurred within each nail's own region
+    soft = bpy.data.images.new(f"nail coords soft {px}", w, h, alpha=True, float_buffer=True)
+    soft.colorspace_settings.name = "Non-Color"
+    soft.pixels.foreach_set(a.ravel())
+    for n in nodes:
+        n.image = soft
+    print("NAIL SOFT", px, "texels on", len(nodes), "nodes", flush=True)
+
+
 def build_(built: dict, muscle: float, weight: float) -> None:
     """The gate's man's build set by the app's own sliders (`juststage.body.set_slider` muscle, weight) - 2026-11-10: the
     torso's gap beside HD Aaron read as his athletic build, which is a slider setting; this judges our skin at a like
@@ -4826,15 +4884,19 @@ def exprset(built: dict, expression: str, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("nailplate*") and "+" not in name:  # nailplate*0.7*0.88 (the fingers' plate: side, length)
+        return lambda built: nailplate(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("nailsoft*") and "+" not in name:  # nailsoft*6 (the nail coords blurred, texels)
+        return lambda built: nailsoft(built, float(name.split("*", 1)[1]))
     if name.startswith("build*") and "+" not in name:  # build*0.8*0.45 (muscle, weight sliders) - --alone
         return lambda built: build_(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("levels*") and "+" not in name:  # levels*3 (the body's render subdivision) - --alone
         return lambda built: levels(built, float(name.split("*", 1)[1]))
     if name.startswith("browshape*") and "+" not in name:  # browshape*0.9*8*800 (widen, rise deg, fine) - --alone
         return lambda built: browshape(built, *(float(x) for x in name.split("*")[1:4]))
-    if name.startswith("msahair") and "+" not in name:  # msahair[*0.9] (MotionStudioArts' CC BY hair, melanin) - --alone
+    if name.startswith("msahair") and "+" not in name:  # msahair[*long] (MotionStudioArts' CC BY hair) - --alone
         bits = name.split("*")[1:]
-        return lambda built: msahair(built, *(float(x) for x in bits))
+        return lambda built: msahair(built, *bits)
     if name.startswith("lashup*") and "+" not in name:  # lashup*15*80 (the upper lashes' rise and curl, degrees) - --alone
         return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:6]))
     if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)
