@@ -1345,6 +1345,10 @@ booked with just-direct-mocap.
   woman, Young woman, Older man, Heavy woman and Muscular man at the face, three-quarter, eye and cheek views
   (`gate/chars_<view>.png`). Then the report `docs/gate/2026-11-09/report.md` (the plan's: the sheets, the numbers,
   the verdicts, the user's words); the verdict is the user's (quality-gate §5).
+  **00:3x, done: `docs/gate/2026-11-09/report.md`.** The cheek equal to his within his own spread (micro 1.07, pores
+  0.94, folds 0.93, form 0.96); the forehead's fine net 0.51 / 0.62; hand and foot 0.58-0.74 (paler, drier - tone);
+  the eye below on every character (the lid's shape - Q-BASE-4); the product's hair below (the trial's free cards
+  are the route - Q-HAIR-7). Every part has a verdict; the gate's verdict is the user's.
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
