@@ -3645,6 +3645,29 @@ before the rec list; measured in Blender 5.3 and read in our code):
     here. Perm (MIT) samples within USC-HairSalon's styles (no short men's taper) and its photo-fitting pipeline is
     held by Adobe (README: "reach out ... for an individual release license").
 
+- **Free card textures: Polytricity's "Hair Cards_FBX"** (*read 2026-11-09 20:5x*, Sketchfab API record
+  `ad1ac6f162ff43a3ae175982bf770c3e`, user PolytricityLtd "POLYTRICITY", published 2024-02-05): `license.label` "CC
+  Attribution", `requirements` "Author must be credited. Commercial use is allowed.", url creativecommons.org/licenses/by/4.0;
+  description: "11 hair strips ready to use to build up your own hair meshes. 4k textures; RGB Mask for Root(Green),
+  Tip(Blue) and Tone variations (Red); Normal Map; Frizz Map; AO Map; Depth Map ... created using HairStrand Designer".
+  Downloaded (Edge, the user's Sketchfab session; the browser saved it to C:, moved at once) into
+  `.dev/downloads/polytricity_hair_2026-11-09/` (28 MB zip: `source/HairCards_FBX.fbx`, `textures/HSD_Skecthfab_{Mask,
+  RGBMask,AO,Depth,NormalMap,Frizz}.png`, 4096 x 4096, no colour map - the colour is the shader's, as CC5's cards). The
+  strips' UV boxes read from the FBX (`factors.POLY_STRIPS`): 0-5 full length, 6-10 shorter fly-aways; roots at the top.
+  A credit line "Created with HairStrandDesigner" sits in the sheet's bottom corner, outside every strip. With
+  VincentFreelance's free cuts (CC BY 4.0, the cards' layout without their textures) they make a whole free card groom.
+- **The 2026-11-09 card search** (WebSearch, standard: "free realistic hair cards male short hair download with
+  textures", "free hair card texture pack realistic strands alpha root depth flow maps", "realistic hair in Blender EEVEE
+  real time strands render looks grey how to fix"; Sketchfab API, `downloadable=true`, no licence filter, sorted by
+  likes: "hair cards", "realistic hair", "short hair male", "haircut", "hair game ready", "metahuman hair", "groom hair"
+  - 130 models, 35 named hair): RenderHub's free khaloui "Realistic 3D Male Hair Beard Mustache" (48,278 polygons,
+  textured) - its "3D Content Licensing" agreement, read: "you may not redistribute, publish or make a Digital Asset
+  available to any third party" except "in the form of a Creation" (IV.2.a.ii) - a library asset in an open app is
+  the asset itself: local tests only. rendysix's "Hair Pack" 1-3 (labelled CC BY): "Made by CAPCOM ... Monster cut hairs"
+  - ripped game assets, not shippable. MotionStudioArts (CC BY, its own ZBrush cards for CC4): curly and kinky cuts
+  only - variety for later. FlippedNormals' free sample page 404; Olivervrc's free pack's page shows no terms (unread).
+  No free straight short men's card groom WITH its textures was found; the two free halves above are the route.
+
 ### 14.15 · The live view against the film
 
 - **Round 79 in EEVEE**: 10.7 s for one 1024² still on the 2070 Super, shader compile included; the maps carry over

@@ -2023,6 +2023,224 @@ def _bake_strips(groom, out: Path) -> Path:
     return path
 
 
+POLY_HAIR = Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "polytricity_hair_2026-11-09" / "x"
+#: Polytricity's "Hair Cards_FBX" (Sketchfab ad1ac6f1..., CC BY 4.0, made with HairStrand Designer): 11 strips on one
+#: 4K sheet, each (u0, u1, v0, v1) as its FBX maps them (read 2026-11-09), roots at the top (v1: the RGB mask's green);
+#: 0-5 dense, 6-10 sparse fly-aways
+POLY_STRIPS = ((0.0, 0.1225, 0.0, 1.0), (0.1225, 0.2130, 0.0, 1.0), (0.2130, 0.2998, 0.0, 1.0), (0.2998, 0.3854, 0.0, 1.0),
+               (0.3854, 0.4734, 0.0, 1.0), (0.4734, 0.5609, 0.0, 1.0), (0.5609, 0.6483, 0.3678, 1.0),
+               (0.6483, 0.7388, 0.4663, 1.0), (0.7388, 0.8275, 0.4411, 1.0), (0.8275, 0.9087, 0.4996, 1.0),
+               (0.9087, 1.0, 0.1935, 0.9663))  # fmt: skip
+
+
+def _poly_card_material(melanin: float, redness: float) -> bpy.types.Material:
+    """The cards with an artist's strand textures (POLY_HAIR) and OUR hair model (`hair_shading.build`, along the card's
+    V on the "poly" UV map): coverage from the strips' mask; colour the strands' own melanin stand-in x the strips' tone
+    (the RGB mask's red), darker at the root (green), lighter at the tip (blue), x their occlusion (AO)."""
+    groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    hs = importlib.import_module("bl_ext.system.juststage.modules.hair.hair_shading")
+    m = -math.log(max(1.0 - melanin, 1e-4))
+    eu, pheo = m * (1.0 - redness), m * redness
+    s = groom._roughness_scale(hs.ROUGHNESS) * groom.LIVE_EXPONENT
+    stand_in = [max(math.exp(-math.sqrt(pheo * p + eu * e) * s), groom.LIVE_FLOOR)
+                for e, p in zip(groom.EUMELANIN, groom.PHEOMELANIN, strict=True)]
+    mat = bpy.data.materials.new("vf cards (Polytricity strands, our model)")
+    nt = mat.node_tree
+    for node in [n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"]:
+        nt.nodes.remove(node)
+    uv = nt.nodes.new("ShaderNodeUVMap")
+    uv.uv_map = "poly"
+
+    def tex(name):
+        node = nt.nodes.new("ShaderNodeTexImage")
+        node.image = bpy.data.images.load(str(POLY_HAIR / "textures" / f"HSD_Skecthfab_{name}.png"), check_existing=True)
+        node.image.colorspace_settings.name = "Non-Color"
+        node.interpolation = "Cubic"
+        nt.links.new(uv.outputs["UV"], node.inputs["Vector"])
+        return node
+
+    def math_node(op, a, b, c=None):
+        node = nt.nodes.new("ShaderNodeMath")
+        node.operation = op
+        for i, value in enumerate((a, b, c)):
+            if value is None:
+                continue
+            if isinstance(value, float):
+                node.inputs[i].default_value = value
+            else:
+                nt.links.new(value, node.inputs[i])
+        return node.outputs[0]
+
+    mask, rgb, ao = tex("Mask"), tex("RGBMask"), tex("AO")
+    sep = nt.nodes.new("ShaderNodeSeparateColor")
+    nt.links.new(rgb.outputs["Color"], sep.inputs["Color"])
+    # tone 0.75-1.25, root x0.7, tip x1.25, occlusion x(0.35-1)
+    gain = math_node("MULTIPLY_ADD", sep.outputs["Red"], 0.5, 0.75)
+    gain = math_node("MULTIPLY", gain, math_node("MULTIPLY_ADD", sep.outputs["Green"], -0.3, 1.0))
+    gain = math_node("MULTIPLY", gain, math_node("MULTIPLY_ADD", sep.outputs["Blue"], 0.25, 1.0))
+    ao_bw = nt.nodes.new("ShaderNodeRGBToBW")
+    nt.links.new(ao.outputs["Color"], ao_bw.inputs["Color"])
+    gain = math_node("MULTIPLY", gain, math_node("MULTIPLY_ADD", ao_bw.outputs["Val"], 0.65, 0.35))
+    colour = nt.nodes.new("ShaderNodeVectorMath")
+    colour.operation = "SCALE"
+    colour.inputs[0].default_value = stand_in
+    nt.links.new(gain, colour.inputs["Scale"])
+    shader = hs.build(nt, colour.outputs["Vector"], world_mean=hs.world_mean(bpy.context.scene))
+    tan_u = nt.nodes.new("ShaderNodeTangent")
+    tan_u.direction_type, tan_u.uv_map = "UV_MAP", "poly"
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    along = nt.nodes.new("ShaderNodeVectorMath")
+    along.operation = "CROSS_PRODUCT"
+    nt.links.new(geo.outputs["Normal"], along.inputs[0])
+    nt.links.new(tan_u.outputs["Tangent"], along.inputs[1])
+    unit = nt.nodes.new("ShaderNodeVectorMath")
+    unit.operation = "NORMALIZE"
+    nt.links.new(along.outputs["Vector"], unit.inputs[0])
+    intercept = math_node("SUBTRACT", 1.0, sep.outputs["Green"])  # 0 at the root
+    for node in list(nt.nodes):
+        if node.type == "NEW_GEOMETRY" and node is not geo:
+            for link in list(node.outputs["Tangent"].links):
+                nt.links.new(unit.outputs["Vector"], link.to_socket)
+        if node.type == "HAIR_INFO":
+            for link in list(node.outputs["Intercept"].links):
+                nt.links.new(intercept, link.to_socket)
+    clear = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(mask.outputs["Color"], mix.inputs["Fac"])
+    nt.links.new(clear.outputs[0], mix.inputs[1])
+    nt.links.new(shader, mix.inputs[2])
+    nt.links.new(mix.outputs[0], next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL").inputs["Surface"])
+    mat.surface_render_method = "DITHERED"
+    return mat
+
+
+def _cap_material(hair, cap_mode: str, melanin: float, redness: float, fade_mm: float = 15.0) -> bpy.types.Material:
+    """The cut's base cap (its largest loose part, material slot 1): "off" - transparent; "fade" - the hair's dark
+    under-colour, fading out over `fade_mm` from the cap's own edge (its open border), so the hairline and the nape end
+    in skin, not in a painted band (21:0x: the cap showed as a solid band across our lower forehead and the nape)."""
+    import bmesh
+
+    mat = bpy.data.materials.new(f"vf cap ({cap_mode})")
+    nt = mat.node_tree
+    out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+    bsdf = nt.nodes.get("Principled BSDF")
+    clear = nt.nodes.new("ShaderNodeBsdfTransparent")
+    if cap_mode == "off":
+        nt.links.new(clear.outputs[0], out.inputs["Surface"])
+        mat.surface_render_method = "DITHERED"
+        return mat
+    me = hair.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.verts.ensure_lookup_table()
+    bm.faces.ensure_lookup_table()
+    cap = {f.index for f in bm.faces if f.material_index == 1}
+    cap_verts = {v.index for i in cap for v in bm.faces[i].verts}
+    border = {v.index for e in bm.edges if e.is_boundary for v in e.verts if v.index in cap_verts}
+    dist = np.full(len(bm.verts), np.inf)
+    import heapq
+
+    heap = [(0.0, i) for i in border]
+    for i in border:
+        dist[i] = 0.0
+    while heap:  # the distance along the cap from its edge (Dijkstra over its edges)
+        d, i = heapq.heappop(heap)
+        if d > dist[i]:
+            continue
+        v = bm.verts[i]
+        for e in v.link_edges:
+            o = e.other_vert(v)
+            if o.index not in cap_verts:
+                continue
+            nd = d + e.calc_length()
+            if nd < dist[o.index]:
+                dist[o.index] = nd
+                heapq.heappush(heap, (nd, o.index))
+    bm.free()
+    inside = np.clip(np.where(np.isfinite(dist), dist, 1.0) / (fade_mm / 1000.0), 0.0, 1.0).astype(np.float32)
+    attr = me.attributes.get("vf_cap_in") or me.attributes.new("vf_cap_in", "FLOAT", "POINT")
+    attr.data.foreach_set("value", inside)
+    at = nt.nodes.new("ShaderNodeAttribute")
+    at.attribute_name = "vf_cap_in"
+    groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    hs = importlib.import_module("bl_ext.system.juststage.modules.hair.hair_shading")
+    m = -math.log(max(1.0 - melanin, 1e-4))
+    eu, pheo = m * (1.0 - redness), m * redness
+    sc = groom._roughness_scale(hs.ROUGHNESS) * groom.LIVE_EXPONENT
+    under = [0.5 * max(math.exp(-math.sqrt(pheo * p + eu * e) * sc), groom.LIVE_FLOOR)
+             for e, p in zip(groom.EUMELANIN, groom.PHEOMELANIN, strict=True)]
+    bsdf.inputs["Base Color"].default_value = (*under, 1.0)
+    bsdf.inputs["Roughness"].default_value = 0.6
+    ramp = nt.nodes.new("ShaderNodeMath")
+    ramp.operation = "POWER"
+    nt.links.new(at.outputs["Fac"], ramp.inputs[0])
+    ramp.inputs[1].default_value = 1.5
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(ramp.outputs[0], mix.inputs["Fac"])
+    nt.links.new(clear.outputs[0], mix.inputs[1])
+    nt.links.new(bsdf.outputs["BSDF"], mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs["Surface"])
+    mat.surface_render_method = "DITHERED"
+    print("VF CAP fade", fade_mm, "mm,", len(border), "edge points", flush=True)
+    return mat
+
+
+def vfpoly(built: dict, bust: str, fly: float = 0.2, cap_mode: str = "") -> None:
+    """The free cut's own cards (VincentFreelance, CC BY 4.0 - an artist's layout, its textures not free) with an
+    artist's free strand textures (Polytricity's "Hair Cards_FBX", CC BY 4.0 - 4K strips: mask, root / tip / tone, AO)
+    and our hair model: each card a random strip at its own length along the strip (`vf_t`, root at the strip's top) and
+    across it (`vf_s`), `fly` of them a sparse fly-away strip. The two free halves of a card groom together. --alone."""
+    vfhair(built, bust, textured=True)
+    hair = next(o for o in bpy.data.objects if o.name.startswith(f"vf_hair_{bust}"))
+    me = hair.data
+    n = len(me.vertices)
+    t, s, part = np.empty(n, np.float32), np.empty(n, np.float32), np.empty(n, np.int32)
+    me.attributes["vf_t"].data.foreach_get("value", t)
+    me.attributes["vf_s"].data.foreach_get("value", s)
+    me.attributes["vf_part"].data.foreach_get("value", part)
+    rng = np.random.default_rng(9)
+    parts = int(part.max()) + 1
+    dense = rng.integers(0, 6, parts)
+    sparse = rng.integers(6, 11, parts)
+    strip = np.where(rng.random(parts) < fly, sparse, dense)[part]
+    rect = np.array(POLY_STRIPS, np.float32)[strip]
+    margin = 0.06
+    across = margin + (s * 0.5 + 0.5) * (1.0 - 2 * margin)
+    u = rect[:, 0] + across * (rect[:, 1] - rect[:, 0])
+    v = rect[:, 3] - np.clip(t, 0.0, 1.0) * (rect[:, 3] - rect[:, 2])
+    layer = me.uv_layers.get("poly") or me.uv_layers.new(name="poly")
+    loop_v = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_v)
+    layer.data.foreach_set("uv", np.stack([u, v], 1)[loop_v].astype(np.float32).ravel())
+    me.materials[0] = _poly_card_material(pg.SCALP_COLOUR["melanin"], pg.SCALP_COLOUR["redness"])
+    if cap_mode and len(me.materials) > 1:
+        me.materials[1] = _cap_material(hair, "off" if cap_mode == "buzz" else cap_mode, pg.SCALP_COLOUR["melanin"],
+                                        pg.SCALP_COLOUR["redness"])
+    if cap_mode == "buzz":  # the short sides and nape: our own strands, short and close to the scalp, under the cards
+        scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
+        scalp.STYLES["trial buzz"] = {"lengths": ((-0.4, 5.0), (0.0, 6.0), (0.35, 8.0), (0.7, 10.0)), "lift": (1.0, 0.5),
+                                      "sweep": 0.1, "frizz": 0.0004, "noise": 0.0008, "clump": 0.05,
+                                      "flow_down": 0.35, "side_down": 0.4}  # fmt: skip
+        region = scalp.REGION_STYLE  # the roots over the whole scalp, the nape too (short_hedgehog's stop above it)
+        scalp.REGION_STYLE = "basic_short_hair"
+        try:
+            buzz = scalp.make(built["body"], "trial buzz")  # replaces the character's scalp groom (removed)
+        finally:
+            scalp.REGION_STYLE = region
+        pg.colour_scalp(buzz)
+        buzz.hide_render = False
+
+        def alive(o):
+            try:
+                return bool(o.name)
+            except ReferenceError:
+                return False
+
+        built["objects"] = [o for o in built.get("objects", []) if alive(o)] + [buzz]
+    print("VF POLY", bust, parts, "cards on Polytricity's strips,", f"{fly:.0%} fly-aways, cap", cap_mode or "as cut",
+          flush=True)
+
+
 def vfbake(built: dict, bust: str, count: int = 6000, width_mm: float = 7.0) -> None:
     """Hair cards along our own strands (`vfguides`: grown from the free cut's cards) carrying a texture baked from
     those same strands (`_bake_strips`) - the plan's Cards row ("our own baker on Strands2Cards' published method"),
@@ -2411,6 +2629,8 @@ def _vf_card_material(hair, head_centre, alpha_name: str = "") -> bpy.types.Mate
     for name, values in (("vf_t", t), ("vf_s", w)):
         attr = me.attributes.get(name) or me.attributes.new(name, "FLOAT", "POINT")
         attr.data.foreach_set("value", values)
+    part = me.attributes.get("vf_part") or me.attributes.new("vf_part", "INT", "POINT")  # each card's loose part
+    part.data.foreach_set("value", np.unique(lab, return_inverse=True)[1].astype(np.int32))
     mat = bpy.data.materials.new("vf hair (cards)")
     nt = mat.node_tree
     nodes, links = nt.nodes, nt.links
@@ -3916,6 +4136,10 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("vfpoly*"):  # vfpoly*B4[*0.2] (the free cut's cards, Polytricity's free strands) - --alone
+        bits = name.split("*")
+        return lambda built: vfpoly(built, bits[1], *(float(bits[2]),) if len(bits) > 2 else (),
+                                    *(bits[3],) if len(bits) > 3 else ())
     if name.startswith("vfbake2*"):  # vfbake2*B4[*12*0.5] (clump cards, our hair model, our strands' atlas) - --alone
         bits = name.split("*")
         return lambda built: vfbake2(built, bits[1], *(float(bits[2]),) if len(bits) > 2 else (),

@@ -1226,6 +1226,40 @@ booked with just-direct-mocap.
   (2) the colour read at the scans' own 16K resolution (~15 px/mm, two windows) instead of our head tile's 5.7 px/mm.
   Also found: the 11-08 forehead-window numbers (ours pore 3.2 / fold 1.9 against his 1.69 / 1.09) were void - our
   window held hair (ridges 0.024 against today's 0.002).
+- **20:5x, the hair: round 2 of our baked cards (`row_vfbake2_*.png`) worse - bald patches (one strand strip covers ~30%
+  of a card), dark flakes; the automatic card box spent. Then the search the 11-07 one never made (RESEARCH 14.14, "The
+  2026-11-09 card search"): Polytricity's free 4K strand strips (CC BY 4.0) - the textures VincentFreelance's free cut
+  lacks.** Downloaded; `factors vfpoly*B4[*fly]`: the cut's own cards (an artist's layout) on Polytricity's strips (an
+  artist's textures), each card a random strip at its own length, our hair model along the card; running
+  (`batch_vfpoly.sh`, 20% and 35% fly-aways).
+- **21:0x, THE FREE CARD GROOM ON THE GATE (`row_vfpoly_{face,three_quarter,hair_back,profile}.png`): the cut's shape is
+  a real men's cut in every view (the lifted front, layered back) and the cards read as hair - strand texture,
+  layering, no scales or flakes - for the first time in the live view.** 20% and 35% fly-aways alike. The one large
+  fault: the cut's base cap - a solid band across our lower forehead, down the sides and over the nape (our hairline
+  lower than the source head's). Next (`batch_vfcap2.sh`): the cap off, or a dark under-hair tint fading out 15 mm
+  from its edge (`_cap_material`).
+- **21:1x, the cap (`row_vfcap2_*`, `row_vfcap3_*`):** off - the band gone, the cut sits as a real haircut, but the
+  sides and the nape below the cards are bare skin (an undercut look; HD Aaron's tapers to the nape): in the source
+  those short sides were the cap's own painted texture (not free). The fade (a dark tint, 15 mm) paints a dark patch
+  on the nape - worse. Next (`batch_vfbuzz.sh`): the cap off and our own short strands under the cards (a trial style
+  "trial buzz", 5-10 mm close to the scalp - short strands render like our stubble in the live view).
+- **21:2x, the short layer (`row_vfbuzz_*`):** the temple now reads as a short fuzzy side, not bare skin; but the layer
+  stops above the nape - its roots come from MakeHuman's `short_hedgehog` region, which ends there. Next
+  (`batch_vfbuzz2.sh`): the roots over `basic_short_hair`'s region (the whole scalp, the nape too). (The first run of the
+  layer failed: growing it removed the gate's scalp groom while the render's list still held it - fixed.)
+- **21:2x, the whole-scalp short layer (`row_vfbuzz2_*`): the same as `short_hedgehog`'s (145,707 strands both) - every
+  MakeHuman style region stops above the nape; the layer reads as sparse short fuzz at the temples. The hair box spent.
+  THE HAIR'S VERDICT, REVISED: the live view's "can't" (18:1x) is DISPROVEN - a free card groom exists and reads as
+  hair (VincentFreelance's cut, CC BY 4.0, + Polytricity's strand strips, CC BY 4.0, + our hair model,
+  `factors vfpoly*B4`). Not matched yet: the short sides and nape - the cut's painted cap is not free; HD Aaron's own
+  cut has a strand-textured cap (`Hair_Clap_Transparency`) - the same can be made from the free strips (work, not an
+  asset); the cut fitted per head (a lower hairline than its source bust's); colour and highlights (the gate's man is
+  dark brown, HD Aaron light). Into the product it changes Q-HAIR-7 ("cards from MakeHuman's CC0 card meshes and the 85
+  CC0 card alphas") - the user's decision; until then trial tooling only.**
+- **THE PROOF'S VERDICT, REVISED 2026-11-09 21:2x: no part of the character is blocked by a missing free asset - both
+  "can't"s of 18:1x are disproven (the face's mid-scale relief: in the product; the live-view hair: a free card groom
+  on trial). It is not CC5 quality yet: the remaining gaps are work - the face's fine crease net (0.3-1.5 mm, 0.5 of
+  his), the hair's short sides (a textured cap), the remainders in the table.**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
@@ -1267,7 +1301,7 @@ booked with just-direct-mocap.
 | Brows | close | dark brown 0.8 / 0.3 (11-09; near-black read as a grey bar on women); a woman's 0.7 of the hairs, live by the gender slider (`DENSITY_BY_SEX`); the gate shows a character's own brows | the live view's strand haze -> cards; the blocky shape beside his soft brows |
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
-| Scalp hair | **live view: CAN'T with the free pieces in hand (11-09 18:1x)**; film: our strands read as real hair | the hairline one ring | an artist-authored card groom with its textures (the free cut's are not free; CC0-sheet cards read scaly), or a live-view strand renderer; the film's coverage (temples, hairline) is grooming |
+| Scalp hair | **live view: REACHED in kind with free assets (11-09 21:2x; was "can't")** - VincentFreelance's cut (CC BY) + Polytricity's strand strips (CC BY) + our hair model read as hair; film: our strands | the hairline one ring | the short sides and nape (the cut's painted cap is not free: a strand-textured cap from the same strips, CC5's `Hair_Clap` way - work, not an asset); the cut fitted per head; colour and highlights |
 | Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); a soft sheen (`LIP_ROUGHNESS, LIP_COAT` 0.4 / 0.2, 11-09 midday - not clay, not cellophane); the lines thin creases (`LIP_CREASE`, 15:3x - no crepe crinkle); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | the upper lip a uniform coral against his red deepest at the line; his few deep furrows and fine cells |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`); the tear film's fleck on the ledge gone (`TEAR_FADE_OUT`, 11-09) | the lower lid's rim: a wide ledge with its colour stretched (a thinner margin; the colour unstretched by a static stretch map); the closed lid's streaks (expression-driven detail); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
@@ -1276,7 +1310,7 @@ booked with just-direct-mocap.
 | Hands | close | - | tone (a setting) |
 | Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out; the neck / chest patch gone on every character (11-09) | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out`; the scans' edge faded | definition (MakeHuman's CC0 normal as a slider, its seams) |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
-| **Whole character** | **not CC5 quality yet (11-09 20:3x)**; the face relief's "can't" disproven (free route in the product) | the above | the live-view hair (cards: round 2 on trial - clump cards with our hair model on our strands' atlas) and the remainders above |
+| **Whole character** | **no part blocked by a missing free asset (11-09 21:2x)** - both "can't"s disproven; not matched yet | the above | work items: the face's fine crease net, the hair's short sides (a textured cap) and its product route (changes Q-HAIR-7 - the user's), the rest's remainders above |
 
 ### The evening's verdicts (judged by eye, the user's bar; each with what's missing)
 

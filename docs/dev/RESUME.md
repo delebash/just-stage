@@ -73,6 +73,13 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   20:4x: **the face relief verified and committed (532cf98; unit 45, tools 60, Blender 209 passed) - the face's
   "can't" is disproven** (the working doc's verdict table). Running: hair round 2 (`batch_vfbake2.sh`). The face's
   next candidates (after the hair): the fine crease net - the dot filter at 1 mm2, the scans' own 16K colour.
+  21:0x: **the hair - a free card groom reads as hair in the live view**: VincentFreelance's cut (CC BY) + Polytricity's
+  4K strand strips (CC BY, `.dev/downloads/polytricity_hair_2026-11-09/`) + our hair model (`factors vfpoly*B4`);
+  the cap's band being fixed (`batch_vfcap2.sh`).
+  21:2x: **THE VERDICT REVISED: no part is blocked by a missing free asset - both "can't"s disproven** (the working
+  doc's 21:2x). Not CC5 quality yet - work left: the hair's short sides (a strand-textured cap from Polytricity's strips,
+  as HD Aaron's `Hair_Clap`), the face's fine crease net (dot filter 1 mm2; the scans' 16K colour). Waiting for the
+  user: the hair's product route changes Q-HAIR-7 (theirs).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured
