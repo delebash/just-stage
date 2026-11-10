@@ -236,18 +236,6 @@ SCANS = {
         "credit": '"HSR0161-Body-002" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
         "(CC BY 4.0)",
     },
-    "hutubs_pp1": {
-        # HUTUBS (TU Berlin's HRTF database): a head's 3D mesh, SHAPE ONLY (no colour) - for its ear (the plan's
-        # Q-EAR-1: real ears as the mixer's identities; hm08's concha a shallow dish, a real one a pit to the canal)
-        "source": "E:/Dev/3D/just-stage/.dev/downloads/hf_samples/hutubs_meshes/3D head meshes/pp1_3DheadMesh.ply",
-        "textures": {"*": None},
-        "up": "Z",  # its PLY: Z up, X forward, the origin between the ear canals (read 2026-11-10)
-        "shape_only": True,
-        "bald": True,
-        "sex": "u",  # not in the mesh files (HUTUBS's subject table not on disk)
-        "stubble": False,
-        "credit": '"HUTUBS - Head-related Transfer Function Database of the TU Berlin", pp1 head mesh (CC BY 4.0)',
-    },
 }
 
 
@@ -260,6 +248,21 @@ def reference(name: str):
 
     own = Path(OUT) / name / "head_export.npz"
     return own if own.exists() else Path(OUT) / "head_export.npz"
+
+
+#: HUTUBS (TU Berlin's HRTF database, CC BY 4.0): 58 heads' 3D meshes, SHAPE ONLY (no colour) - for their ears (the
+#: plan's Q-EAR-1: real ears as the mixer's identities - the outline's variety; the concha's pit is hm08's topology,
+#: 2026-11-10). Each PLY Z up, X forward, the origin between the ear canals (read 2026-11-10); the subjects' sex is not
+#: in the mesh files ("u"); run the route only to the fit (no bake, skin or layers: a layers.npz would put a grey scan
+#: into every composition's fill)
+HUTUBS = "E:/Dev/3D/just-stage/.dev/downloads/hf_samples/hutubs_meshes/3D head meshes/"
+for _ply in sorted(__import__("pathlib").Path(HUTUBS).glob("pp*_3DheadMesh.ply")):
+    _pp = _ply.name.split("_")[0]
+    SCANS[f"hutubs_{_pp}"] = {
+        "source": str(_ply).replace("\\", "/"), "textures": {"*": None}, "up": "Z", "shape_only": True, "bald": True,
+        "sex": "u", "stubble": False,
+        "credit": f'"HUTUBS - Head-related Transfer Function Database of the TU Berlin", {_pp} head mesh (CC BY 4.0)',
+    }
 
 
 def texture_for(scan: dict, material: str):

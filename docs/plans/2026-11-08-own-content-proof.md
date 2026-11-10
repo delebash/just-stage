@@ -1423,6 +1423,11 @@ booked with just-direct-mocap.
   failures with the lids). VERDICT: the concha's depth is the head's topology - the same escalation as the lid (the
   head alone on a new topology, Q-BASE-4, the user's). Ear targets (Q-EAR-1) stay worth building for the outline's
   variety, not for this gap. The trial identity removed from the product's folder (checked: the nine HSRD ones).**
+- **02:0x, Q-EAR-1 (approved, plan step 4) under way - real ears for the outline's variety:** `scan_list` lists all 58
+  HUTUBS heads by a loop (`hutubs_pp<N>`, shape only); `batch_hutubs.sh` fits each through the route to the fit only
+  (~1.5 min a head, the processor; ~1.5 h). Then: `make_identities` (scratch first, then the product's folder), an
+  ATTRIBUTION row (HUTUBS, CC BY 4.0) in the same change, the mixer's ears with two or more identities (the likeness
+  rule), the ear view on a few, the suites.
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
