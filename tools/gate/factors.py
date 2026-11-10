@@ -2171,6 +2171,64 @@ def _cap_material(hair, cap_mode: str, melanin: float, redness: float, fade_mm: 
              for e, p in zip(groom.EUMELANIN, groom.PHEOMELANIN, strict=True)]
     bsdf.inputs["Base Color"].default_value = (*under, 1.0)
     bsdf.inputs["Roughness"].default_value = 0.6
+    if cap_mode == "strands":  # short hair on the cap: stretched noise down the head, our hair model along it
+        coords = nt.nodes.new("ShaderNodeTexCoord")
+        mapping = nt.nodes.new("ShaderNodeMapping")
+        mapping.inputs["Scale"].default_value = (2600.0, 2600.0, 160.0)  # ~0.4 mm across, ~6 mm along, per metre
+        nt.links.new(coords.outputs["Object"], mapping.inputs["Vector"])
+        noise = nt.nodes.new("ShaderNodeTexNoise")
+        noise.inputs["Scale"].default_value, noise.inputs["Detail"].default_value = 1.0, 2.0
+        nt.links.new(mapping.outputs["Vector"], noise.inputs["Vector"])
+        cut = nt.nodes.new("ShaderNodeMapRange")
+        cut.inputs["From Min"].default_value, cut.inputs["From Max"].default_value = 0.42, 0.56  # denser
+        nt.links.new(noise.outputs["Fac"], cut.inputs["Value"])
+        shade = nt.nodes.new("ShaderNodeVectorMath")
+        shade.operation = "SCALE"
+        shade.inputs[0].default_value = [1.2 * c for c in under]  # darker than the top (under is half its colour)
+        # darker toward the cap's own edge and in the gaps: the cut's under-hair, not ginger fuzz on skin
+        nt.links.new(_mul(nt, _mul(nt, noise.outputs["Fac"], 1.2), at.outputs["Fac"]), shade.inputs["Scale"])
+        geo = nt.nodes.new("ShaderNodeNewGeometry")
+        down = nt.nodes.new("ShaderNodeVectorMath")  # the head's down laid onto the surface: d - (d.n) n
+        down.operation = "PROJECT"
+        down.inputs[0].default_value = (0.0, 0.0, -1.0)
+        nt.links.new(geo.outputs["Normal"], down.inputs[1])
+        along = nt.nodes.new("ShaderNodeVectorMath")
+        along.operation = "SUBTRACT"
+        along.inputs[0].default_value = (0.0, 0.0, -1.0)
+        nt.links.new(down.outputs["Vector"], along.inputs[1])
+        unit = nt.nodes.new("ShaderNodeVectorMath")
+        unit.operation = "NORMALIZE"
+        nt.links.new(along.outputs["Vector"], unit.inputs[0])
+        hair_shader = hs.build(nt, shade.outputs["Vector"], world_mean=hs.world_mean(bpy.context.scene))
+        for node in list(nt.nodes):
+            if node.type == "NEW_GEOMETRY" and node is not geo:
+                for link in list(node.outputs["Tangent"].links):
+                    nt.links.new(unit.outputs["Vector"], link.to_socket)
+            if node.type == "HAIR_INFO":
+                for link in list(node.outputs["Intercept"].links):
+                    nt.links.new(noise.outputs["Fac"], link.to_socket)
+        # not across the forehead: the cap's front (its normal facing forward, -Y) out - the face's hairline is the
+        # cards' (22:5x: a pale band of fuzz across the forehead)
+        front = nt.nodes.new("ShaderNodeSeparateXYZ")
+        nt.links.new(geo.outputs["Normal"], front.inputs[0])
+        not_front = nt.nodes.new("ShaderNodeMapRange")
+        not_front.inputs["From Min"].default_value, not_front.inputs["From Max"].default_value = -0.75, -0.35
+        nt.links.new(front.outputs["Y"], not_front.inputs["Value"])
+        cover = _mul(nt, _mul(nt, cut.outputs["Result"], at.outputs["Fac"]), not_front.outputs["Result"])
+        # the gaps: the dark under-colour (the scalp seen through clipped hair), fading with the cap - not bare skin
+        # (22:53: skin between the strands read orange at the nape)
+        gaps = nt.nodes.new("ShaderNodeMixShader")
+        nt.links.new(_mul(nt, _mul(nt, at.outputs["Fac"], not_front.outputs["Result"]), 0.75), gaps.inputs["Fac"])
+        nt.links.new(clear.outputs[0], gaps.inputs[1])
+        nt.links.new(bsdf.outputs["BSDF"], gaps.inputs[2])
+        mix = nt.nodes.new("ShaderNodeMixShader")
+        nt.links.new(cover, mix.inputs["Fac"])
+        nt.links.new(gaps.outputs[0], mix.inputs[1])
+        nt.links.new(hair_shader, mix.inputs[2])
+        nt.links.new(mix.outputs[0], out.inputs["Surface"])
+        mat.surface_render_method = "DITHERED"
+        print("VF CAP strands, fading", fade_mm, "mm,", len(border), "edge points", flush=True)
+        return mat
     ramp = nt.nodes.new("ShaderNodeMath")
     ramp.operation = "POWER"
     nt.links.new(at.outputs["Fac"], ramp.inputs[0])

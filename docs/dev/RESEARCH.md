@@ -2682,6 +2682,11 @@ working method alreayd?"; notes, 41 searches logged: [`../plans/2026-10-30-resea
   `xcr:Position`, `brown3` distortion, `FocalLength35mm` 61.5-167.4; 109 of 112 posed) - the manifest's separate
   `Reality_Capture.zip` is not on the server (404). The scan's OBJ is z-up metres (0-1.853 m), the cameras within
   +-2.6 m at 0.2-2.5 m height.
+  - **HSR0081's record is wrong about its sex** (*read 2026-11-09*, `.dev/downloads/hsrd100/HSR0081-Body-054/x/
+    person_metadata.json`): "Sex": "Male", "Ethnicity": "Asian", but "AltID01": "HSR0081-25-F-H", "Alias": "Sharon",
+    and the pose record "Lower Body Clothing": "Skirt", "Footwear": "Heels"; its colour map shows a woman with long hair.
+    `scan_list.py` tagged it "m" from the record - now "f". Scan man C's recorded composition mixes it (mid 0.35):
+    a woman's blotchiness and relief in a man's skin - open (the composition is the record's; a rebuild).
   - **Sapiens2's normals of his colour** (`sapiens2_1b_normal`, the face cut upright from our head tile, one 1024 x 768
     window): forehead lines, crow's feet, the creases under the eyes and the nose-to-mouth folds all read as relief
     (`.dev/gate/wrinkles/sap40/normals.png`). **The Sapiens2 License, read at its source**

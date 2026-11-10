@@ -1287,6 +1287,29 @@ booked with just-direct-mocap.
   The hair rounds end here: the nape is this cut's undercut meeting that rule - the routes are a cut with a longer
   back (the free collection's 13 other busts, HD Aaron's slick back is longer) or the mask's head faces widened
   (a product change); neither is a missing asset.**
+- **22:4x, the face's fine net from the 16K colour - ruled out by look (`scratchpad/photorelief/tiles_cmp.jpg`):** a pore
+  tile from HSR0081's own 16K colour (forehead square, ~9 px/mm - not the 15 assumed; Sapiens2, made the Ten24 tile's
+  way: `.dev/gate/pores/hsr81_fh.png`) shows horizontal streaks and a few strong repeating dots - her forehead colour is
+  smooth, with almost no pore-level contrast, so the model fills in texture of its own. The scans' photos don't hold
+  the fine net at this scale; HD Aaron's comes from a 388 px/mm scanned micro normal (CC5's, paid). The route left is
+  our own generated microrelief (11-07's layered tile, `make_microrelief.py`) - work. Also found: HSRD-100's HSR0081
+  is a woman though its record says male (RESEARCH 14.9) - `scan_list.py` tagged "f"; Scan man C's recorded
+  composition mixes her at 0.35 (open).
+- **22:4x, the cap shaded as short hair (`vfpoly*B4*0.2*strands`, `row_capstrands_*`; CC5's `Hair_Clap` way, made
+  procedurally: a noise stretched down the head, cut to coverage, in our hair model along the head's down, fading over
+  the cap's last 15 mm): the nape and the sides now read as a short-clipped taper - the best of the cap routes** (off:
+  bare; fade: a painted patch; our short strands: sparse, the nape bare). Faults: the strands coarse and ginger against
+  the dark top, too sparse. Next: finer (0.4 mm), denser, darker toward the edge and in the gaps (`batch_capstrands2.sh`).
+  22:50 (`row_capstrands2_*`): finer and denser, but still orange-brown against the dark top (the strand colour twice
+  the under-colour), and a pale band of fuzz across the forehead (the cap's front). Next: the strands 1.2x the under-
+  colour (darker than the top, as clipped hair reads), the cap's forward-facing part out (`batch_capstrands3.sh`).
+  22:53 (`row_capstrands3_*`): the forehead band gone (the face view clean); the nape still orange-brown - the skin
+  showing between the strands, not their colour. Round 4, the cap box's last (`batch_capstrands4.sh`): the gaps the
+  dark under-colour at 0.75 (the scalp through clipped hair), fading with the cap.
+  22:57 (`row_capstrands4_*`): **the back reads as a dark clipper fade - the closest to a real short taper of every
+  cap route**; in profile the patch behind the ear still reads a little painted (its edge). The cap box spent: kept as
+  the trial's best (`vfpoly*B4*0.2*strands`). The hair's remainders: the cap's edge in profile, the cut fitted per
+  head, colour and highlights against his; into the product: Q-HAIR-7, the user's.
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
@@ -1328,7 +1351,7 @@ booked with just-direct-mocap.
 | Brows | close | dark brown 0.8 / 0.3 (11-09; near-black read as a grey bar on women); a woman's 0.7 of the hairs, live by the gender slider (`DENSITY_BY_SEX`); the gate shows a character's own brows | the live view's strand haze -> cards; the blocky shape beside his soft brows |
 | Lashes | close (23:5x) - no kinked wire | the upper lashes turned whole out of the lid (`lashes._cleared`; 68% -> 3-7.5% with a joint over 20 deg) | the lower lashes' kinks; the central clump's sticks; the strand haze (cards) |
 | Stubble | close (01:3x) | 100 a cm2 in patches (`PATCHY` 0.8); the chin's skin under it smoother (pores x0.6) | his salt-and-pepper (age); the beard region higher on the cheeks |
-| Scalp hair | **live view: REACHED in kind with free assets (11-09 21:2x; was "can't")** - VincentFreelance's cut (CC BY) + Polytricity's strand strips (CC BY) + our hair model read as hair; film: our strands | the hairline one ring | the short sides and nape (the cut's painted cap is not free: a strand-textured cap from the same strips, CC5's `Hair_Clap` way - work, not an asset); the cut fitted per head; colour and highlights |
+| Scalp hair | **live view: REACHED in kind with free assets (11-09 21:2x; was "can't")** - VincentFreelance's cut (CC BY) + Polytricity's strand strips (CC BY) + our hair model read as hair; the cap shaded as clipped hair gives the short sides a fade (22:57); film: our strands | the hairline one ring | the cap's edge in profile; the cut fitted per head; colour and highlights; the product route (Q-HAIR-7, the user's) |
 | Lips | close (02:0x) | soft patchy lines (`LIP_LINES` 1.8 / 0.15 mm / 8 / 1.0 - the corduroy gone); the seam darker (`_seam_layer` 1.5); the upper lip deeper red (`_upper_lip_layer`); a soft sheen (`LIP_ROUGHNESS, LIP_COAT` 0.4 / 0.2, 11-09 midday - not clay, not cellophane); the lines thin creases (`LIP_CREASE`, 15:3x - no crepe crinkle); the lining out of the corners' crease (`CORNER_FADE`, 04:2x - no red glow) | the upper lip a uniform coral against his red deepest at the line; his few deep furrows and fine cells |
 | Eyes | close (23:5x) | the surround darker (`maps._eye_layer`); the upper lashes smooth (`lashes._cleared`); the tear film's fleck on the ledge gone (`TEAR_FADE_OUT`, 11-09) | the lower lid's rim: a wide ledge with its colour stretched (a thinner margin; the colour unstretched by a static stretch map); the closed lid's streaks (expression-driven detail); the lower lashes' kinks; the strand haze (cards) |
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
@@ -1559,3 +1582,5 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
 - Batch scripts are written whole with the Write tool, never patched by a sed on a pattern with `\|` (2026-11-09 21:25:
   a sed meant for one grep line matched every line of `batch_vfcapbuzz.sh` and ran garbage - nothing rendered; caught
   by reading the output, rerun).
+- Check a scan's sex and age against its own pictures as well as its record (2026-11-09: HSRD-100's HSR0081 record
+  says "Male" while its ID, alias, clothes and colour map say a woman - our tag copied the record; Scan man C mixes her).

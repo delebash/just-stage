@@ -191,12 +191,14 @@ SCANS = {
         "(CC BY 4.0)",
     },
     "hsr0081": {
-        # Male, Asian, 25, Type 3 - Light Brown Skin; expression Neutral
+        # Female, 25, Type 3 - Light Brown Skin; expression Neutral. Its record says "Sex": "Male", "Ethnicity": "Asian",
+        # but the same record's "AltID01" is "HSR0081-25-F-H", its alias "Sharon", and the scan is a woman in a skirt and
+        # heels with long hair (its colour map, seen 2026-11-09) - the record's sex field is wrong; tagged by the scan
         "source": H + "HSR0081-Body-054/x/HSR0081-Body-054_LOD0.obj",
         "textures": {"*": H + "HSR0081-Body-054/x/HSR0081-Body-054_LOD0_u0_v0_diffuse.png"},
         "up": "Z",  # its OBJ: Z up, metres (measured 2026-11-05)
         "bald": False,
-        "sex": "m",
+        "sex": "f",
         "stubble": False,
         "credit": '"HSR0081-Body-054" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
         "(CC BY 4.0)",
