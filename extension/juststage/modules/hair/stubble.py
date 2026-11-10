@@ -31,7 +31,10 @@ NAME = "JustStage stubble"
 #: of the hairs grey (the first pass - 60 a cm2, 1.5 mm, straight black - read as scattered black lines over the cheeks)
 #: 2026-11-08, judged by eye at full resolution beside HD Aaron (`.dev/gate/parts/2026-11-08q`, the user's bar): at 160
 #: our stubble read as a dense dark mat over the lower face, his short and sparse; at 100 it reads close to his
-DENSITY = 100.0  # hairs a cm2
+#: 2026-11-10, one factor at a time beside him (`.dev/gate/parts/2026-11-10stubble`, `stubble5.png`): with the patches
+#: of 11-09 (PATCHY 0.8) 220 at the shipped 25% grey reads like his coverage, not a mat; 50% grey alone only lightened
+#: it (the grey share is a character's age)
+DENSITY = 220.0  # hairs a cm2
 #: 2026-11-06, the clean-input gate's cheek view: HD Aaron's Stubble hairs 2.4-4.2 mm, lying close along the skin,
 #: a third of them white - ours (1 mm, rising 45 degrees, grey at melanin 0.25) read as scattered dots, no white
 #: Gate run 10's lips view: ours thick (0.1 mm), sparse-looking, every way - each strand stood out (chin share >8 L*
@@ -41,6 +44,10 @@ RADIUS, TIP = 0.00003, 0.7  # m at the root; a cut hair's blunt end
 RISE = 22.0  # degrees off the skin at the root
 CURL = 12.0  # degrees the hair turns along its length (each its own way)
 GREY_SHARE, GREY_MELANIN = 0.25, 0.12  # the grey ones (run 7: a third at 0.04 read as a white beard; his mostly dark)
+#: GREY_SHARE is the share at HD Aaron's age (~40: MakeHuman's age macro ~0.615 - 0.5 is 25, 1.0 is 90), scaled by
+#: the character's age: none at 25, x2.8 at 90 (2026-11-10: a fixed quarter read as a pale fuzz on the dark-skinned
+#: 25-year-old Muscular man; with none his stubble read dark and natural - `.dev/gate/parts/2026-11-10ship3`)
+GREY_BY_AGE = ((0.5, 0.615, 1.0), (0.0, 1.0, 2.8))
 NECKLINE = (0.155, 0.7, 0.03)  # m below the eyes under the chin; its rise a metre back; from this far behind them
 GROWTH = np.array([0.0, 0.5, -1.0])  # down and back (-Y is the face's front)
 FLARE = 0.25  # the cheeks' outward share
@@ -138,8 +145,15 @@ def lip_points(body: bpy.types.Object) -> np.ndarray:
     return co[lips] @ m[:3, :3].T + m[:3, 3]
 
 
-def strands(body: bpy.types.Object, seed: int = 5, density: float = DENSITY, length_mm: float = LENGTH):
-    """The stubble's hairs on the body's current shape, world space: (strands, radii, melanin per strand)."""
+def grey_share(body: bpy.types.Object) -> float:
+    """The share of grey hairs for the character's age (GREY_SHARE x GREY_BY_AGE)."""
+    return float(GREY_SHARE * np.interp(body.juststage.age, *GREY_BY_AGE))
+
+
+def strands(body: bpy.types.Object, seed: int = 5, density: float = DENSITY, length_mm: float = LENGTH,
+            grey: float | None = None):
+    """The stubble's hairs on the body's current shape, world space: (strands, radii, melanin per strand); `grey` the
+    grey share (by default the character's age's, `grey_share`)."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 
@@ -213,17 +227,18 @@ def strands(body: bpy.types.Object, seed: int = 5, density: float = DENSITY, len
     steps = np.concatenate([np.zeros((len(roots), 1, 3)), d[:, :-1] * (lengths / (POINTS - 1))[:, None, None]], axis=1)
     found_strands = roots[:, None, :] - 0.00005 * n[:, None, :] + np.cumsum(steps, axis=1)
     radii = [RADIUS * np.interp(t, [0.0, 1.0], [1.0, TIP])] * len(roots)
-    grey = rng.uniform(size=len(roots)) < GREY_SHARE
+    grey = rng.uniform(size=len(roots)) < (grey_share(body) if grey is None else grey)
     melanin = list(np.clip(np.where(grey, GREY_MELANIN, MELANIN) + rng.normal(0.0, MELANIN_SPREAD, len(roots)), 0.0, 1.0))
     return list(found_strands), radii, melanin
 
 
-def make(character: bpy.types.Object, seed: int = 5, density: float = DENSITY, length_mm: float = LENGTH):
+def make(character: bpy.types.Object, seed: int = 5, density: float = DENSITY, length_mm: float = LENGTH,
+         grey: float | None = None):
     """JustStage's stubble on the character, replacing its beard (part "beard")."""
     from . import groom
 
     groom._check_surface(character)
-    found, radii, melanin = strands(character, seed, density, length_mm)
+    found, radii, melanin = strands(character, seed, density, length_mm, grey)
     rest, uvs = lashes.to_rest(character, found)
     curves = bpy.data.hair_curves.new(NAME)
     curves.add_curves([POINTS] * len(rest))

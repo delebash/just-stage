@@ -1822,7 +1822,46 @@ booked with just-direct-mocap.
   - `make_wrinkles.py --only crows --split --name`, new options: the left side's lines in red, the right's in green - x
   each side's smile, a bump at CROWS_DEPTH 1.2 mm before the coat's normal link); test
   `test_the_smile_folds_the_eyes_outer_corners`. Checked in the product by `batch_crowsprod.sh` (after the stubble's
-  one-factor test, `batch_stubble2.sh`: density alone 220 at 25% grey; grey alone 50% at 100). Seen in the end
+  one-factor test, `batch_stubble2.sh`: density alone 220 at 25% grey; grey alone 50% at 100).
+- **12:12, THE STUBBLE ONE FACTOR AT A TIME (`stubble5.png`: product 100 / 25% | 220 / 25% | 100 / 50% | 220 / 50% / 2.4
+  mm | his): density 220 alone gives his fuller coverage and doesn't read as the 11-08 mat (the 11-09 patches changed
+  that); 50% grey alone only lightens it (an age setting). INTO THE PRODUCT (mine): `stubble.DENSITY` 100 -> 220
+  (`apply_stubble.py`, applied between batches) - `batch_ship_1110d.sh`: the library (backup `library_2026-11-10ship3`),
+  the three men's lips and face beside his, every suite. STUBBLE: CLOSE, near equal (his finer, whiter hairs - age).**
+- 12:12: committed 82b8c2f - the brows, the lips' soft border, the smile's crow's feet (tools 67, Blender 216 + skin
+  maps 29 after the chain test's update).
+- **12:16, THE CROW'S FEET IN THE PRODUCT (`row_cp_eye_smile.png`, `row_cp_eye.png`; `.dev/gate/parts/2026-11-10crowsprod`,
+  the library's man, no factor): the smile view shows fine crow's feet at the outer corner, the neutral eye none - the
+  drivers work. His deeper, with the skin bunching (shape). SMILE / EXPRESSION WRINKLES: CLOSE in the product.**
+- **12:2x, found: the library's hair ASSETS ("JustStage brows", "JustStage stubble" - Hair/Brows, Hair/Beards) are built by
+  `build_library.py -- hair`, which neither ship batch ran: characters regrow their own brows when built (so 82b8c2f's
+  brows reached them), but the assets a user applies still held the old brows and stubble; their descriptions were stale
+  too ("800 each", "~60 a cm2" - now read from `brows.COUNT / FINE`, `stubble.DENSITY`). `batch_libhair.sh` rebuilds
+  the hair section after `batch_ship_1110d.sh`.**
+- **12:3x, found at 220 (`row_s3_lips.png`): the dark-skinned Older and Muscular men's stubble read as a PALE FUZZ - one
+  factor (`musc_grey.png`: the Muscular man, 220, grey 0 against 0.25): the fixed 25% grey hairs (melanin 0.12) are
+  it; with none his stubble reads dark and natural. He is 25 (age macro 0.5) - 25% grey is HD Aaron's at ~40. Decision
+  (mine, attacked: the grey share was meant as an age setting but was a constant): `stubble.grey_share(body)` =
+  GREY_SHARE x interp(age; 0.5 / 0.615 / 1.0 -> 0 / 1 / 2.8) - none at 25, his quarter at ~40; trials still pass a
+  share (`stubble.make(..., grey=)`); test `test_the_stubble_greys_with_age`. Known limit: the library's stubble asset
+  is grown on the 25-year-old default man (no grey), and an asset keeps its hairs' colour when applied. Applied by
+  `batch_ship_1110e.sh` (after `batch_ship_1110d.sh`'s suite), which then rebuilds the library's hair assets (replacing
+  `batch_libhair.sh`), renders the three men's lips, runs every suite.**
+- The user, 12:3x: a 10-minute self-check (CronCreate 34c6c5b5): working, not waiting on results; adversarial, no
+  flip-flops; decide without waiting; Edge open-use-close; no loops - prove / disprove each part and move on.
+- **12:44, the stubble at 220 VERIFIED (`batch_ship_1110d.sh`: unit 45, tools 67, Blender 217; the three men's lips
+  `row_s3_lips.png`); grey by age applied and running (`batch_ship_1110e.sh`). Edge left open by a force-kill that it
+  restored from - closed properly (window closed, then leftovers) and rechecked a minute later: none (memory
+  `browser-launch`). Queued: the nails' outline (`batch_nailgeo.sh`: `naildisp*1*0*0` dome only, `levels*3`), then
+  the eye on ICT's head WITH OUR SKIN (`batch_head6.sh`: head6 - ICT's lids kept 8-15 mm so the brow stays on our
+  ridge, the 3 mm crease, our eyes in its sockets).**
+- **12:53, grey by age (`row_s4_lips.png`): the 25-year-old Average and Muscular men dark stubble lying in the skin, the
+  Older man (age 0.85) salt-and-pepper; the library's hair assets rebuilt (brows 4,000 hairs - 1,200 + 800 a brow;
+  stubble 27,328). Unit 45, tools 67 passed; the Blender suite running.**
+- **13:0x, THE LIPS' BOX SPENT (no more trials - the user: "dont get stuck in a loop"): colour (mean) matches; the border
+  soft in the product; the fine crinkle tried three ways (11-09 `lipcrease` read as crepe paper, `lipset`, today's
+  deeper lines) - LIPS: CLOSER, NOT EQUAL; the route left is a scanned lip relief at his resolution (the scans' colour is
+  ~5.7 texels a mm at the lips - too coarse).** Seen in the end
   gate's nails view (`gate1110/row_nails.png`): **the NAILS are not proven by eye** - our plate reads pasted on (a
   darker drawn rim, no cuticle fold rolling over it) and the fingertip's skin carries a coarse red speckle; his nails
   sit under a soft proximal fold on smooth warm skin (the views' framing differs). Queued after the face's parts;

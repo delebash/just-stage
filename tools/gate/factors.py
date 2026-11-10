@@ -3705,12 +3705,7 @@ def stubbletrial(built: dict, density: float, grey: float, length: float) -> Non
     2.8) - step 1's fault: a dense dark mat over the lower face against his short, sparse, greying stubble. A new groom:
     --alone."""
     stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
-    old = stubble.GREY_SHARE
-    stubble.GREY_SHARE = grey
-    try:
-        stubble.make(built["body"], density=density, length_mm=length)
-    finally:
-        stubble.GREY_SHARE = old
+    stubble.make(built["body"], density=density, length_mm=length, grey=grey)  # the share given, not the age's
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("STUBBLE", density, "a cm2, grey", grey, "length", length, flush=True)
@@ -3869,6 +3864,27 @@ def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey:
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("BROWS", int(count), "coarse,", int(fine), "fine at", fine_melanin, "grey", grey, flush=True)
+
+
+def build_(built: dict, muscle: float, weight: float) -> None:
+    """The gate's man's build set by the app's own sliders (`juststage.body.set_slider` muscle, weight) - 2026-11-10: the
+    torso's gap beside HD Aaron read as his athletic build, which is a slider setting; this judges our skin at a like
+    build. A shape: --alone."""
+    api = importlib.import_module("bl_ext.system.juststage.api")
+    body = built["body"]
+    for slider, value in (("muscle", muscle), ("weight", weight)):
+        api.run("juststage.body.set_slider", character=body.juststage.character_id, slider=slider, value=value)
+    print("BUILD muscle", muscle, "weight", weight, flush=True)
+
+
+def levels(built: dict, render: float) -> None:
+    """The body's render subdivision level (`build.DEFAULT_LEVELS`, 2) set - 2026-11-10: the nail plate pressed in by the
+    nail bed's Displace (after the levels) reads as a polygon outline at the nails view; is the level the cause?"""
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    body = built["body"]
+    view = body.modifiers[build.LEVELS].levels
+    build.set_levels(body, int(render), min(view, int(render)))
+    print("LEVELS render", int(render), flush=True)
 
 
 def browshape(built: dict, widen: float, rise: float, fine: float) -> None:
@@ -4810,6 +4826,10 @@ def exprset(built: dict, expression: str, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("build*") and "+" not in name:  # build*0.8*0.45 (muscle, weight sliders) - --alone
+        return lambda built: build_(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("levels*") and "+" not in name:  # levels*3 (the body's render subdivision) - --alone
+        return lambda built: levels(built, float(name.split("*", 1)[1]))
     if name.startswith("browshape*") and "+" not in name:  # browshape*0.9*8*800 (widen, rise deg, fine) - --alone
         return lambda built: browshape(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("msahair") and "+" not in name:  # msahair[*0.9] (MotionStudioArts' CC BY hair, melanin) - --alone

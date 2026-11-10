@@ -184,7 +184,8 @@ if "hair" in WANTED:
     print("LIBRARY", out.path, flush=True)
     brows.make(bpy.data.objects[man.object])  # rec 8: one hair per follicle (modules/hair/brows.py)
     out = api.run("juststage.library.save", character=man.character, catalog="Hair/Brows", name="JustStage brows",
-                  description="Both brows as single hairs (800 each), flowing up at the head and along to the tail",
+                  description=f"Both brows as single hairs ({brows.COUNT} coarse and {brows.FINE} fine each), flowing up "
+                  "at the head and along to the tail",
                   licence="CC0-1.0", provenance="JustStage modules/hair/brows.py (region from MakeHuman's CC0 "
                   "wild_eyebrow)", part="eyebrows")  # fmt: skip
     print("LIBRARY", out.path, flush=True)
@@ -192,7 +193,8 @@ if "hair" in WANTED:
     api.run("juststage.head.add_parts", character=man.character)
     stubble.make(bpy.data.objects[man.object])
     out = api.run("juststage.library.save", character=man.character, catalog="Hair/Beards", name="JustStage stubble",
-                  description="Two or three days' stubble: ~60 short hairs a cm2 over the beard, growing down and back",
+                  description=f"Two or three days' stubble: ~{stubble.DENSITY:.0f} short hairs a cm2 over the beard, in "
+                  "patches, growing down and back",
                   licence="CC0-1.0", provenance="JustStage modules/hair/stubble.py", part="beard")  # fmt: skip
     print("LIBRARY", out.path, flush=True)
     _remove(woman)

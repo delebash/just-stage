@@ -44,6 +44,9 @@ SNAP_MM = 6.0
 #: opening): ICT's lids kept whole - a wider keep zone, NO snap - and ICT's own eyeballs' centres written out, so our
 #: eyeballs move into ICT's sockets (`factors icthead`) instead of ICT's lids onto ours
 EYE_KEEP_WIDE_MM = (10.0, 22.0)
+#: head6 (12:4x - head5 with our skin: half the brow under ICT's brow ridge, which the 10-22 mm keep kept): ICT's lids
+#: whole to 8 mm, gone by 15 - the crease (CREASE_UP_MM 7 above the margin) inside, the brow (~15-25 mm) on our surface
+EYE_KEEP_LID_MM = (8.0, 15.0)
 ICT_EYEBALLS = ((21451, 22221), (23021, 23791))
 #: the upper lid's crease (head4, 09:3x - head3's clay: ICT's generic neutral face has a weak crease where HD Aaron's is
 #: deep; CC5 ships crease morphs - a shape control, not content): a groove CREASE_UP_MM above the upper lid's margin
@@ -120,7 +123,8 @@ def _crease(verts: np.ndarray, tri: np.ndarray, eyes: list[np.ndarray], depth_mm
     return out
 
 
-def place(ours_npz: Path, ict_dir: Path, out: Path, keep_lids: bool = False, crease_mm: float = 0.0) -> None:
+def place(ours_npz: Path, ict_dir: Path, out: Path, keep_lids: bool = False, crease_mm: float = 0.0,
+          keep_mm: tuple | None = None) -> None:
     import trimesh
     from trimesh import registration
 
@@ -167,7 +171,8 @@ def place(ours_npz: Path, ict_dir: Path, out: Path, keep_lids: bool = False, cre
         t = np.clip((d - lo_hi[0]) / (lo_hi[1] - lo_hi[0]), 0.0, 1.0)
         return t * t * (3 - 2 * t)
 
-    w = np.minimum(ramp(d_eye, EYE_KEEP_WIDE_MM if keep_lids else EYE_KEEP_MM), ramp(d_ear, EAR_KEEP_MM))[:, None]
+    keep = keep_mm or (EYE_KEEP_WIDE_MM if keep_lids else EYE_KEEP_MM)
+    w = np.minimum(ramp(d_eye, keep), ramp(d_ear, EAR_KEEP_MM))[:, None]
     head_v = soft + w * (wrapped - soft)
     # every eye-opening vertex onto our rim (its nearest point on our rim's edges), spread over SNAP_MM
     rim_set = set(rim.tolist())
@@ -213,4 +218,5 @@ def place(ours_npz: Path, ict_dir: Path, out: Path, keep_lids: bool = False, cre
 if __name__ == "__main__":
     a = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     crease = float(a[a.index("--crease") + 1]) if "--crease" in a else 0.0
-    place(Path(a[0]), Path(a[1]), Path(a[2]), keep_lids="--keep-lids" in a, crease_mm=crease)
+    keep = EYE_KEEP_LID_MM if "--lid-keep" in a else None
+    place(Path(a[0]), Path(a[1]), Path(a[2]), keep_lids="--keep-lids" in a, crease_mm=crease, keep_mm=keep)

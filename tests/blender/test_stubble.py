@@ -94,3 +94,20 @@ def test_stubble_grows_in_patches_not_an_even_mat(man):
 
     assert stubble.PATCHY > 0 and len(full) > 20
     assert spread(patchy) > 2.0 * spread(other), (spread(patchy), spread(other))
+
+
+def test_the_stubble_greys_with_age():
+    """A fixed quarter of grey hairs read as a pale fuzz on a dark-skinned 25-year-old (2026-11-10): the grey share
+    follows the age macro - none at 25, GREY_SHARE at HD Aaron's ~40, more after."""
+    stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
+
+    class Body:
+        class juststage:
+            age = 0.5
+
+    assert stubble.grey_share(Body) == 0.0
+    Body.juststage.age = 0.615
+    assert stubble.grey_share(Body) == pytest.approx(stubble.GREY_SHARE)
+    Body.juststage.age = 0.85
+    assert stubble.GREY_SHARE < stubble.grey_share(Body) < 3 * stubble.GREY_SHARE
+
