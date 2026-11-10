@@ -3690,6 +3690,13 @@ before the rec list; measured in Blender 5.3 and read in our code):
   - ripped game assets, not shippable. MotionStudioArts (CC BY, its own ZBrush cards for CC4): curly and kinky cuts
   only - variety for later. FlippedNormals' free sample page 404; Olivervrc's free pack's page shows no terms (unread).
   No free straight short men's card groom WITH its textures was found; the two free halves above are the route.
+- **MotionStudioArts' free CC4 hair, fetched 2026-11-10** (*page read and downloaded*: Sketchfab's own download dialog -
+  "CC Attribution - Author must be credited. Commercial use is allowed"; Sketchfab API record b95196254b5e...): "Black
+  Short Hairs Fuzzy v2", ZBrush FiberMesh hair "exclusively designed for Character Creator 4", 241,266 triangles; the
+  original OBJ (cm, Y up): a cap `Sclup` (2048 px diffuse / opacity) and fibre cards `Fibers89` (800 x 961 px diffuse,
+  opacity, normal, specular mask - a low-resolution card texture). In `.dev/downloads/msa_hair_2026-11-10/`. The user's
+  catalogue on Sketchfab (API, q "motionstudioarts hair"): 22 hair models, 15 CC BY and downloadable - curly, kinky,
+  wavy, spiky, long; no straight short men's cut. Trial: `factors msahair` (fitted as `vfhair`).
 
 ### 14.15 · The live view against the film
 

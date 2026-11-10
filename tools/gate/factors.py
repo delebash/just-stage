@@ -2150,6 +2150,90 @@ MASK_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "masks"
 VF_BUSTS = Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "vincent_hair_2026-11-09" / "m01_busts.blend"
 
 
+MSA_HAIR = (Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "msa_hair_2026-11-10" / "x" / "source" / "u"
+            / "02 Short Hairs Black Fuzzy")  # fmt: skip
+
+
+def msahair(built: dict, melanin: float = 0.9) -> None:
+    """The scalp hair's last untried free source (2026-11-10): MotionStudioArts' "Black Short Hairs Fuzzy v2" (CC BY,
+    Sketchfab b95196254b5e...; ZBrush FiberMesh hair made for Character Creator 4: a cap `Sclup` and fibre cards) - on
+    our man: the OBJ (cm, Y up) imported, its cap's top 8 cm fitted to our cranium's by scale per axis and offset
+    (`vfhair`'s fit), the fibres moved with it; shaded with its own diffuse and opacity in our hair colour (melanin), the
+    cap's too; our scalp groom hidden. A new groom: --alone."""
+    body = built["body"]
+    before = set(bpy.data.objects)
+    bpy.ops.wm.obj_import(filepath=str(MSA_HAIR / "Short Hairs Black Fuzzy.obj"), global_scale=0.01,
+                          forward_axis="NEGATIVE_Z", up_axis="Y", use_split_groups=True)  # its `g` groups: cap, fibres
+    new = [o for o in bpy.data.objects if o not in before and o.type == "MESH"]
+    print("MSA IMPORTED:", [o.name for o in new], flush=True)
+    cap_obj = next(o for o in new if "Sclup" in o.name)
+    fibres = [o for o in new if o is not cap_obj]
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = body.evaluated_get(dg)
+    mesh = ev.to_mesh()
+    ours = np.array([body.matrix_world @ v.co for v in mesh.vertices])
+    ev.to_mesh_clear()
+    theirs = np.array([cap_obj.matrix_world @ v.co for v in cap_obj.data.vertices])
+
+    def cap(points, centre_x):
+        top = points[:, 2].max()
+        near = np.abs(points[:, 0] - centre_x) < 0.12
+        return points[near & (points[:, 2] > top - 0.08)]
+
+    ours_cap = cap(ours, float(np.median(ours[ours[:, 2] > ours[:, 2].max() - 0.05, 0])))
+    theirs_cap = cap(theirs, float(np.median(theirs[:, 0])))
+    lo_o, hi_o, lo_t, hi_t = ours_cap.min(0), ours_cap.max(0), theirs_cap.min(0), theirs_cap.max(0)
+    scale = (hi_o - lo_o) / np.maximum(hi_t - lo_t, 1e-6)
+    scale[2] = float(np.mean(scale[:2]))  # the cap's height follows its breadth (no face on it to measure)
+    anchor_t = np.array([(lo_t[0] + hi_t[0]) / 2, (lo_t[1] + hi_t[1]) / 2, hi_t[2]])
+    anchor_o = np.array([(lo_o[0] + hi_o[0]) / 2, (lo_o[1] + hi_o[1]) / 2, hi_o[2]])
+    for o in new:
+        m = np.array(o.matrix_world)
+        co = np.empty(len(o.data.vertices) * 3, np.float32)
+        o.data.vertices.foreach_get("co", co)
+        w = co.reshape(-1, 3) @ m[:3, :3].T + m[:3, 3]
+        w = (w - anchor_t) * scale + anchor_o
+        o.matrix_world = Matrix_identity()
+        o.data.vertices.foreach_set("co", w.astype(np.float32).ravel())
+        o.data.update()
+        for coll in list(o.users_collection):
+            coll.objects.unlink(o)
+        for coll in body.users_collection:
+            coll.objects.link(o)
+    tex_dir = MSA_HAIR / "Short Hairs Black Fuzzy"
+    for o, stem in [(cap_obj, "Sclup")] + [(f, "GoZMesh_Import_Material") for f in fibres]:
+        mat = bpy.data.materials.new(f"msa {stem}")
+        mat.use_nodes = True
+        if hasattr(mat, "surface_render_method"):
+            mat.surface_render_method = "DITHERED"
+        nt = mat.node_tree
+        bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+        ext = "png" if stem == "Sclup" else "jpg"
+        diff = nt.nodes.new("ShaderNodeTexImage")
+        diff.image = bpy.data.images.load(str(tex_dir / f"{stem}_diffuse.{ext}"), check_existing=True)
+        opac = nt.nodes.new("ShaderNodeTexImage")
+        opac.image = bpy.data.images.load(str(tex_dir / f"{stem}_opacity.{ext}"), check_existing=True)
+        opac.image.colorspace_settings.name = "Non-Color"
+        tint = nt.nodes.new("ShaderNodeMix")
+        tint.data_type, tint.blend_type = "RGBA", "MULTIPLY"
+        tint.inputs["Factor"].default_value = 1.0
+        nt.links.new(diff.outputs["Color"], tint.inputs["A"])
+        # the fibres' own colour is near-black (sRGB mean 0.06): kept; the cap's grey (0.54) darkened to it
+        tint.inputs["B"].default_value = (0.12, 0.10, 0.09, 1.0) if stem == "Sclup" else (1.0, 1.0, 1.0, 1.0)
+        nt.links.new(tint.outputs["Result"], bsdf.inputs["Base Color"])
+        nt.links.new(opac.outputs["Color"], bsdf.inputs["Alpha"])
+        bsdf.inputs["Roughness"].default_value = 0.45
+        o.data.materials.clear()
+        o.data.materials.append(mat)
+    hidden = 0
+    for o in bpy.data.objects:
+        if o.juststage.part == "scalp":
+            o.hide_render = True
+            hidden += 1
+    print("MSA HAIR:", len(fibres), "fibre objects,", sum(len(f.data.polygons) for f in fibres), "faces; scale",
+          np.round(scale, 3).tolist(), "; our scalp hidden:", hidden, flush=True)  # fmt: skip
+
+
 def vfhair(built: dict, bust: str, textured: bool = False, alpha: str = "") -> None:
     """An artist's free cut on our head (2026-11-09): VincentFreelance's "FREE Male Fashion Hair collection 01" (CC BY
     4.0, Sketchfab 2735370f...; split per bust into `.dev/downloads/.../m01_busts.blend`: vf_hair_<bust>, vf_head_<bust>)
@@ -3787,6 +3871,22 @@ def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey:
     print("BROWS", int(count), "coarse,", int(fine), "fine at", fine_melanin, "grey", grey, flush=True)
 
 
+def browshape(built: dict, widen: float, rise: float, fine: float) -> None:
+    """Our brows grown again with the band's height (`brows.WIDEN`, 1.25), the hairs' angle off the skin at the root
+    (`RISE`, 18 deg) and the fine under-hairs' count (`FINE`, 2000) set - 2026-11-10 (`browthick5.png`): his brow a
+    narrower, lower band of defined hairs lying flat; ours taller, a soft mass. A new groom: --alone."""
+    brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
+    old = brows.WIDEN, brows.RISE, brows.FINE
+    brows.WIDEN, brows.RISE, brows.FINE = widen, rise, int(fine)
+    try:
+        brows.make(built["body"])
+    finally:
+        brows.WIDEN, brows.RISE, brows.FINE = old
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("BROW SHAPE widen", widen, "rise", rise, "fine", int(fine), flush=True)
+
+
 MH_BODY_NORMAL = Path(__file__).resolve().parents[2] / ".dev" / "downloads" / "mh_skins02" / "x" / "skins" / \
     "mindfront_skin_male_african_middleage" / "skin_male_african_middleage_NRM.png"  # CC0 (MINDFRONT, MakeHuman's skins02)
 
@@ -4710,6 +4810,11 @@ def exprset(built: dict, expression: str, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("browshape*") and "+" not in name:  # browshape*0.9*8*800 (widen, rise deg, fine) - --alone
+        return lambda built: browshape(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("msahair") and "+" not in name:  # msahair[*0.9] (MotionStudioArts' CC BY hair, melanin) - --alone
+        bits = name.split("*")[1:]
+        return lambda built: msahair(built, *(float(x) for x in bits))
     if name.startswith("lashup*") and "+" not in name:  # lashup*15*80 (the upper lashes' rise and curl, degrees) - --alone
         return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:6]))
     if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)

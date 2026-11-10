@@ -1790,7 +1790,21 @@ booked with just-direct-mocap.
   at the jaw (the face units' jawOpen). (EEVEE's raytracing is ON in the product and the gate - `core/viewport.py`
   L58; the 11-03 note that it was off is stale.)
 - **11:2x, the lashes' central spikes, a diagnostic (`lashup` takes the clearing's whole-turn count now): 10 / 80 /
-  5.5 mm / 0.06 mm with `lashes.CLEAR_TRIES` 0 (the joint bends alone) and 4, eye and face (`batch_lashclear.sh`).** Seen in the end
+  5.5 mm / 0.06 mm with `lashes.CLEAR_TRIES` 0 (the joint bends alone) and 4, eye and face (`batch_lashclear.sh`).**
+  **11:15 (`lashclear.png`: 12 tries | 0 | 4 | his): with no whole turns (0) the strands hanging over the iris mostly go;
+  a few upright lashes stay at the centre - the turns are part of it, our lid's shape the rest (hm08's ledge under the
+  lash line; ICT's lid differs). Box spent: LASHES stay CLOSER, NOT EQUAL; the kept settings for the product: rise 10,
+  curl 80, 5.5 mm, 0.06 mm, CLEAR_TRIES 0 - to apply with the head's decision (Q-BASE-4), since the lid under them moves.**
+- **11:1x, THE SCALP HAIR's last untried free source fetched myself (Edge launched, used, closed - the user: the browser is
+  kept closed to save resources): MotionStudioArts' "Black Short Hairs Fuzzy v2" (CC BY, CC4 FiberMesh; RESEARCH 14.14).
+  Trial `factors msahair` (new; fitted as `vfhair`, its own textures, our scalp hidden) - `batch_msahair.sh`.**
+  **11:2x result (`msahair.png`, `msahair_close.png`; `.dev/gate/parts/2026-11-10msahair`): on our man it READS AS REAL
+  HAIR at the three-quarter, back and close views - strand-level curls with flyaways and natural highlights; a few
+  clumps a little flat. A curly cut against his straight one (a style, not the quality). VERDICT, SCALP HAIR: CC-quality
+  hair from a free CC BY asset made for CC4 renders as hair on our head in EEVEE - REACHED IN KIND; the straight short
+  cut at that quality isn't in the free set (MotionStudioArts' straight "Short Wavy Hairs v14" is Standard licence, not
+  downloadable; our VincentFreelance + Polytricity cards fell short). Q-HAIR-7's rec updated: free CC BY CC4 hair assets
+  (MotionStudioArts) into the library as styles, with their credit.** Seen in the end
   gate's nails view (`gate1110/row_nails.png`): **the NAILS are not proven by eye** - our plate reads pasted on (a
   darker drawn rim, no cuticle fold rolling over it) and the fingertip's skin carries a coarse red speckle; his nails
   sit under a soft proximal fold on smooth warm skin (the views' framing differs). Queued after the face's parts;
