@@ -2185,6 +2185,44 @@ def _cap_material(hair, cap_mode: str, melanin: float, redness: float, fade_mm: 
     return mat
 
 
+def _cap_footprint_uvs(hair, body, front: float = -0.2) -> np.ndarray:
+    """The cut's base cap (slot 1) on our skin, as hm08 UVs (the groom's surface map): each cap vertex's nearest point
+    on the evaluated body, its UV by barycentric interpolation - kept where the skin there doesn't face forward (the
+    normal's y over `front`: the sides, the back, the nape), so no short hair lands on the forehead."""
+    from mathutils import Vector, geometry
+    from mathutils.bvhtree import BVHTree
+
+    groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    me = hair.data
+    cap_v = sorted({v for poly in me.polygons if poly.material_index == 1 for v in poly.vertices})
+    pts = [hair.matrix_world @ me.vertices[i].co for i in cap_v]
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = body.evaluated_get(dg)
+    em = ev.to_mesh()
+    em.calc_loop_triangles()
+    # only the head tile's skin: hm08's helpers (the hair proxy round the scalp, joint cubes, tights) lie nearer the
+    # cap than the skin and carry UVs anywhere on the body (make_wrinkles.py's trap - 21:3x: short hair on the chest)
+    udim = em.uv_layers[_maps().UV].data
+    tris = [t for t in em.loop_triangles if all(0.0 <= udim[i].uv.x < 1.0 for i in t.loops)]
+    uv = em.uv_layers[groom.SURFACE_UV].data
+    tree = BVHTree.FromPolygons([v.co.copy() for v in em.vertices], [t.vertices for t in tris])
+    inv = body.matrix_world.inverted()
+    out = []
+    for p in pts:
+        q = inv @ p
+        hit, normal, index, _d = tree.find_nearest(q)
+        if hit is None or normal.normalized().y < front:
+            continue
+        t = tris[index]
+        a, b, c = (em.vertices[i].co for i in t.vertices)
+        ua, ub, uc = (Vector((*uv[li].uv, 0.0)) for li in t.loops)
+        w = geometry.barycentric_transform(hit, a, b, c, ua, ub, uc)
+        out.append((w.x, w.y))
+    ev.to_mesh_clear()
+    print("VF CAP FOOTPRINT", len(out), "of", len(pts), "cap points as roots (off the front)", flush=True)
+    return np.array(out, np.float64).reshape(-1, 2)
+
+
 def vfpoly(built: dict, bust: str, fly: float = 0.2, cap_mode: str = "") -> None:
     """The free cut's own cards (VincentFreelance, CC BY 4.0 - an artist's layout, its textures not free) with an
     artist's free strand textures (Polytricity's "Hair Cards_FBX", CC BY 4.0 - 4K strips: mask, root / tip / tone, AO)
@@ -2214,19 +2252,25 @@ def vfpoly(built: dict, bust: str, fly: float = 0.2, cap_mode: str = "") -> None
     layer.data.foreach_set("uv", np.stack([u, v], 1)[loop_v].astype(np.float32).ravel())
     me.materials[0] = _poly_card_material(pg.SCALP_COLOUR["melanin"], pg.SCALP_COLOUR["redness"])
     if cap_mode and len(me.materials) > 1:
-        me.materials[1] = _cap_material(hair, "off" if cap_mode == "buzz" else cap_mode, pg.SCALP_COLOUR["melanin"],
+        me.materials[1] = _cap_material(hair, "off" if cap_mode in ("buzz", "capbuzz") else cap_mode, pg.SCALP_COLOUR["melanin"],
                                         pg.SCALP_COLOUR["redness"])
-    if cap_mode == "buzz":  # the short sides and nape: our own strands, short and close to the scalp, under the cards
+    if cap_mode in ("buzz", "capbuzz"):  # the short sides and nape: our own short strands under the cards
         scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
         scalp.STYLES["trial buzz"] = {"lengths": ((-0.4, 5.0), (0.0, 6.0), (0.35, 8.0), (0.7, 10.0)), "lift": (1.0, 0.5),
                                       "sweep": 0.1, "frizz": 0.0004, "noise": 0.0008, "clump": 0.05,
                                       "flow_down": 0.35, "side_down": 0.4}  # fmt: skip
-        region = scalp.REGION_STYLE  # the roots over the whole scalp, the nape too (short_hedgehog's stop above it)
-        scalp.REGION_STYLE = "basic_short_hair"
+        brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
+        old_region = brows.region_uvs
+        if cap_mode == "capbuzz":  # roots: MakeHuman's region + the cap's footprint off the front
+            extra = _cap_footprint_uvs(hair, built["body"])
+            brows.region_uvs = lambda style=brows.STYLE, _o=old_region, _e=extra: np.concatenate([_o(style), _e])
+            mask = bpy.data.images.get("JustStage scalp mask")  # made once, from the region: made again from these
+            if mask is not None:
+                bpy.data.images.remove(mask)
         try:
             buzz = scalp.make(built["body"], "trial buzz")  # replaces the character's scalp groom (removed)
         finally:
-            scalp.REGION_STYLE = region
+            brows.region_uvs = old_region
         pg.colour_scalp(buzz)
         buzz.hide_render = False
 

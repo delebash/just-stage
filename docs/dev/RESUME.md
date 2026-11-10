@@ -80,6 +80,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   doc's 21:2x). Not CC5 quality yet - work left: the hair's short sides (a strand-textured cap from Polytricity's strips,
   as HD Aaron's `Hair_Clap`), the face's fine crease net (dot filter 1 mm2; the scans' 16K colour). Waiting for the
   user: the hair's product route changes Q-HAIR-7 (theirs).
+  21:3x: **family-release has the WHOLE PC (~60-75 min from ~21:30, its release test pass): nothing heavy of mine
+  until its "PC free".** Then, in order: look at `row_vfcapbuzz_*` (the short layer rooted on the cap's footprint off
+  the front - `factors vfpoly*B4*0.2*capbuzz`); the face's fine crease net (the dot filter at 1 mm2 in a scratch copy,
+  then the scans' 16K colour).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

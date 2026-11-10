@@ -1260,6 +1260,11 @@ booked with just-direct-mocap.
   "can't"s of 18:1x are disproven (the face's mid-scale relief: in the product; the live-view hair: a free card groom
   on trial). It is not CC5 quality yet: the remaining gaps are work - the face's fine crease net (0.3-1.5 mm, 0.5 of
   his), the hair's short sides (a textured cap), the remainders in the table.**
+- **21:3x, the short layer on the cap's footprint (`vfpoly*B4*0.2*capbuzz`, `row_vfcapbuzz_*` - void):** 3,545,891
+  strands (not ~150k), short hair on the chest, the arm and beside the eye: the cap points' nearest faces were hm08's
+  helpers (the hair proxy round the scalp), whose UVs land anywhere on the body - the same trap make_wrinkles.py
+  filters (only the head tile's triangles now); and the mode's cap went to "fade", not "off" (fixed). Rerun after
+  family-release's "PC free" (it has the whole PC from 21:38 for its release test pass).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
@@ -1529,3 +1534,6 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   wrong guess kept the face relief's "can't" for a day).
 - Read the scan list's own notes before saying anything about a scan (2026-11-09: `scan_list.py` records HSR0040 as
   "Male, Caucasian, 50" - the 11-08 "young man" claim contradicted our own data, not only the dataset's).
+- Batch scripts are written whole with the Write tool, never patched by a sed on a pattern with `\|` (2026-11-09 21:25:
+  a sed meant for one grep line matched every line of `batch_vfcapbuzz.sh` and ran garbage - nothing rendered; caught
+  by reading the output, rerun).
