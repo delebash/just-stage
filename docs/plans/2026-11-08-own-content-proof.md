@@ -2106,6 +2106,10 @@ booked with just-direct-mocap.
   `test_the_relief_layers_..._microrelief_shades` asserted the nails' raise took the microrelief's normal directly (now
   through `nail_flat`) - the test updated, not the product. Every new nail test, the lash guards and the stubble tests
   passed. Rerunning from the tests: `batch_final_1110c.sh` (tests -> THE FULL GATE -> every suite).
+  15:24: the parts' tests 37 passed; committed 3468dd0 (the suites unverified until the batch's end run); the gate
+  rendering. Queued after it (`batch_trials4.sh`): the two gaps never tried - the lower lashes longer / thicker
+  (`factors lashlow`, new: 5.5 / 0.05, 5.5 / 0.04, 4.8 / 0.05 mm) and the nail bed's colour warmer, less red
+  (`factors nailbedcolour`, new: (0.48, 0.32, 0.20) at 0.12, (0.46, 0.33, 0.22) at 0.2).
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1

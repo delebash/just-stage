@@ -1000,6 +1000,25 @@ def lashlower(built: dict, melanin: float) -> None:
     print("LOWER LASHES melanin", melanin, "on", n, "strands", flush=True)
 
 
+def lashlow(built: dict, long_mm: float, radius_mm: float, count: float | None = None) -> None:
+    """The lower lashes regrown longer / thicker (`lashes.LOWER`: the longest 3.8 mm, the root 0.04 mm, 80 an eye) -
+    2026-11-10 at the eye view HD Aaron's lower lashes read long and distinct, ours faint and short. The short ones
+    scale with the longest. A new groom: --alone."""
+    lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
+    old = dict(lashes.LOWER)
+    lashes.LOWER.update(long=long_mm, short=old["short"] * long_mm / old["long"], radius=radius_mm / 1000.0)
+    if count is not None:
+        lashes.LOWER.update(count=int(count))
+    try:
+        lashes.make(built["body"])
+    finally:
+        lashes.LOWER.clear()
+        lashes.LOWER.update(old)
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("LASHES lower long", long_mm, "radius", radius_mm, "count", count, flush=True)
+
+
 def lashcap(built: dict, mm: float) -> None:
     """The lid margin narrower: the lash line's most off the eyeball (base v2's 2.6 mm, `parts.eyelid_contact`) capped
     at `mm`, the contact made again - the lower lid's thick roll (plan §19.1 item 6: the margin's width against the
@@ -3600,6 +3619,18 @@ def nailbed(built: dict, share: float) -> None:
     print("NAIL BED", share, "on", len(nodes), "nodes", flush=True)
 
 
+def nailbedcolour(built: dict, r: float, g: float, b: float, share: float | None = None) -> None:
+    """The nail bed's colour (`maps.NAIL_BED`, linear (0.50, 0.30, 0.27)) and optionally its share - 2026-11-10: the
+    plate's colour against the skin sat ~2 b* cooler and ~1.5 a* less red than HD Aaron's even at share 0.12."""
+    maps = _maps()
+    nodes = [nt.nodes[maps.NODE + "nail_bed"] for nt in _skin_trees(built) if maps.NODE + "nail_bed" in nt.nodes]
+    for node in nodes:
+        next(i for i in node.inputs if i.identifier == "B_Color").default_value = (r, g, b, 1.0)
+        if share is not None:
+            node.inputs["Factor"].default_value = share
+    print("NAIL BED COLOUR", (r, g, b), "share", share, "on", len(nodes), "nodes", flush=True)
+
+
 def eartintset(built: dict, r: float, g: float, b: float) -> None:
     """The shipped ear layer's tint (`maps.EAR_TINT`) set to (r, g, b) - (1, 1, 1) turns it off: 2026-11-09, the
     Muscular man's ear glowed orange-red beside his dark skin."""
@@ -4859,6 +4890,8 @@ def factor(name: str):
     if name.startswith("msahair") and "+" not in name:  # msahair[*long] (MotionStudioArts' CC BY hair) - --alone
         bits = name.split("*")[1:]
         return lambda built: msahair(built, *bits)
+    if name.startswith("lashlow*") and "+" not in name:  # lashlow*5.5*0.05[*count] (the lower lashes, mm) - --alone
+        return lambda built: lashlow(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("lashup*") and "+" not in name:  # lashup*15*80[*long mm*radius mm*tries*clump] - --alone
         return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:7]))
     if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)
@@ -4987,6 +5020,8 @@ def factor(name: str):
         return lambda built: toeplate(built, float(length), float(side))
     if name.startswith("nailgroove*"):  # nailgroove*0.2 (the plate's border darkening)
         return lambda built: nailgroove(built, float(name.split("*")[1]))
+    if name.startswith("nailbedcolour*"):  # nailbedcolour*0.5*0.3*0.2[*share] (the bed's linear colour)
+        return lambda built: nailbedcolour(built, *(float(x) for x in name.split("*")[1:5]))
     if name.startswith("nailbed*"):  # nailbed*0.1 (the bed colour's share in the plate)
         return lambda built: nailbed(built, float(name.split("*")[1]))
     if name.startswith("eartintset*"):  # eartintset*1*1*1 (the shipped ear tint; 1, 1, 1 off)
