@@ -106,7 +106,8 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   committed 7a9a552) - with the lid's ledge it joins Q-BASE-4 (the head alone on a new topology - the user's: the
   design and spec disagree on the fallback). The scan route now takes shape-only scans (PLY, clay views). Waiting for
   the user: Q-HAIR-7 (free card hair into the product), Q-BASE-4. Work left (mine): the forehead's fine net (a better
-  microrelief generator), the tongue's light, HUTUBS ear identities for variety (Q-EAR-1).
+  microrelief generator), the tongue's light.
+  03:40: Q-EAR-1 done - the 58 HUTUBS ears in the mixer (ears only, ATTRIBUTION row; tools 63, mixer 13 passed).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

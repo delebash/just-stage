@@ -37,6 +37,7 @@ from scipy.sparse.linalg import spsolve
 ROOT = Path(__file__).resolve().parents[1]
 SCANS = ROOT / ".dev" / "facetest" / "scans"
 OUT = ROOT / "extension" / "juststage" / "data" / "generated" / "mixer" / "identities"
+REGIONS = ROOT / "extension" / "juststage" / "data" / "generated" / "mixer" / "regions.npz"
 BASE = ROOT / "extension" / "juststage" / "data" / "fetched" / "makehuman" / "3dobjs" / "base.obj"
 WEIGHTS = ROOT / "extension" / "juststage" / "data" / "generated" / "rigs" / "weights.ue5.json"
 BODY_VERTICES = 13380  # core/makehuman.py: hm08's body - the export's first vertices
@@ -84,8 +85,21 @@ def extend(offsets: np.ndarray, fitted: np.ndarray, edges: np.ndarray, share: np
     return out
 
 
-def main(out: Path = OUT, scans: Path = SCANS, mesh: tuple[np.ndarray, np.ndarray] | None = None) -> dict:
+def ears_only() -> tuple[set[str], np.ndarray]:
+    """The scans the list marks shape-only (HUTUBS's heads - smoothed faces, bald caps, for their ears: Q-EAR-1) and
+    the mixer's ears region per hm08 body vertex: such a scan's identity is its ears alone, so picking it for a nose or
+    a head shape moves nothing (2026-11-10)."""
+    spec = importlib.util.spec_from_file_location("scan_list", Path(__file__).with_name("face_test") / "scan_list.py")
+    scan_list = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(scan_list)
+    names = {n for n, s in scan_list.SCANS.items() if s.get("shape_only")}
+    return names, np.load(REGIONS)["ears"][:BODY_VERTICES].astype(np.float64)
+
+
+def main(out: Path = OUT, scans: Path = SCANS, mesh: tuple[np.ndarray, np.ndarray] | None = None,
+         ears: tuple[set[str], np.ndarray] | None = None) -> dict:
     edges, share = mesh if mesh is not None else graph()
+    only_ears, ear_weight = ears if ears is not None else ears_only()
     export = np.load(scans / "head_export.npz")["co"].astype(np.float64)
     out.mkdir(parents=True, exist_ok=True)
     report = {}
@@ -108,10 +122,13 @@ def main(out: Path = OUT, scans: Path = SCANS, mesh: tuple[np.ndarray, np.ndarra
         mask = np.zeros(BODY_VERTICES, bool)
         mask[index] = True
         offsets = extend(offsets, mask, edges, share)
+        if name in only_ears:
+            offsets *= ear_weight[:, None]
         size = np.linalg.norm(offsets, axis=1)
         keep = np.flatnonzero(size > FLOOR)
         np.savez(out / f"{name}.npz", index=keep.astype(np.int64), delta=offsets[keep].astype(np.float32),
-                 source=f"face-test scan fit {name} (tools/face_test/scan_fit.py), LOCAL")  # fmt: skip
+                 source=f"face-test scan fit {name} (tools/face_test/scan_fit.py)"
+                 + (", its ears only (HUTUBS, CC BY 4.0)" if name in only_ears else ", LOCAL"))  # fmt: skip
         step = np.abs(size[edges[:, 0]] - size[edges[:, 1]]).max() if len(edges) else 0.0
         report[name] = (len(keep), round(float(size.max()) * 1000, 1), round(float(step) * 1000, 2))
     print(f"IDENTITIES {out}: {len(report)} - {report}", flush=True)

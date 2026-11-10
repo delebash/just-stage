@@ -1431,6 +1431,22 @@ booked with just-direct-mocap.
   01:58: pp10 / pp11 failed - the orient step's guess rolled them 270 deg onto their side; the batch stopped (its
   inner shell and Blender stopped by command line), `scan_orient` keeps a scan the list marks `upright` as imported
   (all HUTUBS heads, Z up); pp10 then fitted (02:00); the batch restarted (finished heads skipped).
+  The ATTRIBUTION row to add with the identities (source as read 2026-11-04, `2026-11-04-research-hf-assets.md` L11-16):
+  "| The mixer's ear identities (`data/generated/mixer/identities/hutubs_pp*.npz`: HUTUBS's head meshes wrapped by
+  hm08, their ears only through the mixer's ears region, `tools/face_test/scan_fit.py`, `tools/make_identities.py`) |
+  TU Berlin depositonce, DOI 10.14279/depositonce-8487 (mirror: huggingface.co/datasets/Emulated-Inc/
+  hrtf-from-head-meshes) | Brinkmann et al., TU Berlin (HUTUBS) | CC BY 4.0 |". 02:18: 13 fitted, none failed.
+  **03:25: all 58 fitted (the wrap's median 0.26-3.47 mm, p50 0.47).** MY DECISION (attacked: HUTUBS's smoothed faces
+  and bald caps would give a nose or head shape picked from one a smoothed look): a shape-only scan's identity is its
+  ears alone - `make_identities.ears_only` (the scan list's `shape_only`, the mixer's ears region), its test; the
+  mixer lists per region only the identities that move it (`mixer.reach`), so HUTUBS's show for the ears alone.
+  Checked in a scratch folder: 58 ear-only identities (0 vertices outside the ears; median offsets 2.8-10.6 mm), the
+  nine HSRD identities byte-equal. Written into the product's folder (67 identities) with the ATTRIBUTION row.
+  Running `batch_ears.sh`: three ears (pp62 / pp44 / pp88 - the smallest, a middle and the largest change) at the
+  ear and profile views; the tools suite; the mixer's Blender tests.
+  **03:40, done and verified (`row_ears_*`): each real ear its own clean shape on our head - another lobe, rim and
+  angle; no tears or seams at the region's edge; the concha shallow (the topology). Tools 63 passed (the ear-only
+  test with them), the mixer's Blender tests 13 passed. Q-EAR-1's ear variety: in the product (67 identities).**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

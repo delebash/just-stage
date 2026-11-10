@@ -31,7 +31,7 @@ def test_a_fit_becomes_hm08_offsets_and_a_stale_one_is_refused(tmp_path):
     np.savez(scans / "good" / "fit.npz", used=used, fitted=export[used] + move)
     np.savez(scans / "stale" / "fit.npz", used=used, fitted=export[used] + 0.2)  # ~20 cm off: another export
     no_mesh = (np.zeros((0, 2), np.int64), np.zeros(make_identities.BODY_VERTICES))  # no fill
-    report = make_identities.main(out, scans, no_mesh)
+    report = make_identities.main(out, scans, no_mesh, (set(), np.ones(make_identities.BODY_VERTICES)))
     data = np.load(out / "good.npz")
     assert data["index"].tolist() == [5, 7, 13379]
     assert np.allclose(data["delta"], move[:3], atol=1e-6)
@@ -48,3 +48,22 @@ def test_the_fill_carries_the_fit_past_its_cut_and_fades_where_the_heads_share_e
     out = make_identities.extend(offsets, fitted, edges, share)
     assert np.allclose(out[:, 0], [0.01, 0.01, 0.008, 0.006, 0.004, 0.002, 0.0], atol=1e-9)  # a straight ramp: harmonic
     assert np.allclose(out[:, 1:], 0.0)
+
+
+def test_a_shape_only_scans_identity_is_its_ears_alone(tmp_path):
+    """HUTUBS's heads (smoothed faces, bald caps) are in the mixer for their ears (Q-EAR-1): their offsets outside the
+    ears region are dropped, so picking one for a nose or a head shape moves nothing."""
+    scans, out = tmp_path / "scans", tmp_path / "out"
+    export = np.zeros((20000, 3), np.float32)
+    (scans / "hutubs_pp1").mkdir(parents=True)
+    np.savez(scans / "head_export.npz", co=export)
+    used = np.array([10, 20, 30])
+    np.savez(scans / "hutubs_pp1" / "fit.npz", used=used, fitted=export[used] + 0.003)
+    ears = np.zeros(make_identities.BODY_VERTICES)
+    ears[20], ears[30] = 1.0, 0.5  # vertex 10 is not on the ears
+    no_mesh = (np.zeros((0, 2), np.int64), np.zeros(make_identities.BODY_VERTICES))
+    make_identities.main(out, scans, no_mesh, ({"hutubs_pp1"}, ears))
+    data = np.load(out / "hutubs_pp1.npz")
+    assert data["index"].tolist() == [20, 30]
+    assert np.allclose(data["delta"], [[0.003] * 3, [0.0015] * 3], atol=1e-6)
+    assert "ears only" in str(data["source"])
