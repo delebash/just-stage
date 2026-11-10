@@ -70,6 +70,9 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   19:3x: the first rollout stopped (a seam where the relief's crop ended - fixed by `EDGE_FADE_MM`, the crop moved up);
   RERUN from 19:33 (the 19:21 backups `*_2026-11-09cr` are the true before - kept); then `batch_vfbake2.sh` (hair
   round 2: `factors vfbake2*B4*12*0.5` / `*18*0.5`, new).
+  20:4x: **the face relief verified and committed (532cf98; unit 45, tools 60, Blender 209 passed) - the face's
+  "can't" is disproven** (the working doc's verdict table). Running: hair round 2 (`batch_vfbake2.sh`). The face's
+  next candidates (after the hair): the fine crease net - the dot filter at 1 mm2, the scans' own 16K colour.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

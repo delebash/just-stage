@@ -1213,8 +1213,8 @@ booked with just-direct-mocap.
   different crop). Not the shader: the lid-margin cut (`_relief_off_stretched`) stays on the margins (its mask over
   0.2 is 864 mm2, on the lid rims). The product sits between the trial's x1 and x2; COLOUR_RELIEF kept at 1.0 until
   the measure against HD Aaron (the rollout's table) says otherwise.
-- **20:3x, THE ROLLOUT'S RESULT (`.dev/gate/parts/2026-11-09colourrelief`, `cr_table.txt`; unit 45 and tools 60 passed,
-  the Blender suite running):** the library man (Scan man A) carries the forehead lines, the frown and the folds; his
+- **20:3x, THE ROLLOUT'S RESULT (`.dev/gate/parts/2026-11-09colourrelief`, `cr_table.txt`; **verified 20:43 - unit 45,
+  tools 60, Blender 209 passed (1 deselected: the AI test)**):** the library man (Scan man A) carries the forehead lines, the frown and the folds; his
   forehead window's fold band 0.58 -> **0.62** of HD Aaron's (the trial's x2 0.64), pore band 0.51 (unchanged - a
   separate fault). The New human (the default skin, pale) shows the lines too; the Young woman (Scan woman B) smooth -
   no eyeliner crease (the risk above closed); the dark-skinned Older man, Heavy woman and Muscular man natural creases
