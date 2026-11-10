@@ -2186,40 +2186,37 @@ def _cap_material(hair, cap_mode: str, melanin: float, redness: float, fade_mm: 
 
 
 def _cap_footprint_uvs(hair, body, front: float = -0.2) -> np.ndarray:
-    """The cut's base cap (slot 1) on our skin, as hm08 UVs (the groom's surface map): each cap vertex's nearest point
-    on the evaluated body, its UV by barycentric interpolation - kept where the skin there doesn't face forward (the
-    normal's y over `front`: the sides, the back, the nape), so no short hair lands on the forehead."""
+    """The cut's base cap (slot 1) on our skin, as hm08 UVs read the way the groom reads them back
+    (`lashes.surface_points`: the base mesh's skin triangles - MakeHuman's helpers out - on the shaped coordinates,
+    hm08's UVMap): each cap vertex's nearest skin triangle, its UV by barycentric weights - kept where the skin there
+    doesn't face forward (the triangle normal's y over `front`: the sides, the back, the nape), so no short hair lands
+    on the forehead. (From the evaluated mesh's UVs the roots landed on the chest and the arm, 2026-11-09.)"""
     from mathutils import Vector, geometry
     from mathutils.bvhtree import BVHTree
 
+    lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
     groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    tris, loops = lashes._triangles(body)
+    uv = np.empty(len(body.data.loops) * 2, np.float32)
+    body.data.uv_layers[groom.SURFACE_UV].data.foreach_get("uv", uv)
+    tri_uv = uv.reshape(-1, 2)[loops]
+    mw = np.array(body.matrix_world)
+    now = build.shaped_coords(body) @ mw[:3, :3].T + mw[:3, 3]
+    tree = BVHTree.FromPolygons([Vector(c) for c in now], [tuple(t) for t in tris])
     me = hair.data
     cap_v = sorted({v for poly in me.polygons if poly.material_index == 1 for v in poly.vertices})
-    pts = [hair.matrix_world @ me.vertices[i].co for i in cap_v]
-    dg = bpy.context.evaluated_depsgraph_get()
-    ev = body.evaluated_get(dg)
-    em = ev.to_mesh()
-    em.calc_loop_triangles()
-    # only the head tile's skin: hm08's helpers (the hair proxy round the scalp, joint cubes, tights) lie nearer the
-    # cap than the skin and carry UVs anywhere on the body (make_wrinkles.py's trap - 21:3x: short hair on the chest)
-    udim = em.uv_layers[_maps().UV].data
-    tris = [t for t in em.loop_triangles if all(0.0 <= udim[i].uv.x < 1.0 for i in t.loops)]
-    uv = em.uv_layers[groom.SURFACE_UV].data
-    tree = BVHTree.FromPolygons([v.co.copy() for v in em.vertices], [t.vertices for t in tris])
-    inv = body.matrix_world.inverted()
     out = []
-    for p in pts:
-        q = inv @ p
-        hit, normal, index, _d = tree.find_nearest(q)
+    for i in cap_v:
+        p = hair.matrix_world @ me.vertices[i].co
+        hit, normal, index, _d = tree.find_nearest(p)
         if hit is None or normal.normalized().y < front:
             continue
-        t = tris[index]
-        a, b, c = (em.vertices[i].co for i in t.vertices)
-        ua, ub, uc = (Vector((*uv[li].uv, 0.0)) for li in t.loops)
+        a, b, c = (Vector(now[j]) for j in tris[index])
+        ua, ub, uc = (Vector((*tri_uv[index][k], 0.0)) for k in range(3))
         w = geometry.barycentric_transform(hit, a, b, c, ua, ub, uc)
         out.append((w.x, w.y))
-    ev.to_mesh_clear()
-    print("VF CAP FOOTPRINT", len(out), "of", len(pts), "cap points as roots (off the front)", flush=True)
+    print("VF CAP FOOTPRINT", len(out), "of", len(cap_v), "cap points as roots (off the front)", flush=True)
     return np.array(out, np.float64).reshape(-1, 2)
 
 
@@ -2264,9 +2261,20 @@ def vfpoly(built: dict, bust: str, fly: float = 0.2, cap_mode: str = "") -> None
         if cap_mode == "capbuzz":  # roots: MakeHuman's region + the cap's footprint off the front
             extra = _cap_footprint_uvs(hair, built["body"])
             brows.region_uvs = lambda style=brows.STYLE, _o=old_region, _e=extra: np.concatenate([_o(style), _e])
-            mask = bpy.data.images.get("JustStage scalp mask")  # made once, from the region: made again from these
+            # the scalp mask is made once and the fill group (cached by name) holds it: removing it left the fill
+            # unmasked - strands over the whole body (21:3x, 22:1x, 22:3x). Made again from these roots and its pixels
+            # written into the image the group holds.
+            mask = bpy.data.images.get("JustStage scalp mask")
             if mask is not None:
-                bpy.data.images.remove(mask)
+                mask.name = "JustStage scalp mask (held)"
+                fresh = scalp.scalp_mask(built["body"])
+                px = np.empty(len(fresh.pixels), np.float32)
+                fresh.pixels.foreach_get(px)
+                mask.pixels.foreach_set(px)
+                mask.pack()
+                bpy.data.images.remove(fresh)
+                mask.name = "JustStage scalp mask"
+                print("VF CAP MASK made again: covered", round(float((px[0::4] > 0.25).mean()), 4), flush=True)
         try:
             buzz = scalp.make(built["body"], "trial buzz")  # replaces the character's scalp groom (removed)
         finally:

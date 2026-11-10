@@ -1265,6 +1265,28 @@ booked with just-direct-mocap.
   helpers (the hair proxy round the scalp), whose UVs land anywhere on the body - the same trap make_wrinkles.py
   filters (only the head tile's triangles now); and the mode's cap went to "fade", not "off" (fixed). Rerun after
   family-release's "PC free" (it has the whole PC from 21:38 for its release test pass).
+  22:10, the rerun (`row_vfcapbuzz2_*`): the cap off now, but the same 3,545,891 strands on the chest, the arm and by
+  the eye - my helper-face diagnosis was wrong (the head-tile filter removed nothing: the same 593 of 1,061 points).
+  The real difference: the groom maps root UVs back with the BASE mesh's skin triangles on the shaped coordinates
+  (`lashes.surface_points`), the footprint read them from the EVALUATED mesh. Fix written (`scratchpad/
+  edit_footprint_uv.py`: the footprint computed the groom's way), applied after the running batch.
+  22:35, rerun with the groom's own UV reading: the footprint changed (639 roots) but the same 3,545,891 strands - the
+  count never depended on the roots. The real cause, read in `scalp.py`: the scalp mask is made once and the fill
+  group "JustStage scalp fill" (cached by name) holds it; my trial REMOVED the mask image so the group's mask input
+  went empty - the fill ran unmasked over the whole body (1.6 m2 at 2.2M a m2). Fixed: the mask made again from the
+  patched roots and its pixels written into the image the group holds. Rerunning (`batch_capbuzz3.sh`).
+- **22:2x, the face's fine net (`row_finenet_*`, `finenet_table.txt`, HD Aaron in the same run):** the dot filter at
+  1 mm2 adds 0.001 mm RMS in the 0.3-1.5 mm band (the relief 0.015 mm) - nothing: pore band 0.51 -> 0.51 / 0.52 at
+  x2 / x4. Ruled out. The forehead close-up (`scratchpad/forehead_close.jpg`): his skin a crisp fine cell net with sharp
+  pits, ours softer larger bumps - the pore and micro tiles' crispness (11-07's finding), not the wrinkles. The region
+  map's lower forehead is the forehead's own (pores ~x1.1, not the eye region's x0.69). Candidate: a crisp pore tile
+  from HSRD's 16K colour (~15 px/mm against Ten24's 4.6) read by Sapiens2 (`factors poretile*<stem>`).
+- **22:39, the short layer with the mask made again (`row_vfcapbuzz3_*`): 147,905 strands (region alone 145,707), no
+  hair on the body; the temples as before, the nape still bare in its middle - the scalp mask grows only on the head's
+  faces (`scalp._head_faces`, 11-07's rule against strays on the body), and the nape below the cards counts as neck.
+  The hair rounds end here: the nape is this cut's undercut meeting that rule - the routes are a cut with a longer
+  back (the free collection's 13 other busts, HD Aaron's slick back is longer) or the mask's head faces widened
+  (a product change); neither is a missing asset.**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

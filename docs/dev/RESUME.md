@@ -84,6 +84,8 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   until its "PC free".** Then, in order: look at `row_vfcapbuzz_*` (the short layer rooted on the cap's footprint off
   the front - `factors vfpoly*B4*0.2*capbuzz`); the face's fine crease net (the dot filter at 1 mm2 in a scratch copy,
   then the scans' 16K colour).
+  22:xx: family-release's "PC free" came (releases run on GitHub from here); running `batch_after_pc.sh` (old
+  scratchpad: the hair's short layer on the cap footprint, then the face's fine crease net trial with HD Aaron measured).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured
