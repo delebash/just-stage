@@ -1339,6 +1339,12 @@ booked with just-direct-mocap.
   **23:55 (`row_browpoly_*`): worse - dark blocky smudges; a slice of a dense long-hair strip on a 1.6-2.4 mm card
   reads as a solid patch. Brow cards need a short-hair brow texture (CC5's is its own); Polytricity's are long-hair
   strips. Not kept; the strand brows stay (at this view they read as brows, a little hazy). Box closed early.**
+- **23:5x, THE FULL GATE (quality-gate.md §3-5, the plan's last step - every part has a verdict now):** running
+  `batch_fullgate.sh` -> `.dev/gate/parts/2026-11-09gate`: the gate's man at all 22 views beside HD Aaron rendered in
+  the same run, measured (`scratchpad/gate_table.txt`), sheets `scratchpad/gate/row_<view>.png`; then the Average
+  woman, Young woman, Older man, Heavy woman and Muscular man at the face, three-quarter, eye and cheek views
+  (`gate/chars_<view>.png`). Then the report `docs/gate/2026-11-09/report.md` (the plan's: the sheets, the numbers,
+  the verdicts, the user's words); the verdict is the user's (quality-gate §5).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
