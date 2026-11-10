@@ -143,6 +143,16 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   smile (eye squint added, `batch_smile.sh`), nails, stubble (close near equal at 220 a cm2 / 50% grey), forehead,
   teeth, lashes, torso. Trials: `tools/gate/ict_head.py`, `factors icthead* / mhbrow* / browthick* / exprset chains`,
   `parts_gate --clay`. Working doc entries 08:5x-09:4x.
+  13:4x: **the strict verdict per part is `docs/gate/2026-11-10-verdict.md`** (kept current with every result).
+  Committed since 09:4x: the brows' band (82b8c2f), stubble 220 a cm2 grey by age (0473837), the crow's feet driven by
+  the smile, the lips' soft border, the coat on the bumped normal (f501e1f and before). Boxes spent today: eye (near
+  equal on ICT's head - Q-BASE-4), mouth (the opening's shape at jawOpen), lips' look, torso (MakeHuman's muscle range),
+  scalp hair (reached in kind with MotionStudioArts' CC BY hairs - Q-HAIR-7). Running, chained (old scratchpad):
+  `batch_ship_1110f.sh` (the upper lashes rise 10 / curl 80 / 5.5 mm; `lashes.py` uncommitted until its suites pass)
+  -> `batch_nailplate.sh` (the nail plate held inside its tile island, the bed on the same plate) ->
+  `batch_gate_1110b.sh` (THE FULL GATE on today's product -> `.dev/gate/parts/2026-11-10gate2`). If the held plate
+  doesn't read rounded: the object-space nail plate (per-vertex nail coords over each fingertip) is the build.
+  Waiting for the user: Q-BASE-4, Q-HAIR-7, Q-GATE-3.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

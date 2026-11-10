@@ -952,13 +952,15 @@ def lashtrial(built: dict, radius_mm: float, count: float) -> None:
 
 
 def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, radius_mm: float | None = None,
-           tries: float | None = None) -> None:
+           tries: float | None = None, clump: float | None = None) -> None:
     """The upper lashes grown again with their rise (`lashes.UPPER["rise"]`, 0 deg) and curl (50 deg) set - 2026-11-10
     at full size: ours hang down over the iris as a dark curtain with a few spikes standing at the centre, his leave
     the margin and curl up and out. A new groom: --alone."""
     lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
     old = dict(lashes.UPPER)
-    old_tries = lashes.CLEAR_TRIES
+    old_tries, old_pull = lashes.CLEAR_TRIES, lashes.CLUMP_PULL
+    if clump is not None:  # the neighbours' tips pulled together (`lashes.CLUMP_PULL`, 0.5) - 2026-11-10 13:5x: the
+        lashes.CLUMP_PULL = clump  # centre's standing spikes are the curl and the clumps, not the clearing (lash_diag.py)
     if tries is not None:  # the whole-lash turns before the joint bends (`lashes.CLEAR_TRIES`, 12): 0 - bends alone
         lashes.CLEAR_TRIES = int(tries)
     lashes.UPPER.update(rise=rise, curl=curl)
@@ -971,10 +973,11 @@ def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, 
     finally:
         lashes.UPPER.clear()
         lashes.UPPER.update(old)
-        lashes.CLEAR_TRIES = old_tries
+        lashes.CLEAR_TRIES, lashes.CLUMP_PULL = old_tries, old_pull
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
-    print("LASHES upper rise", rise, "curl", curl, "long", long_mm, "radius", radius_mm, "tries", tries, flush=True)
+    print("LASHES upper rise", rise, "curl", curl, "long", long_mm, "radius", radius_mm, "tries", tries, "clump", clump,
+          flush=True)
 
 
 def lashlower(built: dict, melanin: float) -> None:
@@ -3707,15 +3710,26 @@ def stubblepatch(built: dict, patchy: float, density: float) -> None:
     print("STUBBLE PATCHY", patchy, "density", density, flush=True)
 
 
-def stubbletrial(built: dict, density: float, grey: float, length: float) -> None:
+def stubbletrial(built: dict, density: float, grey: float, length: float, thin: float = 1.0, curl: float | None = None,
+                 grey_melanin: float | None = None) -> None:
     """Our stubble regrown (`stubble.make`) at a density (hairs a cm2, 160 shipped), grey share (0.25) and length (mm,
-    2.8) - step 1's fault: a dense dark mat over the lower face against his short, sparse, greying stubble. A new groom:
-    --alone."""
+    2.8) - step 1's fault: a dense dark mat over the lower face against his short, sparse, greying stubble - and its
+    hairs' root radius x `thin` (`stubble.RADIUS`; 2026-11-10's "his hairs a little finer"). A new groom: --alone."""
     stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
-    stubble.make(built["body"], density=density, length_mm=length, grey=grey)  # the share given, not the age's
+    radius, turn, silver = stubble.RADIUS, stubble.CURL, stubble.GREY_MELANIN
+    stubble.RADIUS = radius * thin
+    if grey_melanin is not None:  # the grey hairs' melanin (`stubble.GREY_MELANIN`, 0.12) - his read silver, ours beige
+        stubble.GREY_MELANIN = grey_melanin
+    if curl is not None:  # degrees each hair turns along its length (`stubble.CURL`, 12) - 2026-11-10: his short hooks
+        stubble.CURL = curl
+    try:
+        stubble.make(built["body"], density=density, length_mm=length, grey=grey)  # the share given, not the age's
+    finally:
+        stubble.RADIUS, stubble.CURL, stubble.GREY_MELANIN = radius, turn, silver
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
-    print("STUBBLE", density, "a cm2, grey", grey, "length", length, flush=True)
+    print("STUBBLE", density, "a cm2, grey", grey, "length", length, "radius x", thin, "curl", curl, "grey melanin",
+          grey_melanin, flush=True)
 
 
 #: the face's shape by our own sliders (2026-11-08, step 1's fault: a broad, flat, puffy face with small squinting
@@ -3887,7 +3901,162 @@ def nailplate(built: dict, side: float, length: float) -> None:
                 n += 1
     if not n:
         raise RuntimeError("no nail plate mixes")
+    # the bed's shape follows the same plate: `nail_bed.height_mm` draws `maps.nail_plate`, whose fingers' side is
+    # NAIL_SIDE and length 1.0 - so a later `naildisp*` in the chain domes the held plate, not the island (the trial's
+    # copy of the product's formula with the fingers' two numbers as given)
+    def plate(along, across, digit, inside):
+        soft = 1.0 / maps.NAIL_EDGE_SOFT
+        toes = digit > 5.5
+        long_ = np.where(toes, maps.TOE_PLATE_LENGTH, length)
+        wide = np.where(toes, maps.TOE_PLATE_SIDE, side)
+        cut = maps.NAIL_CUTICLE + maps.NAIL_CUTICLE_CURVE * across * across
+        tip = np.clip(((1.0 - maps.NAIL_TIP_CURVE * across * across) * long_ - along) * soft, 0, 1)
+        return np.clip((along - cut) * soft, 0, 1) * np.clip((wide - np.abs(across)) * soft, 0, 1) * tip * inside
+
+    maps.nail_plate = plate
     print("NAIL PLATE side", side, "length", length, "on", n, "nodes", flush=True)
+
+
+NAIL_ATTR = "js_nail_trial"
+
+
+def _nail_frames(body) -> list[dict]:
+    """Each nail's frame (`tools/make_nail_coords.nails`: its tile island, digit, centre, normal, distal, side)."""
+    spec_ = importlib.util.spec_from_file_location("make_nail_coords", HERE.parent / "make_nail_coords.py")
+    tool = importlib.util.module_from_spec(spec_)
+    spec_.loader.exec_module(tool)
+    return tool.nails(body)
+
+
+def nail_vertex_coords(body, grow: float = 2.2) -> tuple[np.ndarray, dict]:
+    """Per vertex (n, 4): each nail's coordinates over its whole fingertip, not its tile island - along 0 at the
+    island's proximal edge (today's cuticle line) to 1 at the fingertip's far end, across -1 to 1 over the fingertip's
+    own dorsal width, the digit / 10 and 1 inside the fingertip's region (the vertices nearer this nail's centre than
+    any other's, within `grow` x the island's reach, facing the nail's way). The same encoding as `nails.png`."""
+    me = body.data
+    n = len(me.vertices)
+    co = np.empty(n * 3)
+    me.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    nor = np.empty(n * 3)
+    me.vertices.foreach_get("normal", nor)
+    nor = nor.reshape(-1, 3)
+    frames = _nail_frames(body)
+    centres = np.array([f["centre"] for f in frames])
+    nearest = np.argmin(((co[:, None, :] - centres[None]) ** 2).sum(-1), 1)
+    out = np.zeros((n, 4), np.float32)
+    stats = {}
+    for k, f in enumerate(frames):
+        c, nrm, dis, sid = f["centre"], f["normal"], f["distal"], f["side"]
+        isl = np.array(f["verts"])
+        reach = np.linalg.norm(co[isl] - c, axis=1).max()
+        a_isl = (co[isl] - c) @ dis
+        a0 = a_isl.min()
+        rel = co - c
+        facing = nor @ nrm
+        region = (nearest == k) & (np.linalg.norm(rel, axis=1) < grow * reach) & (facing > 0.0) & (rel @ dis > a0 - 0.004)
+        idx = np.flatnonzero(region)
+        if len(idx) < 4:
+            continue
+        al, ac = rel[idx] @ dis, rel[idx] @ sid
+        end = al.max()  # the fingertip's far end
+        top = facing[idx] > 0.5  # its dorsal face
+        mid = top & (al > a0) & (al < a0 + 0.7 * (end - a0))
+        half = np.abs(ac[mid]).max() if mid.any() else np.abs(ac).max()
+        out[idx, 0] = (al - a0) / max(end - a0, 1e-6)
+        out[idx, 1] = (np.clip(ac / max(half, 1e-6), -1.5, 1.5) + 1.0) / 2.0
+        out[idx, 2] = f["digit"] / 10.0
+        out[idx, 3] = 1.0
+        stats[f["digit"]] = (round(float((end - a0) * 1000), 1), round(float(half * 2000), 1),
+                             round(float((a_isl.max() - a0) * 1000), 1),
+                             round(float(np.abs((co[isl] - c) @ sid).max() * 2000), 1), len(idx))
+    return out, stats
+
+
+def nailobj(built: dict, side: float, length: float, fold: float = 1.2, bed_share: float | None = None,
+            curve: float | None = None, cuticle: float | None = None) -> None:
+    """The nails drawn over the whole fingertip (2026-11-10, `gate1110/row_nails.png`): HD Aaron's plate spans ~80% of
+    the fingertip's width and reaches its tip; ours fills its tile island, a coarse polygon ~55% wide in the middle.
+    Here the shader's nail coordinates come from a per-vertex attribute over each fingertip (`nail_vertex_coords`)
+    instead of the island's map, the plate's side and length in the fingertip's own measure; the product's nail bed
+    (the island's dome and groove) off, the plate's edge raised by the shader's bump with the skin's fold beside it
+    (`fold` x the plate's raise), the skin's relief flattened under the plate. A shape: --alone."""
+    maps = _maps()
+    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
+    body = built["body"]
+    coords, stats = nail_vertex_coords(body)
+    attr = body.data.attributes.get(NAIL_ATTR) or body.data.attributes.new(NAIL_ATTR, "FLOAT_COLOR", "POINT")
+    attr.data.foreach_set("color", coords.ravel())
+    old = body.modifiers.get(nail_bed.MODIFIER)
+    if old is not None:
+        body.modifiers.remove(old)
+    done = 0
+    for mat, _bsdf, mod in _skin_materials(built):
+        nt = mat.node_tree
+        node = lambda name: nt.nodes[maps.NODE + name]  # noqa: E731
+        a = nt.nodes.new("ShaderNodeAttribute")
+        a.attribute_type, a.attribute_name = "GEOMETRY", NAIL_ATTR
+        nt.links.new(a.outputs["Color"], node("nail_parts").inputs[0])
+        inside = node("nail_inside").inputs
+        for lk in list(inside[1].links):
+            nt.links.remove(lk)
+        nt.links.new(a.outputs["Alpha"], inside[0])
+        inside[1].default_value = 1.0
+        for name, value in (("nail_plate_side", side), ("nail_plate_length", length)):
+            next(i for i in node(name).inputs if i.identifier == "A_Float").default_value = value
+        if bed_share is not None and bed_share >= 0:  # -1: the product's share
+            node("nail_bed").inputs["Factor"].default_value = bed_share
+        # the cuticle's arc (`maps.NAIL_CUTICLE_CURVE` 0.35 x across^2, set for the island's narrow across - over the
+        # whole fingertip it draws a deep U, 2026-11-10 `nailobj1.jpg`) and its place (`NAIL_CUTICLE` 0.08)
+        if curve is not None:
+            node("nail_cut").inputs[1].default_value = curve
+        if cuticle is not None:
+            node("nail_cut").inputs[2].default_value = cuticle
+        # the fold: the plate drawn wider (past the cuticle and sides, the same tip) minus the plate - the skin beside it
+        def m(op, x, y=None):
+            nd = nt.nodes.new("ShaderNodeMath")
+            nd.operation = op
+            for i, v in enumerate((x, y)):
+                if v is None:
+                    continue
+                if isinstance(v, (int, float)):
+                    nd.inputs[i].default_value = v
+                else:
+                    nt.links.new(v, nd.inputs[i])
+            return nd.outputs[0]
+
+        def clamp01(x):
+            return m("MINIMUM", m("MAXIMUM", x, 0.0), 1.0)
+
+        soft = 1.0 / maps.NAIL_EDGE_SOFT
+        along = node("nail_parts").outputs["Red"]
+        cut = node("nail_cut").outputs[0]
+        absx = node("nail_abs").outputs[0]
+        side_now = next(o for o in node("nail_plate_side").outputs if o.identifier == "Result_Float")
+        start_w = clamp01(m("MULTIPLY", m("SUBTRACT", along, m("SUBTRACT", cut, 0.10)), soft))
+        sides_w = clamp01(m("MULTIPLY", m("SUBTRACT", m("ADD", side_now, 0.14), absx), soft))
+        tip_room = node("nail_tip_room_c").outputs[0]
+        wide = m("MULTIPLY", m("MULTIPLY", m("MULTIPLY", start_w, sides_w), tip_room), node("nail_inside").outputs[0])
+        plate = node("nail_plate").outputs[0]
+        height = m("ADD", plate, m("MULTIPLY", m("SUBTRACT", wide, plate), fold))
+        bump = node("nail_raise")
+        nt.links.new(height, bump.inputs["Height"])
+        # the skin's relief flattened under the plate (the hand's scan relief reached it beyond the island)
+        under = bump.inputs["Normal"].links[0].from_socket
+        geo = nt.nodes.new("ShaderNodeNewGeometry")
+        flat = nt.nodes.new("ShaderNodeMix")
+        flat.data_type = "VECTOR"
+        nt.links.new(plate, flat.inputs["Factor"])
+        nt.links.new(under, next(i for i in flat.inputs if i.identifier == "A_Vector"))
+        nt.links.new(geo.outputs["Normal"], next(i for i in flat.inputs if i.identifier == "B_Vector"))
+        nt.links.new(next(o for o in flat.outputs if o.identifier == "Result_Vector"), bump.inputs["Normal"])
+        mod.sync_live(mat)
+        done += 1
+    if not done:
+        raise RuntimeError("no skin trees")
+    print("NAIL OBJ side", side, "length", length, "fold", fold, "bed", bed_share, "curve", curve, "cuticle", cuticle,
+          "on", done, "trees;",
+          "digit: (fingertip mm, width mm, island mm, island width mm, vertices)", stats, flush=True)
 
 
 def nailsoft(built: dict, px: float) -> None:
@@ -4886,6 +5055,8 @@ def factor(name: str):
         return FACTORS[name]
     if name.startswith("nailplate*") and "+" not in name:  # nailplate*0.7*0.88 (the fingers' plate: side, length)
         return lambda built: nailplate(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("nailobj*") and "+" not in name:  # nailobj*0.8*0.92[*fold*bed share (-1 product)*curve*cuticle] - --alone
+        return lambda built: nailobj(built, *(float(x) for x in name.split("*")[1:7]))
     if name.startswith("nailsoft*") and "+" not in name:  # nailsoft*6 (the nail coords blurred, texels)
         return lambda built: nailsoft(built, float(name.split("*", 1)[1]))
     if name.startswith("build*") and "+" not in name:  # build*0.8*0.45 (muscle, weight sliders) - --alone
@@ -4897,8 +5068,8 @@ def factor(name: str):
     if name.startswith("msahair") and "+" not in name:  # msahair[*long] (MotionStudioArts' CC BY hair) - --alone
         bits = name.split("*")[1:]
         return lambda built: msahair(built, *bits)
-    if name.startswith("lashup*") and "+" not in name:  # lashup*15*80 (the upper lashes' rise and curl, degrees) - --alone
-        return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:6]))
+    if name.startswith("lashup*") and "+" not in name:  # lashup*15*80[*long mm*radius mm*tries*clump] - --alone
+        return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:7]))
     if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)
         return lambda built: lipsoft(built, float(name.split("*", 1)[1]))
     if name.startswith("browthick*") and "+" not in name:  # browthick*2 or browthick*2*0.95 (radius x k, the coarse hairs' melanin)
@@ -5041,8 +5212,8 @@ def factor(name: str):
         return lambda built: margintint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("eyewhite*"):  # eyewhite*0.85
         return lambda built: eyewhite(built, float(name.split("*")[1]))
-    if name.startswith("stubbletrial*"):  # stubbletrial*90*0.4*2.8 (a cm2, grey share, mm) - --alone
-        return lambda built: stubbletrial(built, *(float(x) for x in name.split("*")[1:4]))
+    if name.startswith("stubbletrial*"):  # stubbletrial*90*0.4*2.8[*0.75] (a cm2, grey share, mm, radius x) - --alone
+        return lambda built: stubbletrial(built, *(float(x) for x in name.split("*")[1:7]))
     if name.startswith("scalpstyle"):  # scalpstyle*sides (SCALP_PRESETS)
         return lambda built: scalpstyle(built, name.split("*", 1)[1])
     if name.startswith("fieldcut"):  # fieldcut*field_aaron[*3000] (the field's stem, the guides)

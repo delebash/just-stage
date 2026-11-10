@@ -1915,6 +1915,147 @@ booked with just-direct-mocap.
   darker drawn rim, no cuticle fold rolling over it) and the fingertip's skin carries a coarse red speckle; his nails
   sit under a soft proximal fold on smooth warm skin (the views' framing differs). Queued after the face's parts;
   the factors tried so far: `nailgroove`, `nailbed`, `naildisp`, `nailshine`, `nailluna`, `nailshape`.
+- **13:4x, THE LASHES (`batch_ship_1110f`, `scratchpad/lash_ship5.jpg` / `lash_ship5_crop.jpg` in this session's
+  scratchpad): the dark block over the iris is gone on the man; the three women's read as lashes curling up; a few
+  straight spikes still stand at the lid's centre (LASHES stay CLOSER, NOT EQUAL). Unit 45, tools 67 passed; the
+  Blender suite running.**
+- **13:5x, THE NAILS' HELD-PLATE TRIAL DROPPED BEFORE IT RAN (mine, attacked):** beside his (`gate1110/row_nails.png`,
+  `nailgeo.png`) our plate is already rounded enough at this view; the gap is SIZE - his plate spans ~80% of the
+  fingertip's width and reaches its tip, ours ~55% in the middle, because the tile island itself is that small; a
+  plate held inside the island only shrinks. Its `nailplate` factor was also fixed first (the bed's dome now follows
+  the same held plate - a chain `nailplate*..+naildisp*..` had domed the old island). **The trial instead: `factors
+  nailobj*side*length[*fold[*bed]]`** - the nail coordinates as a per-vertex FLOAT_COLOR attribute over each whole
+  fingertip (`nail_vertex_coords`: the island's frame from `make_nail_coords.nails` - refactored out of its `main`,
+  output unchanged - the region the vertices nearer this nail than any other, facing its way, within 2.2x the
+  island's reach; along 0 at the island's proximal edge to 1 at the fingertip's end, across over the fingertip's own
+  dorsal half-width), read by the shader in place of `nails.png` (the same encoding), the tile gate off, the
+  product's island bed off, the plate's edge raised by its bump with the skin's fold beside it (the plate drawn 0.10
+  past the cuticle and 0.14 past the sides, minus the plate, x1.2), the skin's relief flat under the plate.
+  `batch_nailplate.sh` now runs it (`nailobj*0.8*0.92`, `*0.86*0.97`, `*0.86*0.97*1.2*0.6` - the last with the bed
+  colour's share 0.6, the hand's speckle under the plate) -> `.dev/gate/parts/2026-11-10nailobj`, before the full gate.
+  Shipping it would move the nail layer off tile 1005 (rec 14's "on tile 1005") - noted for the user if it proves.
+  Measured on a new body (`nail_stats.py`, this session's scratchpad; mm): the index finger's island 14.8 long x 11.0
+  wide, its fingertip 18.4 from the island's start x 13.2 across its dorsal face - the island is ~83% of the dorsal
+  width but the plate fills only 0.8 of it and the finger's full width (its sides curving down) is wider still: our
+  plate ~53% of the finger's width in the render against his ~77% (pixels on `gate1110/row_nails.png`). The trial's
+  dry run on a dressed body passed (the attribute written, the shader rewired, `nailobj_dry.py`).
+- **13:5x, THE STUBBLE's named gap queued after the nails (same batch): "his hairs a little finer ... less skin between
+  them" (09:34) - one factor each at his grey share 0.25: 220 a cm2 as shipped | the hairs' root radius x0.7
+  (`stubbletrial` gained a radius factor) | 300 a cm2; chin and cheek views beside his (`2026-11-10stubble2`). Real
+  beard hairs are thicker than scalp hairs (ours 0.06 mm across), so a thinner hair that reads like his is a render
+  match, not anatomy - judged by eye at the close-up.**
+  14:1x (`stubble2_chin.jpg`: 220 | radius x0.7 | his): the thinner hairs read closer to his fineness; the larger gap
+  shows now - ours straight streaks combed downward, his short curved hooks, greyer (his chin's bare patch is
+  identity). Round 2 queued in `batch_trials2.sh` (`stubbletrial` gained a curl factor, `stubble.CURL` 12 deg): curl 45
+  / 70 with the thin hairs, and 45 at 2.0 mm. 14:2x, the chin's lower half at full size (`stubble2_chin300.jpg`: 220 |
+  300 | his): his hairs clear arcs, parallel in their flow, the greys silver-white; ours straight, criss-crossing, the
+  greys beige - and at this size his hairs are NOT finer than ours, so the curl variants were set back to the shipped
+  radius (one factor each; changed before the round started), and a fourth added: the greys' melanin 0.04
+  (`stubble.GREY_MELANIN` 0.12; `stubbletrial` gained it). 300 a cm2 reads about as 220 - density is not the gap.
+  The stubble's box is spent after round 2.
+  14:4x, round 2 (`stubble3_a.jpg`: shipped | curl 45 | his; `stubble3_b.jpg`: 45 | 70 | his): curl 45 turns our
+  straight needles into arcs like his; 70 reads woolly; ours still curve both ways at random where his flow one way.
+- **13:5x, THE LASHES' SPIKES DIAGNOSED (CPU, `lash_diag.py` in this session's scratchpad, a dressed new human, today's
+  UPPER): the clearing turns the upper lashes a median 0-15 deg (>20 deg on 2-32% by thirds of the lid) - NOT the
+  cause I had written; before any clearing their tips already stand 67-83 deg up from straight ahead (rise 10 + curl
+  80 at the tip), 7-28% past vertical, and `CLUMP_PULL` 0.5 bunches every 4 neighbours' tips. His fringe is even and
+  finer. One factor each, queued in `batch_nailplate.sh` after the stubble: no clumping | curl 65 | both
+  (`lashup` gained a clump factor) -> `.dev/gate/parts/2026-11-10lashes3`.** His lashes measured in his blend
+  (`aaron_lash_profile.py`, `Eyelash_Up` at each eye's centre, card vertices within 1.5 mm): the envelope reaches
+  5.6-7.3 mm forward and 3.5-4.1 mm up - forward-up at ~30-50 deg, ours 67-83 deg at the tip. A fourth variant at
+  his measured shape (rise 20, curl 30, 6.5 mm, no clumping) added. **The lashes' box is spent after this round:**
+  the best of the four ships (all suites) or the product stays; the verdict recorded either way.
+- **14:0x, THE LASH SHIP FAILED ITS GUARD - NOT KEPT (as decided before the run):** `batch_ship_1110f` unit 45, tools
+  67, Blender 217 passed / 1 failed - `test_the_upper_lashes_curve_smoothly_out_of_the_lid`: the sharpest joint's p90
+  65 deg (limit 15) on the tests' woman - the curl-80 tips run back into the lid and the clearing's last resort bends
+  them at a joint (kinked wire). `lashes.py` goes back to the committed UPPER between batches; the library (rebuilt at
+  13:36 with the failed lashes; backup `.dev/backup/library_2026-11-10ship5`) is rebuilt with whatever lashes pass;
+  the full gate's auto-start stopped (it would have rendered the failed lashes) - it starts after that rebuild. Every
+  candidate checked against both lash guards on the CPU in memory (`lash_guards.py`, no file edited) while the
+  nail / stubble / lash trials render.
+  The guards (`lash_guards.py`; test woman | New human; limits: rise>60 share < 0.03, tip/root gap > 0.75, joint p90 <
+  15 deg, joints>20 share < 0.10): committed 0/50/7 PASS (p90 10.3 | 8.6; median tip only 28-29 deg up - the
+  "curtain": 7 mm lashes almost straight ahead, chord 8-9 deg); 10/80/5.5 FAIL on the woman (p90 69.5); 10/80 no clump
+  FAIL (71.0); 10/65 FAIL (39.4); 10/65 no clump FAIL (14.2 but joints>20 0.100); **20/30/6.5 no clump PASS (5.6 | 5.3 -
+  the smoothest; tip 29-31, chord 17)**; 20/40/6.0 no clump PASS (7.0 | 6.7; tip 37-40); 15/45/5.5 no clump PASS (8.3 |
+  7.7). His envelope ~30 deg overall (up 3.5-4.1 mm over 5.6-7.3 forward) - higher-rise candidates checked next
+  (`lash_guards2.py`: 25/30, 30/25, 30/20, 25/35, and 20/30 / 25/30 with clump 0.25); the passing ones rendered beside
+  his after the running batch, the pick by eye among guard-passing candidates only. `lash_guards2.py`: all six PASS -
+  25/30/6.0 (p90 5.6 | 5.3, tip 35), 30/25/6.0 (4.9 | 4.6), **30/20/6.5 (4.0 | 4.1, the smoothest, chord 21-22)**,
+  25/35/6.0 (6.4 | 6.0, tip 40), 20/30/6.5 clump 0.25 (5.9 | 5.2), 25/30/6.0 clump 0.25 (5.8 | 5.3) - the chord stays
+  ~20-23 deg however high the rise (the lid turns them). On the library's Average man, Average woman and Older man
+  (`lash_guards_lib.py`) every candidate passes as well (30/20/6.5: joint p90 3.9-4.1); the committed lashes too (none
+  past 60 deg) - so the "spikes standing at the centre" in their render are forward-pointing lashes the eye view's
+  camera sees end-on, projected upward, not steep lashes. The render decides, not the angle alone.
+- **14:3x, THE LASHES ROUND 1 (`lashes3.jpg`: committed | 10/65 no clump | 20/30/6.5 no clump; `lashes3_his.jpg`):**
+  his upper lashes a dense fine fringe with light tips (the key catches them), up from the margin, none over the iris;
+  his lower lashes long and distinct. Ours: the committed a dark block over the iris top; 20/30/6.5 (guard-passing)
+  fans out and up most like his with fewer dark lashes over the iris, but darker and sparser-looking; 10/65 no clump
+  similar (fails the guard on joints). Our lower lashes faint and short beside his. Round 2 (30/20, 25/35, 25/30 clump
+  0.25) running; the best guard-passing shape ships.
+- **14:0x, THE NAILS ROUND 1, first variant (`nailobj1.jpg`: product | nailobj 0.8 / 0.92 | his): the size gap
+  CLOSED** - the plate spans the fingertip and reaches its tip, no octagon. It overshoots: no skin beside it, the
+  cuticle a deep U (the product's arc 0.35 x across^2, set for the island's narrow across), the plate a flat pale
+  pink. Round 2 queued (`batch_trials2.sh`, after the running batch, with the lash round 2): side 0.62 / 0.68, length
+  0.9, the arc 0.12, once with the bed colour's share 0.12 (`nailobj` gained the arc and the cuticle's place).
+  Measured (Lab, 24 px patches at 640 px, the nails views): plate minus the skin below it - his dL +4.8 / +3.3, da
+  -3.1 / -3.4, db -2.8 / -3.4; ours (product and v1 alike) dL +4.0, da -2.2, db -6.1: the plate's colour against the
+  skin is close but ~3 b* bluer (whiter-looking); our skin itself L 75 against his 66 (tone, a setting). So round 2's
+  colour variant moves the plate toward the skin (share 0.12), not away (0.6 was queued first - changed before it ran).
+  At hand distance (`nailobj1_hand.jpg`) the fingertip-wide plates read as pale caps - the overshoot round 2 narrows.
+  Round 1's third variant (bed share 0.6) measured: plate minus skin dL +5.5, da -3.7, db -8.4 - further from his (db
+  -3), as predicted; linear in the share, 0 would still leave db ~-4.5, so the bed colour (`maps.NAIL_BED`) itself is a
+  touch cool - for the colour pass after the shape.
+- **14:3x, THE NAILS ROUND 2, first variant (`nailobj2_a.jpg`: product | 0.62 / 0.9 / arc 0.12 | his): the SHAPE
+  reads close to his** - a wide rounded plate, a shallow cuticle arc, skin at its sides, reaching near the tip. Left in
+  view: a dark red line down the plate's right edge (a tile seam where the old island ends, or the groove's shading -
+  to tell), a pale band at the cuticle, and the plate's colour (his more translucent pink, a whiter free edge band).
+  Zoomed (`nailobj2_a_zoom.jpg`: product | round 2): the red line runs in the SKIN just outside the plate's right
+  edge, and the product shows the same streak at its plate's top-right - most likely the old nail-tile island's border
+  (the skin's maps differ across that seam; the island-filling plate covered it). The bump-only fold draws thin
+  bright edges along the plate's left side and cuticle where his plate sits under a soft rolled fold. Shipping the
+  fingertip-wide plate needs: (1) the island seam made invisible (the nail tile's skin texels outside the plate
+  matched to the hand's), (2) a softer fold (geometry or a wider bump), (3) the plate's colour (warmer, translucent).
+  The seam's source (CPU, `nailtile_maps.jpg`): Scan man A's nail tile colour has the islands painted pinker on a
+  skin background with flat relief - the skin build tints MPFB2's painted-nail mask (`tools/build_skins.py`
+  `REGIONS["nails"]` (0.4, 0, 1.8) and `NAIL_ROUGHNESS` 0.3); with the shader drawing the plate over the whole
+  fingertip that tint goes (all six skins rebuilt). **Order (mine): ship the lash and stubble picks, rebuild the
+  library, start the full gate; code the nail build while the gate renders (attribute at body creation, the shader
+  reading it, the tint out of the skins, the fold, the colour), then its own verify render.**
+  14:3x, measured width ratios (plate / the finger's visible width at mid-plate, pixels): his ~77%; round 1's side 0.8
+  ~76% (judged an overshoot at first - that was its deep U cuticle); round 2's 0.62 ~56%. So the width is ~0.8 with
+  round 2's shallow arc - and at 0.8 the plate covers the pink island (~83% of the dorsal width), so the skins' nail
+  tint can stay hidden under it instead of rebuilding every skin (the four face-test characters' skins too). Round 3:
+  side 0.78 / 0.82, length 0.9, arc 0.12 (+ the colour pick from round 2).
+  Round 2's colour variant (`nailobj2_b.jpg`, bed share 0.12): plate minus skin dL +3.3, da -1.5, db -5.0 (0.25: +4.0,
+  -2.2, -6.1; his ~+4.1, -3.3, -3.1) - Lab distance to his 3.2 -> 2.7, picked; 0.68 still leaves the island's red
+  line outside. Round 3 queued (`batch_trials3.sh`, after round 2): 0.78 / 0.82, arc 0.12, length 0.9, share 0.12 at
+  the nails, hand and foot views (the toes in the new measure as well).
+- **14:1x, THE FINGER'S SKIN at the nails close-up (`fingertip_skin.jpg`, full-size crops below the nail): ours
+  coarse, FACETED (triangular texel-like patches) with red blotches; his smooth with soft creases.** The hands' PROVEN
+  row held at the hand view only - corrected in the verdict doc. Which layer: `relief0` / `pores0` / `micro0` at the
+  nails view, appended to `batch_trials2.sh` (before it started). Also seen: a white streaky fringe at v1's cuticle
+  (the fold bump over the flattened normal) - judged again in round 2.
+  14:2x, its source (CPU; `finger_maps.py`, `finger_weight.jpg`, `fingertip_relief_native.png`): the hand part's weight
+  is a hard 1 over the whole hand, fingers included, so the finger's relief and colour are Ten24's alone (2.7 texels a
+  mm on the 2048 tile; the skin's relief is already Cubic-filtered, `maps.py:954` - so not texel magnification, my
+  first guess). At native texels Ten24's transferred relief AND colour show straight-edged triangular patches along
+  the fingers. Cause (read in `body_scan.texture`): the tilt's and colour's high-pass blur runs in Ten24's own map,
+  across its UV chart layout, so the subtracted low-pass steps where its charts meet. The standard order is transfer
+  first, then filter on the target's own continuous island. Trial on the CPU into scratch (`hand_hp_ours.py`: the
+  function's own code, the high-pass moved to our hand island, nothing shipped written). Box for the finger skin: to
+  ~15:20. **Result: NOT the cause** - the trial's fingertip relief and colour (`hand_hp_compare.png`: shipped | trial)
+  carry the same straight-edged patches. Next suspect: the nearest-point mapping (each of our texels takes the donor
+  surface's nearest point - discontinuous where the fit leaves gaps up to 2.8 mm) or Ten24's own fingertip texture;
+  the mapping dumped (`hand_map_dump.py` -> `hand_map/mapping.npz`) to look for jumps.
+  14:2x: the nearest-point mapping jumps along every finger (`hand_map_jumps.png`: steps > 8 donor px in lines - likely
+  Ten24's own UV chart seams - and stretched wedges at the creases; 2.9% of the fingertip box's steps > 8 px, 1.2% over
+  the hand); Ten24's own fingertip colour is clean (`ten24_fingertips.jpg`). **The standard ray mapping (`hand_ray.py`:
+  a ray along our smooth normal both ways, 98.9% hit within 6 mm) smooths the mapping a little (p99 step 10.2 -> 6.7
+  px) but the fingertip maps look the same (`hand_ray_compare.png`) - NOT the cause either.** Last lead, not testable:
+  the code says Ten24's Level_01 map is relative to its coarse level-1 mesh, decoded here with the 100k mesh's frames
+  - that mesh isn't in the package (only the 100k decimate and a Level_06 map). Stopped digging; the render decides
+  which layer shows the facets (`relief0` / `pores0` / `micro0`, round 2).
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1

@@ -79,9 +79,9 @@ def _raster(uv: np.ndarray, values: np.ndarray, image: np.ndarray, tris: np.ndar
         image[q[inside, 1].astype(int), q[inside, 0].astype(int)] = vals
 
 
-def main() -> None:
-    made = api.run("juststage.body.create", name="Nail coords")
-    body = bpy.data.objects[made.object]
+def nails(body) -> list[dict]:
+    """Each nail of the body's nail tile: its island's polygons and vertices, its digit and its frame - the centre, the
+    normal, the distal direction (to the nearest digit's tip joint, flattened onto the nail) and the side."""
     me = body.data
     co = np.empty(len(me.vertices) * 3)
     me.vertices.foreach_get("co", co)
@@ -105,7 +105,7 @@ def main() -> None:
     islands: dict[int, list] = {}
     for p in polys:
         islands.setdefault(find(p.vertices[0]), []).append(p)
-    image = np.zeros((SIZE, SIZE, 4), np.float32)
+    out = []
     for members in islands.values():
         verts = sorted({v for p in members for v in p.vertices})
         centre = co[verts].mean(0)
@@ -115,7 +115,24 @@ def main() -> None:
         distal = tip - before
         distal -= normal * (distal @ normal)
         distal /= np.linalg.norm(distal)
-        side = np.cross(normal, distal)
+        out.append({"polygons": members, "verts": verts, "digit": digit, "centre": centre, "normal": normal,
+                    "distal": distal, "side": np.cross(normal, distal)})
+    return out
+
+
+def main() -> None:
+    made = api.run("juststage.body.create", name="Nail coords")
+    body = bpy.data.objects[made.object]
+    me = body.data
+    co = np.empty(len(me.vertices) * 3)
+    me.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    layer = me.uv_layers[maps.UV].data
+    found = nails(body)
+    image = np.zeros((SIZE, SIZE, 4), np.float32)
+    for nail in found:
+        members, verts, digit = nail["polygons"], nail["verts"], nail["digit"]
+        centre, distal, side = nail["centre"], nail["distal"], nail["side"]
         along = (co[verts] - centre) @ distal
         across = (co[verts] - centre) @ side
         a = {v: (x - along.min()) / max(along.max() - along.min(), 1e-6) for v, x in zip(verts, along, strict=True)}
@@ -135,7 +152,8 @@ def main() -> None:
     writer.open(str(out), spec)
     writer.write_image(np.ascontiguousarray(image[::-1]))  # PNG rows top first; UV v up
     writer.close()
-    print(f"wrote {out}: {len(islands)} nails, {(image[..., 3] > 0).mean():.1%} of the tile")
+    print(f"wrote {out}: {len(found)} nails, {(image[..., 3] > 0).mean():.1%} of the tile")
 
 
-main()
+if __name__ == "__main__":
+    main()

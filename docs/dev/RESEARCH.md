@@ -2060,6 +2060,37 @@ every one logged; key claims page-read):
     median over his 3,576 nail faces sRGB (0.545, 0.349, 0.267) - those faces hold the skin round the nail too. Ours:
     20 nail pieces on tile 1005; each fingernail's base-to-tip found from the skin within 30 mm (12.6-13.8 mm long,
     pointing down and forward); the small toes' come out tilted sideways by the toes beside them.
+- **The plate's outline is the tile's island, measured 2026-11-10** (the own-content proof's working doc, 13:1x-14:4x;
+  EEVEE beside HD Aaron, `.dev/gate/parts/2026-11-10nailobj*`):
+  - `make_nail_coords` normalised along / across to each nail's own island, and the plate filled it: the island is a
+    coarse polygon of hm08's fingertip faces (the largest's outline simplifies to 13 corners), so the plate came out
+    an octagon whatever the geometry (dome only, render level 3), the coordinates' blur (6 / 12 texels) or the plate's
+    settings. On a new body (`nail_stats.py`; mm): the index finger's island 14.8 long x 11.0 wide, its fingertip 18.4
+    from the island's start x 13.2 across its back (vertices facing within 60 deg of the nail).
+  - Width, plate over the finger's visible width at mid-plate (render pixels): his ~77%, ours (the island-filling
+    plate) ~53%. With the coordinates over each whole fingertip as a per-vertex attribute (`factors nailobj`): side
+    0.8 of the fingertip's back half-width ~76%, 0.62 ~56%; the cuticle's arc 0.35 x across^2 (set for the island)
+    draws a deep U over the whole fingertip, 0.12 his shallow arc; the plate's length 0.97 wraps the tip, 0.9 ends
+    before it.
+  - Colour, plate minus the skin below it (Lab, 24 px patches at 640 px): his dL +4.8 / +3.3, da -3.1 / -3.4, db -2.8 /
+    -3.4; ours at the bed share 0.25 dL +4.0, da -2.2, db -6.1; 0.12 +3.3 / -1.5 / -5.0 (Lab distance to his 3.2 ->
+    2.7); 0.6 +5.5 / -3.7 / -8.4. Our skin itself L 75 against his 66 (tone).
+  - The skins' nail tile: the islands painted pinker over flat relief (`tools/build_skins.py` `REGIONS["nails"]` on
+    MPFB2's painted-nail mask, roughness 0.3) - where a plate doesn't cover its island the pink edge shows as a red
+    line in the skin.
+- **The finger's skin at the nails close-up, 2026-11-10**: ours coarse and faceted with red blotches, his smooth with
+  soft creases. The hand part's weight is a hard 1 over the whole hand, so the finger is Ten24's alone, 2.7 texels a
+  mm on its 2048 tile (the skin's relief Cubic-filtered). Ten24's transferred relief and colour show straight-edged
+  patches along the fingers at native texels; Ten24's own fingertip colour is clean. Not the cause, each tried in
+  scratch: the high-pass moved from Ten24's UV charts to our island (`hand_hp_ours.py`); the standard ray mapping
+  along our smooth normal in place of the nearest point (`hand_ray.py`, 98.9% hit within 6 mm; the mapping's p99 step
+  10.2 -> 6.7 donor px). Open: the Level_01 map is relative to Ten24's coarse level-1 mesh, which the package doesn't
+  ship (only the 100k decimate and a Level_06 map).
+- **The lashes, 2026-11-10**: HD Aaron's upper lashes (his blend's `Eyelash_Up`, card vertices within 1.5 mm of each
+  eye's centre) reach 5.6-7.3 mm forward and 3.5-4.1 mm up - ~30-50 deg up overall. Ours at rise 0 / curl 50 point
+  almost straight ahead (chord 8-9 deg, tips 28 deg); rise 10 / curl 80 stands the tips 67-83 deg and fails the kink
+  guard (joint p90 65-70 deg on the tests' woman - the tips curl back into the lid); rise 20-30 / curl 20-35 / 6-6.5
+  mm without clumping pass both guards on the tests' bodies and the library's (joint p90 3.9-8.3; `lash_guards*.py`).
 
 ### 14.6 · Shape spaces, sliders, mixing
 
