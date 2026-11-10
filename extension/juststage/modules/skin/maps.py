@@ -134,6 +134,16 @@ STRETCH_TOOL = "python tools/dev.py blender -b --python tools/make_stretch_mask.
 #: and fine pits in OBJECT space (LID_PORE_DEPTH, LID_PORE_CELL - not stretched by the UVs; NOT STANDARD: a procedural
 #: detail, the standard a scanned closed-lid map - none free). The open eye is unchanged (blink 0: pixel-equal).
 LID_TOOL = "python tools/dev.py blender -b --python tools/make_lid_mask.py"
+#: the lips' mask with a soft border (MPFB2's lips mask blurred - 2026-11-10: a crisp drawn outline beside HD Aaron's
+#: lip fading into the skin)
+LIPS_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_lips_soft.py"
+#: the smile's crow's feet (2026-11-10, beside HD Aaron's smile): our own wrinkle generator's lines out from each eye's
+#: outer corner, the left side's in red, the right's in green (1 flat, lower in a groove), faded in by each side's smile
+#: (head/face_units.SMILE_PROPS); CROWS_DEPTH the groove's depth at full smile (x3 the wrinkle tool's 0.4 mm read like
+#: his at the eye-smile view, `.dev/gate/parts/2026-11-10smile`)
+CROWS_TOOL = ("python tools/dev.py blender -b --python tools/make_wrinkles.py -- --only crows --split "
+              "--out extension/juststage/data/generated/skin --name crows_feet.png")
+CROWS_DEPTH = 0.0012
 LID_SOFT_SCALE, LID_PORE_DEPTH, LID_PORE_CELL = 32, 0.00015, 0.0006  # -, m, m
 MOUTH_COLOUR, MOUTH_SHARE = (0.42, 0.11, 0.11), 0.85  # linear
 MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
@@ -478,12 +488,13 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
 
 
 def _lip_layer(nt, bsdf) -> None:
-    """The lips' vermilion: the colour scaled toward LIP_TINT by MPFB2's lips mask, read through hm08's own UVs; smoother
-    than the skin with a light coat (LIP_ROUGHNESS, LIP_COAT: a soft sheen, not a wet film)."""
+    """The lips' vermilion: the colour scaled toward LIP_TINT by MPFB2's lips mask with its border softened (LIPS_TOOL),
+    read through hm08's own UVs; smoother than the skin with a light coat (LIP_ROUGHNESS, LIP_COAT: a soft sheen, not
+    a wet film)."""
     uvmap = _node(nt, "ShaderNodeUVMap", "lips_uv", (-1800, -2400))
     uvmap.uv_map = "UVMap"
     mask = _node(nt, "ShaderNodeTexImage", "lips_mask", (-1600, -2400))
-    mask.image = bpy.data.images.load(str(paths.makehuman("textures", "mpfb_lips.jpg")), check_existing=True)
+    mask.image = bpy.data.images.load(str(paths.generated("skin", "lips_soft.png", tool=LIPS_TOOL)), check_existing=True)
     mask.image.colorspace_settings.name = "Non-Color"
     nt.links.new(uvmap.outputs["UV"], mask.inputs["Vector"])
     share = _math(nt, "lips_share", "MULTIPLY", mask.outputs["Color"], LIP_STRENGTH)
@@ -584,6 +595,35 @@ def _closed_lid_share(nt, uv):
     share = _math(nt, "lid_closed", "MULTIPLY", total, nt.nodes[NODE + "mouth_on_head"].outputs["Value"])
     nt.nodes[NODE + "lid_closed"].use_clamp = True
     return share
+
+
+def _smile_wrinkles(nt, bsdf, uv) -> None:
+    """The crow's feet (CROWS_TOOL) on the head tile, each side's grooves x its smile (the object properties the face
+    units' drivers keep - head/face_units.SMILE_PROPS) as a bump at the end of the normal chain: nothing at rest."""
+    from ..head import face_units
+
+    image = bpy.data.images.load(str(paths.generated("skin", "crows_feet.png", tool=CROWS_TOOL)), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    tex = _node(nt, "ShaderNodeTexImage", "crows_map", (-1600, -5000))
+    tex.image, tex.interpolation, tex.extension = image, "Cubic", "CLIP"
+    nt.links.new(uv.outputs["UV"], tex.inputs["Vector"])
+    sep = _node(nt, "ShaderNodeSeparateColor", "crows_rgb", (-1400, -5000))
+    nt.links.new(tex.outputs["Color"], sep.inputs["Color"])
+    total = None
+    for (prop, _keys), channel in zip(face_units.SMILE_PROPS, ("Red", "Green"), strict=True):
+        attr = _node(nt, "ShaderNodeAttribute", f"crows_{prop}", (-1400, -5200 if channel == "Red" else -5300))
+        attr.attribute_type, attr.attribute_name = "OBJECT", prop
+        groove = _math(nt, f"crows_{channel.lower()}_groove", "SUBTRACT", 1.0, sep.outputs[channel])
+        part = _math(nt, f"crows_{channel.lower()}", "MULTIPLY", groove, attr.outputs["Fac"])
+        total = part if total is None else _math(nt, "crows_both", "ADD", total, part)
+    depth = _math(nt, "crows_depth", "MULTIPLY", total, nt.nodes[NODE + "mouth_on_head"].outputs["Value"])
+    height = _math(nt, "crows_height", "SUBTRACT", 1.0, depth)
+    bump = _node(nt, "ShaderNodeBump", "crows_bump", (-200, -5000))
+    bump.inputs["Strength"].default_value, bump.inputs["Distance"].default_value = 1.0, CROWS_DEPTH
+    nt.links.new(height, bump.inputs["Height"])
+    if bsdf.inputs["Normal"].is_linked:
+        nt.links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
+    nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
 
 
 def _soft_copy(image: bpy.types.Image) -> bpy.types.Image:
@@ -1019,6 +1059,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT
     bsdf.inputs["Sheen Roughness"].default_value = SHEEN_ROUGHNESS
     _margin_layer(nt, bsdf)  # last: over the colour, roughness and coat the layers above set
+    _smile_wrinkles(nt, bsdf, uv)
     # the coat on the skin's final bumped normal, as the base's (the nails', lips' and upper lip's layers relink
     # Normal above): HD Aaron's head BSDF feeds both from one normal (CC Blender Tools' rl_head_shader, read
     # 2026-11-10); unlinked, our oil lobe shone off a smooth surface and the relief's bumps never glinted
@@ -1039,6 +1080,7 @@ def refresh(mat: bpy.types.Material) -> None:
             from ..head import face_units
 
             face_units.add_blink_props(obj)  # the closed lid's blink values (none without the keys; once)
+            face_units.add_smile_props(obj)  # the crow's feet's smile values (likewise)
 
 
 def set_pores(mat: bpy.types.Material, character: bpy.types.Object) -> None:

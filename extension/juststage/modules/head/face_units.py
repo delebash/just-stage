@@ -82,12 +82,18 @@ def add(obj: bpy.types.Object) -> list[str]:
         key.slider_min, key.slider_max = 0.0, 1.0
         added.append(name)
     add_blink_props(obj)
+    add_smile_props(obj)
     return added
 
 
 #: each eye's blink key and the object property that carries its value to the skin's shader (modules/skin/maps.py's
 #: closed lid): an Attribute node of type Object reads it, so a skin shared by characters needs no retargeting
 BLINK_PROPS = (("eyeBlinkLeft", "js_blink_l"), ("eyeBlinkRight", "js_blink_r"))
+#: each side's smile - the larger of its mouth-corner and cheek-squint keys - as an object property the skin's crow's
+#: feet read (modules/skin/maps.py `_smile_wrinkles`; 2026-11-10: HD Aaron's smile folds the eyes' outer corners, ours
+#: didn't). A unit's own value drives the map - not mesh tension (the plan's §3 rule 8: US 12,062,140 claim 17)
+SMILE_PROPS = (("js_smile_l", ("mouthSmileLeft", "cheekSquintLeft")),
+               ("js_smile_r", ("mouthSmileRight", "cheekSquintRight")))  # fmt: skip
 
 
 def add_blink_props(obj: bpy.types.Object) -> None:
@@ -107,3 +113,23 @@ def add_blink_props(obj: bpy.types.Object) -> None:
         var.targets[0].id_type = "KEY"
         var.targets[0].id = keys
         var.targets[0].data_path = f'key_blocks["{key}"].value'
+
+
+def add_smile_props(obj: bpy.types.Object) -> None:
+    """Each side's smile (`SMILE_PROPS`) as an object property: a non-scripted MAX driver over its keys; nothing for a
+    character without them, nothing twice."""
+    keys = obj.data.shape_keys
+    for prop, names in SMILE_PROPS:
+        if keys is None or not all(n in keys.key_blocks for n in names):
+            continue
+        if obj.animation_data and obj.animation_data.drivers.find(f'["{prop}"]'):
+            continue
+        obj[prop] = 0.0
+        driver = obj.driver_add(f'["{prop}"]').driver
+        driver.type = "MAX"
+        for name in names:
+            var = driver.variables.new()
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "KEY"
+            var.targets[0].id = keys
+            var.targets[0].data_path = f'key_blocks["{name}"].value'

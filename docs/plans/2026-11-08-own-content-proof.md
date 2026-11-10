@@ -1804,7 +1804,25 @@ booked with just-direct-mocap.
   hair from a free CC BY asset made for CC4 renders as hair on our head in EEVEE - REACHED IN KIND; the straight short
   cut at that quality isn't in the free set (MotionStudioArts' straight "Short Wavy Hairs v14" is Standard licence, not
   downloadable; our VincentFreelance + Polytricity cards fell short). Q-HAIR-7's rec updated: free CC BY CC4 hair assets
-  (MotionStudioArts) into the library as styles, with their credit.** Seen in the end
+  (MotionStudioArts) into the library as styles, with their credit.**
+- **11:28, THE BROWS' SHAPE (`browshape.png`: product | widen 0.9 / rise 8 / fine 800 | 0.8 / 5 / 400 | his): 0.9 / 8 /
+  800 reads as a real brow - a band of dark defined hairs lying flat, no soft mass. His longer at the tail and lower
+  (the head's shape). BROWS: CLOSE.**
+- **11:3x, INTO THE PRODUCT (mine, attacked): brows `WIDEN` 1.25 -> 0.9, `RISE` 18 -> 8, `FINE` 2000 -> 800 (women keep
+  `DENSITY_BY_SEX` 0.7 - checked on the five characters in the ship batch); the lips' mask with a soft border
+  (`tools/make_lips_soft.py`, new: MPFB2's mask blurred sigma 10.5 texels -> `lips_soft.png`, `maps.LIPS_TOOL`; tests
+  `test_a_hard_edge_becomes_a_ramp_and_keeps_its_weight`, `test_the_lips_fade_into_the_skin`). NOT shipped: the stubble
+  at 220 - 11-08 found 160 a dark mat at 25% grey, and today's 220 trial ran at 50% grey (an age setting), so density
+  and grey can't be told apart from it. `batch_ship_1110c.sh`: the library (backup `library_2026-11-10ship2`), the
+  man's eye / face / lips / three-quarter beside HD Aaron, five characters' eye and face, tools, Blender.**
+- **11:4x, THE CROW'S FEET INTO THE PRODUCT (mine, attacked: the route the closed lid proved; a unit's own value drives
+  the map - not mesh tension, so outside US 12,062,140 claim 17; CC5 and MetaHuman drive their wrinkle maps by their
+  controls the same way):** `face_units.SMILE_PROPS` / `add_smile_props` (js_smile_l / _r: a MAX driver over each side's
+  mouthSmile and cheekSquint keys, called where the blink's props are); `maps._smile_wrinkles` (the map `crows_feet.png`
+  - `make_wrinkles.py --only crows --split --name`, new options: the left side's lines in red, the right's in green - x
+  each side's smile, a bump at CROWS_DEPTH 1.2 mm before the coat's normal link); test
+  `test_the_smile_folds_the_eyes_outer_corners`. Checked in the product by `batch_crowsprod.sh` (after the stubble's
+  one-factor test, `batch_stubble2.sh`: density alone 220 at 25% grey; grey alone 50% at 100). Seen in the end
   gate's nails view (`gate1110/row_nails.png`): **the NAILS are not proven by eye** - our plate reads pasted on (a
   darker drawn rim, no cuticle fold rolling over it) and the fingertip's skin carries a coarse red speckle; his nails
   sit under a soft proximal fold on smooth warm skin (the views' framing differs). Queued after the face's parts;
@@ -2142,3 +2160,7 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   rule was to prove if it can be done"): the morning went on close parts (legs, coat, cheek pores, foot) while the eyes
   and ears - the only unproven rows - waited, filed under Q-BASE-4. A decision covers shipping; a trial needs none.
   Every "not proven" row gets its trial first.
+- Never edit `extension/` while a batch runs Blender, even for "the next" change (2026-11-10 11:39: the crow's feet layer
+  went into `maps.py` while `batch_ship_1110c.sh` was between character renders; its map didn't exist yet, so every
+  later render would have failed on load - caught by reading the batch's step times, the map generated at 11:40:29
+  before the next render started). Write the change to a scratch patch and apply it between batches (as `apply_coat.py`).

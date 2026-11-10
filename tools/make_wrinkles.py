@@ -58,7 +58,8 @@ def _curves(pupils: np.ndarray, nose: np.ndarray, mouth_z: float, rng, only: str
             a = np.radians(ang)
             d = np.array([sx * np.cos(a), np.sin(a)])
             t = np.linspace(0.004, 0.004 + length, 40)[:, None]
-            out.append((corner + t * d + np.c_[np.zeros(40), wobble(40, 0.0006)], 0.7, 0.0005, "crows"))
+            side = "l" if sx > 0 else "r"  # the character's left is +X (make_lid_mask: red the left, green the right)
+            out.append((corner + t * d + np.c_[np.zeros(40), wobble(40, 0.0006)], 0.7, 0.0005, f"crows_{side}"))
         xs = np.linspace(px - sx * 0.010, px + sx * 0.014, 50)  # the lower lid's crease
         zs = pz - 0.012 + 0.003 * ((xs - px) / 0.012) ** 2
         out.append((np.stack([xs, zs], -1), 0.5, 0.0008))
@@ -66,8 +67,10 @@ def _curves(pupils: np.ndarray, nose: np.ndarray, mouth_z: float, rng, only: str
         start, end = np.array([sx * 0.017, nose[1] - 0.004]), np.array([sx * 0.031, mouth_z - 0.008])
         bow = np.array([sx * 0.004, 0.0]) * np.sin(np.pi * t)[:, None]
         out.append((start + (end - start) * t[:, None] + bow, 1.2, 0.002))
-    # `only`: one kind of line (the crow's feet for the smile's own layer, 2026-11-10); the rest carry no tag
-    return [c[:3] for c in out if not only or (len(c) > 3 and c[3] == only)]
+    # `only`: one kind of line (the crow's feet for the smile's own layer, 2026-11-10; "crows" takes both sides'
+    # "crows_l" / "crows_r"); the rest carry no tag
+    tagged = [(*c[:3], c[3] if len(c) > 3 else "") for c in out]
+    return [c for c in tagged if not only or c[3].startswith(only)]
 
 
 def main() -> None:
@@ -75,6 +78,8 @@ def main() -> None:
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--only", default="", help="one kind of line: crows")
+    p.add_argument("--split", action="store_true", help="the left side's lines in red, the right's in green (crows)")
+    p.add_argument("--name", default="wrinkles.png", help="the file's name in --out")
     a = p.parse_args(sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else [])
     from mathutils import Vector, geometry
     from mathutils.bvhtree import BVHTree
@@ -100,9 +105,12 @@ def main() -> None:
     bvh = BVHTree.FromPolygons([Vector(c) for c in co], [t.vertices for t in tris])
     rng = np.random.default_rng(a.seed)
     px_per_m = SIZE / (maps.MM_PER_UV.get(HEAD_TILE, 724.0) / 1000.0)  # one texel ~ MM_PER_UV / SIZE mm on the head
-    height = np.zeros((SIZE, SIZE), np.float32)
+    heights = {"": np.zeros((SIZE, SIZE), np.float32)}
+    if a.split:
+        heights = {"l": np.zeros((SIZE, SIZE), np.float32), "r": np.zeros((SIZE, SIZE), np.float32)}
     drawn = 0
-    for points, depth, sigma in _curves(pupils, nose, mouth_z, rng, a.only):
+    for points, depth, sigma, tag in _curves(pupils, nose, mouth_z, rng, a.only):
+        height = heights[tag[-1] if a.split else ""]
         # resample evenly along the curve, then carry each sample onto the skin by a ray from the front
         seg = np.linalg.norm(np.diff(points, axis=0), axis=1)
         s = np.concatenate([[0.0], np.cumsum(seg)])
@@ -130,11 +138,15 @@ def main() -> None:
             g *= STEP * px_per_m / (np.sqrt(2 * np.pi) * r)  # the splats along the line sum to one groove's depth
             height[ys[ok], xs[ok]] += g[ok]
             drawn += 1
-    height = np.clip(height, 0.0, 1.5) / 1.5
-    image = np.repeat((1.0 - height)[..., None], 3, axis=2)
+    flat = {k: np.clip(h, 0.0, 1.5) / 1.5 for k, h in heights.items()}
+    if a.split:  # 1 flat, lower in a groove, per channel
+        image = np.dstack([1.0 - flat["l"], 1.0 - flat["r"], np.ones((SIZE, SIZE), np.float32)])
+    else:
+        image = np.repeat((1.0 - flat[""])[..., None], 3, axis=2)
     a.out.mkdir(parents=True, exist_ok=True)
-    maps.write_png(a.out / "wrinkles.png", image, depth="16")
-    print(f"wrote {a.out / 'wrinkles.png'}: {drawn} samples on the skin; deepest {height.max():.2f}", flush=True)
+    maps.write_png(a.out / a.name, image, depth="16")
+    deepest = max(float(h.max()) for h in flat.values())
+    print(f"wrote {a.out / a.name}: {drawn} samples on the skin; deepest {deepest:.2f}", flush=True)
 
 
 main()

@@ -33,11 +33,13 @@ COUNT = 1200
 HEAD_ANGLE, BODY_ANGLE, TAIL_ANGLE, BODY_AT = 70.0, 22.0, 8.0, 0.35  # degrees off the brow's line, toward up
 CONVERGE = 14.0  # degrees: the upper rows down, the lower up
 SPREAD = 7.0  # degrees of each hair's own randomness
-RISE = 18.0  # degrees off the skin at the root, lying down to ~0 at the tip
+#: 18 until 2026-11-10: beside HD Aaron's brow (a narrow band of defined hairs lying flat) ours stood as a soft mass;
+#: 8 with WIDEN 0.9 and FINE 800 read as a real brow (`.dev/gate/parts/2026-11-10brows`, `browshape`)
+RISE = 8.0  # degrees off the skin at the root, lying down to ~0 at the tip
 LENGTH = (5.0, 8.0, 6.0)  # mm at the head, the body and the tail; each +- 20%
 RADIUS, TIP = 0.000035, 0.15  # m at the root (~0.07 mm across: 0.09 read as a brush beside HD Aaron's); the tip's share
 JITTER = 0.0002  # m: each root's own offset
-WIDEN = 1.25  # the band's half-height over the region roots' (their 85th percentile)
+WIDEN = 0.9  # the band's half-height over the region roots' (their 85th percentile); 1.25 until 2026-11-10 (RISE)
 TAIL_DENSITY = 0.35  # the tail's density as a share of the body's
 #: the roots' spread across the band's height, a bell of EDGE_SD half-heights - densest along the middle, thinning to
 #: the edges, a few strays above (to EDGE_ABOVE), none below the band (the lid the blink moves). Even (None) gave hard
@@ -59,7 +61,8 @@ MELANIN, REDNESS, MELANIN_SPREAD = 0.8, 0.3, 0.05
 #: strand brows hold fine short hairs among the coarse ones): FINE hairs a brow, at FINE_LENGTH x the coarse ones'
 #: length, FINE_RADIUS thick, lighter - with the painted brows gone from the skins (2026-11-06) the 800 coarse hairs
 #: alone read thin beside HD Aaron's
-FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 2000, 0.5, 0.000022, 0.8
+#: FINE 2000 -> 800 on 2026-11-10 (RISE): the fine hairs' haze hid the coarse ones
+FINE, FINE_LENGTH, FINE_RADIUS, FINE_MELANIN = 800, 0.5, 0.000022, 0.8
 POINTS = len(lashes.PROBE)  # place() measures each curve's move on these many points
 #: women's brows sparser than men's - the share of the hairs kept by the gender macro (2026-11-09,
 #: `.dev/gate/parts/2026-11-09browcol`: 0.7 read the most natural on the Average woman, skin between the hairs; 1.0 is

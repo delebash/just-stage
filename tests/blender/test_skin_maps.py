@@ -206,7 +206,9 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     rough = next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node
     assert rough == nodes[maps.NODE + "lips_rough"]
     assert next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node == nodes[maps.NODE + "nail_rough"]
-    closed = bsdf.inputs["Normal"].links[0].from_node  # the closed lid's pits last (by the blink: nothing while open)
+    crows = bsdf.inputs["Normal"].links[0].from_node  # the smile's crow's feet last (by the smile: nothing at rest)
+    assert crows == nodes[maps.NODE + "crows_bump"]
+    closed = crows.inputs["Normal"].links[0].from_node  # the closed lid's pits (by the blink: nothing while open)
     assert closed == nodes[maps.NODE + "lid_bump"]
     lines = closed.inputs["Normal"].links[0].from_node  # the lips' lines, over the nails' raise
     assert lines == nodes[maps.NODE + "lips_lines"]
@@ -678,3 +680,50 @@ def test_the_cheeks_pores_sit_a_tenth_below_the_foreheads(human):
     assert side.any() and brow.any()
     ratio = np.median(sample[side, 0]) / np.median(sample[brow, 0])
     assert ratio == pytest.approx(0.9, abs=0.03), ratio
+
+
+def test_the_lips_fade_into_the_skin(human, tmp_path):
+    """The lip layer reads the soft lips mask (maps.LIPS_TOOL - MPFB2's mask blurred), not MPFB2's hard-edged one: the
+    lips had a crisp drawn outline beside HD Aaron's (2026-11-10)."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nt = body.juststage.skin_material.node_tree
+    image = nt.nodes[maps.NODE + "lips_mask"].image
+    assert image.filepath.endswith("lips_soft.png")
+    w, h = image.size
+    px = np.empty(w * h * 4, np.float32)
+    image.pixels.foreach_get(px)
+    grey = px.reshape(h, w, 4)[..., 0]
+    assert np.count_nonzero((grey > 0.05) & (grey < 0.95)) > 0.3 * np.count_nonzero(grey >= 0.95)  # a wide ramp
+
+
+def test_the_smile_folds_the_eyes_outer_corners(human, tmp_path):
+    """HD Aaron's smile folds the eyes' outer corners into crow's feet (2026-11-10): each side's grooves (CROWS_TOOL's
+    map, the left in red, the right in green) faded in by that side's smile - the larger of its mouthSmile and
+    cheekSquint keys, carried by an object property - as a bump at the end of the normal chain; nothing at rest."""
+    made, body = human
+    api.run("juststage.head.add_face_units", character=made.character)
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    mat = body.juststage.skin_material
+    nodes = mat.node_tree.nodes
+    face_units = importlib.import_module("bl_ext.system.juststage.modules.head.face_units")
+    for prop, _keys in face_units.SMILE_PROPS:
+        attr = nodes[maps.NODE + f"crows_{prop}"]
+        assert (attr.attribute_type, attr.attribute_name) == ("OBJECT", prop)
+    keys = body.data.shape_keys.key_blocks
+    keys["cheekSquintLeft"].value, keys["mouthSmileRight"].value = 0.7, 0.4
+    bpy.context.view_layer.update()
+    evaluated = body.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    assert evaluated["js_smile_l"] == pytest.approx(0.7) and evaluated["js_smile_r"] == pytest.approx(0.4)  # the larger
+    film = material.principled(mat)
+    assert film.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "crows_bump"]
+    assert film.inputs["Coat Normal"].links[0].from_node == nodes[maps.NODE + "crows_bump"]  # the coat on it too
+    image = nodes[maps.NODE + "crows_map"].image
+    px = np.empty(image.size[0] * image.size[1] * 4, np.float32)
+    image.pixels.foreach_get(px)
+    red, green = px[0::4], px[1::4]
+    assert 0.00005 < (red < 0.97).mean() < 0.01 and 0.00005 < (green < 0.97).mean() < 0.01  # each side's few lines
+    count = len(nodes)
+    maps.refresh(mat)
+    assert len(nodes) == count  # one chain after a rebuild
+
