@@ -1331,6 +1331,14 @@ booked with just-direct-mocap.
   forehead's fine net, box spent: tried the dot filter, the scans' 16K colour, the microrelief depth - doesn't match
   yet; missing a scanned micro detail at his resolution (his 388 px/mm micro normal is CC5's, paid sources' terms bar
   a free app) or a better generator than 11-07's layered tile (work). A small gap, the forehead close-up only.**
+- **23:5x, the brows (box 45 min): at the eye view ours a grey-brown hazy bar, his crisp dark strands - the table's
+  route "the live view's strand haze -> cards" (CC5's brows are cards: `Brows_Hair_Transparency`).** Trial
+  `factors browpoly*w*gap*tips`: cards along our own brow strands (roots no closer than `gap`), lying on the skin, each
+  a slice of a dense Polytricity strip's lower half (fine separated ends), in our hair model at the brows' melanin;
+  the strand brows hidden. Running (`batch_browpoly.sh`: 1.6 and 2.4 mm wide, HD Aaron in the run).
+  **23:55 (`row_browpoly_*`): worse - dark blocky smudges; a slice of a dense long-hair strip on a 1.6-2.4 mm card
+  reads as a solid patch. Brow cards need a short-hair brow texture (CC5's is its own); Polytricity's are long-hair
+  strips. Not kept; the strand brows stay (at this view they read as brows, a little hazy). Box closed early.**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

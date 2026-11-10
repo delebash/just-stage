@@ -2278,6 +2278,71 @@ def _cap_footprint_uvs(hair, body, front: float = -0.2) -> np.ndarray:
     return np.array(out, np.float64).reshape(-1, 2)
 
 
+def browpoly(built: dict, width_mm: float = 1.6, gap_mm: float = 0.9, tips: float = 0.5) -> None:
+    """The brows as cards (CC5's way: its brows are cards with a strand texture) along our own brow strands: strands
+    picked so no two roots lie within `gap_mm`, each a ribbon `width_mm` wide lying on the skin, mapped onto a dense
+    Polytricity strip's lower `tips` share (the fine, separated ends - a brow hair is ~10 mm), in our hair model at the
+    brows' own melanin; the strand brows hidden. --alone."""
+    brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
+    groom = next(o for o in bpy.data.objects if o.type == "CURVES" and o.juststage.part == "eyebrows"
+                 and o.juststage.part_of == built["body"].juststage.character_id)
+    pos, offs, _rad, attrs = _groom_arrays(groom)
+    roots = pos[offs[:-1]]
+    rng = np.random.default_rng(13)
+    gap = gap_mm / 1000.0
+    cells: dict = {}
+    picked = []
+    for k in rng.permutation(len(roots)):
+        c = tuple((roots[k] // gap).astype(int))
+        near = [j for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)
+                for j in cells.get((c[0] + dx, c[1] + dy, c[2] + dz), ())]
+        if any(np.linalg.norm(roots[k] - roots[j]) < gap for j in near):
+            continue
+        cells.setdefault(c, []).append(k)
+        picked.append(k)
+    centre = np.median(roots, axis=0) + np.array([0.0, 0.08, 0.0])  # ~8 cm behind the brows (the face looks -Y)
+    verts, faces, uvs = [], [], []
+    for k in picked:
+        q = pos[offs[k]:offs[k + 1]]
+        if len(q) < 3:
+            continue
+        tan = np.gradient(q, axis=0)
+        tan /= np.maximum(np.linalg.norm(tan, axis=1, keepdims=True), 1e-9)
+        side = np.cross(tan, q - centre)
+        side /= np.maximum(np.linalg.norm(side, axis=1, keepdims=True), 1e-9)
+        n = len(q)
+        half = side * (width_mm / 2000.0) * np.linspace(1.0, 0.5, n)[:, None]
+        strip = rng.integers(0, 6)
+        u0, u1, v0, v1 = POLY_STRIPS[strip]
+        x0 = u0 + rng.uniform(0.1, 0.6) * (u1 - u0)
+        du = 0.3 * (u1 - u0)
+        base = len(verts)
+        for i in range(n):
+            verts.append(q[i] - half[i])
+            verts.append(q[i] + half[i])
+            v = v0 + tips * (v1 - v0) * (1.0 - i / (n - 1))  # the strip's lower share, root to tip down it
+            uvs.append((x0, v))
+            uvs.append((x0 + du, v))
+        for i in range(n - 1):
+            a = base + 2 * i
+            faces.append((a, a + 1, a + 3, a + 2))
+    me = bpy.data.meshes.new("brow cards")
+    me.from_pydata([tuple(v) for v in verts], [], faces)
+    layer = me.uv_layers.new(name="poly")
+    loop_v = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_v)
+    layer.data.foreach_set("uv", np.array(uvs, np.float32)[loop_v].ravel())
+    obj = bpy.data.objects.new("brow cards", me)
+    bpy.context.scene.collection.objects.link(obj)
+    melanin = float(np.median(attrs["melanin"])) if "melanin" in attrs else brows.MELANIN
+    redness = float(np.median(attrs["redness"])) if "redness" in attrs else brows.REDNESS
+    me.materials.append(_poly_card_material(melanin, redness))
+    groom.hide_render = True
+    built.setdefault("objects", []).append(obj)
+    print("BROW CARDS", len(faces), "quads on", len(picked), "of", len(roots), "strands,", width_mm, "mm, melanin",
+          round(melanin, 3), flush=True)
+
+
 def vfpoly(built: dict, bust: str, fly: float = 0.2, cap_mode: str = "") -> None:
     """The free cut's own cards (VincentFreelance, CC BY 4.0 - an artist's layout, its textures not free) with an
     artist's free strand textures (Polytricity's "Hair Cards_FBX", CC BY 4.0 - 4K strips: mask, root / tip / tone, AO)
@@ -4246,6 +4311,9 @@ def factor(name: str):
         return lambda built: _hide_part(built, name.split("*", 1)[1])
     if name.startswith("browedge*"):  # browedge*0.55 (the roots' bell across the brow; 0 today's even) - --alone
         return lambda built: browedge(built, float(name.split("*")[1]))
+    if name.startswith("browpoly"):  # browpoly[*1.6*0.9*0.5] (brow cards on Polytricity's strips) - --alone
+        bits = [float(b) for b in name.split("*")[1:]]
+        return lambda built: browpoly(built, *bits)
     if name.startswith("vfpoly*"):  # vfpoly*B4[*0.2] (the free cut's cards, Polytricity's free strands) - --alone
         bits = name.split("*")
         return lambda built: vfpoly(built, bits[1], *(float(bits[2]),) if len(bits) > 2 else (),
