@@ -34,6 +34,8 @@ def load(path: Path, up: str = "Y"):
         bpy.ops.wm.obj_import(filepath=str(path))
     elif ext in (".glb", ".gltf"):
         bpy.ops.import_scene.gltf(filepath=str(path))
+    elif ext == ".ply":  # HUTUBS's heads (Z up, X forward - the scan route's upright step finds the face)
+        bpy.ops.wm.ply_import(filepath=str(path), forward_axis="Y", up_axis=up)
     else:
         raise SystemExit(f"unsupported {ext}")
 
@@ -65,6 +67,8 @@ def main(argv):
         mesh = ev.to_mesh()
         mesh.calc_loop_triangles()
         nt = len(mesh.loop_triangles)
+        if nt and not mesh.uv_layers and scan_list.SCANS[argv[0]].get("shape_only"):
+            mesh.uv_layers.new(name="none")  # a shape-only scan (no colour): every UV 0, the views flat grey
         if nt == 0 or not mesh.uv_layers:
             print(f"skipped {ob.name}: {nt} triangles, {len(mesh.uv_layers)} UV layers")
             ev.to_mesh_clear()

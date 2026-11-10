@@ -236,6 +236,18 @@ SCANS = {
         "credit": '"HSR0161-Body-002" from HSRD-100 by Digital Reality Lab - huggingface.co/datasets/digitalrealitylab/HSRD-100 '
         "(CC BY 4.0)",
     },
+    "hutubs_pp1": {
+        # HUTUBS (TU Berlin's HRTF database): a head's 3D mesh, SHAPE ONLY (no colour) - for its ear (the plan's
+        # Q-EAR-1: real ears as the mixer's identities; hm08's concha a shallow dish, a real one a pit to the canal)
+        "source": "E:/Dev/3D/just-stage/.dev/downloads/hf_samples/hutubs_meshes/3D head meshes/pp1_3DheadMesh.ply",
+        "textures": {"*": None},
+        "up": "Z",  # its PLY: Z up, X forward, the origin between the ear canals (read 2026-11-10)
+        "shape_only": True,
+        "bald": True,
+        "sex": "u",  # not in the mesh files (HUTUBS's subject table not on disk)
+        "stubble": False,
+        "credit": '"HUTUBS - Head-related Transfer Function Database of the TU Berlin", pp1 head mesh (CC BY 4.0)',
+    },
 }
 
 

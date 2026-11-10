@@ -38,7 +38,7 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 | eye_blink | **close since 2026-11-10 01:3x** - the closed lid reads as skin (the blink fades in a soft colour, object-space pores, the eye tint lifted - `maps._closed_lid_skin`); smoother than his, no lid creases | open eye pixel-equal |
 | face, front, three-quarter, profile | below - the face reads made beside his: the lids (above), the hair (the library's strands: a soft grey helmet in the live view), the lips' colour | - |
 | hair_back | **below** in the product (the strands' live-view haze); the free card trial reads as hair (not in the product) | - |
-| ear | close - our concha shallower (shape: HUTUBS targets, plan §5) | - |
+| ear | close - our concha a shallow dish against his pit to the canal: **hm08's topology** (a real ear's shape wrapped on - HUTUBS, 11-10 - changes the outline, not the pit) | - |
 | torso, full | close in skin; his build is athletic (a setting, not the skin) | torso folds 0.95, form 0.69 |
 | hand | **matches in detail at his tone** - veins and tendons; paler (a setting) | at melanin 0.03: 0.65 / 0.74 / 1.06; at 0.08 (L* 60, his 68): 1.41 / 1.37 / 1.88 - his brightness between |
 | nails | close | - |
@@ -68,8 +68,9 @@ pale lower ledge: the shared head's shape, not one skin's. No CC5 woman or dark-
 1. **The hair into the product** - it changes Q-HAIR-7 ("cards from MakeHuman's CC0 card meshes and the 85 CC0 card
    alphas"). My recommendation: replace it with the free cut plus Polytricity's strips - the only free cards that read
    as hair so far.
-2. **The eye's lid shape** - the plan's escalation (the head alone on a new topology) sits on Q-BASE-4, OPEN: the
-   design and the spec disagree on the fallback.
+2. **The eye's lid shape and the ear's concha** - both hm08's topology (the lid's ledge, 11-09; the ear's missing
+   pit, 11-10: a real ear wrapped on keeps the dish); the plan's escalation (the head alone on a new topology) sits on
+   Q-BASE-4, OPEN: the design and the spec disagree on the fallback.
 
 **Work (mine, no decision):** the forehead's fine net (a better microrelief generator - a scanned one at his
-resolution is paid); the ear's concha (HUTUBS's ear targets, Q-EAR-1); the tongue's light.
+resolution is paid); the tongue's light; HUTUBS's ear targets for the outline's variety (Q-EAR-1).

@@ -4331,11 +4331,25 @@ def mix(built: dict, first: str, second: str = "", strength: float = 1.0) -> Non
     print("MIX", {r: n for r, n in takes.items()}, "strength", strength, flush=True)
 
 
+def earmix(built: dict, name: str, strength: float = 1.0) -> None:
+    """One identity's ears alone (the mixer's "ears" region, `juststage.body.set_mix`) - Q-EAR-1's feasibility: a
+    real ear (HUTUBS) on our head, its concha against hm08's shallow dish (2026-11-10). A shape: --alone."""
+    api = importlib.import_module("bl_ext.system.juststage.api")
+    body = built["body"]
+    api.run("juststage.body.set_mix", character=body.juststage.character_id, region="ears", identities=name,
+            weights=[1.0], strength=strength)  # fmt: skip
+    bpy.context.view_layer.update()
+    print("EAR MIX", name, "strength", strength, flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
     if name.startswith("regions*"):  # regions*fh1p2 (a region-map variant's folder under .dev/gate/regions)
         return lambda built: regions(built, name.split("*", 1)[1])
+    if name.startswith("earmix*"):  # earmix*hutubs_pp1[*1.0] (one identity's ears alone) - --alone
+        bits = name.split("*")
+        return lambda built: earmix(built, bits[1], *(float(bits[2]),) if len(bits) > 2 else ())
     if name.startswith("mix*"):  # mix*0, mix*0*3, mix*0*3*0.7 (identities by index or name, the strength)
         first, *rest = name.split("*")[1:]
         second = rest[0] if rest else ""

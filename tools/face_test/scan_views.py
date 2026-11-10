@@ -51,15 +51,18 @@ def build_mesh(name, src, scan):
     uv = me.uv_layers.new(name="UV")
     uv.data.foreach_set("uv", tri_uv.astype(np.float32).ravel())
     for m in json.loads(str(src["materials"])):
-        me.materials.append(emission_material(m["name"], scan_list.texture_for(scan, m["name"])))
+        me.materials.append(emission_material(m["name"], scan_list.texture_for(scan, m["name"]),
+                                              shaded=bool(scan.get("shape_only"))))
     me.polygons.foreach_set("material_index", tri_mat.astype(np.int32))
     ob = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(ob)
     return ob
 
 
-def emission_material(name, texture):
-    """The surface shows its colour map as it is - no light, no shading (or flat grey without one)."""
+def emission_material(name, texture, shaded: bool = False):
+    """The surface shows its colour map as it is - no light, no shading (or flat grey without one). `shaded` (a
+    shape-only scan, no colour - HUTUBS's heads): clay grey lit from the camera (the Layer Weight's facing), so the
+    landmark step finds a face on it (flat grey gave a silhouette: "no face in any turn", 2026-11-10)."""
     mat = bpy.data.materials.new(name)
     nt = mat.node_tree
     nt.nodes.clear()
@@ -69,6 +72,17 @@ def emission_material(name, texture):
         tex = nt.nodes.new("ShaderNodeTexImage")
         tex.image = bpy.data.images.load(texture, check_existing=True)
         nt.links.new(tex.outputs["Color"], em.inputs["Color"])
+    elif shaded:
+        facing = nt.nodes.new("ShaderNodeLayerWeight")
+        lit = nt.nodes.new("ShaderNodeMath")
+        lit.operation, lit.use_clamp = "SUBTRACT", True
+        lit.inputs[0].default_value = 1.0
+        nt.links.new(facing.outputs["Facing"], lit.inputs[1])
+        clay = nt.nodes.new("ShaderNodeMath")
+        clay.operation = "MULTIPLY_ADD"
+        nt.links.new(lit.outputs[0], clay.inputs[0])
+        clay.inputs[1].default_value, clay.inputs[2].default_value = 0.55, 0.05
+        nt.links.new(clay.outputs[0], em.inputs["Color"])
     else:
         em.inputs["Color"].default_value = (0.2, 0.2, 0.2, 1.0)
     nt.links.new(em.outputs["Emission"], out.inputs["Surface"])

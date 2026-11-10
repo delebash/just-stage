@@ -1397,6 +1397,32 @@ booked with just-direct-mocap.
   lighter two: the full tint lift kept. Suites: unit 45, tools 62, Blender 209 + 2 failed - both tests walking the
   colour and normal chains in their old order (the closed lid's nodes now sit before the margin's colour and last in
   the normal chain); updated, `test_skin_maps.py` 25 passed.
+- **01:4x, the ear (the gate's `ear`: our concha shallow-looking and light, his deep and dark):** HUTUBS's 58 heads
+  unpacked (`.dev/downloads/hf_samples/hutubs_meshes/3D head meshes/`, binary PLY, ~141k points, Y lateral, the origin
+  between the ear canals). But 11-09 01:3x already measured the depth: hm08's 18.9 mm against HUTUBS's 18.5-26.2 - no
+  clear gap; the visible difference is size (a slider) and the concha's DARKNESS (his AO map; our cavity flat 1.0 -
+  the plan's §10 Cavity row TO BUILD). The 11-08 AO round judged only the face's doll look; trial at the ear and nose
+  views (`aoshade*0.8*10 / *20`, `batch_earao.sh`).
+  **01:40 (`row_earao_*`): AO changes nothing at the ear or the nose - not kept. The ear view shows the gap is SHAPE:
+  his concha a deep pit to the canal, ours a shallow dish (hm08 has no canal entrance; the 11-09 rim-to-floor measure
+  missed it). The nose view too: his nostrils and alar creases read deep, ours hardly show (identity / shape).**
+  The ear's route, Q-EAR-1 (approved, plan step 4): real ears as the mixer's identities (its "ears" region, 984
+  vertices, already built). Feasibility first, one head (box 60 min, from 01:50): `scan_convert` loads PLY and keeps a
+  shape-only scan (a zero UV; `shape_only` in the scan list); `scan_list` entry `hutubs_pp1` (sex "u", no colour);
+  the route run only to the fit (`scratchpad/route_to_fit.py`: no bake, skin or layers - a layers.npz would put the
+  grey scan into every composition's fill). Then `make_identities` and the ear view with that identity.
+  01:42: no face found - the views render flat emission colour, a shape-only head a grey silhouette; `scan_views`
+  shades a shape-only scan as clay lit from the camera (Layer Weight facing). 01:45: the route to the fit OK - placed
+  by 1,657 pairs, the wrap median 0.99 mm (above the neck 90% 13.7 mm, 17.9% beyond 1 cm). `make_identities` into a
+  scratch folder (21 fits; the product's identities unchanged); `hutubs_pp1.npz` moves 810 ear vertices, median 4.8 mm
+  (p90 7.7). **TRIAL: `hutubs_pp1.npz` copied into `data/generated/mixer/identities/` - REMOVE after the trial** (the
+  mixer would list it; LOCAL TEST data). `factors earmix*<id>[*strength]` (the "ears" region alone); `batch_earmix.sh`.
+  **01:55 (`row_earmix_*`): the real ear changes our ear's outline (rounder, another rim) but its concha stays a
+  shallow dish - no pit. The wrap puts hm08's ear vertices onto the real surface; hm08's ear has no vertices to go
+  down into a pit (its topology - the plan's §4 table: the ears 4.43 mm p90, one of the head's measured topology
+  failures with the lids). VERDICT: the concha's depth is the head's topology - the same escalation as the lid (the
+  head alone on a new topology, Q-BASE-4, the user's). Ear targets (Q-EAR-1) stay worth building for the outline's
+  variety, not for this gap. The trial identity removed from the product's folder (checked: the nine HSRD ones).**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
