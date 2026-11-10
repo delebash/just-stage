@@ -29,9 +29,9 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 
 | View | Reading | Numbers (ours / his; "=" within his own spread) |
 |---|---|---|
-| cheek | **matches** - pores, fine relief and colour read alike | micro 1.07 =, pores 0.94 =, folds 0.93 =, form 0.96 = |
+| cheek | **matches** - pores, fine relief and colour read alike; since 11-10 the coat shines off the relief as his does (below) | micro 1.07 =, pores 1.11 > (his spread 8%; pores x0.9 on trial), folds 1.07 =, form 1.00 = (11-10; 11-09: 1.07 / 0.94 / 0.93 / 0.96) |
 | nose | close - real skin; our nostril crease a little deeper | - |
-| forehead | close - real creases; his skin a crisper fine net of pits | pores 0.51 <, folds 0.62 < |
+| forehead | close - real creases; his bumps glint as raised granules, ours a softer polygon net. **11-10: his coat lobe takes the bumped normal, ours took a smooth one** (CC Blender Tools' `rl_head_shader`, read in his blend) - wired his way (`maps.build_material`, MICRO_DISTANCE x0.75 to keep the cheek): crisper glints. His forehead's crackle is his cavity map on the roughness (tried his way - softer, not kept); rounder granule tiles move away from his micro tile (not kept) | the eye view's strip above the brows: pores 0.51 -> 0.62 <, folds 0.62 -> 0.73 <; the forehead view itself (below the fringe): micro 0.85, pores 0.94 of his |
 | chin, lips | close - the lips' colour **matches** (lips minus skin, L* a* b*: ours -24.3 / +26.9 / +7.8, his -25.5 / +26.1 / +9.5 - 11-10); our stubble sparser and browner than his salt-and-pepper (his grey: age, a setting) | - |
 | lip corner | close - the lip a more saturated pink | - |
 | eye | **below** - our upper lid low over the iris, the lower rim a wide pale ledge (the lid's shape: the plan's escalation, Q-BASE-4, open) | sclera L* 70 / 74, not brighter |
@@ -39,10 +39,10 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 | face, front, three-quarter, profile | below - the face reads made beside his: the lids (above), the hair (the library's strands: a soft grey helmet in the live view), the lips' colour | - |
 | hair_back | **below** in the product (the strands' live-view haze); the free card trial reads as hair (not in the product) | - |
 | ear | close - our concha a shallow dish against his pit to the canal: **hm08's topology** (a real ear's shape wrapped on - HUTUBS, 11-10 - changes the outline, not the pit) | - |
-| torso, full | close in skin; his build is athletic (a setting, not the skin); **women's torsos carry relief since 11-10** (Blender Studio's CC0 female sculpt - Q-BODY-3; before: flat) | torso folds 0.95, form 0.69 |
+| torso, full | close in skin; his build is athletic (a setting, not the skin); **women's torsos carry relief since 11-10** (Blender Studio's CC0 female sculpt - Q-BODY-3; before: flat). **The legs, 11-10: every man's thighs carried brown speckled patches with edges at the full view** (HSR0042's leg colour - his dense leg hair, filled, left speckle and polygon cells) **and lumps** (its relief at 40 mm: the fit's leftover) - found one factor at a time, fixed: no scan colour on the men's limbs, the legs' relief under 6 mm; now one even tone like his. **Women's arms and legs carry relief since 11-10** (HSR0015-Body-087, CC BY 4.0 - under 6 mm; her sneakers, tucked hands and a thigh dent left out) | torso folds 0.96, form 0.70 |
 | hand | **matches in detail at his tone** - veins and tendons; paler (a setting) | at melanin 0.03: 0.65 / 0.74 / 1.06; at 0.08 (L* 60, his 68): 1.41 / 1.37 / 1.88 - his brightness between |
 | nails | close | - |
-| foot | **matches in detail at his tone** - tendons and veins; paler (a setting) | at melanin 0.03: 0.58 / 0.62 / 0.68; at 0.08 (L* 47, his 54): 1.15 = / 1.06 = / 1.07 = |
+| foot | **matches in detail at his tone** - tendons and veins; paler (a setting); between the tendons at the toes' bases ours shows warm brown smudges his doesn't (there on 11-09 too; the grooves' shading - open, small) | at melanin 0.03: 0.58 / 0.62 / 0.68; at 0.08 (L* 47, his 54): 1.15 = / 1.06 = / 1.07 = |
 | smile | close - the corners and cheeks lift; his eyes narrow more | - |
 | mouth open, talk | close - the "aa" pairing was unequal (ours jawOpen 0.4 against his full V_Open); at 0.8 (11-10, the gate's pairing now) the opening matches his and the inner mouth reads as a mouth | - |
 
@@ -76,5 +76,9 @@ pale lower ledge: the shared head's shape, not one skin's. No CC5 woman or dark-
    **My rec: the design's route (the head alone on a new topology) with ICT-FaceKit's head** - a large rebuild (the
    neck seam, the head sliders wrapped on, the head tile's UVs, masks and skins redone).
 
-**Work (mine, no decision):** the forehead's fine net (a better microrelief generator - a scanned one at his
-resolution is paid). Done since: the closed lid (11-10 01:3x), HUTUBS's 58 ears in the mixer (Q-EAR-1, 03:40).
+**Work (mine, no decision):** the forehead's granules (close-up only; the coat's wiring done, his cavity and rounder
+tiles tried - a scanned micro detail at his resolution is paid); the cheek's pore band 1.11 (pores x0.9 on trial); the
+foot's smudges between the toe tendons; the slim woman's flank line. Done since: the closed lid (11-10 01:3x),
+HUTUBS's 58 ears in the mixer (Q-EAR-1, 03:40), the women's torso (Q-BODY-3, 04:4x), the legs of every character and
+the women's arms and legs (11-10 07:xx), the coat on the bumped normal (07:xx). The end gate of 11-10:
+`.dev/gate/parts/2026-11-10gate` (every view, HD Aaron in the same run; sheets `<scratchpad>/gate1110/`).

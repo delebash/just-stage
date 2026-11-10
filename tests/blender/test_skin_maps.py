@@ -638,3 +638,17 @@ def test_the_closed_lids_soft_colour_is_the_head_tile_averaged_once(tmp_path):
     assert maps._soft_copy(image) is soft  # found by name the second time
     bpy.data.images.remove(soft)
     bpy.data.images.remove(image)
+
+
+def test_the_coat_shines_off_the_skins_relief(human, tmp_path):
+    """The coat lobe takes the skin's bumped normal, as the base does - HD Aaron's head BSDF feeds both from one normal
+    (CC Blender Tools' rl_head_shader, read 2026-11-10); unlinked, our oil lobe shone off a smooth surface and the
+    relief's bumps never glinted. Both BSDFs (the film's and the live view's), after every layer."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    mat = body.juststage.skin_material
+    live = mat.node_tree.nodes[material.LIVE_BSDF]
+    for bsdf in (material.principled(mat), live):
+        normal, coat = bsdf.inputs["Normal"], bsdf.inputs["Coat Normal"]
+        assert normal.is_linked and coat.is_linked
+        assert coat.links[0].from_socket == normal.links[0].from_socket

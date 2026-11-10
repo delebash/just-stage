@@ -112,6 +112,24 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   the library (verified: unit 45, tools 63, Blender 212); its measure against HD Ariana waits for her export
   (Q-GATE-3, the user's). The gate's "aa" pairing fixed (jawOpen 0.8). Q-BASE-4's facts for the user (ICT-FaceKit's
   head has the lid fold and the ear's pit; Blender Studio's does not) - the working doc 03:5x, the gate report.
+  05:2x: Q-BODY-3's limbs from HSR0015-Body-087 (CC BY 4.0): round 1's thighs streaked (the fit's leftover), fixed by
+  `relief_hp_mm` 15; her sneakers and tucked hands left out (`body_scan` `leave_out`, new). Running `batch_hsr15c.sh`
+  (old scratchpad: all three women's skins and the library rebuilt - backups `*_2026-11-10limbs`; renders `_lo`),
+  then `batch_cavity.sh`: the forehead's fine net is HD Aaron's CAVITY map on his roughness (CC5's formula, RESEARCH
+  14.10) - ours flat; trial `factors cavitynet*`. Uncommitted: body_scan.py, factors.py, the two tests, the docs.
+  05:4x: the cavity trial NOT kept (the cheek's bands fell, the forehead softer). His forehead's look is pinpoint
+  glints, and his coat lobe takes the bumped normal (ours unlinked) - `batch_coatnormal.sh` (`factors coatnormal`)
+  starts by itself after `batch_limblayer.sh` (the women's thigh streaks: limb colour vs relief, one at a time; it
+  restores and rebuilds the women after). The product change and its test are staged in this session's scratchpad
+  (`test_coat_normal_snippet.py`); never edit `extension/` while a batch runs Blender.
+  06:5x: found the LEGS' fault (every man's thighs: brown speckled patches with edges - HSR0042's colour; lumps -
+  its relief at 40 mm) and the women's streaks (HSR0015's relief at 15 mm). Fixes: `no_colour` on hsr0042, per-tile
+  cuts (`_relief_cut`, legs 6 mm), hsr0015 at 6 mm with her thigh dent marked out (`marks_out` per tile). Coat rounds
+  1-2: the coat on the bumped normal + MICRO_DISTANCE x0.75 (cheek back in band, forehead strip 0.51 -> 0.62).
+  Running: `batch_menlegs2.sh` (the men rebuilt) -> `apply_coat.py` -> `batch_end_1110.sh` (the women, the library,
+  the full gate `.dev/gate/parts/2026-11-10gate`, every suite). Then: look at every sheet, write the gate report's
+  changes, commit. Open: the forehead's granules (the micro tile's pattern), the cheek's pore band (1.11 with the coat
+  - pores x0.9 if it stays over).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

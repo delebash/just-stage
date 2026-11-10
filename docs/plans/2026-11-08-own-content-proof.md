@@ -1503,6 +1503,145 @@ booked with just-direct-mocap.
   soft line low on one flank stays - another source (the sculpt's flank against ours), subtle; the Average and Heavy
   women natural. KEPT; the flank line an open small item (Q-BODY-3's measure against HD Ariana - the user's export -
   decides its strength). Tools 63 and the build-skins tests passed.**
+- **04:5x, Q-BODY-3's limbs (the approved option "the HSRD bare limbs"):** women's skins had no arm, hand, leg or foot
+  relief (the men's come from HSR0042's bare limbs). The downloaded women's poses (their `pose_meta.json`): HSR0015-
+  Body-087 - a woman of 23 in a sports bra, shorts (black - the post's fabric test drops them) and sneakers, arms
+  crossed, standing - the counterpart. `body_scan` source `hsr0015` (fit Anny, tiles 1003 / 1004, stem "female");
+  `fit_anny` starts from the source's sex (it was a man for every source); the women's test allows her limbs.
+  Running `batch_hsr15.sh` (the stages, then the Average woman's hand, foot and full view before / after).
+- **05:0x, round 1 looked at (`row_h15_{hand,foot,full}.png`): NOT KEPT as made.** The fit: Anny's start a woman
+  (gender 0.02 after), the limbs' wrap p50 4.1 / p90 14.8 mm to the scan; tiles covered 1003 12.5% (her arms crossed),
+  1004 23.4%. The foot reads as before with fine relief, the hand unchanged; **the thighs took broad dark streaks and
+  blotches** (`full_after`, and a stippled thigh behind the hand). The map (`scratchpad/limb_crop.png` in this session's
+  scratchpad: 1004's thigh window lit from one side, its colour ratio x6, its fit gap): the relief carries 1-4 cm waves
+  where the wrap lies 4-10 mm off her scan (window p50 / p90) - the fit's leftover kept by the 40 mm cut; the colour
+  only fine follicle dots (ratio 0.47-0.53, p1-p99). One change: `relief_hp_mm` 15 for `hsr0015` (as `bs_female`, mine
+  under the go - attacked: it breaks nothing approved, the 15-40 mm shape is our mesh's own, the same cure the torso
+  took; dropping the legs' relief was the other choice and leaves them as smooth as before). The map at 15: the waves
+  gone, the fine texture and a few flecks kept (`limb_crop15.png`). The 40 mm maps kept as
+  `body_100{3,4}_female_*_hp40.png` in this session's scratchpad. Running `batch_hsr15b.sh` (old scratchpad: Scan
+  woman A, the library, `_after15` renders, `row_h15b_*`).
+- **05:06, round 2 looked at (`row_h15b_*`, `thighs3.png`, `thigh_close.png` in this session's scratchpad):** the broad
+  streaks gone; at the hand view's close thigh her skin reads as real (soft tone variation, fine follicles, slight
+  dimpling) where before it was one even generated texture. Left: a small dark pit on the inner upper thigh, and the
+  map's strongest marks on the FEET - texels mapped back to our body (`ours.npz`): (1250, 420) on tile 1004 is the
+  right foot at 14 mm off the floor - her sneaker's sole edge. Counted: 113,825 of tile 1003's 386,201 relief texels
+  (29%) and 20,845 of 1004's lie on our feet (her sneakers - not black, so the fabric test kept them), 2,067 on the
+  hands (tucked under her arms). Fix (mine, a plain repair of the source's inputs - the audit-inputs rule): a source's
+  `leave_out` (`body_scan._left_out`: "hands", "feet"), `hsr0015` leaves both out; test
+  `test_a_left_out_part_takes_its_own_texels_only`. Post rerun 05:08: feet and hands 0 texels, 1003 covered 8.6%, 1004
+  22.6%. Running `batch_hsr15c.sh` (old scratchpad): the Young and Heavy women before, all three women's skins, the
+  library, the three women's hand / foot / full views (`_lo`), `row_h15c_*`.
+- **05:27, round 3 looked at (`row_h15c_*`, `legs6.png`, `feet5.png` in this session's scratchpad):** the feet as
+  before (no sneaker), the shins finely textured. But at the full view all three women's thighs carry dark
+  hair-like streaks - strongest on the Heavy woman (dark skin): they read as hairy, dirty legs. In texture space
+  (`leg_preview.png`: the colour ratio alone, the relief alone, both, at true contrast) neither layer shows streaks
+  plainly - so one factor at a time in the render: `batch_limblayer.sh` (old scratchpad; the limb colour neutral, then
+  the limb relief flat, on the Average and Heavy women; then restored and rebuilt), after the cavity trial (it rebuilds
+  the library the trial reads). Open, noted: the women's hands and feet have no scan detail (their sources' sexes:
+  Thunk3D's foot unknown; Arkify's "Pencil Hand Pack" has three female hands, CC BY - RESEARCH 14.11).
+- **05:55, the women's thighs one factor at a time (`legs_layers.png`, `thigh_layers_close.png`):** the limb colour
+  neutral (relief only) keeps the streaks; the limb relief flat (colour only) has none - clean thighs with soft
+  mottling. So her RELIEF draws them: 1-3 mm wide, 1-3 cm long lines (her scan's mesh, ~0.6 mm a point, can't hold
+  hairs: stretch marks or scan noise). Not its strength - the women's limb slope is half the men's (p50 / p90 / p99 on
+  1004: 0.013 / 0.038 / 0.088 against 0.029 / 0.082 / 0.173). Close up (the hand view) it reads as skin.
+  **Found while comparing: the MEN'S thighs (the Average man, 11-09 full gate, `man_legs.png`) carry brown speckled
+  patches with edges where HSR0042's coverage ends; HD Aaron's legs one even fine texture (`aaron_legs.png`)** - a
+  visible fault on the default man at the full view, worse than the forehead's glints: the legs next.
+  `batch_menlegs.sh` (old scratchpad, starts after the coat trial): the men's limb colour neutral, then relief flat, on
+  the Average and Older men (full, hand, foot), then restored and rebuilt (backup `skins_2026-11-10menlegs`).
+- **06:1x, the women's streaks' scale (CPU; `post_cuts.py` - body_scan's post with OUT moved to this session's
+  scratchpad, the product's maps untouched; `cuts_shade.png`):** tile 1004 holds 1.67 texels a mm (1224 mm a UV). At
+  15 mm the thigh shows diagonal waves 5-15 mm long plus a curved crease at the island's edge; at 6 mm they're mostly
+  gone and the fine texture stays (slope p50 / p99 0.007 / 0.043); at 3 mm speckle alone. So the streaks are the fit's
+  leftover at 5-15 mm (the wrap's p90 14.8 mm). **`hsr0015` `relief_hp_mm` 15 -> 6 (mine, a new measured fact against
+  my 05:0x 15; attacked: it breaks no approved text; the 6-15 mm shape it drops can't be trusted at that wrap error;
+  dropping the relief altogether loses the close-up's realism; the torso's sculpt took 15 for a different reason, a
+  sculpt without fit error at that scale).** `batch_hsr15d.sh` (old scratchpad, after the coat round 2): post, the three
+  women, the library, `_lo6` renders.
+- **06:1x, the men's limb maps the same way (`cuts_men_shade.png`: HSR0042's 1004 relief at 40 (the product) / 15 /
+  6 mm, and its colour ratio x3):** at 40 big blotchy waves and blobs (the fit's leftover - his thighs' wrap 3-4 / 9 mm
+  p50 / p90 after Anny); at 6 an even fine-bump texture. The colour: dense speckle and, low on the thigh, dark
+  POLYGON CELLS - the hair fill (652,164 strand texels on 1004, `hair.fill`) leaves Voronoi-like patches where his
+  dense leg hair was. Waiting for `batch_menlegs.sh`'s one-factor renders to weigh the two.
+  **06:17, the men's limb colour neutral (`men_legs_colour.png`, `men_handfoot_colour.png`; `.dev/gate/parts/
+  2026-11-10menlegs`): the brown speckled patches are the COLOUR - gone on both men, the legs one even tone with the
+  relief's shape; hands as before (Ten24's own colour part stays), the shins' speckle gone, feet as before.** Decision
+  (mine, attacked: it changes my 11-06 bake's colour, not an approved text; cost - the limbs lose the scan's tone
+  mottling, which HD Aaron's legs don't show either; the women's colour stays - her legs carry little hair and her
+  colour-only render is clean): `body_scan` `no_colour` (new, a ratio of 1 written) on `hsr0042`; test
+  `test_the_mens_limbs_take_their_scans_relief_but_no_colour`. The men's relief cut waits for the relief-flat render.
+  **06:30, the relief flat (`men_legs_layers.png`): colour alone keeps the patches; relief alone is clean in tone but
+  the right thigh shows lumps (the fit's leftover at 40 mm) and a dent by one knee.** The arms at 40 show veins and no
+  lumps (the hand view's forearm). Decision (mine): a per-tile cut (`body_scan._relief_cut`: a number or {tile: mm}),
+  `hsr0042` legs {1004: 6.0}, the arms at the default 40; test `test_a_relief_cut_is_one_number_or_one_per_tile`.
+  `batch_menlegs2.sh` (old scratchpad; after the women's round 4): post, the three men's skins, the library, the
+  Average / Older men's full, hand and foot and the Muscular man's full (`_fix`).
+- **06:51, the women's round 4 (`legs_lo6.png`): KEPT - at 6 mm the streaks are gone on all three women, fine texture
+  left.** One pit stays on the front of the right thigh by the groin in every woman: an oval dent ~12 x 30 mm at
+  texel (985, 845) of tile 1004 (`pit_1004.png`) - her own mark. `marks_out` entries may now name their tile
+  (`body_scan._marks(..., tile)`; test `test_a_named_mark_on_one_tile_stays_off_the_others`); `hsr0015`
+  `marks_out` [((985, 845), 22 mm, 1004)]. ATTRIBUTION's HSRD row: HSR0015-Body-087 added (the women's limbs), HSR0042
+  "relief detail, its colour left out since 2026-11-10".
+- **The end of the list (after `batch_menlegs2.sh`; `batch_end_1110.sh` started by a waiter that first applies
+  `apply_coat.py` - this session's scratchpad: MICRO_DISTANCE x0.75, the coat on the final bumped normal in
+  `maps.build_material` and `detail.apply`, test `test_the_coat_shines_off_the_skins_relief`):** post hsr0015 with
+  the mark, the three women, the library (backup `library_2026-11-10end`), the full gate (every view, HD Aaron in the
+  run, `.dev/gate/parts/2026-11-10gate`), five characters' full / face / cheek, then unit, tools, Blender.
+  **07:56 VERIFIED: unit 45, tools 66, Blender 214 passed (1 deselected, the AI test).** The end gate's table matches
+  the trials (cheek micro 1.07 / pore 1.11 / fold 1.07; forehead strip 0.62 / 0.73; hand 0.65 / 0.77; torso 0.96 /
+  0.70); the full view's legs one even tone on all six characters (`gate1110/chars_full.png`). Seen: the foot's warm
+  smudges between the toe tendons are in the 11-09 gate too (not new). The gate report's rows updated. Next: pores
+  x0.9 / x0.8 for the cheek's pore band (`batch_pores09.sh`, running).
+- **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
+  HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
+  10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1
+  0.311, gran2 0.331 (slope moves to 0.6-4 mm, his sits at 0.25-0.6). Not kept: his tile isn't rounder granules; his
+  forehead's look is the micro tile under his light and his coat on the bumped normal (ours now has it) plus his
+  colour's red dots. The forehead's granules stay open, close-up only, the box spent.
+- **05:0x, the forehead (meanwhile, CPU):** at the dedicated forehead view (0.029 mm a pixel, a window below our
+  fringe, `fh_bands.py` in this session's scratchpad on the 11-09 gate's renders) ours against his: micro 0.44 / 0.51
+  (0.85), pore 1.48 / 1.57 (0.94), fold 2.37 / 1.24 (1.9 - our colour relief's lines). So the gate's "forehead pores
+  0.51" comes from the eye view's top strip - his forehead above his brow against our skin nearer ours (the strip the
+  11-07 report voided for DISTS). By eye his forehead still differs: a crisp crackle net of 1-3 mm cells everywhere
+  (`fh_full.png`); ours soft bumps and red-brown streak lines. His head normal map there is nearly flat
+  (`aaron_nb_forehead.png`, slope RMS 0.023) - so the net is in another of his maps (looking).
+  **Found (RESEARCH 14.10): his CAVITY map (`aaron_fh_maps.png`: a dense crease net), used by CC5's shader only on the
+  roughness - mix toward 1 by (1 - cavity)(1 - Fresnel) x 0.823; ours has the channel but every skin's cavity is flat
+  1.0 (the plan's "Cavity" row, TO BUILD).** Trial (factor `cavitynet*<tile>*<strength>`, new, CC5's formula on the
+  film BSDF, the live one synced; tiles in `.dev/gate/micro/`): `cav_f1` - the cavity from our own microrelief's
+  crevices (`cavfromh.py` in this session's scratchpad: height below its 0.25 mm Gaussian, floor 0.02, depth 0.05 -
+  the plan row's "derived from its own relief", the crevices in its grooves) and `cavnet_c` - a coarser crease net
+  (`cavnet.py`: 0.9 mm cells, 0.12 mm creases - matches his map's p5 / p50 / variation at his 0.25 mm texel, but by eye
+  coarser and patchier than his, `cavnet_vs_his.png`). Time box to 06:40. Queued: `batch_cavity.sh` (old scratchpad:
+  forehead, cheek, eye, nose views, scalp hidden, HD Aaron in the run, measured).
+  **05:33 result (`.dev/gate/parts/2026-11-10cavity`, `cav_table.txt`, `row_cav_*`, `cav_fh4.png`): NOT KEPT.** The
+  cheek's bands fall (pore 0.93 -> 0.84 / 0.78, fold 0.93 -> 0.82 / 0.83 for `cav_f1` / `cavnet_c`); the eye view's
+  forehead strip moves 0.51 -> 0.64 with `cav_f1` (a strip of different skin - not the forehead's measure); by eye at
+  the forehead view both make ours a touch softer, not crisper - matte crevices take the shine's edges away. Seen in the
+  full-size crops: ours already shows the polygon net; his forehead differs by PINPOINT GLINTS on the bump tops
+  (granular sparkle), his cheek and ours alike in kind (`cav_cheek2.png`). Read in his blend (`coat_normal.py`): his
+  head BSDF's Coat Normal and Normal come from the same bumped output; ours leaves Coat Normal unlinked (`maps.py`
+  sets the coat's weight, roughness and IOR only), so our coat (0.12 at roughness 0.44) shines off a smooth surface.
+  Next, one factor: `factors coatnormal` (new) - `batch_coatnormal.sh` (old scratchpad; forehead, cheek, nose, eye,
+  hand, torso, HD Aaron in the run), queued after `batch_limblayer.sh`.
+  **06:02 result (`.dev/gate/parts/2026-11-10coat`, `coat_table.txt`, `coat_crops.png`):** the coat on the bumped
+  normal makes the forehead's net and bump tops crisper (closer to his glints, still less); the eye view's forehead
+  strip pore 0.51 -> 0.64, fold 0.62 -> 0.71; but the cheek goes over him - micro 1.07 -> 1.33, pore 0.93 -> 1.12
+  (fold 1.05 =); hand pore 0.65 -> 0.70, fold 0.74 -> 0.76; torso unchanged. Read: CC5's wiring is right, but our
+  microrelief was tuned (11-07) with a coat that ignored it. Round 2 (`batch_coat2.sh`, after the men's legs test):
+  with the coat normal, micro x0.75 / x0.6 / x0.75 with the forehead's region x2 (`regions*fhm2` - the shipped map,
+  md5-equal to `regions/base`, with the forehead's micro x2).
+  **06:39 round 2 (`coat2_table.txt`, `coat2_crops.png`):** coat normal + micro x0.75 - cheek micro 1.07 =, pore 1.11
+  (> his 8% band by 3%), fold 1.07 =; forehead strip pore 0.62, fold 0.73 (from 0.51 / 0.62); hand 0.65 / 0.77; torso
+  0.96. x0.6 drops the cheek's micro to 0.90 <. The forehead's own micro x2 (fhm2) moves the strip to 0.68 / 0.67 and by
+  eye adds the polygon crackle again. By eye: his forehead's bumps are round raised granules with bright tops, ours a
+  polygon net - the tile's pattern (its grooves), not the shine's wiring. **Decision (mine): into the product - the
+  coat on the skin's final bumped normal (CC5's wiring, after every layer: the nails', lips' and upper lip's layers
+  relink Normal) and MICRO_DISTANCE x0.75; the cheek's pore band checked in the product's own render (pores x0.9 the
+  one-factor fallback if it stays over). The forehead's granules: box (to 06:40) spent - open, a pattern change in the
+  micro tile (fewer grooves, pillowed cells), a close-up gap.** Applied after `batch_menlegs2.sh` (never edit
+  `extension/` while a batch runs Blender).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

@@ -74,8 +74,10 @@ MICRO_TOOL = ".dev/venv-tools/Scripts/python -I tools/make_microrelief.py"
 MICRO_TILE_MM = 10.0
 #: 2026-11-06: 0.015 mm (from 0.035) - the cheek's finest band 0.63 vs HD Aaron's 0.51 (0.035: 0.80). 2026-11-07: the
 #: layered tile (make_microrelief.py `layered`) has 0.372x the old tile's slope per unit of height, so x2.686 keeps the
-#: slope - HD Aaron's micro slope 0.090 (his tile's 0.285 x his shader's 0.317), ours 0.095 at the cheek's x1.35
-MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.0000403
+#: slope - HD Aaron's micro slope 0.090 (his tile's 0.285 x his shader's 0.317), ours 0.095 at the cheek's x1.35.
+#: 2026-11-10: x0.75 with the coat on the bumped normal (below) - the coat now shines off the relief too, and the
+#: cheek's micro band went 1.07 -> 1.33 of HD Aaron's; x0.75 puts it back at 1.07 (`factors coatnormal`)
+MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.0000302
 #: the nails (rec 14, the realism brief §6.14: "a layered nail shader on tile 1005"): each nail's own coordinates
 #: (`tools/make_nail_coords.py`: along it 0 at the cuticle to 1 at the free edge, across it -1 to 1, its digit); the
 #: plate drawn inside them with a curved cuticle edge and rounded sides (the tile's polygons are coarse), over a bed
@@ -1017,6 +1019,10 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT
     bsdf.inputs["Sheen Roughness"].default_value = SHEEN_ROUGHNESS
     _margin_layer(nt, bsdf)  # last: over the colour, roughness and coat the layers above set
+    # the coat on the skin's final bumped normal, as the base's (the nails', lips' and upper lip's layers relink
+    # Normal above): HD Aaron's head BSDF feeds both from one normal (CC Blender Tools' rl_head_shader, read
+    # 2026-11-10); unlinked, our oil lobe shone off a smooth surface and the relief's bumps never glinted
+    links.new(bsdf.inputs["Normal"].links[0].from_socket, bsdf.inputs["Coat Normal"])
     mat.juststage.has_maps = True
 
 

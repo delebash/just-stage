@@ -50,6 +50,13 @@ SOURCES = {
     "hsr0042": {"scan": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0042-Body-045" / "x" / "HSR0042-Body-045_LOD0.obj",
                 "image": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0042-Body-045" / "x" / "HSR0042-Body-045_LOD0_u0_v0_diffuse.png",
                 "scale": 1.0, "tiles": (2, 3), "fit": "anny", "work": WORK_ROOT / "hsr0042",
+                # no colour detail: his dense leg hair, filled, left speckle and polygon cells - brown patches with
+                # edges on every man's thighs at the full view; with the colour neutral they're gone (2026-11-10,
+                # `men_legs_colour.png`); the hands keep Ten24's own colour (the "hands" part)
+                "no_colour": True,
+                # the legs' relief under 6 mm only: at 40 the fit's leftover drew lumps on the thighs (the relief-only
+                # render, `men_legs_layers.png`); the arms keep 40 (their veins, no lumps seen)
+                "relief_hp_mm": {1004: 6.0},
                 "source": "HSRD-100, HSR0042-Body-045 (huggingface.co/datasets/digitalrealitylab/HSRD-100)",
                 "licence": "CC BY 4.0 (Digital Reality Lab)"},
     "ten24": {"scan": TEN24 / "OBJ" / "Decimated" / "Ten24_Sample_100k.OBJ", "image": TEN24 / "Colour Maps" / "JPG" / "Colour_8k.jpg",
@@ -82,6 +89,24 @@ SOURCES = {
     # the women's torso (the plan's Q-BODY-3, 2026-11-10): Blender Studio's CC0 realistic_body_female at its top
     # Multires level (tools/export_bs_female.py) - a sculpt, not a scan: geometry only; our body exported as a woman;
     # its relief written beside the men's as `body_1002_female_*` (build_skins gives it to women's skins)
+    # the women's limbs (the plan's Q-BODY-3 option "the HSRD bare limbs", 2026-11-10): HSR0015-Body-087 - a woman of
+    # 23 in a sports bra, shorts (black: the fabric test drops them) and sneakers, arms crossed; as HSR0042 for the men
+    "hsr0015": {"scan": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0015-Body-087" / "x" / "HSR0015-Body-087_LOD0.obj",
+                "image": ROOT / ".dev" / "downloads" / "hsrd100" / "HSR0015-Body-087" / "x" / "HSR0015-Body-087_LOD0_u0_v0_diffuse.png",
+                "scale": 1.0, "tiles": (2, 3), "fit": "anny", "gender": 0.0, "stem": "female",
+                # only detail under 6 mm: the fit's leftover (her limbs' wrap p90 14.8 mm) drew broad dark streaks on
+                # her thighs at 40 and 5-15 mm diagonal ones at 15 (2026-11-10, `row_h15_full`, `legs_layers.png`,
+                # `cuts_shade.png`: one factor - the relief, not the colour)
+                "relief_hp_mm": 6.0,
+                # her sneakers took 29% of tile 1003's relief as "foot skin" (2026-11-10 05:0x); her hands sit under
+                # her crossed arms
+                "leave_out": ("feet", "hands"),
+                # her own mark: an oval dent ~12 x 30 mm on the front of the right thigh by the groin (a pit at the
+                # full view in every woman, 2026-11-10 `legs_lo6.png`; found at this texel of tile 1004, `pit_1004.png`)
+                "marks_out": [((985, 845), 22.0, 1004)],
+                "work": WORK_ROOT / "hsr0015",
+                "source": "HSRD-100, HSR0015-Body-087 (huggingface.co/datasets/digitalrealitylab/HSRD-100)",
+                "licence": "CC BY 4.0 (Digital Reality Lab)"},
     "bs_female": {"scan": WORK_ROOT / "bs_female" / "bs_female_top.obj", "scale": 1.0, "tiles": (1,), "fit": "torso",
                   "geometry_only": True, "gender": 0.0, "stem": "female", "work": WORK_ROOT / "bs_female",
                   # only detail under 15 mm: at 40 the sculpt's breast shape against ours left crescents under the
@@ -389,7 +414,8 @@ def fit_anny(src: str, o, s) -> None:
     rot = torch.zeros(model.bone_count, 3, device=dev, requires_grad=True)
     pheno = torch.zeros(len(labels), device=dev, requires_grad=True)  # logits: 0.5 at the start
     with torch.no_grad():
-        pheno[labels.index("gender")] = 4.0  # a man
+        # the start's sex the source's (a logit: +4 a man, -4 a woman - the fit frees it after)
+        pheno[labels.index("gender")] = 4.0 if SOURCES[src].get("gender", 1.0) >= 0.5 else -4.0
     shift = torch.zeros(3, device=dev, requires_grad=True)
     tgt = torch.tensor(target, dtype=torch.float32, device=dev)
     tgt_tree = cKDTree(target)
@@ -608,6 +634,20 @@ def _hand_cover(o, number: int) -> np.ndarray:
     return _cover(o, number, _hand_vertices(o))
 
 
+def _left_out(o, number: int, parts) -> np.ndarray:
+    """The texels of tile `number` on the parts a source leaves out (its `leave_out`: "hands", "feet") - where its
+    person shows no bare skin (HSR0015's sneakers; her hands tucked under her crossed arms)."""
+    on = np.zeros(len(o["co"]), bool)
+    for part in parts:
+        if part == "hands":
+            on |= _hand_vertices(o)
+        elif part == "feet":
+            on |= _foot_vertices(o, "l") | _foot_vertices(o, "r")
+        else:
+            raise ValueError(f"no part {part!r} to leave out")
+    return _cover(o, number, on) > 0
+
+
 def _cover(o, number: int, on_part: np.ndarray) -> np.ndarray:
     """The texels of tile `number` on the faces whose vertices are all in `on_part`."""
     import cv2
@@ -654,6 +694,8 @@ def post(src: str = "artec") -> None:
             baked &= _hand_cover(o, number) > 0
         if spec.get("part") == "feet":  # only the feet the scan was placed on
             baked &= _cover(o, number, _foot_vertices(o, "l") | _foot_vertices(o, "r")) > 0
+        if spec.get("leave_out"):  # parts with no bare skin on the scan: no detail there (the edge fade lands before them)
+            baked &= ~_left_out(o, number, spec["leave_out"])
         baked = cv2.erode(baked.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
         px_per_mm = SIZE / _mm_per_uv(name)
         w = baked.astype(np.float32)
@@ -671,7 +713,8 @@ def post(src: str = "artec") -> None:
 
         # relief: the tangent xy over its own wide blur (the fit's leftover out), faded at the island's edge
         xy = nrm[..., :2] * 2 - 1
-        hp = (xy - mblur(xy, spec.get("relief_hp_mm", RELIEF_HP_MM) * px_per_mm / 2.0)) * w[..., None]
+        cut_mm = _relief_cut(spec, name)
+        hp = (xy - mblur(xy, cut_mm * px_per_mm / 2.0)) * w[..., None]
         # faded out well inside the scan's reach and the tile's own island: no step where the detail ends
         # (a part laid over its tile's main relief takes no fade at the island's own edge: across a UV seam the
         # other side carries the same part, and a seam down a foot's top faded its tendons out)
@@ -684,7 +727,7 @@ def post(src: str = "artec") -> None:
         edge = edge * edge * (3 - 2 * edge)
         hp *= edge[..., None]
         hp = _debris_filled(hp, spec.get("debris_limit", 0.3))
-        marked = _marks(spec, px_per_mm)
+        marked = _marks(spec, px_per_mm, name)
         if marked is not None:  # filled from the skin round them, relief and colour alike
             hp = _patched(hp, marked, baked, px_per_mm)
         z = np.sqrt(np.clip(1 - (hp**2).sum(-1), 0, 1))
@@ -700,6 +743,8 @@ def post(src: str = "artec") -> None:
         ratio_log = np.log(lin) - np.log(np.maximum(mblur(lin, COLOUR_HP_MM * px_per_mm / 2.0), 1e-4))
         ratio_log = np.clip(ratio_log, -0.5, 0.3) * w[..., None] * edge[..., None]
         ratio = np.exp(ratio_log)
+        if spec.get("no_colour"):  # the colour detail left out: the skin's own colour there (a ratio of 1)
+            ratio = np.ones_like(ratio)
         OUT.mkdir(parents=True, exist_ok=True)
         stem = f"body_{name}" + (f"_{spec['stem']}" if "stem" in spec else "")  # a sex's own source (women's torso)
         stem += f"_{spec['part']}" if "part" in spec else ""  # a part beside the tile's main source
@@ -713,8 +758,9 @@ def post(src: str = "artec") -> None:
             cv2.imwrite(str(OUT / f"{stem}_colour.png"),
                         np.round(np.clip(ratio[..., ::-1] / 2, 0, 1) * 65535).astype(np.uint16))  # fmt: skip
         info = {"tile": name, "size": SIZE, "source": spec["source"], "licence": spec["licence"],
-                "relief_hp_mm": spec.get("relief_hp_mm", RELIEF_HP_MM), "colour_hp_mm": COLOUR_HP_MM,
-                "colour": "a ratio around 1, stored halved (0.5 = 1)", "strands_filled": int(found.sum()),
+                "relief_hp_mm": cut_mm, "colour_hp_mm": COLOUR_HP_MM,
+                "colour": "none (no_colour)" if spec.get("no_colour") else "a ratio around 1, stored halved (0.5 = 1)",
+                "strands_filled": int(found.sum()),
                 "fabric_out": int(fabric.sum()), "spots_filled": int(marks.sum()), "covered": float(baked.mean())}  # fmt: skip
         (OUT / f"{stem}.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
         wrote = "relief" if "part" in spec and spec.get("geometry_only") else "relief and colour"
@@ -722,14 +768,23 @@ def post(src: str = "artec") -> None:
               f"texels out; tile covered {baked.mean():.1%}")
 
 
-def _marks(spec: dict, px_per_mm: float) -> np.ndarray | None:
-    """The source's own named marks (`marks_out`: texel and radius in mm) as a mask on its tile, None without any."""
+def _relief_cut(spec: dict, tile: int) -> float:
+    """The scale (mm) under which a source's relief is kept on `tile`: its `relief_hp_mm` - one number, or one per
+    tile number ({1004: 6.0}: the legs cut finer than the arms) - else RELIEF_HP_MM."""
+    cut = spec.get("relief_hp_mm", RELIEF_HP_MM)
+    return float(cut.get(tile, RELIEF_HP_MM) if isinstance(cut, dict) else cut)
+
+
+def _marks(spec: dict, px_per_mm: float, tile: int | None = None) -> np.ndarray | None:
+    """The source's own named marks (`marks_out`: texel and radius in mm, and the tile number when the source covers
+    more than one - (x, y), mm[, tile]) as a mask on `tile`, None without any there."""
     import cv2
 
-    if not spec.get("marks_out"):
+    marks = [m for m in spec.get("marks_out", ()) if len(m) == 2 or tile is None or m[2] == tile]
+    if not marks:
         return None
     mask = np.zeros((SIZE, SIZE), np.uint8)
-    for (x, y), radius_mm in spec["marks_out"]:
+    for (x, y), radius_mm, *_tile in marks:
         cv2.circle(mask, (int(x), int(y)), max(1, int(round(radius_mm * px_per_mm))), 1, -1)
     return mask.astype(bool)
 

@@ -2971,6 +2971,24 @@ re-check before the rec list; nothing run on skin here):
   `Std_Skin_Head_NBMap.jpg`, high-passed at 2-32 px: correlation <= 0.15 with either green convention. His cavity is
   not derived from that normal map alone (CC5 likely bakes it from the HD sculpt). So "cavity from our relief" can't be
   calibrated to his map this way; whether a cavity map is needed at all is left to the face proof's highlight measure.
+- **HD Aaron's forehead net is his cavity map acting on the shine** (*file read and measured, 2026-11-10*, local test;
+  `aaron_cavity_wiring.py` / `aaron_cavity_inputs.py` in that session's scratchpad on `aaron_hair_eevee.blend`): at the
+  gate's forehead view his skin shows a crisp crackle net everywhere where ours shows soft bumps; his head normal map is
+  near flat there (slope RMS 0.023 over the upper forehead), his cavity map holds a dense crease net (forehead window
+  p5 / p50 0.42 / 0.77, high-pass std 0.19; a cheek window 0.46 / 0.79 / 0.17 - the whole face). CC Blender Tools
+  2.4.5's `rl_head_shader` (EEVEE build) uses the cavity ONLY on roughness: roughness = mix(roughness, 1.0, (1 - cavity)
+  x (1 - Fresnel(IOR 1.5, the bumped normal)) x Cavity Strength 0.823) - crevices go matte, more so facing the eye. The
+  diffuse is multiplied by the mouth / nostril / lip AO masks (`MCMAO Map`, "Cavity AO Strength" 1.0) and the AO map
+  (AO Strength 1.0, AO Power 2.0), not by the cavity. Ours: the cavity channel exists (`maps.SPECULAR_FROM_CAVITY`:
+  Specular IOR Level x cavity) but every built skin's cavity is flat 1.0 (`build_skins.FLAT`) - the plan's "Cavity" row,
+  TO BUILD. At the forehead view itself (0.029 mm a pixel, a window below our fringe) the bands are close - micro 0.85,
+  pores 0.94 of his - so the gap is the net's structure in the shine, not its energy; the gate report's "forehead pores
+  0.51" was the eye view's top strip (his forehead above his brow against our skin nearer ours).
+  Tried 2026-11-10 (`factors cavitynet*`, CC5's formula, two tiles: our microrelief's own crevices, and a 0.9 mm crease
+  net): the cheek's pore / fold bands fell 0.93 -> 0.78-0.84 and the forehead read softer, not crisper - not kept. His
+  forehead's look is pinpoint glints on the bump tops; **his head BSDF takes the bumped normal for the coat too**
+  (Normal and Coat Normal from the same `rl_head_shader` output, read in `aaron_hair_eevee.blend`); ours leaves Coat
+  Normal unlinked - the coat lobe sees a smooth surface (trial `factors coatnormal`).
 
 - **HD Aaron's shine over the body, read at each pixel (*measured, 2026-11-07 evening*, `tools/gate/shine_probe.py`,
   EEVEE).** Roughness: torso 0.72 (p10-p90 0.69-0.74), foot 0.74 (0.70-0.78), hand 0.72; ours 0.59 flat (`material.

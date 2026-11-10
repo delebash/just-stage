@@ -92,3 +92,51 @@ def test_a_named_mark_takes_the_skin_round_it_level_and_texture():
     inside, around = out[mark, 0], img[~mark, 0]
     assert abs(inside.mean() - around.mean()) < 0.02  # the skin's level
     assert inside.std() > 0.5 * around.std()  # its texture, not a flat fill
+
+
+def test_a_left_out_part_takes_its_own_texels_only():
+    """A source's `leave_out` (HSR0015's sneakers and tucked hands, 2026-11-10): the texels of faces on the left-out part
+    are flagged, the forearm's beside them are not, and an unknown part is an error."""
+    joints = {"joint-r-elbow": [-0.40, 0.0, 1.0], "joint-r-hand": [-0.65, 0.0, 1.0],
+              "joint-l-elbow": [0.40, 0.0, 1.0], "joint-l-hand": [0.65, 0.0, 1.0],
+              "joint-r-ankle": [-0.1, 0.0, 0.07], "joint-l-ankle": [0.1, 0.0, 0.07]}  # fmt: skip
+    co = np.array([
+        [-0.70, 0.00, 1.00], [-0.75, 0.00, 1.00], [-0.70, 0.05, 1.00],  # past the right wrist: the hand
+        [-0.50, 0.00, 1.00], [-0.55, 0.00, 1.00], [-0.50, 0.05, 1.00],  # the forearm, before the wrist
+    ])  # fmt: skip
+    tris = np.array([[0, 1, 2], [3, 4, 5]])
+    tuv = np.array([[[2.10, 0.10], [2.30, 0.10], [2.10, 0.30]],   # tile index 2 (1003): the hand's face
+                    [[2.60, 0.60], [2.80, 0.60], [2.60, 0.80]]],  # the forearm's
+                   np.float32)  # fmt: skip
+    o = {"co": co, "tris": tris, "tuv": tuv, "tile": np.array([2, 2]),
+         "joint_names": np.array(list(joints)), "joint_co": np.array(list(joints.values()))}  # fmt: skip
+    out = body_scan._left_out(o, 2, ("hands",))
+    size = body_scan.SIZE
+    assert out[int((1 - 0.15) * size), int(0.15 * size)]  # inside the hand's face
+    assert not out[int((1 - 0.65) * size), int(0.65 * size)]  # inside the forearm's
+    assert not body_scan._left_out(o, 2, ("feet",)).any()  # no face on a foot here
+    try:
+        body_scan._left_out(o, 2, ("ears",))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("an unknown part must be an error")
+
+
+def test_a_relief_cut_is_one_number_or_one_per_tile():
+    """A source's `relief_hp_mm`: one number for every tile, or one per tile number (HSR0042's legs at 6 mm, its arms
+    at the default - 2026-11-10); none - RELIEF_HP_MM."""
+    assert body_scan._relief_cut({"relief_hp_mm": 15.0}, 1003) == 15.0
+    assert body_scan._relief_cut({"relief_hp_mm": {1004: 6.0}}, 1004) == 6.0
+    assert body_scan._relief_cut({"relief_hp_mm": {1004: 6.0}}, 1003) == body_scan.RELIEF_HP_MM
+    assert body_scan._relief_cut({}, 1002) == body_scan.RELIEF_HP_MM
+
+
+def test_a_named_mark_on_one_tile_stays_off_the_others():
+    """`marks_out` entries may name their tile ((x, y), mm, tile - HSR0015's thigh dent on 1004, 2026-11-10): such a
+    mark is masked on that tile alone; one without a tile on every tile of the source."""
+    spec = {"marks_out": [((100, 100), 5.0, 1004), ((300, 300), 5.0)]}
+    on_legs, on_arms = body_scan._marks(spec, 2.0, 1004), body_scan._marks(spec, 2.0, 1003)
+    assert on_legs[100, 100] and on_legs[300, 300]
+    assert not on_arms[100, 100] and on_arms[300, 300]
+    assert body_scan._marks({"marks_out": [((100, 100), 5.0, 1004)]}, 2.0, 1003) is None

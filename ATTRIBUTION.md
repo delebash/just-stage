@@ -64,7 +64,7 @@ African woman 236 (deep3dstudio). The HSRD-100 people:
 
 | Scan | Source | Author | Licence |
 |---|---|---|---|
-| HSRD-100: HSR0015-Body-035, HSR0027-Body-068, HSR0028-Body-093, HSR0040-Body-086, HSR0042-Body-018, HSR0081-Body-054, HSR0102-Body-052; HSR0042-Body-045 for the arms', hands', legs' and feet's relief and colour detail (`data/generated/skin/body_1003_*`, `body_1004_*`, `tools/body_scan.py hsr0042`) (also downloaded, not yet used: HSR0112, HSR0161, HSR0023) | huggingface.co/datasets/digitalrealitylab/HSRD-100 | Digital Reality Lab | CC BY 4.0 |
+| HSRD-100: HSR0015-Body-035, HSR0027-Body-068, HSR0028-Body-093, HSR0040-Body-086, HSR0042-Body-018, HSR0081-Body-054, HSR0102-Body-052; HSR0042-Body-045 for the men's arms', hands', legs' and feet's relief detail (`data/generated/skin/body_1003_*`, `body_1004_*`, `tools/body_scan.py hsr0042`; its colour left out since 2026-11-10); HSR0015-Body-087 for the women's arms' and legs' relief and colour detail (`body_1003_female_*`, `body_1004_female_*`, `tools/body_scan.py hsr0015`; her hands and feet left out) (also downloaded, not yet used: HSR0112, HSR0161, HSR0023) | huggingface.co/datasets/digitalrealitylab/HSRD-100 | Digital Reality Lab | CC BY 4.0 |
 
 ## Downloaded for the next skin bases (not yet in a shipped asset)
 

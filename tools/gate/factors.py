@@ -551,6 +551,71 @@ def hairmodel(built: dict, diffuse: float, glossy: float, ambient: float) -> Non
 MICRO_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "micro"
 
 
+def cavitynet(built: dict, stem: str, strength: float) -> None:
+    """A crease-net cavity tile into the skin's roughness, CC5's way (HD Aaron's `rl_head_shader` in
+    `aaron_hair_eevee.blend`, read 2026-11-10): the roughness mixed toward 1 by (1 - cavity) x (1 - Fresnel(IOR 1.5,
+    the bumped normal)) x strength (his Cavity Strength 0.823) - his forehead's crisp crackle net is his cavity map
+    acting on the shine (his head normal is near flat there). The tile (`.dev/gate/micro/<stem>.png`, 10 mm, 1 = no
+    cavity) on the microrelief's own coordinates; the film's BSDF rewired, then the live view's synced."""
+    maps = _maps()
+    image = bpy.data.images.load(str(MICRO_TRIALS / f"{stem}.png"), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    for mat, film, mod in _skin_materials(built):
+        nt = mat.node_tree
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image, tex.interpolation = image, "Cubic"
+        nt.links.new(nt.nodes[maps.NODE + "micro_coords"].outputs["Vector"], tex.inputs["Vector"])
+        fresnel = nt.nodes.new("ShaderNodeFresnel")
+        fresnel.inputs["IOR"].default_value = 1.5
+        if film.inputs["Normal"].is_linked:
+            nt.links.new(film.inputs["Normal"].links[0].from_socket, fresnel.inputs["Normal"])
+        open_ = nt.nodes.new("ShaderNodeMath")  # 1 - cavity
+        open_.operation = "SUBTRACT"
+        open_.inputs[0].default_value = 1.0
+        nt.links.new(tex.outputs["Color"], open_.inputs[1])
+        facing = nt.nodes.new("ShaderNodeMath")  # 1 - Fresnel
+        facing.operation = "SUBTRACT"
+        facing.inputs[0].default_value = 1.0
+        nt.links.new(fresnel.outputs["Fac"], facing.inputs[1])
+        both = nt.nodes.new("ShaderNodeMath")
+        both.operation = "MULTIPLY"
+        nt.links.new(open_.outputs[0], both.inputs[0])
+        nt.links.new(facing.outputs[0], both.inputs[1])
+        share = nt.nodes.new("ShaderNodeMath")
+        share.operation, share.use_clamp = "MULTIPLY", True
+        nt.links.new(both.outputs[0], share.inputs[0])
+        share.inputs[1].default_value = strength
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "FLOAT"
+        nt.links.new(share.outputs[0], mix.inputs["Factor"])
+        rough = film.inputs["Roughness"]
+        a_in = next(i for i in mix.inputs if i.identifier == "A_Float")
+        if rough.is_linked:
+            nt.links.new(rough.links[0].from_socket, a_in)
+        else:
+            a_in.default_value = rough.default_value
+        next(i for i in mix.inputs if i.identifier == "B_Float").default_value = 1.0
+        nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Float"), rough)
+        mod.sync_live(mat)
+    print("CAVITY NET", stem, "strength", strength, flush=True)
+
+
+def coatnormal(built: dict) -> None:
+    """The coat lobe on the skin's bumped normal - HD Aaron's head BSDF takes the same normal for both lobes (CC
+    Blender Tools' `rl_head_shader` feeds Normal and Coat Normal from one output, read 2026-11-10); ours leaves Coat
+    Normal unlinked, so our sharper oil lobe sees a smooth surface and can't glint on the relief's bumps (his forehead's
+    pinpoint glints, `cav_fh4.png`). The film BSDF rewired, the live view's synced."""
+    n = 0
+    for mat, film, mod in _skin_materials(built):
+        if film.inputs["Normal"].is_linked:
+            mat.node_tree.links.new(film.inputs["Normal"].links[0].from_socket, film.inputs["Coat Normal"])
+            mod.sync_live(mat)
+            n += 1
+    if not n:
+        raise RuntimeError("no skin BSDF with a linked normal")
+    print("COAT NORMAL linked on", n, "skins", flush=True)
+
+
 def microtile(built: dict, stem: str) -> None:
     """The microrelief tile swapped for a candidate (`.dev/gate/micro/<stem>.png`, the same 10 mm size) on every skin's
     microrelief image nodes - the face skin's pattern against HD Aaron's micro normal (plan §0, 2026-11-07)."""
@@ -4353,6 +4418,11 @@ def exprset(built: dict, expression: str, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name == "coatnormal":  # the coat lobe on the bumped normal (defined below FACTORS)
+        return coatnormal
+    if name.startswith("cavitynet*"):  # cavitynet*cavnet_a*0.823 (a tile under .dev/gate/micro, the strength)
+        _c, stem, strength = name.split("*")
+        return lambda built: cavitynet(built, stem, float(strength))
     if name.startswith("regions*"):  # regions*fh1p2 (a region-map variant's folder under .dev/gate/regions)
         return lambda built: regions(built, name.split("*", 1)[1])
     if name.startswith("exprset*"):  # exprset*talk_aa*jawOpen*0.8 (a gate expression's key for ours)

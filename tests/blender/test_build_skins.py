@@ -175,6 +175,28 @@ def test_a_body_part_carries_detail_not_a_tint():
     assert np.allclose(np.median(ratio[w > 0.9], axis=0), 1.0, atol=0.02)
 
 
+def test_the_mens_limbs_take_their_scans_relief_but_no_colour():
+    """HSR0042's dense leg hair, filled, left speckle and polygon cells - brown patches with edges on every man's
+    thighs at the full view (2026-11-10): his limbs' colour is left out (`body_scan` `no_colour`), his relief kept;
+    the hands' own part (Ten24's) keeps its colour under its weight."""
+    import numpy as np
+    from pathlib import Path
+
+    found = build_skins._body_scan()
+    if found is None or 1004 not in found:
+        pytest.skip("no body scan made (tools/body_scan.py)")
+    assert not found[1004]["cover"].any()  # the legs: no scan colour
+    xy = found[1004]["relief"][..., :2] * 2 - 1
+    assert float(np.abs(xy).max()) > 0.01  # their relief kept
+    folder = Path(build_skins.paths.GENERATED) / "skin"
+    if (folder / "body_1003_hands_weight.png").exists():
+        import OpenImageIO as oiio
+
+        buf = oiio.ImageBuf(str(folder / "body_1003_hands_weight.png"))
+        w = np.asarray(buf.get_pixels(oiio.FLOAT), np.float32)[::-1, :, 0]
+        assert np.allclose(found[1003]["ratio"][w == 0], 1.0, atol=1e-3)  # the arms: none outside the hands
+
+
 def test_a_womans_skin_takes_her_own_torso_relief_and_no_mans_scan():
     """The plan's Q-BODY-3 (2026-11-10): a woman's body tiles take her torso's relief from Blender Studio's CC0
     realistic_body_female sculpt (`body_1002_female_*`, tools/body_scan.py bs_female) - never the men's scans (design
@@ -187,8 +209,8 @@ def test_a_womans_skin_takes_her_own_torso_relief_and_no_mans_scan():
     if not (folder / "body_1002_female_relief.png").exists():
         pytest.skip("no women's torso relief made (tools/body_scan.py bs_female)")
     hers = build_skins._body_scan("f")
-    assert set(hers) == {1002}  # the torso alone: the men's limbs and feet are a man's
-    assert not hers[1002]["cover"].any()  # no colour: the skin's own and MakeHuman's areolas kept
+    assert 1002 in hers and set(hers) <= {1002, 1003, 1004}  # her torso (+ her own limbs: HSR0015, Q-BODY-3)
+    assert not hers[1002]["cover"].any()  # the torso's sculpt has no colour: MakeHuman's areolas kept
     xy = hers[1002]["relief"][..., :2] * 2 - 1
     assert 0.01 < float(np.abs(xy).max()) < 1.0  # a real relief, not a flat normal
     his = build_skins._body_scan()

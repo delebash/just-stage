@@ -89,6 +89,7 @@ def apply(
     mapping.inputs["Scale"].default_value = (tiles, tiles, 1.0)
     bump.inputs["Strength"].default_value = strength
     bump.inputs["Distance"].default_value = BUMP_DISTANCE_M
+    material.node_tree.links.new(bump.outputs["Normal"], bsdf.inputs["Coat Normal"])  # the coat on it too (maps.py)
     skin_material.sync_live(material)
     return image
 
