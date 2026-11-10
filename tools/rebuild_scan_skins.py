@@ -12,6 +12,7 @@ into the library (tools/build_skins.py --composed). The compositions' records be
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -36,13 +37,37 @@ def run(cmd: list[str]) -> None:
         raise SystemExit(out.returncode)
 
 
+def own_sex_first(p: dict, sexes: dict[str, str]) -> dict:
+    """A recorded composition put right by the composer's own rule (skin_base.compose: the character's own sex first)
+    against today's scan list: the pores' fill order with the character's own sex first (stable), and the mid layer
+    from scans of its sex only, its weights renormalised - a scan's tag fixed after the record was made (HSR0081, a
+    woman tagged "m" until 2026-11-09) would otherwise keep a woman's blotchiness in a man's skin."""
+    sex = p["sex"]
+    out = dict(p)
+    fine = list(p["fine_from"])
+    out["fine_from"] = [n for n in fine if sexes[n] == sex] + [n for n in fine if sexes[n] != sex]
+    mid = {n: w for n, w in p["mid_from"].items() if sexes[n] == sex}
+    if mid and len(mid) < len(p["mid_from"]):
+        total = sum(mid.values())
+        out["mid_from"] = {n: w / total for n, w in mid.items()}
+    return out
+
+
+def _sexes() -> dict[str, str]:
+    spec = importlib.util.spec_from_file_location("scan_list", ROOT / "tools" / "face_test" / "scan_list.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return {n: s["sex"] for n, s in module.SCANS.items()}
+
+
 def main(steps: set[str]) -> None:
     if "split" in steps:
         names = sorted(p.parent.name for p in SCANS.glob("*/layers.npz"))
         run([str(VENV), "-I", "tools/face_test/skin_base.py", "split", *names])
     if "compose" in steps:
+        sexes = _sexes()
         for seed in SKINS:
-            p = json.loads((RECORDS / f"base_char{seed}.json").read_text())
+            p = own_sex_first(json.loads((RECORDS / f"base_char{seed}.json").read_text()), sexes)
             p.pop("relief_file", None)
             p.update(stubble=0.0, scalp_stubble=0.0, beard_shadow=BEARD_SHADOW if p["sex"] == "m" else 0.0)
             run([str(VENV), "-I", "tools/face_test/skin_base.py", "compose", str(seed), json.dumps(p)])

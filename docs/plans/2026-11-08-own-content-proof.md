@@ -1310,6 +1310,21 @@ booked with just-direct-mocap.
   cap route**; in profile the patch behind the ear still reads a little painted (its edge). The cap box spent: kept as
   the trial's best (`vfpoly*B4*0.2*strands`). The hair's remainders: the cap's edge in profile, the cut fitted per
   head, colour and highlights against his; into the product: Q-HAIR-7, the user's.
+- **23:0x, the next part by the doc's method (`scratchpad/now_eye_face.jpg`, today's product beside HD Aaron):** the
+  eye. Measured first: our white is NOT brighter (L* 70.1 against his 74.1; spread 4.0 against 5.7 - flatter, not
+  whiter). The difference by eye is the lid's shape - the upper lid low over the iris, the lower rim a wide pale ledge
+  - and 15:4x showed the ledge's width is the lid's shape, not a setting. The plan's escalation for the lid is "the
+  head alone on a new topology" - its row (Q-BASE-4: the design and the spec disagree on the fallback) is OPEN, a
+  conflict between two approved texts: the user's. Not started.
+- **23:0x, MY DECISION (a plain fault; attacked: the composer's own rule, no new choice) - the compositions put right
+  by own sex:** `rebuild_scan_skins.own_sex_first` (the records' fill order own sex first, the mid layer from own sex
+  only, renormalised), its test. Blast radius (grep): the six records through `rebuild_scan_skins` compose (611 / 612:
+  HSR0081 moves behind the men in the pores' fill; 613 Scan man C: its mid HSR0042 alone, was + HSR0081 0.35; 621:
+  HSR0081 moves up among the women; 622 / 623 unchanged); the readers of the scan list's sex - skin_base.compose and
+  this. Running `batch_ownsex.sh` (backups `*_2026-11-09sx`, the six skins, the library, the Older man / the library
+  man / the Young woman before-after, every suite).
+  **23:37, done and verified: the six skins and the library rebuilt; the Older man (Scan man C) a touch more even, the
+  library man and the Young woman unchanged by eye (`row_sx_*`); unit 45, tools 62, Blender 209 passed.**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

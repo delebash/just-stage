@@ -86,6 +86,11 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   then the scans' 16K colour).
   22:xx: family-release's "PC free" came (releases run on GitHub from here); running `batch_after_pc.sh` (old
   scratchpad: the hair's short layer on the cap footprint, then the face's fine crease net trial with HD Aaron measured).
+  23:3x: verified and committed - the compositions put right by own sex (HSR0081 is a woman; `rebuild_scan_skins.
+  own_sex_first`), all six skins and the library rebuilt (backups `*_2026-11-09sx`); unit 45, tools 62, Blender 209.
+  The hair's short sides: the cut's cap shaded as clipped hair (`vfpoly*B4*0.2*strands`, a fade from behind). The eye's
+  lid shape waits on Q-BASE-4 (the user's: the plan's head-topology fallback, design and spec disagree). Next work
+  needing no decision: the face's fine crease net by our own generated microrelief.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured
