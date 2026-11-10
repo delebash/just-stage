@@ -39,7 +39,7 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 | face, front, three-quarter, profile | below - the face reads made beside his: the lids (above), the hair (the library's strands: a soft grey helmet in the live view), the lips' colour | - |
 | hair_back | **below** in the product (the strands' live-view haze); the free card trial reads as hair (not in the product) | - |
 | ear | close - our concha a shallow dish against his pit to the canal: **hm08's topology** (a real ear's shape wrapped on - HUTUBS, 11-10 - changes the outline, not the pit) | - |
-| torso, full | close in skin; his build is athletic (a setting, not the skin) | torso folds 0.95, form 0.69 |
+| torso, full | close in skin; his build is athletic (a setting, not the skin); **women's torsos carry relief since 11-10** (Blender Studio's CC0 female sculpt - Q-BODY-3; before: flat) | torso folds 0.95, form 0.69 |
 | hand | **matches in detail at his tone** - veins and tendons; paler (a setting) | at melanin 0.03: 0.65 / 0.74 / 1.06; at 0.08 (L* 60, his 68): 1.41 / 1.37 / 1.88 - his brightness between |
 | nails | close | - |
 | foot | **matches in detail at his tone** - tendons and veins; paler (a setting) | at melanin 0.03: 0.58 / 0.62 / 0.68; at 0.08 (L* 47, his 54): 1.15 = / 1.06 = / 1.07 = |

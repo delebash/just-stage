@@ -1499,6 +1499,10 @@ booked with just-direct-mocap.
   the map: two marks at the island's side edge, ~2x the nipples' slope (0.42 / 0.41 against 0.31 / 0.29) - where the
   sculpt's armpit and hip don't meet ours; out by `marks_out` (25 mm), as Artec's scar. `batch_womenmarks.sh` (post,
   the three women's skins, the library, the Young woman again, tools and build-skins tests).
+  **04:43 (`row_wm_torso.png`, the map `female_relief3.jpg`): the two edge marks gone from the map; the slim woman's
+  soft line low on one flank stays - another source (the sculpt's flank against ours), subtle; the Average and Heavy
+  women natural. KEPT; the flank line an open small item (Q-BODY-3's measure against HD Ariana - the user's export -
+  decides its strength). Tools 63 and the build-skins tests passed.**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

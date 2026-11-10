@@ -108,6 +108,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   the user: Q-HAIR-7 (free card hair into the product), Q-BASE-4. Work left (mine): the forehead's fine net (a better
   microrelief generator), the tongue's light.
   03:40: Q-EAR-1 done - the 58 HUTUBS ears in the mixer (ears only, ATTRIBUTION row; tools 63, mixer 13 passed).
+  04:4x: Q-BODY-3 - the women's torso relief from Blender Studio's CC0 female sculpt, in the three women's skins and
+  the library (verified: unit 45, tools 63, Blender 212); its measure against HD Ariana waits for her export
+  (Q-GATE-3, the user's). The gate's "aa" pairing fixed (jawOpen 0.8). Q-BASE-4's facts for the user (ICT-FaceKit's
+  head has the lid fold and the ear's pit; Blender Studio's does not) - the working doc 03:5x, the gate report.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured
