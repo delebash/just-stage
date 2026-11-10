@@ -81,4 +81,29 @@ def add(obj: bpy.types.Object) -> list[str]:
         key.value = 0.0
         key.slider_min, key.slider_max = 0.0, 1.0
         added.append(name)
+    add_blink_props(obj)
     return added
+
+
+#: each eye's blink key and the object property that carries its value to the skin's shader (modules/skin/maps.py's
+#: closed lid): an Attribute node of type Object reads it, so a skin shared by characters needs no retargeting
+BLINK_PROPS = (("eyeBlinkLeft", "js_blink_l"), ("eyeBlinkRight", "js_blink_r"))
+
+
+def add_blink_props(obj: bpy.types.Object) -> None:
+    """Each blink key's value as an object property (`BLINK_PROPS`), through a non-scripted driver (no Python in the
+    file); nothing for a character without the keys, nothing twice."""
+    keys = obj.data.shape_keys
+    for key, prop in BLINK_PROPS:
+        if keys is None or key not in keys.key_blocks:
+            continue
+        if obj.animation_data and obj.animation_data.drivers.find(f'["{prop}"]'):
+            continue
+        obj[prop] = 0.0
+        driver = obj.driver_add(f'["{prop}"]').driver
+        driver.type = "AVERAGE"
+        var = driver.variables.new()
+        var.type = "SINGLE_PROP"
+        var.targets[0].id_type = "KEY"
+        var.targets[0].id = keys
+        var.targets[0].data_path = f'key_blocks["{key}"].value'

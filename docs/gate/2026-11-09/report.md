@@ -35,7 +35,7 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 | chin, lips | close - our stubble sparser and browner than his salt-and-pepper; our lips a little pinker and smoother | - |
 | lip corner | close - the lip a more saturated pink | - |
 | eye | **below** - our upper lid low over the iris, the lower rim a wide pale ledge (the lid's shape: the plan's escalation, Q-BASE-4, open) | sclera L* 70 / 74, not brighter |
-| eye_blink | below - the closed lid darker in its fold, its streaks | - |
+| eye_blink | **close since 2026-11-10 01:3x** - the closed lid reads as skin (the blink fades in a soft colour, object-space pores, the eye tint lifted - `maps._closed_lid_skin`); smoother than his, no lid creases | open eye pixel-equal |
 | face, front, three-quarter, profile | below - the face reads made beside his: the lids (above), the hair (the library's strands: a soft grey helmet in the live view), the lips' colour | - |
 | hair_back | **below** in the product (the strands' live-view haze); the free card trial reads as hair (not in the product) | - |
 | ear | close - our concha shallower (shape: HUTUBS targets, plan §5) | - |
@@ -72,4 +72,4 @@ pale lower ledge: the shared head's shape, not one skin's. No CC5 woman or dark-
    design and the spec disagree on the fallback.
 
 **Work (mine, no decision):** the forehead's fine net (a better microrelief generator - a scanned one at his
-resolution is paid); the closed lid; the ear's concha; the tongue's light.
+resolution is paid); the ear's concha (HUTUBS's ear targets, Q-EAR-1); the tongue's light.

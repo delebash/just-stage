@@ -1380,6 +1380,23 @@ booked with just-direct-mocap.
   and the library rebuilt, the gate's blink and eye views, every suite. Standard: Unreal's / MetaHuman's animated
   maps (expression-driven texture blends); the object-space pits NOT STANDARD (a procedural detail, the standard a
   scanned closed-lid map - none free).
+  **01:0x, built:** `tools/make_lid_mask.py` restored (recovered from the session's transcript - written at 16:3x,
+  deleted with the 17:0x revert, never committed; the same 343 / 344 polygons) -> `data/generated/skin/lid_blink.png`;
+  `face_units.BLINK_PROPS` / `add_blink_props` (called by `face_units.add` and by `maps.refresh` for every wearer, as
+  `add_texel`); `maps.lid_blink`, `_closed_lid_share`, `_soft_copy`, `_closed_lid_skin`, `LID_*`; `_relief_off_stretched`
+  takes the share (`stretched_or_closed` = the larger - one keep, its names and its no-loop test kept). Blast radius
+  (grep): `_relief_off_stretched`'s one caller (`build_material`); `build_material`'s callers (material.apply,
+  refresh, the tests' `_mapped_skin`); `face_units.add`'s caller (`head_add_face_units`); the trial factor `lidblink`
+  (would double the layer - trial tooling only). Tests: `test_the_closed_lid_reads_as_skin_only_while_the_blink_closes_it`,
+  `test_the_closed_lids_soft_colour_is_the_head_tile_averaged_once`. No user docs exist (docs/ holds dev, gate, plans,
+  standards). Rollout `batch_lidprod.sh` (backups `*_2026-11-10lid`; the six skins and the library; the blink and
+  open eye on three characters; every suite).
+  **01:3x, done and verified:** the six skins and the library rebuilt; the open eye pixel-equal to tonight's gate (0 of
+  4,194,304 pixels over 2/255); the closed lid reads as skin on the man, the Young woman and the dark-skinned Older man
+  (`row_lp_eye_blink.png`) - its lightness the cheek's on dark skin (L* 46.1 / 45.5), darker than the cheek on the
+  lighter two: the full tint lift kept. Suites: unit 45, tools 62, Blender 209 + 2 failed - both tests walking the
+  colour and normal chains in their old order (the closed lid's nodes now sit before the margin's colour and last in
+  the normal chain); updated, `test_skin_maps.py` 25 passed.
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

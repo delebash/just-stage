@@ -98,6 +98,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   blocked by a missing free asset.** Waiting for the user: Q-HAIR-7 (the free card hair into the product) and
   Q-BASE-4 (the lid's head-topology fallback). Work left (mine): the hand's / foot's tone and sheen, the closed lid,
   the forehead's fine net (a better microrelief generator), the ear's concha, the tongue's light.
+  01:0x: the closed lid into the product (a trial kept at 00:49: the working doc) - rolling out `batch_lidprod.sh`
+  (old scratchpad; backups `*_2026-11-10lid`) - VERIFIED 01:3x (unit 45, tools 62, Blender 209; two chain-walking
+  tests updated, test_skin_maps 25 passed). Next work (mine): the ear's concha - HUTUBS's ear targets (Q-EAR-1, plan
+  build step 4; 57 heads zipped in `.dev/downloads/hf_samples/hutubs_meshes/meshes.zip`).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

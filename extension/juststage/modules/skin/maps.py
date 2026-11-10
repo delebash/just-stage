@@ -124,6 +124,15 @@ MOUTH_TOOL = "python tools/dev.py blender -b --python tools/make_mouth_mask.py"
 #: (2026-11-09); a margin is smooth wet tissue, so inside it the relief layers are out (`_relief_off_stretched`) and the
 #: composed colour smoothed (skin_base.STRETCH_SMOOTH)
 STRETCH_TOOL = "python tools/dev.py blender -b --python tools/make_stretch_mask.py"
+#: the closed lid (the own-content proof, 2026-11-10 00:49): the skin a blink opens out over the closed eye is a sliver of
+#: the head tile (tools/make_lid_mask.py: its faces 2.4-5x), so every map read through the UVs streaked it and smoothing
+#: it always made the open lid glossy; MetaHuman's and CC5's way - detail driven by the expression's own value: by each
+#: eye's blink x its mask, the UV relief faded out, the colour toward a soft copy (1/LID_SOFT_SCALE of the head tile,
+#: sampled Linear) with the eyes' surround tint lifted (a closed lid reads lighter than the open eye's surround),
+#: and fine pits in OBJECT space (LID_PORE_DEPTH, LID_PORE_CELL - not stretched by the UVs; NOT STANDARD: a procedural
+#: detail, the standard a scanned closed-lid map - none free). The open eye is unchanged (blink 0: pixel-equal).
+LID_TOOL = "python tools/dev.py blender -b --python tools/make_lid_mask.py"
+LID_SOFT_SCALE, LID_PORE_DEPTH, LID_PORE_CELL = 32, 0.00015, 0.0006  # -, m, m
 MOUTH_COLOUR, MOUTH_SHARE = (0.42, 0.11, 0.11), 0.85  # linear
 MOUTH_ROUGHNESS, MOUTH_SPECULAR, MOUTH_COAT = 0.25, 0.7, 0.6
 #: the lips' vermilion over any skin - MPFB2's CC0 lips mask (`mpfb_lips.jpg`, hm08's own UVs) - as CC5's lip colour:
@@ -546,14 +555,117 @@ def stretched() -> bpy.types.Image:
     return image
 
 
-def _relief_off_stretched(nt, uv) -> None:
+def lid_blink() -> bpy.types.Image:
+    """The upper lids' blink stretch on the head tile (LID_TOOL: the left eye's in red, the right's in green)."""
+    path = paths.generated("skin", "lid_blink.png", tool=LID_TOOL)
+    image = bpy.data.images.load(str(path), check_existing=True)
+    image.colorspace_settings.name = "Non-Color"
+    return image
+
+
+def _closed_lid_share(nt, uv):
+    """How closed each lid's skin is, 0-1: the mask's R x the left blink + G x the right (the object properties the
+    face units' drivers keep - head/face_units.BLINK_PROPS), on the head tile; returns its socket."""
+    from ..head import face_units
+
+    mask = _node(nt, "ShaderNodeTexImage", "lid_mask", (-1600, -4400))
+    mask.image, mask.interpolation, mask.extension = lid_blink(), "Linear", "CLIP"
+    nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
+    sep = _node(nt, "ShaderNodeSeparateColor", "lid_mask_rgb", (-1400, -4400))
+    nt.links.new(mask.outputs["Color"], sep.inputs["Color"])
+    total = None
+    for (_key, prop), channel in zip(face_units.BLINK_PROPS, ("Red", "Green"), strict=True):
+        attr = _node(nt, "ShaderNodeAttribute", f"lid_{prop}", (-1400, -4600 if channel == "Red" else -4700))
+        attr.attribute_type, attr.attribute_name = "OBJECT", prop
+        part = _math(nt, f"lid_{channel.lower()}", "MULTIPLY", sep.outputs[channel], attr.outputs["Fac"])
+        total = part if total is None else _math(nt, "lid_both", "ADD", total, part)
+    share = _math(nt, "lid_closed", "MULTIPLY", total, nt.nodes[NODE + "mouth_on_head"].outputs["Value"])
+    nt.nodes[NODE + "lid_closed"].use_clamp = True
+    return share
+
+
+def _soft_copy(image: bpy.types.Image) -> bpy.types.Image:
+    """The colour's head tile at 1/LID_SOFT_SCALE (block means; a UDIM image's pixels are its first tile, 1001), made
+    once a colour image and packed - a library load finds it by name."""
+    name = f"{image.name} (soft)"
+    soft = bpy.data.images.get(name)
+    if soft is not None:
+        return soft
+    w, h = image.size
+    px = np.empty(w * h * 4, np.float32)
+    image.pixels.foreach_get(px)
+    k = LID_SOFT_SCALE
+    px = px.reshape(h, w, 4)[: h - h % k, : w - w % k]
+    small = px.reshape(h // k, k, w // k, k, 4).mean((1, 3))
+    soft = bpy.data.images.new(name, w // k, h // k, alpha=True)
+    soft.colorspace_settings.name = image.colorspace_settings.name
+    soft.pixels.foreach_set(small.astype(np.float32).ravel())
+    soft.pack()
+    return soft
+
+
+def _closed_lid_skin(nt, bsdf, uv, share, colour: bpy.types.Image | None) -> None:
+    """The closed lid's skin by `share`: the colour x soft / sharp (its streaks out, its tone kept) and the eyes'
+    surround tint lifted; fine pits in object space at the end of the normal chain."""
+    nodes, links = nt.nodes, nt.links
+    final = bsdf.inputs["Base Color"].links[0].from_socket
+    if colour is not None and colour.size[0] >= LID_SOFT_SCALE:
+        sharp = nodes[NODE + "base_color"]
+        soft = _node(nt, "ShaderNodeTexImage", "lid_soft", (-1600, -4900))
+        soft.image, soft.interpolation, soft.extension = _soft_copy(colour), "Linear", "EXTEND"
+        links.new(uv.outputs["UV"], soft.inputs["Vector"])
+        ratio = _node(nt, "ShaderNodeVectorMath", "lid_ratio", (-1200, -4900))
+        ratio.operation = "DIVIDE"
+        links.new(soft.outputs["Color"], ratio.inputs[0])
+        links.new(sharp.outputs["Color"], ratio.inputs[1])
+        capped = _node(nt, "ShaderNodeVectorMath", "lid_ratio_capped", (-1000, -4900))
+        capped.operation = "MINIMUM"
+        links.new(ratio.outputs["Vector"], capped.inputs[0])
+        capped.inputs[1].default_value = (3.0, 3.0, 3.0)
+        smoothed = _node(nt, "ShaderNodeVectorMath", "lid_smoothed", (-800, -4900))
+        smoothed.operation = "MULTIPLY"
+        links.new(final, smoothed.inputs[0])
+        links.new(capped.outputs["Vector"], smoothed.inputs[1])
+        mixed = _node(nt, "ShaderNodeMix", "lid_colour", (-600, -4900))
+        mixed.data_type = "RGBA"
+        links.new(share, mixed.inputs["Factor"])
+        links.new(final, next(i for i in mixed.inputs if i.identifier == "A_Color"))
+        links.new(smoothed.outputs["Vector"], next(i for i in mixed.inputs if i.identifier == "B_Color"))
+        final = next(o for o in mixed.outputs if o.identifier == "Result_Color")
+    lift = _mix(nt, "lid_untint", "RGBA", share, (1.0, 1.0, 1.0), tuple(1.0 / c for c in EYE_SURROUND_TINT))
+    lifted = _node(nt, "ShaderNodeVectorMath", "lid_lifted", (-400, -4900))
+    lifted.operation = "MULTIPLY"
+    links.new(final, lifted.inputs[0])
+    links.new(lift, lifted.inputs[1])
+    links.new(lifted.outputs["Vector"], bsdf.inputs["Base Color"])
+    coords = _node(nt, "ShaderNodeTexCoord", "lid_coords", (-1600, -5200))
+    cells = _node(nt, "ShaderNodeTexVoronoi", "lid_cells", (-1400, -5200))
+    cells.feature = "F1"
+    cells.inputs["Scale"].default_value = 1.0 / LID_PORE_CELL
+    links.new(coords.outputs["Object"], cells.inputs["Vector"])
+    grain = _node(nt, "ShaderNodeTexNoise", "lid_grain", (-1400, -5400))
+    grain.inputs["Scale"].default_value, grain.inputs["Detail"].default_value = 1.0 / (2 * LID_PORE_CELL), 3.0
+    links.new(coords.outputs["Object"], grain.inputs["Vector"])
+    height = _math(nt, "lid_height", "MULTIPLY_ADD", cells.outputs["Distance"], 1.0, grain.outputs["Fac"])
+    bump = _node(nt, "ShaderNodeBump", "lid_bump", (-200, -5200))
+    bump.inputs["Strength"].default_value = 1.0
+    links.new(_math(nt, "lid_depth", "MULTIPLY", share, LID_PORE_DEPTH), bump.inputs["Distance"])
+    links.new(height, bump.inputs["Height"])
+    links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
+    links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+
+
+def _relief_off_stretched(nt, uv, closed=None) -> None:
     """No pores, microrelief or scanned relief on the lids' stretched margins (STRETCH_TOOL): the contact stretches them
-    2-10x, which drew the relief out into streaks; a margin is smooth wet tissue."""
+    2-10x, which drew the relief out into streaks; a margin is smooth wet tissue. `closed` (the closed lid's share,
+    `_closed_lid_share`): the same cut there, by the blink."""
     nodes = nt.nodes
     mask = _node(nt, "ShaderNodeTexImage", "stretched_mask", (-1600, -4100))
     mask.image, mask.interpolation, mask.extension = stretched(), "Linear", "CLIP"
     nt.links.new(uv.outputs["UV"], mask.inputs["Vector"])
     share = _math(nt, "stretched", "MULTIPLY", mask.outputs["Color"], nodes[NODE + "mouth_on_head"].outputs["Value"])
+    if closed is not None:
+        share = _math(nt, "stretched_or_closed", "MAXIMUM", share, closed)
     keep = _math(nt, "stretched_keep", "SUBTRACT", 1.0, share)
     for key in ("pore", "micro"):
         depth = nodes[NODE + f"{key}_depth"]
@@ -896,8 +1008,10 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     _seam_layer(nt, bsdf, uv)
     _upper_lip_layer(nt, bsdf, uv)
     _eye_layer(nt, bsdf, uv)
+    closed = _closed_lid_share(nt, uv)
+    _closed_lid_skin(nt, bsdf, uv, closed, images.get("base_color"))
     _relief_off_mouth(nt)
-    _relief_off_stretched(nt, uv)
+    _relief_off_stretched(nt, uv, closed)
     bsdf.inputs["Coat Roughness"].default_value = COAT_ROUGHNESS
     bsdf.inputs["Coat IOR"].default_value = COAT_IOR
     bsdf.inputs["Sheen Weight"].default_value = SHEEN_WEIGHT
@@ -916,6 +1030,9 @@ def refresh(mat: bpy.types.Material) -> None:
         if obj.type == "MESH" and obj.juststage.kind == "HUMAN" and mat.name in obj.data.materials:
             if TEXEL not in obj.data.attributes:
                 add_texel(obj)
+            from ..head import face_units
+
+            face_units.add_blink_props(obj)  # the closed lid's blink values (none without the keys; once)
 
 
 def set_pores(mat: bpy.types.Material, character: bpy.types.Object) -> None:

@@ -167,7 +167,9 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
     margin = bsdf.inputs["Base Color"].links[0].from_node  # the lid margin's pink, last
     assert margin == nodes[maps.NODE + "margin_colour"]
-    eyes = margin.inputs[0].links[0].from_node  # the skin round the eyes darker
+    closed = margin.inputs[0].links[0].from_node  # the closed lid's skin (by the blink: nothing while the eye is open)
+    assert closed == nodes[maps.NODE + "lid_lifted"]
+    eyes = closed.inputs[0].links[0].from_node  # the skin round the eyes darker (8-texel tiles: no soft-colour step)
     assert eyes == nodes[maps.NODE + "eyes_colour"]
     tint = next(i for i in nodes[maps.NODE + "eyes_tint"].inputs if i.identifier == "B_Color").default_value
     assert tuple(tint)[:3] == pytest.approx(maps.EYE_SURROUND_TINT)
@@ -204,7 +206,9 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     rough = next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node
     assert rough == nodes[maps.NODE + "lips_rough"]
     assert next(i for i in rough.inputs if i.identifier == "A_Float").links[0].from_node == nodes[maps.NODE + "nail_rough"]
-    lines = bsdf.inputs["Normal"].links[0].from_node  # the lips' lines last, over the nails' raise
+    closed = bsdf.inputs["Normal"].links[0].from_node  # the closed lid's pits last (by the blink: nothing while open)
+    assert closed == nodes[maps.NODE + "lid_bump"]
+    lines = closed.inputs["Normal"].links[0].from_node  # the lips' lines, over the nails' raise
     assert lines == nodes[maps.NODE + "lips_lines"]
     assert lines.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
     coords = nodes[maps.NODE + "nail_coords"].image  # each nail's own coordinates, made once (make_nail_coords.py)
@@ -581,3 +585,56 @@ def test_the_lids_stretched_margins_have_no_relief_to_streak(human, tmp_path):
     maps.refresh(body.juststage.skin_material)  # a rebuild (every library load) keeps one chain, no loop
     assert nodes[maps.NODE + "relief_off_stretched"].inputs[0].default_value == 1.0
     assert not nodes[maps.NODE + "relief_off_stretched"].inputs[0].is_linked
+
+
+def test_the_closed_lid_reads_as_skin_only_while_the_blink_closes_it(human, tmp_path):
+    """A blink opens a sliver of the head tile out over the closed eye (2.4-5x): every map read through the UVs streaked
+    it, and smoothing it always made the open lid glossy (2026-11-09). By each eye's blink x its mask (make_lid_mask.py)
+    the relief is cut, the colour softened, the eyes' surround tint lifted and fine pits added in object space - the
+    blink's value reaching the shader by an object property its key drives, so the open eye is untouched (blink 0)."""
+    made, body = human
+    api.run("juststage.head.add_face_units", character=made.character)
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    mat = body.juststage.skin_material
+    nodes = mat.node_tree.nodes
+    face_units = importlib.import_module("bl_ext.system.juststage.modules.head.face_units")
+    for key, prop in face_units.BLINK_PROPS:
+        attr = nodes[maps.NODE + f"lid_{prop}"]
+        assert (attr.attribute_type, attr.attribute_name) == ("OBJECT", prop)
+        body.data.shape_keys.key_blocks[key].value = 1.0
+    bpy.context.view_layer.update()
+    evaluated = body.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    assert evaluated["js_blink_l"] == pytest.approx(1.0) and evaluated["js_blink_r"] == pytest.approx(1.0)
+    closed = nodes[maps.NODE + "lid_closed"]
+    assert nodes[maps.NODE + "stretched_or_closed"].inputs[1].links[0].from_node == closed  # the relief cut there too
+    assert nodes[maps.NODE + "lid_depth"].inputs[0].links[0].from_node == closed  # the pits only while closing
+    assert nodes[maps.NODE + "lid_untint"].inputs["Factor"].links[0].from_node == closed
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    margin = bsdf.inputs["Base Color"].links[0].from_node  # the lid margin's pink stays last
+    assert margin.inputs[0].links[0].from_node == nodes[maps.NODE + "lid_lifted"]
+    mask = nodes[maps.NODE + "lid_mask"].image
+    px = np.empty(mask.size[0] * mask.size[1] * 4, np.float32)
+    mask.pixels.foreach_get(px)
+    assert 0.0001 < (px[0::4] > 0.5).mean() < 0.002 and 0.0001 < (px[1::4] > 0.5).mean() < 0.002  # each upper lid
+    count = len(nodes)
+    maps.refresh(mat)  # a rebuild (every library load) adds nothing and keeps one chain
+    assert len(nodes) == count
+    assert bsdf.inputs["Base Color"].links[0].from_node.inputs[0].links[0].from_node == nodes[maps.NODE + "lid_lifted"]
+    assert not nodes[maps.NODE + "relief_off_stretched"].inputs[0].is_linked
+
+
+def test_the_closed_lids_soft_colour_is_the_head_tile_averaged_once(tmp_path):
+    """The soft copy the closed lid's colour fades to: the head tile at 1/LID_SOFT_SCALE, block means, made once."""
+    image = bpy.data.images.new("lid soft test", 64, 64, alpha=True)
+    px = np.zeros((64, 64, 4), np.float32)
+    px[..., 3] = 1.0
+    px[:, ::2, 0] = 1.0  # stripes one texel wide: a soft copy is their mean
+    image.pixels.foreach_set(px.ravel())
+    soft = maps._soft_copy(image)
+    assert soft.size[:] == (64 // maps.LID_SOFT_SCALE, 64 // maps.LID_SOFT_SCALE)
+    got = np.empty(soft.size[0] * soft.size[1] * 4, np.float32)
+    soft.pixels.foreach_get(got)
+    assert np.allclose(got[0::4], 0.5, atol=0.01)
+    assert maps._soft_copy(image) is soft  # found by name the second time
+    bpy.data.images.remove(soft)
+    bpy.data.images.remove(image)
