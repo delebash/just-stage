@@ -3697,7 +3697,9 @@ before the rec list; measured in Blender 5.3 and read in our code):
   (pores, stubble, redness); every part's output is Target `ALL` with nothing on Thickness, the cornea has no raytraced
   refraction, `scene.eevee.use_raytracing` is off and the lashes draw as 1-px `STRAND` curves — the EEVEE tuning of
   RESEARCH skin (`../plans/2026-10-30-research-skin-detail-shading.md:349-358, 495-500`) and hair
-  (`../plans/2026-10-30-research-hair-eyes-teeth.md:111-122`) was never built — *measured, 2026-11-03*.
+  (`../plans/2026-10-30-research-hair-eyes-teeth.md:111-122`) was never built — *measured, 2026-11-03*. (Since then
+  `core/viewport.setup_scene` turns raytracing on and draws hair as strips - checked 2026-11-10; the gate's stage uses
+  it.)
 - **EEVEE 5.3 can shade per light in nodes** (a research agent's finding 2026-11-04 - manual rst, PR #161429 merged
   2026-09-02, task #139341, PR #164595; verified on our 5.3 beta by listing the nodes, measured): `ShaderNodeLightAccumulation`
   (inputs LightIndex, Diffuse Light / Color, Glossy Light / Color, Transmission Light / Color, Weight - its input tree

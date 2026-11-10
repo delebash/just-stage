@@ -1777,7 +1777,20 @@ booked with just-direct-mocap.
   faint sheen only, and takes the hand past his spread (pore 1.46 -> 1.68, fold 1.51 -> 1.63). NOT KEPT. His broad
   highlights on the chest are his shape (athletic build) under the stage's key plus his roughness map's variation.
   VERDICT, TORSO: skin CLOSE (texture and colour), the look's gap his build (a slider setting) and highlight
-  breakup - not proven, not disproven.** Seen in the end
+  breakup - not proven, not disproven.**
+- **11:07, THE TONGUE DOWN (`tongue5.png`: product | 6 mm | 10 mm | 10 + 4 back | his): little change - a dark red cavity
+  stays (with the tongue lower we see the mouth's back in the same dark red). His tongue's top shows lit pink between
+  the teeth. So the place is not the cause: the inside of our mouth renders dark - the 11-08 note "no direct light
+  reaches either tongue; his pink is bounce or material" holds. MOUTH: NOT PROVEN - untried: the tongue's and the
+  mouth lining's base colour lighter (his diffuse) with his front-lit gradient together; the teeth's arch.**
+  Checked 11:1x (`aaron_tongue*.py` on his blend): his tongue's diffuse is DARKER than ours (linear p50 0.25 / 0.07 /
+  0.07 against our 0.50 / 0.12 / 0.12), no emission (strength 0), roughness 1.0, front specular 0.26; the front-lit
+  gradient was applied on ours and changed nothing. So the material is not why his reads lit pink: light reaches his
+  tongue and not ours (our upper lip and teeth shading it under the stage's key) - untried: the mouth's opening shape
+  at the jaw (the face units' jawOpen). (EEVEE's raytracing is ON in the product and the gate - `core/viewport.py`
+  L58; the 11-03 note that it was off is stale.)
+- **11:2x, the lashes' central spikes, a diagnostic (`lashup` takes the clearing's whole-turn count now): 10 / 80 /
+  5.5 mm / 0.06 mm with `lashes.CLEAR_TRIES` 0 (the joint bends alone) and 4, eye and face (`batch_lashclear.sh`).** Seen in the end
   gate's nails view (`gate1110/row_nails.png`): **the NAILS are not proven by eye** - our plate reads pasted on (a
   darker drawn rim, no cuticle fold rolling over it) and the fingertip's skin carries a coarse red speckle; his nails
   sit under a soft proximal fold on smooth warm skin (the views' framing differs). Queued after the face's parts;

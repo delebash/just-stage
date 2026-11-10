@@ -951,12 +951,16 @@ def lashtrial(built: dict, radius_mm: float, count: float) -> None:
     print("LASHES lower radius", radius_mm, "mm, count", int(count), flush=True)
 
 
-def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, radius_mm: float | None = None) -> None:
+def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, radius_mm: float | None = None,
+           tries: float | None = None) -> None:
     """The upper lashes grown again with their rise (`lashes.UPPER["rise"]`, 0 deg) and curl (50 deg) set - 2026-11-10
     at full size: ours hang down over the iris as a dark curtain with a few spikes standing at the centre, his leave
     the margin and curl up and out. A new groom: --alone."""
     lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
     old = dict(lashes.UPPER)
+    old_tries = lashes.CLEAR_TRIES
+    if tries is not None:  # the whole-lash turns before the joint bends (`lashes.CLEAR_TRIES`, 12): 0 - bends alone
+        lashes.CLEAR_TRIES = int(tries)
     lashes.UPPER.update(rise=rise, curl=curl)
     if long_mm is not None:  # the longest (centre) lash; the short ones scaled with it
         lashes.UPPER.update(long=long_mm, short=old["short"] * long_mm / old["long"])
@@ -967,9 +971,10 @@ def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, 
     finally:
         lashes.UPPER.clear()
         lashes.UPPER.update(old)
+        lashes.CLEAR_TRIES = old_tries
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
-    print("LASHES upper rise", rise, "curl", curl, "long", long_mm, "radius", radius_mm, flush=True)
+    print("LASHES upper rise", rise, "curl", curl, "long", long_mm, "radius", radius_mm, "tries", tries, flush=True)
 
 
 def lashlower(built: dict, melanin: float) -> None:
@@ -4706,7 +4711,7 @@ def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
     if name.startswith("lashup*") and "+" not in name:  # lashup*15*80 (the upper lashes' rise and curl, degrees) - --alone
-        return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:5]))
+        return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:6]))
     if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)
         return lambda built: lipsoft(built, float(name.split("*", 1)[1]))
     if name.startswith("browthick*") and "+" not in name:  # browthick*2 or browthick*2*0.95 (radius x k, the coarse hairs' melanin)
