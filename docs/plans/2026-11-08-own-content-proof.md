@@ -2143,6 +2143,62 @@ booked with just-direct-mocap.
   the nails over the fingertip, the lashes, the stubble and the hand tile VERIFIED.** The six characters' eye sheet
   (`gate1110b/chars_eye.png`): the new lashes a lash line curling up on every character, nothing over the iris. Round 4
   started 16:14 with `apply_nail_rough.py` applied first (uncommitted; its test runs at the next end run).
+- 16:1x, round 4's lower lashes (`r4_lower_a.jpg`: product | 5.5 mm / 0.05 mm | his): a little longer and more
+  visible, still faint beside his - his fan down and AWAY from the lid, ours lie along the lid's skin (`LOWER` rise 5,
+  curl 25): the angle is the larger gap, not the length. 4.8 / 0.05 and 5.5 / 0.04 read about the same - round 5
+  (queued) points them down and away: rise 25 / curl 20, rise 35 / curl 15 at 5.5 / 0.05.
+- 16:2x, round 4's toenails (`r4_toes.jpg`: gate | 0.5 / 0.6 | 0.45 / 0.55 | his): narrower, shorter plates come
+  closer to his small toenails; his big toe's a smaller rounded plate near the tip, ours squarer. **Pick (mine): the
+  toes' plate 0.45 long / 0.55 wide** (`maps.TOE_PLATE_LENGTH`, `TOE_PLATE_SIDE`; 0.6 / 0.7 were set on the island).
+- 16:2x, the nail roughness fix verified in render (`r4_rough_zoom.jpg`: the gate | with `apply_nail_rough.py`): the
+  glossy crackled band below the cuticle GONE - the skin there matte like the rest of the finger.
+- 16:2x, round 4's nail colour (`r4_nailcol.jpg`; plate minus skin, Lab; his dL +4.1, da -3.3, db -3.1): the product
+  (bed (0.50, 0.30, 0.27) at 0.12) +3.3 / -1.5 / -5.1, distance 2.72; (0.48, 0.32, 0.20) at 0.12 1.99; **(0.46, 0.33,
+  0.22) at 0.2 +3.7 / -2.6 / -4.7, distance 1.71 - picked (mine): `maps.NAIL_BED`, `NAIL_BED_SHARE`**; it reads
+  warmer, nearer his peach plates.
+- 16:3x, round 4's tongue (`r4_tongue_a.jpg`: product | 6 mm forward | his; `r4_tongue_69.jpg`: 6 | 9 mm zoomed): 6
+  mm forward lights the tongue's front behind the lower teeth like his, but its tip already pokes below the lower
+  incisors; 9 mm pushes it through them (a pink band in front of the teeth). Moved whole is wrong: his tip stays
+  behind the teeth while his tongue's upper surface sits higher and further forward. Round 5 (queued): the upper
+  part forward by height share, the tip and floor kept (`factors tongueshear`, new): top 9 | 12 | 9 + 3 mm up.
+- **16:40, THE HAND AND FOOT AT HIS TONE (`skintone*0.08`, `r4_handtone_table.txt`; his numbers from the same gate's
+  `g2_table.txt`): the back of the hand pore 0.745 / his 0.821 = 0.91 (11-10 morning 1.46 - now INSIDE his 17%
+  spread), fold 1.38 (1.51), form 2.16 (2.02); the foot pore 0.87 (1.21), fold 1.16 (1.12) - both inside - form 1.24
+  (1.08; just outside his 19%).** So the hand tile's pores x0.5 / micro x1 moved the hand's pores into his spread at
+  his tone; the drop at the gate's product tone was the tone. (The table printed no cc5 rows - his views copied in
+  without their frames; his numbers taken from the gate's table.)
+  **Corrected in the verdict doc (16:4x): the hands were never "proven at his tone" - on 11-10 00:31 the hand sat
+  above his spread (1.41 / 1.37) and the row said proven; now CLOSE (pores inside, fold 1.38 and form 2.16 above).**
+  The feet NEAR (form just outside after the change reached the foot). Round 6 queued (`batch_trials6.sh`): the foot
+  and hand at his tone with pores x2 / micro x2 - did this change move the foot's form? If so, a hands-only region.
+- 16:4x, round 5's lower lashes (`r5_lower_a.jpg`: 5.5 / 0.05 at rise 5 / curl 25 | at rise 25 / curl 20 | his):
+  pointed down they read as a distinct fan below the lid, much closer to his. Rise 35 / curl 15 (`r5_lower_b.jpg`)
+  points them down more, spread like his long, distinct fringe; 25 / 20 a little busier. **PICK (mine): the lower lashes
+  5.5 mm, root 0.05 mm, rise 35, curl 15** (`lashes.LOWER`; 3.8 mm, 0.04, rise 5, curl 25 before - they lay along
+  the lid; not in the approved design, which fixes only the upper lashes).
+- **16:5x, round 5's tongue (`r5_tongue_b.jpg`: shear 9 | 12 | 9 + 3 up at the open mouth; `r5_tongue_aa.jpg`:
+  product | 9 | 12 | his at the talk view): sheared by height the tongue's top shows lit behind the lower teeth with
+  nothing through them; 9 + 3 up the most, nearest his. PICK (mine, attacked): the tongue's top 9 mm forward and 3 mm
+  up, its tip and floor kept (`parts.TONGUE_SHEAR`, `TONGUE_RISE` in `refit`; `apply_tongue_forward.py 9 3`).** The
+  attack: raised 3 mm its top could meet the palate or the upper teeth with the jaw closed - hidden behind closed lips,
+  but the second roll-out renders the lips and talk views to catch a poke-through. MOUTH: closer - the tongue now
+  lit like his; left: his smaller opening (his upper lip 3 mm lower), his darker upper cavity.
+- **16:58, ROUND 6 (`r6_table.txt`: the hand and foot at his tone with pores x2 / micro x2): the foot 1.21 / 1.12 /
+  1.08 (all inside his spread again), the hand 1.46 / 1.52 / 2.02 - so the hand tile's change moved the hand's pores
+  into his spread AND the foot's form out of it (most of our foot is on that tile). DECISION (mine, attacked): the
+  hands alone take the lower levels - their share by the skeleton's hand and finger weights (`maps.HANDS_ATTR`,
+  `add_hands_share`), `HAND_PORES` 0.5 / `HAND_MICRO` 1.0; the rest of the tile back to `ARM_MICRO` 2 / pores 1
+  (`ARM_PORES` gone).** The attack: the skeleton comes before the skin on every creation path (New human, the
+  library build); a character without one gets share 0 (the arm levels) and `refresh` recomputes it every time. The
+  standard way to scope a material effect to a body part is a per-vertex weight read in the shader (the margin's
+  `js_margin` does the same). Applied after the second roll-out (`batch_final3_1110.sh`: the patch, the hand and foot
+  at his tone measured, the nails view, every suite).
+- 16:58: the second roll-out started (`apply_final2_1110.sh 9 3` - toes, nail colour, lower lashes, the tongue's
+  shear; `batch_final2_1110.sh` - the library rebuilt 16:59, the touched views and three characters, every suite).
+  17:04, its renders in the PRODUCT (`g3_a.jpg`: open mouth | talk | closed lips | his; `g3_b.jpg`: nails | foot | eye
+  | his nails): the tongue lit behind the lower teeth at the open mouth and the talk view, nothing poking through the
+  closed lips; the nail plates warmer with no glossy band; the toenails smaller; the lower lashes fanned down - as in
+  the trials.
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1
