@@ -1428,6 +1428,9 @@ booked with just-direct-mocap.
   (~1.5 min a head, the processor; ~1.5 h). Then: `make_identities` (scratch first, then the product's folder), an
   ATTRIBUTION row (HUTUBS, CC BY 4.0) in the same change, the mixer's ears with two or more identities (the likeness
   rule), the ear view on a few, the suites.
+  01:58: pp10 / pp11 failed - the orient step's guess rolled them 270 deg onto their side; the batch stopped (its
+  inner shell and Blender stopped by command line), `scan_orient` keeps a scan the list marks `upright` as imported
+  (all HUTUBS heads, Z up); pp10 then fitted (02:00); the batch restarted (finished heads skipped).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

@@ -259,7 +259,8 @@ HUTUBS = "E:/Dev/3D/just-stage/.dev/downloads/hf_samples/hutubs_meshes/3D head m
 for _ply in sorted(__import__("pathlib").Path(HUTUBS).glob("pp*_3DheadMesh.ply")):
     _pp = _ply.name.split("_")[0]
     SCANS[f"hutubs_{_pp}"] = {
-        "source": str(_ply).replace("\\", "/"), "textures": {"*": None}, "up": "Z", "shape_only": True, "bald": True,
+        "source": str(_ply).replace("\\", "/"), "textures": {"*": None}, "up": "Z", "upright": True, "shape_only": True,
+        "bald": True,
         "sex": "u", "stubble": False,
         "credit": f'"HUTUBS - Head-related Transfer Function Database of the TU Berlin", {_pp} head mesh (CC BY 4.0)',
     }

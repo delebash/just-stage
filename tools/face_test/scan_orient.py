@@ -50,8 +50,23 @@ def unturn(pts, k, size):
     return np.c_[y, s - x]
 
 
+def _upright(name) -> bool:
+    """The scan list's `upright`: a scan whose files are known to stand upright (HUTUBS's heads, Z up) - no guess."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("scan_list", Path(__file__).with_name("scan_list.py"))
+    scan_list = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(scan_list)
+    return bool(scan_list.SCANS.get(name, {}).get("upright"))
+
+
 def main(name):
     out = SCANS / name
+    if _upright(name):  # the guess rolled HUTUBS pp10 by 270 deg onto its side (2026-11-10): kept as imported
+        (out / "orient.json").write_text(json.dumps({"turn": np.eye(3).tolist(), "total": np.eye(3).tolist(),
+                                                     "picture": None, "kept_as_imported": True}))
+        print(f"{name}: upright in its file (the scan list) - kept as imported")
+        return
     views = json.loads((out / "views.json").read_text())["cams"]
     options = vision.FaceLandmarkerOptions(base_options=mp_tasks.BaseOptions(model_asset_path=str(MODEL)), num_faces=1)
     best = None
