@@ -49,11 +49,14 @@ RELIEF_SCALE = 8.0  # R = factor / RELIEF_SCALE
 #: resolution, the user's bar - `.dev/gate/parts/2026-11-08q`, rows `row_q_forehead.png`, `row_q_eye_skin.png`): the
 #: forehead's pores x2 read as orange peel at the eye and forehead views; x1 reads as smooth skin with fine detail.
 #: 2026-11-09 (`.dev/gate/parts/2026-11-09chin`, by eye beside HD Aaron): the chin's pores x1.5 read as coarse orange
-#: peel under the stubble against his smooth chin; x0.6 fine pores on smoother skin, closest to his (x1 between)
+#: peel under the stubble against his smooth chin; x0.6 fine pores on smoother skin, closest to his (x1 between).
+#: 2026-11-10: the cheek's pores x0.9 - with the coat on the bumped normal (modules/skin/maps.py) its pore band went
+#: 1.11 of HD Aaron's (his spread 8%); x0.9 here 1.05 (`regions*cheekp09`), the forehead strip 0.62 -> 0.61; x0.9 on
+#: every region would have cost the forehead, the hand and the torso
 SCALE = (1.15, 1.35)
 REGIONS = {k: (v[0] * SCALE[0], v[1] * SCALE[1], v[2]) for k, v in {
     "forehead": (1.0, 1.0, 0.50), "nose": (0.6, 1.0, 0.35), "chin": (0.6, 1.6, 0.45), "eyes": (0.6, 0.6, 0.50),
-    "cheek": (1.0, 1.0, 0.48)}.items()}  # fmt: skip
+    "cheek": (0.9, 1.0, 0.48)}.items()}  # fmt: skip
 #: the head tile's neck, down to the chest, is body skin (2026-11-06: as "cheek" it took the face's roughness and the
 #: face's coat - a glossy band ending in a line across the chest on dark skin): the body tiles' values, and a face
 #: share of 0 (1 elsewhere, `face_share.png`), softened like the rest - modules/skin/maps.py fades the clear coat and

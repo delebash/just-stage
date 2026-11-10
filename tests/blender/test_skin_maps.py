@@ -652,3 +652,29 @@ def test_the_coat_shines_off_the_skins_relief(human, tmp_path):
         normal, coat = bsdf.inputs["Normal"], bsdf.inputs["Coat Normal"]
         assert normal.is_linked and coat.is_linked
         assert coat.links[0].from_socket == normal.links[0].from_socket
+
+
+def test_the_cheeks_pores_sit_a_tenth_below_the_foreheads(human):
+    """With the coat on the bumped normal the cheek's pore band went 1.11 of HD Aaron's (2026-11-10): the region map's
+    cheek (the head tile's default region) takes its pores x0.9, the forehead x1 - the map's pore channel (R) there."""
+    _made, body = human
+    image = maps.face_regions()
+    w, h = image.size
+    px = np.empty(w * h * 4, np.float32)
+    image.pixels.foreach_get(px)
+    px = px.reshape(h, w, 4)
+    me = body.data
+    uv = np.empty(len(me.loops) * 2, np.float32)
+    me.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    loop_vert = np.empty(len(me.loops), np.int64)
+    me.loops.foreach_get("vertex_index", loop_vert)
+    co = np.array([v.co for v in me.vertices])[loop_vert]
+    head = uv[:, 0] < 1.0
+    sample = px[(uv[:, 1] * h).astype(int).clip(0, h - 1), (uv[:, 0] * w).astype(int).clip(0, w - 1)]
+    top, front = co[head, 2].max(), co[head, 1].min()
+    side = head & (np.abs(co[:, 0]) > 0.06) & (co[:, 2] < top - 0.12) & (co[:, 2] > top - 0.17)  # the cheeks' sides
+    brow = head & (np.abs(co[:, 0]) < 0.02) & (co[:, 1] < front + 0.02) & (co[:, 2] > top - 0.09) & (co[:, 2] < top - 0.06)
+    assert side.any() and brow.any()
+    ratio = np.median(sample[side, 0]) / np.median(sample[brow, 0])
+    assert ratio == pytest.approx(0.9, abs=0.03), ratio

@@ -1593,6 +1593,53 @@ booked with just-direct-mocap.
   0.70); the full view's legs one even tone on all six characters (`gate1110/chars_full.png`). Seen: the foot's warm
   smudges between the toe tendons are in the 11-09 gate too (not new). The gate report's rows updated. Next: pores
   x0.9 / x0.8 for the cheek's pore band (`batch_pores09.sh`, running).
+- **08:04, pores everywhere (`p09_table.txt`): x0.9 puts the cheek in his band (pore 1.11 -> 1.05 =, fold 1.03 =) but
+  takes the forehead strip 0.62 -> 0.58, the hand 0.65 -> 0.61 and the torso's fold 0.96 -> 0.90 (all already below
+  him); x0.8 cheek 0.99 and the rest lower. Not kept everywhere. The region map's "cheek" is the head tile's default
+  (all but forehead, nose, chin, eyes, neck); the body tiles don't read it - so the cheek alone: `make_face_regions
+  --pores cheek=0.9` (`regions*cheekp09`), queued after the foot's one-factor test (`batch_footsmudge.sh`: `relief0`,
+  `colourflat` at the foot view).**
+- **08:08, the foot's smudges one factor at a time (`foot_layers.png`; `.dev/gate/parts/2026-11-10foot`): relief0 takes
+  them out (and the tendons), colourflat keeps them - the RELIEF.** Thunk3D's feet part is very steep: slope p50 / p99
+  0.16 / 0.67 under its weight (the women's legs' p99 0.09) - deep valleys between the tendons at the toes' bases go
+  dark and warm (the scattering). Variants (box to 08:45): the part cut at 12 mm (was 25; `post_cuts.py` into this
+  session's scratchpad `cuts_foot/hp12`), its tilt x0.6 (`cuts_foot/s06`) - `batch_footvar.sh` swaps each into the
+  product's files (`swap_files.py`, originals kept in `feet_keep`), Scan man A, the library, the foot view; then the
+  originals back and rebuilt (backup `skins_2026-11-10foot`). After the cheek-only pores trial.
+- **08:13, the cheek alone (`cp_table.txt`): `regions*cheekp09` - cheek micro 1.08 =, pore 1.05 =, fold 1.02 =, form
+  1.00 =; the forehead strip 0.61 / 0.72 (from 0.62 / 0.73); the body tiles don't read the map. KEPT (mine):
+  `make_face_regions.REGIONS` cheek pores 1.0 -> 0.9; test `test_the_cheeks_pores_sit_a_tenth_below_the_foreheads`.
+  The shipped map regenerated with the foot's decision in one batch (the library is rebuilt once).**
+- **08:27, the foot's variants (`foot_var.png`; measured at the foot view, melanin 0.03, pore / fold / form of his):**
+  the product (25 mm) 0.58 / 0.65 / 0.72 with the smudges; 12 mm 0.55 / 0.58 / 0.59, the smudges fainter, the tendons
+  kept; tilt x0.6 0.50 / 0.36 / 0.46, nearly clean but soft. Correction: `colourflat` printed the product's numbers
+  exactly - it rewrites the head tile's image only (a UDIM image's pixels read its first tile), so it never tested the
+  foot's colour; the relief verdict rests on `relief0` (smudges gone with the relief off). **Decision (mine): the feet
+  part's `relief_hp_mm` 25 -> 12 (scaled to his tone the product's 1.15 / 1.06 / 1.07 become ~1.09 / 0.94 / 0.88, inside
+  his spreads 32 / 17 / 19% - checked in the ship batch by `skintone*0.08`).** Running `batch_ship_1110b.sh` (FOOT=1;
+  started detached by mistake - its echo lines lost; watched by its process and its logs `sh_*.log`): the region map,
+  the feet part, the three men, the library, cheek / nose / eye / face / foot / full against HD Aaron, the foot and hand
+  at melanin 0.08, then tools and Blender.
+  08:38: the region map regenerated md5-equal to the trial's `cheekp09`; the shipped cheek 1.08 / 1.05 / 1.02 =; the
+  foot 0.55 / 0.58 / 0.59 (12 mm), its smudges mostly gone (`row_sh_foot.png`). Seen beside him: his foot and hand
+  carry a wet sheen, ours matte - the body's coat 0.03 against his ~0.10, tried 11-07 on a smooth coat normal (not the
+  lever then); now the coat shines off the relief: `factors bodycoat*w` (new), `batch_bodycoat.sh` queued (0.06 /
+  0.10 at his tone, foot, hand, torso, full).
+- **08:5x, THE ORDER CORRECTED (the user: "the rule was to prove if it can be done"): the body coat trial cancelled
+  (polish). The unproven rows: the eye's lid shape and the ear's concha (hm08's topology). Their TRIAL now - not the
+  product's head change (Q-BASE-4 stays the user's for shipping): `tools/gate/ict_head.py` (new) puts ICT-FaceKit's
+  neutral head (MIT) on our man's head shape - aligned and wrapped as `smile_transfer.carry`, only the wrap's move
+  smoothed at 15 mm kept (our shape; ICT's lid fold and ear pit), each lid region shifted onto our rims (8 mm fade);
+  then a factor `icthead*` (to write) gives it our UVs by Blender's Data Transfer and our skin material, hides our hm08
+  head under it, and the eye / ear / face views render beside HD Aaron. Time box to 12:00 for the first renders.
+- **09:0x, THE VERDICT STATED STRICTLY (the user: "so you say these are the last 2 parts, that means you have proven the
+  nails, the hair, the beard, the skin wrinkles, ect, correct" - no: "close" is NOT proven at the user's bar, a person
+  can still tell).** Proven (matches HD Aaron): cheek and nose skin texture (within his spread), hands' and feet's
+  detail at his tone, the lips' colour. Not proven - close: nails; hair (reads as hair in a trial, not matched, not in
+  the product); beard / stubble (sparser, browner); wrinkles (forehead fold 0.73 of his, softer granules); brows (hazy
+  bar vs crisp strands - cards failed); lashes (lower kinks, strand haze); lips' shape and lines; smile; teeth and
+  tongue; torso. Not proven - below: eyes (lid shape), ears (concha). ORDER from here: the ICT head trial (eyes, ears),
+  then a trial on every "close" row until each reaches him or provably can't.
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1
@@ -1916,3 +1963,13 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   by reading the output, rerun).
 - Check a scan's sex and age against its own pictures as well as its record (2026-11-09: HSRD-100's HSR0081 record
   says "Male" while its ID, alias, clothes and colour map say a woman - our tag copied the record; Scan man C mixes her).
+- A batch starts through the tool's background run, never `nohup ... &` (2026-11-10 08:27: `batch_ship_1110b.sh`
+  started detached with its output to /dev/null - its step lines lost, no notice when it ends; it was mid-way through
+  writing the shipped region map, so it was watched by its process and logs rather than stopped).
+- A factor that rewrites a UDIM image's pixels reaches its first tile only (2026-11-10: `colourflat` at the foot view
+  printed the product's numbers exactly - the foot is on tile 1003). Check a factor reaches the view's tile before
+  reading its result.
+- Unproven parts before polish (2026-11-10 08:5x, the user: "why even after we discussed you did the same mistake, the
+  rule was to prove if it can be done"): the morning went on close parts (legs, coat, cheek pores, foot) while the eyes
+  and ears - the only unproven rows - waited, filed under Q-BASE-4. A decision covers shipping; a trial needs none.
+  Every "not proven" row gets its trial first.

@@ -600,6 +600,101 @@ def cavitynet(built: dict, stem: str, strength: float) -> None:
     print("CAVITY NET", stem, "strength", strength, flush=True)
 
 
+ICT_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "ict"
+ICT_HIDE_MM = 12.0  # our head's skin hidden where ICT's head lies this close over it
+
+
+def icthead(built: dict, stem: str) -> None:
+    """The eye's and the ear's proof on a free head (`tools/gate/ict_head.py`, a trial - Q-BASE-4 stays the user's for
+    the product): ICT-FaceKit's head placed on our man (`.dev/gate/ict/<stem>.npz`, world positions), given our UDIM
+    UVs by Blender's Data Transfer from the body (nearest face, interpolated - Blender's own way to copy UVs between
+    meshes) and our skin material; our head's skin under it made transparent (a material slot of its own), so the
+    lashes, brows and eye parts stay bound to the body's surface as they are."""
+    import bmesh  # noqa: F401
+    from mathutils import kdtree
+
+    maps = _maps()
+    body = built["body"]
+    data = np.load(ICT_TRIALS / f"{stem}.npz")
+    verts, counts, flat = data["verts"], data["counts"], data["flat"]
+    starts = np.r_[0, np.cumsum(counts)[:-1]]
+    polys = [flat[s:s + c].tolist() for s, c in zip(starts, counts, strict=True)]
+    me = bpy.data.meshes.new("ICT head")
+    me.from_pydata(verts.tolist(), [], polys)
+    me.validate()
+    me.polygons.foreach_set("use_smooth", [True] * len(me.polygons))
+    me.uv_layers.new(name=maps.UV)
+    head = bpy.data.objects.new("ICT head", me)
+    for coll in body.users_collection:
+        coll.objects.link(head)
+    active = body.data.uv_layers.active
+    body.data.uv_layers.active = body.data.uv_layers[maps.UV]
+    mod = head.modifiers.new("uv from ours", "DATA_TRANSFER")
+    mod.object = body
+    mod.use_loop_data = True
+    mod.data_types_loops = {"UV"}
+    mod.loop_mapping = "POLYINTERP_NEAREST"
+    mod.layers_uv_select_src = maps.UV  # the source layer by name (its enum lists ALL and the layers' names)
+    dst_items = [i.identifier for i in mod.bl_rna.properties["layers_uv_select_dst"].enum_items]
+    mod.layers_uv_select_dst = "NAME" if "NAME" in dst_items else dst_items[0]  # the same name on ICT's mesh
+    deps = bpy.context.evaluated_depsgraph_get()
+    deps.update()
+    baked = bpy.data.meshes.new_from_object(head.evaluated_get(deps))
+    head.modifiers.remove(mod)
+    head.data = baked
+    body.data.uv_layers.active = active
+    head.data.materials.clear()
+    head.data.materials.append(body.juststage.skin_material)
+    # our head's skin under ICT's: transparent, its own slot (the body's topology kept for everything bound to it)
+    hide = bpy.data.materials.new("ICT trial hidden skin")
+    hide.use_nodes = True
+    nt = hide.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    nt.links.new(nt.nodes.new("ShaderNodeBsdfTransparent").outputs["BSDF"], out.inputs["Surface"])
+    if hasattr(hide, "use_transparent_shadow"):
+        hide.use_transparent_shadow = True
+    body_eval = body.evaluated_get(deps)
+    bme = body_eval.to_mesh()
+    world = np.array(body.matrix_world)
+    co = np.array([world[:3, :3] @ np.array(v.co) + world[:3, 3] for v in bme.vertices])
+    body_eval.to_mesh_clear()
+    tree = kdtree.KDTree(len(verts))
+    for i, p in enumerate(verts):
+        tree.insert(p.tolist(), i)
+    tree.balance()
+    near = np.array([tree.find(p.tolist())[2] < ICT_HIDE_MM / 1000.0 for p in co])
+    uv = np.empty(len(body.data.loops) * 2, np.float32)
+    body.data.uv_layers[maps.UV].data.foreach_get("uv", uv)
+    uv = uv.reshape(-1, 2)
+    loop_vert = np.empty(len(body.data.loops), np.int64)
+    body.data.loops.foreach_get("vertex_index", loop_vert)
+    body.data.materials.append(hide)
+    slot = len(body.data.materials) - 1
+    n = 0
+    for poly in body.data.polygons:
+        loops = range(poly.loop_start, poly.loop_start + poly.loop_total)
+        if all(uv[k, 0] < 1.0 for k in loops) and all(near[loop_vert[k]] for k in loops):
+            poly.material_index = slot
+            n += 1
+    print("ICT HEAD", stem, len(verts), "vertices; our head's faces hidden under it:", n, flush=True)
+
+
+def bodycoat(built: dict, weight: float) -> None:
+    """The body's coat weight (`maps.BODY_COAT_WEIGHT`, 0.03 - the coat mix's B, the face's A kept): HD Aaron's body
+    coat ~0.10 (RESEARCH 14.10), tried 11-07 with our coat on a smooth normal (not the lever); since 2026-11-10 the coat
+    shines off the relief - his foot's and hand's wet sheen against our matte. One node feeds both BSDFs."""
+    n = 0
+    for nt in _skin_trees(built):
+        node = nt.nodes.get(_maps().NODE + "coat")
+        if node is not None:
+            next(i for i in node.inputs if i.identifier == "B_Float").default_value = weight
+            n += 1
+    if not n:
+        raise RuntimeError("no coat mix on the skin")
+    print("BODY COAT", weight, "on", n, "skins", flush=True)
+
+
 def coatnormal(built: dict) -> None:
     """The coat lobe on the skin's bumped normal - HD Aaron's head BSDF takes the same normal for both lobes (CC
     Blender Tools' `rl_head_shader` feeds Normal and Coat Normal from one output, read 2026-11-10); ours leaves Coat
@@ -4418,6 +4513,10 @@ def exprset(built: dict, expression: str, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("icthead*"):  # icthead*head1 (ICT-FaceKit's head placed by tools/gate/ict_head.py)
+        return lambda built: icthead(built, name.split("*", 1)[1])
+    if name.startswith("bodycoat*"):  # bodycoat*0.1 (the body's coat weight)
+        return lambda built: bodycoat(built, float(name.split("*", 1)[1]))
     if name == "coatnormal":  # the coat lobe on the bumped normal (defined below FACTORS)
         return coatnormal
     if name.startswith("cavitynet*"):  # cavitynet*cavnet_a*0.823 (a tile under .dev/gate/micro, the strength)

@@ -81,7 +81,9 @@ SOURCES = {
     # past a tendon's slope, no fade at the islands' seams
     "thunk3d_foot": {"scan": ROOT / ".dev" / "downloads" / "sketchfab_leg_foot_2026-11-08" / "foot" / "left_foot_02.stl",
                      "scale": 0.001, "tiles": (2, 3), "fit": "foot", "part": "feet", "geometry_only": True,
-                     "work": WORK_ROOT / "thunk3d_foot", "edge_fade": 24.0, "relief_hp_mm": 25.0, "fit_smooth": 10,
+                     # its relief under 12 mm (was 25: the deep valleys between the tendons at the toes' bases went
+                     # dark and warm - smudges HD Aaron's foot has none of; 2026-11-10 `foot_var.png`)
+                     "work": WORK_ROOT / "thunk3d_foot", "edge_fade": 24.0, "relief_hp_mm": 12.0, "fit_smooth": 10,
                      "debris_limit": 0.8, "island_fade": False,
                      "source": "Thunk3D, 'Leg-foot' (sketchfab.com/3d-models/leg-foot-37e2802a104141b982e15eda21d425ec, by "
                                "Diana Liu: 'Leg-foot scan by Thunk3D Fisher's 3D scanner')",

@@ -130,6 +130,10 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   the full gate `.dev/gate/parts/2026-11-10gate`, every suite). Then: look at every sheet, write the gate report's
   changes, commit. Open: the forehead's granules (the micro tile's pattern), the cheek's pore band (1.11 with the coat
   - pores x0.9 if it stays over).
+  07:5x: VERIFIED and committed (70fb51d; unit 45, tools 66, Blender 214): every character's legs one even tone, the
+  women's limbs, the coat on the bumped normal; the gate report updated. Running `batch_pores09.sh` (pores x0.9 / x0.8,
+  the cheek's pore band). Open (mine): the forehead's granules (box spent), the foot's smudges between the toe tendons,
+  the slim woman's flank line. Waiting for the user: Q-HAIR-7, Q-BASE-4, Q-GATE-3.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured
