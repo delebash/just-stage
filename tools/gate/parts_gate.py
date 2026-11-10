@@ -71,7 +71,9 @@ EXPRESSIONS = {
     # tongue inner mouth"): a blink and three speech shapes, each against his nearest - the pairings are mine (plan
     # §19.3): "aa" his V_Open, "oo" his V_Tight_O, "ee" his V_Wide
     "blink": {"ours": {"eyeBlinkLeft": 1.0, "eyeBlinkRight": 1.0}, "cc5": {"Eye_Blink_L": 1.0, "Eye_Blink_R": 1.0}},
-    "talk_aa": {"ours": {"jawOpen": 0.4}, "cc5": {"V_Open": 1.0}},
+    # "aa": ours at jawOpen 0.8 - its opening as tall as his V_Open's (2026-11-10, `factors exprset*talk_aa*jawOpen*`;
+    # at 0.4 his opened ~2x ours, and the inner mouth's "dark tongue" was the smaller opening, not its material)
+    "talk_aa": {"ours": {"jawOpen": 0.8}, "cc5": {"V_Open": 1.0}},
     "talk_oo": {"ours": {"mouthFunnel": 0.6, "mouthPucker": 0.5, "jawOpen": 0.15}, "cc5": {"V_Tight_O": 1.0}},
     "talk_ee": {"ours": {"mouthStretchLeft": 0.5, "mouthStretchRight": 0.5, "jawOpen": 0.1}, "cc5": {"V_Wide": 1.0}},
 }  # fmt: skip

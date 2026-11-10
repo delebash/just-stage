@@ -44,7 +44,7 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 | nails | close | - |
 | foot | **matches in detail at his tone** - tendons and veins; paler (a setting) | at melanin 0.03: 0.58 / 0.62 / 0.68; at 0.08 (L* 47, his 54): 1.15 = / 1.06 = / 1.07 = |
 | smile | close - the corners and cheeks lift; his eyes narrow more | - |
-| mouth open, talk | close - the tongue dark (indirect light, open); our teeth show less | - |
+| mouth open, talk | close - the "aa" pairing was unequal (ours jawOpen 0.4 against his full V_Open); at 0.8 (11-10, the gate's pairing now) the opening matches his and the inner mouth reads as a mouth | - |
 
 Paler hands and feet - measured 2026-11-10 00:31 (`.dev/gate/parts/2026-11-10handtone`, `factors skintone*`, one
 factor): the same skin at melanin 0.08 brings the foot's detail within his spread and the hand's above it - at his
@@ -73,4 +73,4 @@ pale lower ledge: the shared head's shape, not one skin's. No CC5 woman or dark-
    Q-BASE-4, OPEN: the design and the spec disagree on the fallback.
 
 **Work (mine, no decision):** the forehead's fine net (a better microrelief generator - a scanned one at his
-resolution is paid); the tongue's light; HUTUBS's ear targets for the outline's variety (Q-EAR-1).
+resolution is paid). Done since: the closed lid (11-10 01:3x), HUTUBS's 58 ears in the mixer (Q-EAR-1, 03:40).

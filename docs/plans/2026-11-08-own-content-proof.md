@@ -1447,6 +1447,15 @@ booked with just-direct-mocap.
   **03:40, done and verified (`row_ears_*`): each real ear its own clean shape on our head - another lobe, rim and
   angle; no tears or seams at the region's edge; the concha shallow (the topology). Tools 63 passed (the ear-only
   test with them), the mixer's Blender tests 13 passed. Q-EAR-1's ear variety: in the product (67 identities).**
+- **03:4x, the tongue (the gate's `mouth_talk_aa`): not worked.** A window inside the opening caught the lips both
+  times (the box from the dark pixels' bounding box reaches the lips) - void. By eye: his "aa" opens about twice as
+  tall (1,023 against our 530 px), so his tongue and inner mouth show where ours stay in shadow - the 11-08 finding
+  (row 11's pairing: his "aa" opens wider; no direct light reaches either tongue) holds: the gap is the expression's
+  opening (the face units' shape), not the tongue's material.
+  **03:4x, the gate's "aa" pairing measured (`row_aa.png`, `factors exprset*` - `setkey` was overwritten by the view's
+  expression, the first run void): at jawOpen 0.8 our opening is as tall as his V_Open's and the inner mouth reads as
+  a mouth (lower teeth, the lining). The pairing was mine (plan §19.3) and never measured: `parts_gate.EXPRESSIONS`
+  talk_aa ours 0.4 -> 0.8 (a gate setup fix). Teeth, mouth: close.**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

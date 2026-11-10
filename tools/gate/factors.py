@@ -4342,11 +4342,22 @@ def earmix(built: dict, name: str, strength: float = 1.0) -> None:
     print("EAR MIX", name, "strength", strength, flush=True)
 
 
+def exprset(built: dict, expression: str, key: str, value: float) -> None:
+    """One key of one of the gate's expressions for ours, set in the gate's own table (`parts_gate.EXPRESSIONS`): a
+    view sets its expression after a factor runs, so `setkey` on an expression view is overwritten (2026-11-10: the
+    "aa" trial came out three times alike). The table stays changed for the run's later variants - put it last."""
+    pg.EXPRESSIONS[expression]["ours"][key] = value
+    print("EXPRESSION", expression, key, "=", value, flush=True)
+
+
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
     if name.startswith("regions*"):  # regions*fh1p2 (a region-map variant's folder under .dev/gate/regions)
         return lambda built: regions(built, name.split("*", 1)[1])
+    if name.startswith("exprset*"):  # exprset*talk_aa*jawOpen*0.8 (a gate expression's key for ours)
+        _e, expression, key, value = name.split("*")
+        return lambda built: exprset(built, expression, key, float(value))
     if name.startswith("earmix*"):  # earmix*hutubs_pp1[*1.0] (one identity's ears alone) - --alone
         bits = name.split("*")
         return lambda built: earmix(built, bits[1], *(float(bits[2]),) if len(bits) > 2 else ())
