@@ -2110,6 +2110,39 @@ booked with just-direct-mocap.
   rendering. Queued after it (`batch_trials4.sh`): the two gaps never tried - the lower lashes longer / thicker
   (`factors lashlow`, new: 5.5 / 0.05, 5.5 / 0.04, 4.8 / 0.05 mm) and the nail bed's colour warmer, less red
   (`factors nailbedcolour`, new: (0.48, 0.32, 0.20) at 0.12, (0.46, 0.33, 0.22) at 0.2).
+- **15:3x, THE MOUTH MEASURED FROM THE FRONT (CPU, `mouth_profile.py`: the gate's own builds at its mouth_jawOpen,
+  rays straight back along the midline and 6 mm either side, every 0.25 mm; mm from the front teeth's centre):** his
+  upper lip hangs to -7.0, the opening below it 13.75 tall shows his TONGUE ~23 mm behind the teeth's front, then
+  0.75 of lower teeth; ours: the lip ends at -4.0, the opening 17.5 tall, and the rays travel ~29 mm deep before they
+  meet our teeth group's mesh - whatever fills our opening sits ~6 mm deeper in the cavity than his tongue, where the
+  stage's key can't reach (a new measured fact for the mouth's "the opening's shape" route; the earlier trial moved
+  the tongue DOWN, not forward). Which object that 29 mm surface is: rerun with names.
+  15:4x, by material (`mouth_profile_mat.py`): **ours shows OUR TONGUE ~32 mm behind the front teeth (15.5 mm of it),
+  then 2 mm of lower teeth; his shows HIS TONGUE ~23 mm behind (13.75 mm of it)** - our tongue sits ~9 mm deeper, and
+  his upper lip hangs 3 mm lower (a smaller opening). **The mouth reopened on this measured fact** (not a re-run of
+  the spent routes): the tongue moved FORWARD - `tonguedown*0*-6`, `*0*-9`, `*2*-8` at the open-mouth and talk views,
+  added to round 4 (`batch_trials4.sh`, after the gate).
+- **15:5x, THE GATE'S OWN RENDERS OF OURS (gate2, before his are done):** nails (`g2_nails.jpg`): the plate's shape as
+  the trial - but a glossy, crackled white band in the skin just below the cuticle (`g2_nails_zoom.jpg`; not in the
+  trial). Cause: every skin paints MPFB2's nail region shinier (`build_skins` roughness 0.3 against the body's
+  `material.ROUGHNESS` ~0.59), and the build let the pores / microrelief back onto that tile (the trial still had them
+  off) - the shiny island glints through its relief where the plate no longer covers it. Fix (mine; shader-side, every
+  skin, no rebuild): on each fingertip's region the skin's roughness is the body's plain value before the plate's mix
+  (`apply_nail_rough.py` + its test) - the first step of round 4, between batches. Eye (`g2_eye.jpg`): the iris clear
+  of the dark block; at the approved 0.08 mm root the outer lashes read as a heavy dark fan beside his fine,
+  light-tipped fringe (the 0.06 trial read finer - the user's call, listed).
+  15:5x, the gate's measures (`g2_table.txt`, our product tone - lighter than his, which lowers every contrast band):
+  cheek micro / pore / fold / form 1.08 / 1.05 / 1.02 / 1.00 (in his spread); the back of the hand pore 0.41 (0.65
+  this morning), fold 0.69, form 1.14 - at his tone it sat at 1.46 before, so round 4 measures it at his tone
+  (`skintone*0.08`, hand and foot) instead of inferring; foot 0.34 / 0.55 / 0.61 (proven at his tone, 11-10); forehead
+  0.61 / 0.72; torso fold 0.96, form 0.70. Seen in the rows (`gate1110b/row_*.png`): the brows silver-grey at the face
+  view (this morning's too - not today's change); the open mouth a dark cavity with prominent lower teeth, his tongue
+  lit (round 4's forward tongue); the big toe's plate wider and longer than his in the new measure (round 4:
+  `toeplate*0.5*0.6`, `*0.45*0.55`); the lips smooth and pale beside his redder, crinkled ones (box spent).
+- **16:14, THE END RUN GREEN on 3468dd0's product: unit 45, tools 67, Blender 218 passed (the AI test deselected) -
+  the nails over the fingertip, the lashes, the stubble and the hand tile VERIFIED.** The six characters' eye sheet
+  (`gate1110b/chars_eye.png`): the new lashes a lash line curling up on every character, nothing over the iris. Round 4
+  started 16:14 with `apply_nail_rough.py` applied first (uncommitted; its test runs at the next end run).
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1
