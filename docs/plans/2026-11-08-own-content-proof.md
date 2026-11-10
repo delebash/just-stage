@@ -1456,6 +1456,22 @@ booked with just-direct-mocap.
   expression, the first run void): at jawOpen 0.8 our opening is as tall as his V_Open's and the inner mouth reads as
   a mouth (lower teeth, the lining). The pairing was mine (plan §19.3) and never measured: `parts_gate.EXPRESSIONS`
   talk_aa ours 0.4 -> 0.8 (a gate setup fix). Teeth, mouth: close.**
+- **04:0x, the lips' colour measured (the gate's `lips` view, a mask of the most saturated reds - both on the lips):
+  lips minus skin, L* a* b*: ours -24.3 / +26.9 / +7.8, his -25.5 / +26.1 / +9.5 - matches; "pinker" was my eye.**
+- **04:1x, Q-BASE-4's facts for the user (the eye's lid and the ear's concha are hm08's topology):** the approved texts
+  disagree - the design (`2026-11-05-character-design.md` L74-76): "the head alone moves to a new topology built to
+  the measured references (option C), the body staying hm08"; the spec (`character-data-model.md` item 23): "Blender
+  Studio's Human Base Meshes ... take hm08's place". Measured tonight (`scratchpad/bs_clay2_all.jpg`,
+  `ict_eye_ear.jpg`): **Blender Studio's realistic head (CC0, 3,307 vertices without its sculpt level) has no lid
+  fold and a coarse ear - the spec's route fixes neither. ICT-FaceKit's neutral head (MIT, 26,719 vertices, our blink
+  and smile units' source) has a real lid margin with a fold and a deep concha with the canal opening.** Options:
+  (A) the design's own mechanism (d) - "a new region need appears later - the same mechanism adds it": base v2's
+  appended geometry extended with an ear-canal pit and a lid fold, hm08 kept (smaller; whether appended loops can
+  carry a fold is unproven); (B) the design's escalation with ICT-FaceKit's head (MIT) as the new head topology -
+  both fixed by construction; a large rebuild (the neck seam, the head sliders wrapped onto it, the head tile's UVs
+  and every generated mask and skin redone). My rec: (B) with ICT's head - a production head (USC ICT's Light Stage
+  model, the standard here) beats a topology of our own, and (A) can't make the fold or the pit from hm08's loops
+  without inventing a topology anyway. The user's (it chooses between two approved texts).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded

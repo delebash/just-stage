@@ -32,7 +32,7 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 | cheek | **matches** - pores, fine relief and colour read alike | micro 1.07 =, pores 0.94 =, folds 0.93 =, form 0.96 = |
 | nose | close - real skin; our nostril crease a little deeper | - |
 | forehead | close - real creases; his skin a crisper fine net of pits | pores 0.51 <, folds 0.62 < |
-| chin, lips | close - our stubble sparser and browner than his salt-and-pepper; our lips a little pinker and smoother | - |
+| chin, lips | close - the lips' colour **matches** (lips minus skin, L* a* b*: ours -24.3 / +26.9 / +7.8, his -25.5 / +26.1 / +9.5 - 11-10); our stubble sparser and browner than his salt-and-pepper (his grey: age, a setting) | - |
 | lip corner | close - the lip a more saturated pink | - |
 | eye | **below** - our upper lid low over the iris, the lower rim a wide pale ledge (the lid's shape: the plan's escalation, Q-BASE-4, open) | sclera L* 70 / 74, not brighter |
 | eye_blink | **close since 2026-11-10 01:3x** - the closed lid reads as skin (the blink fades in a soft colour, object-space pores, the eye tint lifted - `maps._closed_lid_skin`); smoother than his, no lid creases | open eye pixel-equal |
@@ -71,6 +71,10 @@ pale lower ledge: the shared head's shape, not one skin's. No CC5 woman or dark-
 2. **The eye's lid shape and the ear's concha** - both hm08's topology (the lid's ledge, 11-09; the ear's missing
    pit, 11-10: a real ear wrapped on keeps the dish); the plan's escalation (the head alone on a new topology) sits on
    Q-BASE-4, OPEN: the design and the spec disagree on the fallback.
+   Measured 11-10: the spec's fallback (Blender Studio's CC0 realistic head) has no lid fold and a coarse ear;
+   ICT-FaceKit's head (MIT, 26,719 vertices) has a real lid margin with a fold and a deep concha with the canal.
+   **My rec: the design's route (the head alone on a new topology) with ICT-FaceKit's head** - a large rebuild (the
+   neck seam, the head sliders wrapped on, the head tile's UVs, masks and skins redone).
 
 **Work (mine, no decision):** the forehead's fine net (a better microrelief generator - a scanned one at his
 resolution is paid). Done since: the closed lid (11-10 01:3x), HUTUBS's 58 ears in the mixer (Q-EAR-1, 03:40).
