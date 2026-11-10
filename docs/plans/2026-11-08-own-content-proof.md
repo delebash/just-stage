@@ -1640,6 +1640,148 @@ booked with just-direct-mocap.
   bar vs crisp strands - cards failed); lashes (lower kinks, strand haze); lips' shape and lines; smile; teeth and
   tongue; torso. Not proven - below: eyes (lid shape), ears (concha). ORDER from here: the ICT head trial (eyes, ears),
   then a trial on every "close" row until each reaches him or provably can't.
+- **09:0x-09:2x, THE EYE / EAR TRIAL on ICT-FaceKit's head (`tools/gate/ict_head.py`, `factors icthead*`; renders
+  `.dev/gate/parts/2026-11-10icthead`, `ict2_{eye,ear,face}.png` in this session's scratchpad: product | ICT head |
+  HD Aaron):** head1 (smoothed wrap, lid regions shifted by their mean miss: rims off 1.35 mm) and head2 (the full
+  wrap outside the eyes (6-14 mm) and the ears (32-48 mm), every eye-opening vertex snapped to our rim: 84 vertices,
+  1.48 mm p50 before). **EAR: ICT's concha is deeper with the canal's shadow - closer to his than our dish, but his
+  antihelix and concha are sharper and deeper: better, not matched.** **EYE: not judgeable this way** - the fitting's
+  faults dominate: our eye layer's dark surround carried onto ICT's lid fold by the copied UVs (a brown band), half
+  the brow under ICT's brow ridge, a gap under the eyeball at the lower lid. So the FORM alone next: `--clay` (new in
+  `parts_gate` and `factors`: every skin one grey, every hair hidden, the eyes kept) - our hm08 head, ICT's head
+  (head2) and HD Aaron's at the eye, ear, profile and three-quarter views (`batch_clay.sh`, running).
+- **09:14, THE CLAY (`.dev/gate/parts/2026-11-10clay`, `clay_{eye,ear}.png` in this session's scratchpad: hm08 | ICT
+  head2 | HD Aaron):** **EAR - ICT's head has the deep concha and the canal's shadow, his in kind (his antihelix more
+  defined); ours a shallow dish. The ear is reachable with a free asset (ICT-FaceKit, MIT): close, not equal yet.**
+  **EYE - on ICT's head our lower-lid ledge is gone, but his clear upper-lid crease is missing too: my head2 snapped
+  ICT's opening onto our narrower one and wrapped part of the lid, flattening the fold.** Next: head3
+  (`ict_head.py --keep-lids`: no snap, keep zone 10-22 mm, ICT's eyeball centres out - ICT's README components
+  21451-22220 / 23021-23790, placed at (+-3.03, -13.21, 162.0) cm; `factors icthead` moves our eye parts per side into
+  them, shape keys alike), clay at the eye, profile, three-quarter (`batch_clay3.sh`, after the brows).
+- **09:1x, THE HAIR STATED STRICTLY (the sheets of 11-09 22:4x, `row_capstrands4_{three_quarter,hair_back}.png`):
+  the free card trial does NOT reach HD Aaron - repeating card patterns and skin through the partings in the back
+  view, a dark helmet outline; his soft, lit, strand-level hair. "Reached in kind" (11-09 21:2x) overstated it: at the
+  user's bar the hair is NOT proven.** The one free card set at CC quality not yet tried: MotionStudioArts' (CC BY,
+  ZBrush cards made for CC4 - curly and kinky cuts, RESEARCH 14.14; a cut is a setting, the quality is the question) -
+  needs a Sketchfab download.
+- **09:1x, THE BROWS' TRIAL (`factors mhbrow*NNN`, new): MakeHuman's CC0 brow card sets (makehuman_system_assets_cc0.zip
+  - 12 sets with .mhclo to hm08 and an RGBA texture; never tried against HD Aaron) fitted by our `core.mhclo.fit`,
+  shaded as their .mhmat (near-black, the hair in the alpha, no specular, no shadow), our strand brows hidden; 012,
+  010, 004 (`batch_mhbrow.sh`, running).**
+  **09:24 result (`brows5.png`; `.dev/gate/parts/2026-11-10brows`): NOT KEPT - all three thin faint lines sitting
+  low on the lid crease (MakeHuman's 512 px brows, seated by their .mhclo on hm08 lower than our grown strands); his a
+  thick dark brow. Worse than our strands.** Next: the strands' thickness, never tried (`factors browthick*k[*melanin]`,
+  new - radius x1.8 / x2.5 / x2.5 at melanin 0.95; `batch_browthick.sh`, after the stubble trial `batch_stubble.sh`:
+  `stubbletrial*160*0.4*2.8`, `*220*0.5*2.4`). The hair's untried free source (MotionStudioArts' CC4 card hair, CC BY,
+  "Black Short Hairs Fuzzy v2", sketchfab.com/3d-models/none-b95196254b5e4cd19597eefbda48fffd) waits on a download:
+  the browser extension is not connected - asked of the user.
+- **09:26, THE EYE'S FORM WITH ICT'S LIDS WHOLE (`clay3_eye.png`: hm08 | head2 | head3 | HD Aaron; our eye parts moved
+  into ICT's sockets by (1.1, 1.3, -2.4) / (-1.1, 1.4, -2.3) mm):** head3 takes our worst lid fault away - the thick
+  ledge round the lower lid gone, the opening and lower lid natural - but ICT's generic neutral face has a weak upper
+  crease where his is deep. **VERDICT, EYE: a free head (ICT-FaceKit, MIT) gets the lid's shape CLOSE, not equal; the gap
+  left is the upper crease's depth (shape detail - a real scan's lid crease on ICT's topology is the untried route).
+  EAR: close, not equal (his antihelix sharper). Neither proven; neither disproven.** A stray sliver under the eye in
+  head2 / head3 (an eye film's edge) - a fitting artefact, not the form.
+- **09:34, THE STUBBLE (`stubble4.png`; `.dev/gate/parts/2026-11-10stubble`: product | 160 a cm2, 40% grey, 2.8 mm |
+  220, 50%, 2.4 mm | HD Aaron):** 220 / 50% reads close to his salt-and-pepper in density and colour; his hairs a
+  little finer and whiter, less skin between them. **VERDICT: close, near equal, with our own groom - the density
+  100 -> ~220 a cm2 (the grey share is an age setting).** Seen at the same view: the LIPS are not proven by eye - ours
+  a saturated smooth pink, his paler with a defined border and texture (the colour measure matched only on the mean)
+  - their own trial after the eye's crease. Running: `batch_browthick.sh`, then `batch_clay4.sh` (the crease).
+- **09:38, the brows' thickness - CORRECTED: it was tuned before.** `brows.RADIUS` is 0.035 mm at the root (~0.07 mm
+  across: "0.09 read as a brush beside HD Aaron's"), tapering to 15% - the 0.015 mm printed is the median along the
+  strand. So `browthick` x1.8 / x2.5 (roots ~0.13 / 0.17 mm across) will likely read as a brush; the trial runs, the
+  "never tried" in its docstring is wrong (fixed).
+  **09:43 result (`browthick5.png`): x1.8 crisper and darker, x2.5 a painted brush. Neither is his: his brow a narrower,
+  lower band of defined hairs lying flat; ours taller, higher, a soft mass. VERDICT, BROWS: NOT PROVEN - thickness
+  helps a little, the gap is the brow's shape and placement and the hairs' definition. Untried route: a brow card
+  texture baked at high resolution from our own strands (CC5's brows are cards).**
+- **09:50, THE EYE'S CREASE (`crease.png`: clay head3 | head4 1.5 mm | head4 2.5 mm | HD Aaron; below, skin: product |
+  head4 2.5 mm | his):** the crease works in kind - at 2.5 mm a real fold above the lid where ICT's neutral face had
+  none - but the first cut is ragged (the fold line uneven, fraying at its ends) where his is one smooth arc. With the
+  skin: the fold reads; the integration faults return (half the brow under ICT's brow ridge, the copied UVs' brown
+  band) - rebuild work, not feasibility. head5: the crease as a smoothing spline through the lifted lid edge, tapered
+  at both ends (`ict_head._crease`), 2 and 3 mm - clay queued after the smile (`batch_clay5.sh`).
+- **09:56, THE LIPS (`lips6.png`; `.dev/gate/parts/2026-11-10lips`: product | tint 0.85/0.58/0.72 | matte 0.55/0.08 |
+  lines deeper | all three | HD Aaron): every variant a uniform smooth pink with a crisp drawn outline; his lip fades
+  into the skin at a soft border, the lower lip finely crinkled. VERDICT, LIPS: NOT PROVEN - colour, shine and lines
+  don't close it; the gap is the hard border (MPFB2's lips mask edge) and the lip's fine texture.** Next one factor:
+  the border softened (`factors lipsoft*px`, new - the mask blurred 4 / 10 texels, and 10 with the three settings),
+  `batch_lipsoft.sh`, after the smooth crease's clay.
+- **10:02, THE SMILE (`smile4.png`; `.dev/gate/parts/2026-11-10smile`: product | + eyeSquint 0.6 | 1.0 | HD Aaron):** the
+  squint makes ours read more like a real smile; 1.0 nearly shuts the eyes; at 0.6 our squint brings the UPPER lid down
+  too, where his upper lids stay open and the lower lids rise into crow's feet. **VERDICT, SMILE: improved, not equal -
+  the gap is a lower-lid squint: ICT's own scanned eyeSquint shapes (as the blink's and the smile's units already are,
+  `face_units.ICT_UNITS`) in place of Faceunits'.** Next: `tools/make_ict_units.py` with ICT's eyeSquint_L / _R carried
+  (`smile_transfer.SHAPES` already carries them), a trial before the product.
+  Carried 10:03: ICT's eyeSquint_L / _R onto our man (`smile_transfer carry` from the downloaded ICT set - the fetched
+  one lacks them): max 3.5 mm, ~490 vertices a side (`.dev/gate/smile/ict_squint.npz`); trial `batch_smile2.sh`
+  (`ictsmile*ict_squint` + the squint keys 0.6 / 1.0 in smile_full), after the lips' border.
+- **10:04, the eye in the smile (`eyesmile.png`: product | squint 0.6 | HD Aaron): his outer corner folds into CROW'S
+  FEET (his expression wrinkle maps) with the eye open; ours none. EXPRESSION WRINKLES are a part of their own: NOT
+  PROVEN** (the plan's Q-RIG-3 / Q-RIG-4: tension may set the DNA's weights only - Microsoft's claim 17; Disney's
+  orientation bins out). ICT's scanned squint may carry some of the folds in its geometry - the ICT squint trial shows.
+- **10:09, THE SMOOTH CREASE (`crease5_eye.png`: clay hm08 | head3 | head5 2 mm | head5 3 mm | HD Aaron): at 3 mm ICT's
+  lid takes a clean crease arc like his, and our ledge is gone; his eye opening larger (a shape setting) and a slight
+  bag under his lower lid. VERDICT, EYE FORM: NEAR EQUAL with a free head (ICT-FaceKit, MIT) and a 3 mm crease of our own
+  (`ict_head._crease`).** Our skin, brows and lashes worn on that head (the half-hidden brow, the copied UVs' brown band,
+  the lashes' binding) are the product rebuild's work - Q-BASE-4, the user's to ship.
+- **10:1x, THE LIPS' BORDER (`lipsoft.png`: product | lipsoft 4 | 10 | HD Aaron): the mask blurred 10 texels, our lip
+  fades into the skin instead of an outline - closer to his. Not equal: his lower lip finely crinkled, ours even vertical
+  lines. LIPS: improved, not proven.** (The combined variant failed first: my new factor branches sat before the chain
+  split - each now steps aside when the name has a "+"; rerun after the lashes.)
+- **10:1x, THE LASHES at full size (`lashes2.png`): ours hang down over the iris as a dark curtain, a few spikes standing
+  at the centre; his leave the margin and curl up and out, fine. Not proven.** Trial `factors lashup*rise*curl` (new):
+  10 / 80 and 20 / 100 against the shipped 0 / 50 (`batch_lashup.sh`).
+- **10:18, THE SMILE WITH ICT'S SQUINT (`smile_ict.png`: product | Faceunits squint 0.6 | ICT squint 0.6 | his): ICT's
+  scanned squint looks like Faceunits' - both bring the upper lid down; HIS EYES STAY WIDE OPEN in the smile. The squint
+  is the wrong lever. What his smile has: CROW'S FEET at the outer corners.** Trial: our own wrinkle generator's crow's
+  feet alone (`make_wrinkles.py --only crows`, new option), a bump in the smile views x1.5 / x3 (`batch_crows.sh`,
+  after the lips) - the product would drive it by the smile units as the closed lid's detail is by the blink.
+- **10:24, THE LASHES (`lashup.png`: product | rise 10 / curl 80 | 20 / 100 | his): 10 / 80 takes the dark curtain off
+  the iris - the lashes leave the margin and curl up as his do; 20 / 100 clumps at the inner corner. Closer; his still
+  finer, shorter and sparser.** Round 2 (`lashup` now also takes the longest lash's length and the root radius):
+  10 / 80 with 5.5 mm, with 0.06 mm, with both (`batch_lashup2.sh`, after the crow's feet).
+- **10:27, THE LIPS COMBINED (`lips_all.png`: product | soft 10 | soft 10 + paler tint + matte + deeper lines | his): the
+  combination goes too far - the lip turns brown and almost vanishes into the skin. Soft 10 alone (the shipped tint
+  kept) is the closest: no drawn outline. VERDICT, LIPS: closer, NOT EQUAL - his lip has a fine crinkled texture and a
+  clearer red; untried route: the scans' own lip relief (`colour_relief` leaves the lips out of its skin mask).**
+- **10:32, THE SMILE'S CROW'S FEET (`crows.png`: product | crows x1.5 | x3 | his): at x3 our own generator's crow's feet
+  (`make_wrinkles --only crows`, `.dev/gate/wrinkles/crows`) sit at the outer corner where his are and the smile's eye
+  reads in kind. His deeper and longer, the skin bunching (shape). VERDICT, EXPRESSION WRINKLES (the smile's): CLOSE
+  with our own content - the product needs them driven by the smile units (the closed lid's mechanism: object
+  properties by drivers, `maps._closed_lid_share`) and deeper (x4-5).**
+- **10:3x, THE MOUTH (`mouth2.png`: ours | his, jaw open): ours a dark void, the lower teeth large; his a lit tongue with
+  papillae, smaller spaced teeth, a wet red inner lip. Not proven.** Trial `batch_mouth.sh`: `tonguegrad*1.318*0.195`
+  (his own tongue shader's Front / Rear AO along ours) and `tongueglow` (is our tongue in view at all), after the nails
+  (`batch_nails.sh`: `nailgroove*0 / 0.05`, `nailbed*0.5`, both).
+- **10:3x, THE TORSO (`gate1110/row_torso.png`): our skin reads real but matte and flat; his an oily sheen (his build a
+  setting). The body's coat 0.03 against his ~0.10 - `batch_bodycoat.sh` (cancelled at 08:5x as polish, now the torso
+  row's trial): 0.06 / 0.10 at his tone (melanin 0.08), foot, hand, torso, full; after the mouth.**
+- **10:40, LASHES ROUND 2 (`lashup2.png`: product | 10/80 | +5.5 mm | +0.06 mm | +both | his): 10 / 80 with 5.5 mm and
+  0.06 mm reads closest - fine, curling up. In every variant a clump of straight spikes stands at the lid's centre and
+  a few strands hang over the iris: the lashes `_cleared` turns whole about their root to leave the upper lid's fold
+  stand straight up (the "central clump's sticks" of 11-09). VERDICT, LASHES: CLOSER, NOT EQUAL - route: clear by
+  bending at the joints first (the groom's own collision pass), not a whole turn; on ICT's lid the fold sits elsewhere.**
+- **10:45, THE NAILS (`nails5.png`: product | groove 0 | bed 0.5 | both | his): the settings change little. The faults
+  are SHAPE: our plate a flat inset window with polygon corners (hm08's coarse fingertip faces; the plate drawn in the
+  shader), no curved plate, no rounded free edge, no fold rolling over it; and the fingertip's skin a coarse speckled
+  relief (the hands part's) where his is smooth. VERDICT, NAILS: NOT PROVEN - route: the nail plate as geometry (the
+  plan's Q-BASE-3: "a loop only where shape can't"), the fingertip's relief softened.**
+- **10:51, THE MOUTH (`mouth4.png`: product | his tongue gradient | tongue drawn flat green | his): the gradient changes
+  nothing; the green fills the WHOLE opening up to the upper lip - our "dark void" is the top of our tongue in shadow.
+  His tongue sits low behind the lower teeth with dark space above it. The fault is the tongue's place in the open
+  mouth, not its material.** Trial `factors tonguedown*mm[*back]` (new): 6 / 10 mm down, 10 down 4 back
+  (`batch_tongue.sh`, after the torso's body coat).
+- **10:58, THE TORSO'S SHEEN (`row_bc_torso.png`, `bc_table.txt`; at melanin 0.08): the body coat 0.06 / 0.10 adds a
+  faint sheen only, and takes the hand past his spread (pore 1.46 -> 1.68, fold 1.51 -> 1.63). NOT KEPT. His broad
+  highlights on the chest are his shape (athletic build) under the stage's key plus his roughness map's variation.
+  VERDICT, TORSO: skin CLOSE (texture and colour), the look's gap his build (a slider setting) and highlight
+  breakup - not proven, not disproven.** Seen in the end
+  gate's nails view (`gate1110/row_nails.png`): **the NAILS are not proven by eye** - our plate reads pasted on (a
+  darker drawn rim, no cuticle fold rolling over it) and the fingertip's skin carries a coarse red speckle; his nails
+  sit under a soft proximal fold on smooth warm skin (the views' framing differs). Queued after the face's parts;
+  the factors tried so far: `nailgroove`, `nailbed`, `naildisp`, `nailshine`, `nailluna`, `nailshape`.
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1

@@ -600,6 +600,121 @@ def cavitynet(built: dict, stem: str, strength: float) -> None:
     print("CAVITY NET", stem, "strength", strength, flush=True)
 
 
+def lipsoft(built: dict, px: float) -> None:
+    """The lips' border softened: MPFB2's lips mask (`mpfb_lips.jpg` on hm08's UVs, the lip layer's share) blurred by a
+    three-pass box of `px` texels (~a Gaussian) - 2026-11-10: every lip setting kept a uniform pink with a crisp drawn
+    outline where HD Aaron's lip fades into the skin (`lips6.png`)."""
+    nodes = [n for nt in _skin_trees(built) for n in nt.nodes if n.name.endswith("lips_mask")]
+    if not nodes:
+        raise RuntimeError("no lips mask node")
+    src = nodes[0].image
+    w, h = src.size
+    a = np.empty(w * h * 4, np.float32)
+    src.pixels.foreach_get(a)
+    a = a.reshape(h, w, 4)
+    r = max(1, int(round(px)))
+
+    def box(x, axis):
+        c = np.cumsum(np.pad(x, [(r + 1, r) if k == axis else (0, 0) for k in range(x.ndim)], mode="edge"), axis=axis)
+        hi = np.take(c, range(2 * r + 1, c.shape[axis]), axis=axis)
+        lo = np.take(c, range(0, c.shape[axis] - 2 * r - 1), axis=axis)
+        return (hi - lo) / (2 * r + 1)
+
+    for _ in range(3):
+        a[..., :3] = box(box(a[..., :3], 0), 1)
+    soft = bpy.data.images.new(f"lips mask soft {px}", w, h, alpha=True, float_buffer=True)
+    soft.colorspace_settings.name = "Non-Color"
+    soft.pixels.foreach_set(a.ravel())
+    for n in nodes:
+        n.image = soft
+    print("LIPS SOFT", px, "texels on", len(nodes), "nodes, mask", w, "x", h, flush=True)
+
+
+def browthick(built: dict, k: float, melanin: float | None = None) -> None:
+    """Our strand brows' radius x `k` (and the coarse hairs' melanin, given): his brows read as crisp dark hairs, ours
+    a hazy grey bar - count, fine hairs, grey share and melanin were tried (`browtrial`, 11-08/09); the root radius was
+    tuned too (`brows.RADIUS` 0.035 mm: 0.09 mm across read as a brush) - this scales the whole strand (2026-11-10)."""
+    n = 0
+    for o in bpy.data.objects:
+        if o.juststage.part == "eyebrows" and o.type == "CURVES":
+            radius = o.data.attributes.get("radius")
+            if radius is None:
+                continue
+            vals = np.empty(len(radius.data), np.float32)
+            radius.data.foreach_get("value", vals)
+            radius.data.foreach_set("value", vals * k)
+            if melanin is not None:
+                for mat in o.data.materials:
+                    for node in (mat.node_tree.nodes if mat and mat.node_tree else []):
+                        sock = node.inputs.get("Melanin") if hasattr(node, "inputs") else None
+                        if sock is not None and not sock.is_linked:
+                            sock.default_value = melanin
+            o.data.update_tag()
+            n += 1
+            print("BROW THICK x", k, "radius p50 before", float(np.median(vals)) * 1000, "mm", flush=True)
+    if not n:
+        raise RuntimeError("no brow curves with a radius")
+
+
+MH_BROWS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "mhbrows"  # MakeHuman's CC0 pack, unpacked
+MH_BROW_COLOUR = (0.045, 0.032, 0.024, 1.0)  # a dark brown (the texture's RGB is near black: the hair is its alpha)
+
+
+def mhbrow(built: dict, number: str) -> None:
+    """MakeHuman's CC0 brow cards (`eyebrow<number>` from makehuman_system_assets_cc0.zip, unpacked to
+    .dev/gate/mhbrows): CC5's brows are cards (Brows_Hair_Transparency); ours strands, a hazy bar in the live view;
+    Polytricity's long-hair strips on brow cards read as smudges (11-09). Fitted by our own MHCLO fit
+    (`core.mhclo.fit` on the body's shaped coordinates, as the head parts are), shaded as MakeHuman's .mhmat has them
+    (near-black, the hair in the alpha, no specular, no shadow); our strand brows hidden."""
+    mhclo = importlib.import_module("bl_ext.system.juststage.core.mhclo")
+    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
+    folder = MH_BROWS / f"eyebrow{number}"
+    m = mhclo.parse((folder / f"eyebrow{number}.mhclo").read_text(encoding="utf-8"))
+    body = built["body"]
+    co = mhclo.fit(m, build.shaped_coords(body))
+    verts, uvs, faces = [], [], []
+    for line in (folder / f"eyebrow{number}.obj").read_text(encoding="utf-8").splitlines():
+        bits = line.split()
+        if not bits:
+            continue
+        if bits[0] == "vt":
+            uvs.append((float(bits[1]), float(bits[2])))
+        elif bits[0] == "f":
+            faces.append([tuple(int(x) - 1 if x else -1 for x in (b.split("/") + [""])[:2]) for b in bits[1:]])
+    me = bpy.data.meshes.new(f"mh brows {number}")
+    me.from_pydata(co.tolist(), [], [[v for v, _t in f] for f in faces])
+    uv = me.uv_layers.new(name="UVMap")
+    k = 0
+    for f in faces:
+        for _v, t in f:
+            uv.data[k].uv = uvs[t] if t >= 0 else (0.0, 0.0)
+            k += 1
+    obj = bpy.data.objects.new(f"mh brows {number}", me)
+    for coll in body.users_collection:
+        coll.objects.link(obj)
+    obj.matrix_world = body.matrix_world
+    mat = bpy.data.materials.new(f"mh brows {number}")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(str(folder / f"eyebrow{number}.png"), check_existing=True)
+    bsdf.inputs["Base Color"].default_value = MH_BROW_COLOUR
+    nt.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
+    bsdf.inputs["Specular IOR Level"].default_value = 0.0
+    bsdf.inputs["Roughness"].default_value = 0.7
+    if hasattr(mat, "use_transparent_shadow"):
+        mat.use_transparent_shadow = True
+    me.materials.append(mat)
+    obj.visible_shadow = False
+    hidden = 0
+    for o in bpy.data.objects:
+        if o.juststage.part == "eyebrows":  # groom._attach's tag for brows
+            o.hide_render = True
+            hidden += 1
+    print("MH BROWS", number, len(co), "vertices,", len(faces), "cards; strand brows hidden:", hidden, flush=True)
+
+
 ICT_TRIALS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "ict"
 ICT_HIDE_MM = 12.0  # our head's skin hidden where ICT's head lies this close over it
 
@@ -678,6 +793,42 @@ def icthead(built: dict, stem: str) -> None:
             poly.material_index = slot
             n += 1
     print("ICT HEAD", stem, len(verts), "vertices; our head's faces hidden under it:", n, flush=True)
+    if "eyes" in data.files:  # head3: our eyes moved into ICT's sockets (its lids kept whole), per side
+        _eyes_to(body, np.asarray(data["eyes"], np.float64))
+
+
+EYE_PARTS = ("eyeLeft", "eyeRight", "eyeshell", "eyeEdge")
+
+
+def _eyes_to(body, centres: np.ndarray) -> None:
+    """Our eye parts (the eyeballs and their films) translated per side so each eyeball's centre lands on `centres`
+    (world, one a side by x's sign) - every vertex by its own side's shift, every shape key alike."""
+    cid = body.juststage.part_of or body.juststage.character_id
+    objs = [o for o in bpy.data.objects if o.juststage.part in EYE_PARTS and o.type == "MESH"
+            and (o.juststage.part_of == cid or not cid)]  # fmt: skip
+
+    def world_co(o):
+        m = np.array(o.matrix_world)
+        co = np.empty(len(o.data.vertices) * 3, np.float32)
+        o.data.vertices.foreach_get("co", co)
+        return co.reshape(-1, 3) @ m[:3, :3].T + m[:3, 3]
+
+    balls = [o for o in objs if o.juststage.part in ("eyeLeft", "eyeRight")]
+    ours = {np.sign(world_co(o)[:, 0].mean()): world_co(o).mean(0) for o in balls}
+    shift = {np.sign(c[0]): c - ours[np.sign(c[0])] for c in centres if np.sign(c[0]) in ours}
+    for o in objs:
+        inv = np.linalg.inv(np.array(o.matrix_world))[:3, :3]
+        side = np.sign(world_co(o)[:, 0])
+        d_world = np.array([shift.get(s, np.zeros(3)) for s in side])
+        d_local = d_world @ inv.T
+        blocks = list(o.data.shape_keys.key_blocks) if o.data.shape_keys else []
+        for target in [o.data.vertices] + [kb.data for kb in blocks]:
+            co = np.empty(len(target) * 3, np.float32)
+            target.foreach_get("co", co)
+            target.foreach_set("co", (co.reshape(-1, 3) + d_local).astype(np.float32).ravel())
+        o.data.update()
+    print("EYES MOVED to ICT's sockets:", {int(k): np.round(v * 1000, 1).tolist() for k, v in shift.items()}, "mm",
+          [o.name for o in objs], flush=True)
 
 
 def bodycoat(built: dict, weight: float) -> None:
@@ -798,6 +949,27 @@ def lashtrial(built: dict, radius_mm: float, count: float) -> None:
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("LASHES lower radius", radius_mm, "mm, count", int(count), flush=True)
+
+
+def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, radius_mm: float | None = None) -> None:
+    """The upper lashes grown again with their rise (`lashes.UPPER["rise"]`, 0 deg) and curl (50 deg) set - 2026-11-10
+    at full size: ours hang down over the iris as a dark curtain with a few spikes standing at the centre, his leave
+    the margin and curl up and out. A new groom: --alone."""
+    lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
+    old = dict(lashes.UPPER)
+    lashes.UPPER.update(rise=rise, curl=curl)
+    if long_mm is not None:  # the longest (centre) lash; the short ones scaled with it
+        lashes.UPPER.update(long=long_mm, short=old["short"] * long_mm / old["long"])
+    if radius_mm is not None:
+        lashes.UPPER.update(radius=radius_mm / 1000.0)
+    try:
+        lashes.make(built["body"])
+    finally:
+        lashes.UPPER.clear()
+        lashes.UPPER.update(old)
+    cid = built["body"].juststage.character_id
+    built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
+    print("LASHES upper rise", rise, "curl", curl, "long", long_mm, "radius", radius_mm, flush=True)
 
 
 def lashlower(built: dict, melanin: float) -> None:
@@ -4251,6 +4423,26 @@ def _tongue(built: dict):
     return teeth, parts.groups("teeth")["tongue"], mat, bsdf
 
 
+def tonguedown(built: dict, down_mm: float, back_mm: float = 0.0) -> None:
+    """The tongue moved down (and back) in the open mouth - 2026-11-10 `tongueglow`: our tongue fills the whole opening
+    up to the upper lip (the "dark void" is its top in shadow); his sits low behind the lower teeth. Its vertices
+    (the teeth part's `tongue` group) moved in the teeth object's own axes, every shape key alike. A shape: --alone."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    teeth = parts.parts_of(built["body"])["teeth"]
+    idx = np.asarray(parts.groups("teeth")["tongue"], np.int64)
+    inv = np.linalg.inv(np.array(teeth.matrix_world))[:3, :3]
+    d = inv @ np.array([0.0, back_mm / 1000.0, -down_mm / 1000.0])  # world: -z down, +y back (the face looks down -y)
+    blocks = list(teeth.data.shape_keys.key_blocks) if teeth.data.shape_keys else []
+    for target in [teeth.data.vertices] + [kb.data for kb in blocks]:
+        co = np.empty(len(target) * 3, np.float32)
+        target.foreach_get("co", co)
+        co = co.reshape(-1, 3)
+        co[idx] += d
+        target.foreach_set("co", co.ravel())
+    teeth.data.update()
+    print("TONGUE DOWN", down_mm, "mm, back", back_mm, "mm,", len(idx), "vertices", flush=True)
+
+
 def tonguess(built: dict, weight: float) -> None:
     """Item 5's inner mouth, one factor: our tongue's subsurface weight (1.0 built) - does it darken our tongue
     where his (CC5's rl_tongue_shader, his diffuse darker than ours) reads pink?"""
@@ -4513,18 +4705,27 @@ def exprset(built: dict, expression: str, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
-    if name.startswith("icthead*"):  # icthead*head1 (ICT-FaceKit's head placed by tools/gate/ict_head.py)
+    if name.startswith("lashup*") and "+" not in name:  # lashup*15*80 (the upper lashes' rise and curl, degrees) - --alone
+        return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:5]))
+    if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)
+        return lambda built: lipsoft(built, float(name.split("*", 1)[1]))
+    if name.startswith("browthick*") and "+" not in name:  # browthick*2 or browthick*2*0.95 (radius x k, the coarse hairs' melanin)
+        bits = [float(x) for x in name.split("*")[1:]]
+        return lambda built: browthick(built, bits[0], bits[1] if len(bits) > 1 else None)
+    if name.startswith("mhbrow*") and "+" not in name:  # mhbrow*012 (MakeHuman's CC0 brow card set)
+        return lambda built: mhbrow(built, name.split("*", 1)[1])
+    if name.startswith("icthead*") and "+" not in name:  # icthead*head1 (ICT-FaceKit's head placed by tools/gate/ict_head.py)
         return lambda built: icthead(built, name.split("*", 1)[1])
-    if name.startswith("bodycoat*"):  # bodycoat*0.1 (the body's coat weight)
+    if name.startswith("bodycoat*") and "+" not in name:  # bodycoat*0.1 (the body's coat weight)
         return lambda built: bodycoat(built, float(name.split("*", 1)[1]))
     if name == "coatnormal":  # the coat lobe on the bumped normal (defined below FACTORS)
         return coatnormal
-    if name.startswith("cavitynet*"):  # cavitynet*cavnet_a*0.823 (a tile under .dev/gate/micro, the strength)
+    if name.startswith("cavitynet*") and "+" not in name:  # cavitynet*cavnet_a*0.823 (a tile under .dev/gate/micro, the strength)
         _c, stem, strength = name.split("*")
         return lambda built: cavitynet(built, stem, float(strength))
     if name.startswith("regions*"):  # regions*fh1p2 (a region-map variant's folder under .dev/gate/regions)
         return lambda built: regions(built, name.split("*", 1)[1])
-    if name.startswith("exprset*"):  # exprset*talk_aa*jawOpen*0.8 (a gate expression's key for ours)
+    if name.startswith("exprset*") and "+" not in name:  # exprset*talk_aa*jawOpen*0.8 (a gate expression's key)
         _e, expression, key, value = name.split("*")
         return lambda built: exprset(built, expression, key, float(value))
     if name.startswith("earmix*"):  # earmix*hutubs_pp1[*1.0] (one identity's ears alone) - --alone
@@ -4698,6 +4899,8 @@ def factor(name: str):
     if name.startswith("tonguegrad*"):  # tonguegrad*1.318*0.195 (his shader's Front AO / Rear AO along our tongue)
         _k, front, rear = name.split("*")
         return lambda built: tonguegrad(built, float(front), float(rear))
+    if name.startswith("tonguedown*") and "+" not in name:  # tonguedown*6[*3] (mm down, mm back) - --alone
+        return lambda built: tonguedown(built, *(float(x) for x in name.split("*")[1:3]))
     if name == "tongueglow":  # our tongue flat green: in view or hidden (item 5's inner mouth)
         return tongueglow
     if name.startswith("nailshape*"):  # nailshape*0.5*0.5*0.25 (mm: the plate's dome, the border's groove, the fold's lip)
@@ -4807,8 +5010,10 @@ if __name__ == "__main__":
     p.add_argument("--alone", action="store_true", help="a build for each factor (shape changes: eyebag*0 ...)")
     p.add_argument("--character", default="", help="another library character for ours (parts_gate's --character)")
     p.add_argument("--passes", default="", help="view-layer passes into an EXR beside each PNG (parts_gate's --passes)")
+    p.add_argument("--clay", action="store_true", help="every skin one grey, every hair hidden (parts_gate's --clay)")
     a = p.parse_args(args)
     pg.PASSES = tuple(x for x in a.passes.split(",") if x)
+    pg.CLAY = a.clay
     out = a.out.resolve()  # absolute: Blender's render path then can't land anywhere else
     names = a.factors.split(",")
     tags = ["_f-" + n.replace("*", "x").replace(".", "p").replace("+", "_") + ("_world" if a.lights == "world" else "")

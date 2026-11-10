@@ -505,7 +505,44 @@ def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, sa
         return
     if prepare is not None:
         prepare(built)
+    if CLAY:
+        _clay(scene)
     _render_views(who, engine, out_dir, names, size, samples, tag, built, scene, cam, lights)
+
+
+#: `--clay`: every skin one grey and every hair hidden - the head's FORM alone, ours and HD Aaron's alike (2026-11-10:
+#: the lid's and the ear's shape on ICT-FaceKit's head against his, with no fitting of our colour or grooms in the way)
+CLAY = False
+CLAY_GREY = (0.45, 0.42, 0.40, 1.0)
+HAIR_WORDS = ("hair", "brow", "lash", "beard", "scalp", "stubble", "transparency")
+
+
+def _clay(scene) -> None:
+    grey = bpy.data.materials.get("gate clay") or bpy.data.materials.new("gate clay")
+    grey.use_nodes = True
+    bsdf = next(n for n in grey.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    bsdf.inputs["Base Color"].default_value = CLAY_GREY
+    bsdf.inputs["Roughness"].default_value = 0.6
+    skins = hidden = 0
+    for obj in scene.objects:
+        if obj.type == "CURVES":
+            obj.hide_render = True
+            hidden += 1
+            continue
+        if obj.type != "MESH":
+            continue
+        names = [s.material.name.lower() for s in obj.material_slots if s.material]
+        if names and all(any(w in n for w in HAIR_WORDS) for n in names):
+            obj.hide_render = True
+            hidden += 1
+            continue
+        for slot in obj.material_slots:
+            m = slot.material
+            if m and ("skin" in m.name.lower() and "hidden" not in m.name.lower()):
+                slot.link = "OBJECT" if slot.link == "OBJECT" else slot.link
+                slot.material = grey
+                skins += 1
+    print("CLAY:", skins, "skin slots grey,", hidden, "hair objects hidden", flush=True)
 
 
 #: render passes saved beside each PNG as a linear multilayer EXR (`--passes glossy_direct,diffuse_direct,...`: the view
@@ -655,9 +692,11 @@ if __name__ == "__main__":
     p.add_argument("--character", default="", help="another library character for ours")
     p.add_argument("--scalp", default="library", help='library, generated, or "generated:<style>" (scalp.STYLES)')
     p.add_argument("--lights", choices=("stage", "world"), default="stage", help="world: the image light alone")
+    p.add_argument("--clay", action="store_true", help="every skin one grey, every hair hidden: the form alone")
     p.add_argument("--passes", default="", help="view-layer passes into an EXR beside each PNG (glossy_direct,...)")
     a = p.parse_args(args)
     PASSES = tuple(x for x in a.passes.split(",") if x)
+    CLAY = a.clay
     out = a.out if a.out.is_absolute() else ROOT / a.out  # Blender resolves a bare relative path from C:\
     if a.command == "render":
         inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}

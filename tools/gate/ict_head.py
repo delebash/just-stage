@@ -40,6 +40,15 @@ RIM_MM = 8.0  # each lid region's shift onto our rims fades over this (head1)
 EYE_KEEP_MM, EAR_KEEP_MM = (6.0, 14.0), (32.0, 48.0)
 EAR_CENTRE = (0.083, -0.01, 0.015)  # ICT's own coordinates (x to each side): its widest point at eye height
 SNAP_MM = 6.0
+#: head3 (09:2x - head2's clay: our ledge gone, but ICT's upper-lid crease flattened by the snap onto our narrower
+#: opening): ICT's lids kept whole - a wider keep zone, NO snap - and ICT's own eyeballs' centres written out, so our
+#: eyeballs move into ICT's sockets (`factors icthead`) instead of ICT's lids onto ours
+EYE_KEEP_WIDE_MM = (10.0, 22.0)
+ICT_EYEBALLS = ((21451, 22221), (23021, 23791))
+#: the upper lid's crease (head4, 09:3x - head3's clay: ICT's generic neutral face has a weak crease where HD Aaron's is
+#: deep; CC5 ships crease morphs - a shape control, not content): a groove CREASE_UP_MM above the upper lid's margin
+#: following its curve, CREASE_WIDTH_MM wide (a Gaussian), its depth given in mm, pressed in along the skin's normal
+CREASE_UP_MM, CREASE_WIDTH_MM = 7.0, 2.2  # its two eyeballs' first shells (README's index table): x > 0, x < 0
 
 
 def _neighbour_mean(n: int, tris: np.ndarray):
@@ -76,7 +85,42 @@ def rim_shift(verts: np.ndarray, rims: list[tuple[np.ndarray, np.ndarray]], fade
     return out
 
 
-def place(ours_npz: Path, ict_dir: Path, out: Path) -> None:
+def _crease(verts: np.ndarray, tri: np.ndarray, eyes: list[np.ndarray], depth_mm: float) -> np.ndarray:
+    """Each upper lid's crease pressed in: the eye opening's upper edge lifted CREASE_UP_MM along the face's up (z),
+    put on the skin (each point to its nearest skin vertex in front of the eye), smoothed and resampled densely (a
+    smooth arc - the first cut's raw points drew a ragged, fraying fold), its depth tapering to nothing at both ends;
+    every skin vertex moved in along its normal by depth(t) x exp(-(d / width)^2), d and t at its nearest arc point."""
+    import trimesh
+    from scipy.interpolate import splev, splprep
+
+    normals = trimesh.Trimesh(verts, tri, process=False).vertex_normals
+    out = verts.copy()
+    for loop in eyes:
+        pts = verts[loop]
+        upper = pts[pts[:, 2] > pts[:, 2].mean() + 0.0005]
+        upper = upper[np.argsort(upper[:, 0])]
+        line = upper + np.array([0.0, 0.0, CREASE_UP_MM / 1000.0])
+        front = verts[:, 1] < pts[:, 1].mean() + 0.004
+        cand = np.where(front)[0]
+        line = verts[cand[np.argmin(np.linalg.norm(verts[cand][None, :, :] - line[:, None, :], axis=2), axis=1)]]
+        keep = np.r_[True, np.linalg.norm(np.diff(line, axis=0), axis=1) > 1e-5]  # repeats out (two points, one vertex)
+        _, first = np.unique(np.round(line[keep], 6), axis=0, return_index=True)
+        line = line[keep][np.sort(first)]
+        tck, _u = splprep(line.T, s=len(line) * (0.0012 ** 2), k=3)  # a smoothing spline: ~1.2 mm of scatter taken out
+        t = np.linspace(0.0, 1.0, 200)
+        arc = np.array(splev(t, tck)).T
+        taper = np.sin(np.pi * t) ** 0.6  # nothing at the ends, full in the middle
+        dist = np.linalg.norm(verts[:, None, :] - arc[None, :, :], axis=2)
+        k = np.argmin(dist, axis=1)
+        d = dist[np.arange(len(verts)), k]
+        w = np.exp(-((d * 1000.0 / CREASE_WIDTH_MM) ** 2)) * taper[k]
+        w[d > 0.012] = 0.0
+        out -= normals * (w * depth_mm / 1000.0)[:, None]
+        print(f"CREASE: {int((w > 0.1).sum())} vertices pressed, depth {depth_mm} mm, arc from {len(line)} points", flush=True)
+    return out
+
+
+def place(ours_npz: Path, ict_dir: Path, out: Path, keep_lids: bool = False, crease_mm: float = 0.0) -> None:
     import trimesh
     from trimesh import registration
 
@@ -123,7 +167,7 @@ def place(ours_npz: Path, ict_dir: Path, out: Path) -> None:
         t = np.clip((d - lo_hi[0]) / (lo_hi[1] - lo_hi[0]), 0.0, 1.0)
         return t * t * (3 - 2 * t)
 
-    w = np.minimum(ramp(d_eye, EYE_KEEP_MM), ramp(d_ear, EAR_KEEP_MM))[:, None]
+    w = np.minimum(ramp(d_eye, EYE_KEEP_WIDE_MM if keep_lids else EYE_KEEP_MM), ramp(d_ear, EAR_KEEP_MM))[:, None]
     head_v = soft + w * (wrapped - soft)
     # every eye-opening vertex onto our rim (its nearest point on our rim's edges), spread over SNAP_MM
     rim_set = set(rim.tolist())
@@ -141,9 +185,12 @@ def place(ours_npz: Path, ict_dir: Path, out: Path) -> None:
     g = np.exp(-((d / 0.0015) ** 2))
     spread = (g @ snap) / np.maximum(g.sum(1, keepdims=True), 1e-9)
     fade = np.clip(1.0 - d.min(1) / (SNAP_MM / 1000.0), 0.0, 1.0)[:, None]
-    head_v = head_v + spread * fade * fade * (3 - 2 * fade)
+    if not keep_lids:
+        head_v = head_v + spread * fade * fade * (3 - 2 * fade)
     print(f"SNAPPED: {len(eye_loop)} eye-opening vertices, before p50 {np.median(np.linalg.norm(snap, axis=1)) * 1000:.2f} / "
           f"max {np.linalg.norm(snap, axis=1).max() * 1000:.2f} mm; kept ICT's shape on {int((w[:, 0] < 0.5).sum())} vertices", flush=True)
+    if crease_mm > 0:
+        head_v = _crease(head_v, tri, ict_eyes, crease_mm)
     gap = trimesh.proximity.closest_point(target, head_v)[1]
     rim_off = np.linalg.norm(head_v[src_lm] - dst_pts, axis=1)  # against the 24 sampled landmarks (the snap goes to the rim's edges)
     print(f"PLACED: off our skin p50 {np.median(gap) * 1000:.2f} / p90 {np.percentile(gap, 90) * 1000:.2f} mm; eye rims off "
@@ -151,10 +198,19 @@ def place(ours_npz: Path, ict_dir: Path, out: Path) -> None:
     counts = np.array([len(f) for f in skin_polys])
     flat = np.concatenate([np.asarray(f) for f in skin_polys])
     out.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(out, verts=head_v.astype(np.float32), counts=counts, flat=flat, world=o["world"] if "world" in o.files else np.eye(4))
+    full, _ = st._obj(ict_dir / "generic_neutral_mesh.obj")
+    eyes = []
+    for a, b in ICT_EYEBALLS:  # each eyeball's centre placed as ICT's skin round it was: the matrix, then its lid's move
+        centre = st._apply(matrix, full[a:b].mean(0)[None])[0]
+        side = eye_loop[np.sign(placed[eye_loop, 0]) == np.sign(centre[0])]
+        eyes.append(centre + (head_v[side] - placed[side]).mean(0))
+    np.savez(out, verts=head_v.astype(np.float32), counts=counts, flat=flat, eyes=np.array(eyes, np.float32),
+             world=o["world"] if "world" in o.files else np.eye(4))  # fmt: skip
+    print("ICT EYEBALL CENTRES (cm):", np.round(np.array(eyes) * 100, 2).tolist(), flush=True)
     print("WRITTEN", out, len(head_v), "vertices", len(counts), "polygons", flush=True)
 
 
 if __name__ == "__main__":
     a = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
-    place(Path(a[0]), Path(a[1]), Path(a[2]))
+    crease = float(a[a.index("--crease") + 1]) if "--crease" in a else 0.0
+    place(Path(a[0]), Path(a[1]), Path(a[2]), keep_lids="--keep-lids" in a, crease_mm=crease)

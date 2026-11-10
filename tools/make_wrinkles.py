@@ -34,7 +34,7 @@ DEPTH_M = 0.0004  # a groove of depth 1.0, metres (the bump's distance)
 STEP = 0.0002  # m between a curve's samples (well under the narrowest groove's width)
 
 
-def _curves(pupils: np.ndarray, nose: np.ndarray, mouth_z: float, rng) -> list[tuple[np.ndarray, float, float]]:
+def _curves(pupils: np.ndarray, nose: np.ndarray, mouth_z: float, rng, only: str = "") -> list[tuple[np.ndarray, float, float]]:
     """(points (n, 2) in x, z metres; depth; sigma metres) for each wrinkle, from the landmarks."""
     pz = float(pupils[:, 1].mean())
     out = []
@@ -58,7 +58,7 @@ def _curves(pupils: np.ndarray, nose: np.ndarray, mouth_z: float, rng) -> list[t
             a = np.radians(ang)
             d = np.array([sx * np.cos(a), np.sin(a)])
             t = np.linspace(0.004, 0.004 + length, 40)[:, None]
-            out.append((corner + t * d + np.c_[np.zeros(40), wobble(40, 0.0006)], 0.7, 0.0005))
+            out.append((corner + t * d + np.c_[np.zeros(40), wobble(40, 0.0006)], 0.7, 0.0005, "crows"))
         xs = np.linspace(px - sx * 0.010, px + sx * 0.014, 50)  # the lower lid's crease
         zs = pz - 0.012 + 0.003 * ((xs - px) / 0.012) ** 2
         out.append((np.stack([xs, zs], -1), 0.5, 0.0008))
@@ -66,13 +66,15 @@ def _curves(pupils: np.ndarray, nose: np.ndarray, mouth_z: float, rng) -> list[t
         start, end = np.array([sx * 0.017, nose[1] - 0.004]), np.array([sx * 0.031, mouth_z - 0.008])
         bow = np.array([sx * 0.004, 0.0]) * np.sin(np.pi * t)[:, None]
         out.append((start + (end - start) * t[:, None] + bow, 1.2, 0.002))
-    return out
+    # `only`: one kind of line (the crow's feet for the smile's own layer, 2026-11-10); the rest carry no tag
+    return [c[:3] for c in out if not only or (len(c) > 3 and c[3] == only)]
 
 
 def main() -> None:
     p = argparse.ArgumentParser(prog="make_wrinkles.py --")
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--seed", type=int, default=7)
+    p.add_argument("--only", default="", help="one kind of line: crows")
     a = p.parse_args(sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else [])
     from mathutils import Vector, geometry
     from mathutils.bvhtree import BVHTree
@@ -100,7 +102,7 @@ def main() -> None:
     px_per_m = SIZE / (maps.MM_PER_UV.get(HEAD_TILE, 724.0) / 1000.0)  # one texel ~ MM_PER_UV / SIZE mm on the head
     height = np.zeros((SIZE, SIZE), np.float32)
     drawn = 0
-    for points, depth, sigma in _curves(pupils, nose, mouth_z, rng):
+    for points, depth, sigma in _curves(pupils, nose, mouth_z, rng, a.only):
         # resample evenly along the curve, then carry each sample onto the skin by a ray from the front
         seg = np.linalg.norm(np.diff(points, axis=0), axis=1)
         s = np.concatenate([[0.0], np.cumsum(seg)])

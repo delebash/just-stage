@@ -134,6 +134,15 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   women's limbs, the coat on the bumped normal; the gate report updated. Running `batch_pores09.sh` (pores x0.9 / x0.8,
   the cheek's pore band). Open (mine): the forehead's granules (box spent), the foot's smudges between the toe tendons,
   the slim woman's flank line. Waiting for the user: Q-HAIR-7, Q-BASE-4, Q-GATE-3.
+  09:4x, THE USER: "the rule was to prove if it can be done" - the morning went on close parts; ORDER NOW: every
+  "not proven" row gets its trial first. STRICT VERDICT (the user's bar - "close" is not proven): PROVEN cheek / nose
+  skin, hands' and feet's detail at his tone, lip colour (mean). NOT PROVEN: eye (ICT's head removes the ledge; his
+  deep upper crease missing - crease trial `batch_clay4.sh`), ear (ICT's head close), hair (the free card trial fails;
+  MotionStudioArts' CC4 card hair needs a download - the browser extension is not connected, asked of the user),
+  brows (MakeHuman's cards and thicker strands fail; next: a card texture baked from our strands), lips (`batch_lips.sh`),
+  smile (eye squint added, `batch_smile.sh`), nails, stubble (close near equal at 220 a cm2 / 50% grey), forehead,
+  teeth, lashes, torso. Trials: `tools/gate/ict_head.py`, `factors icthead* / mhbrow* / browthick* / exprset chains`,
+  `parts_gate --clay`. Working doc entries 08:5x-09:4x.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured
