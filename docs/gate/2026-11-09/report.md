@@ -40,14 +40,16 @@ by a missing free asset.** The two parts called "can't" at 18:1x were both dispr
 | hair_back | **below** in the product (the strands' live-view haze); the free card trial reads as hair (not in the product) | - |
 | ear | close - our concha shallower (shape: HUTUBS targets, plan §5) | - |
 | torso, full | close in skin; his build is athletic (a setting, not the skin) | torso folds 0.95, form 0.69 |
-| hand | close - veins and tendons; our skin paler and dry against his tan and sheen | pores 0.65 <, folds 0.74 <, form 1.06 = |
+| hand | **matches in detail at his tone** - veins and tendons; paler (a setting) | at melanin 0.03: 0.65 / 0.74 / 1.06; at 0.08 (L* 60, his 68): 1.41 / 1.37 / 1.88 - his brightness between |
 | nails | close | - |
-| foot | close - tendons and veins; paler, dry | pores 0.58 <, folds 0.62 <, form 0.68 < |
+| foot | **matches in detail at his tone** - tendons and veins; paler (a setting) | at melanin 0.03: 0.58 / 0.62 / 0.68; at 0.08 (L* 47, his 54): 1.15 = / 1.06 = / 1.07 = |
 | smile | close - the corners and cheeks lift; his eyes narrow more | - |
 | mouth open, talk | close - the tongue dark (indirect light, open); our teeth show less | - |
 
-Paler hands and feet: our skin's tone (melanin 0.03, a setting) against his tanned scan; the detail bands in L* fall
-with a lighter, flatter albedo, so the hand and foot ratios are not like for like (not diagnosed further tonight).
+Paler hands and feet - measured 2026-11-10 00:31 (`.dev/gate/parts/2026-11-10handtone`, `factors skintone*`, one
+factor): the same skin at melanin 0.08 brings the foot's detail within his spread and the hand's above it - at his
+own brightness both sit at his level. The gap at melanin 0.03 is the Average man's lighter tone (L* in the bands
+falls with a lighter albedo), not the detail.
 
 ## Four or more characters
 
@@ -70,4 +72,4 @@ pale lower ledge: the shared head's shape, not one skin's. No CC5 woman or dark-
    design and the spec disagree on the fallback.
 
 **Work (mine, no decision):** the forehead's fine net (a better microrelief generator - a scanned one at his
-resolution is paid); the hand's and foot's tone and sheen; the closed lid; the ear's concha; the tongue's light.
+resolution is paid); the closed lid; the ear's concha; the tongue's light.

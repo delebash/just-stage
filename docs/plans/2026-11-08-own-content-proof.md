@@ -1349,6 +1349,9 @@ booked with just-direct-mocap.
   0.94, folds 0.93, form 0.96); the forehead's fine net 0.51 / 0.62; hand and foot 0.58-0.74 (paler, drier - tone);
   the eye below on every character (the lid's shape - Q-BASE-4); the product's hair below (the trial's free cards
   are the route - Q-HAIR-7). Every part has a verdict; the gate's verdict is the user's.
+- **00:31, the hand's and foot's gap is tone (`.dev/gate/parts/2026-11-10handtone`, `handtone_table.txt`):** at melanin
+  0.08 the foot's bands are within his spread (1.15 / 1.06 / 1.07) and the hand's above (1.41 / 1.37); at his own
+  brightness both sit at his level. Hands and feet: match in detail; the Average man's lighter tone is a setting.
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
@@ -1396,7 +1399,7 @@ booked with just-direct-mocap.
 | Teeth, mouth | close | ivory enamel (11-08 05:54) | the arch's form (not a scale); the tongue dark (indirect light - open content) |
 | Ears | close (21:4x) | the ears' redness (`maps.EAR_TINT` by MPFB2's CC0 ears mask), by tone since 11-09 (`ear_tint`: melanin hides the blood - the Muscular man's orange-red ear now red-brown) | the concha shallower than his (HUTUBS targets, the plan's §5); our scalp hair over them (the hair's fault); a dark skin's ear still redder (the scans' own - chromophore maps); the ears' gloss |
 | Nails | close; toenails a short plate on top of the toe (11-09, `TOE_PLATE_*`) | - | - |
-| Hands | close | - | tone (a setting) |
+| Hands | **matches in detail at his tone (11-10)** | - | tone (a setting) |
 | Torso | **close (02:3x)** - the oval by the sternum gone, the nipples' bumps back, the scanned man's scar out; the neck / chest patch gone on every character (11-09) | the body relief's debris filled (`_debris_filled`), Artec's debris limit 0.8, `marks_out`; the scans' edge faded | definition (MakeHuman's CC0 normal as a slider, its seams) |
 | Feet | **close (22:3x)** - the top's tendons and veins from Thunk3D's CC BY scan | the "feet" part on tiles 1003 / 1004 at x1 (rebuild running) | his oily sheen; the ankle's bony shape; veins up to the ankle |
 | **Whole character** | **no part blocked by a missing free asset (11-09 21:2x)** - both "can't"s disproven; not matched yet | the above | work items: the face's fine crease net, the hair's short sides (a textured cap) and its product route (changes Q-HAIR-7 - the user's), the rest's remainders above |
