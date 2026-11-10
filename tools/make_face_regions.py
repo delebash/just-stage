@@ -63,7 +63,7 @@ SOFTEN = 4  # passes over the mesh's neighbours
 
 
 def _options() -> tuple[dict, object]:
-    """`-- --out DIR --pores REGION=FACTOR[,...]`: a trial's variant (tools/gate/factors.py `regions*<name>` swaps it
+    """`-- --out DIR --pores REGION=FACTOR[,...] --micro REGION=FACTOR[,...]`: a trial's variant (tools/gate/factors.py `regions*<name>` swaps it
     in) - the region table with those pore factors (before SCALE), written into DIR; none: the shipped file."""
     import argparse
     import sys
@@ -72,11 +72,15 @@ def _options() -> tuple[dict, object]:
     p = argparse.ArgumentParser(prog="make_face_regions.py --")
     p.add_argument("--out", type=Path, default=None)
     p.add_argument("--pores", default="")
+    p.add_argument("--micro", default="")
     a = p.parse_args(sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else [])
     table = dict(REGIONS)
     for pair in filter(None, a.pores.split(",")):
         name, factor = pair.split("=")
         table[name] = (float(factor) * SCALE[0], *table[name][1:])
+    for pair in filter(None, a.micro.split(",")):  # the microrelief factor (before SCALE), as --pores the pores'
+        name, factor = pair.split("=")
+        table[name] = (table[name][0], float(factor) * SCALE[1], table[name][2])
     return table, a.out
 
 

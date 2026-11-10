@@ -1325,6 +1325,12 @@ booked with just-direct-mocap.
   man / the Young woman before-after, every suite).
   **23:37, done and verified: the six skins and the library rebuilt; the Older man (Scan man C) a touch more even, the
   library man and the Young woman unchanged by eye (`row_sx_*`); unit 45, tools 62, Blender 209 passed.**
+- **23:4x, the forehead's microrelief depth (`make_face_regions.py --micro`, new; `regions*fhm1p5 / fhm2`,
+  `row_fhm_*`, `fhm_table.txt` with HD Aaron in the run): pore band 0.51 -> 0.54 -> 0.57 of his, fold 0.62 -> 0.57; by
+  eye x2 adds a fine polygon crackle (11-07's crackle-glaze cells) - his is granular bumps and sharp pits. Kept x1. The
+  forehead's fine net, box spent: tried the dot filter, the scans' 16K colour, the microrelief depth - doesn't match
+  yet; missing a scanned micro detail at his resolution (his 388 px/mm micro normal is CC5's, paid sources' terms bar
+  a free app) or a better generator than 11-07's layered tile (work). A small gap, the forehead close-up only.**
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
@@ -1359,7 +1365,7 @@ booked with just-direct-mocap.
 | Part | Verdict | In the product today | What's missing / the route left |
 |---|---|---|---|
 | Cheek, nose skin (texture) | **matches** (men); women's finer (03:4x) | `PORES_BY_SEX` (0.7 a woman) | - |
-| Forehead skin | **matches** (orange peel gone) | forehead pores x1 | - |
+| Forehead skin | close (orange peel gone); its fine crisp net 0.51-0.57 of his (11-09 23:4x) | forehead pores x1, micro x1 | a scanned micro detail at his resolution (paid) or a better microrelief generator - the dot filter, the 16K colour and the depth tried |
 | Face skin relief (wrinkles, folds) | **REACHED in kind with free assets (11-09 20:3x; was "can't")** - real creases from the scans' own colour (`colour_relief.py`, NOT STANDARD), in all six skins and the library | the forehead's fold band 0.58 -> 0.62 of his | his forehead's dense fine-crease net and its pores (pore band 0.51 at the eye view's forehead window) - doesn't match yet |
 | Face colour | close; **every character (11-09)** - no patch where the scans end, no rim smudges on the jaws; **dark skin matches measured skin within ~3 delta-E (ISSA, 11-09 16:4x)** | the eyes' surround darker (`maps._eye_layer`); the scans' edge faded (`skin_base.faded_out`, multi-band) and their dark rims weighed out (`rim_weight`) - six scan skins; the Heavy woman at melanin 0.1 (was 0.25, ashy) | the regions' redness; on dark skin the scans' own blood redness (chromophore maps - a job); the slider's dark end ~2-4 delta-E warm (eumelanin share 0.6 -> 0.9 would close half) |
 | Face shape | identity, not a fault | - | (three real scans' shapes read no more real - not the doll look's cause) |
