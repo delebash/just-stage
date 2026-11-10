@@ -2895,7 +2895,7 @@ def Matrix_identity():
     return Matrix.Identity(4)
 
 
-def lidblink(built: dict, stem: str) -> None:
+def lidblink(built: dict, stem: str, closed: float = 0.0, blur: int = 8, cell_mm: float = 0.35) -> None:
     """The relief layers (pores, microrelief, the scans' relief) faded inside each eye's blink stretch
     (`.dev/gate/masks/<stem>.png`: the left eye's red, the right's green - tools/make_lid_mask.py) by that eye's own blink
     key, through drivers - MetaHuman's and CC5's expression-driven detail: the open eye unchanged, the closing lid's
@@ -2955,10 +2955,96 @@ def lidblink(built: dict, stem: str) -> None:
             links.new(cut.outputs[0], depth.inputs[0])
         relief = nodes[maps.NODE + "relief_off_stretched"]
         links.new(keep.outputs[0], relief.inputs[0])  # its number was 1: the scans' relief x keep
+        if closed:
+            _lid_closed_detail(nt, on_head.outputs[0], closed, blur, cell_mm)
         mod.sync_live(mat)
         n += 1
     bpy.context.view_layer.update()
-    print("LID BLINK", stem, "on", n, "skins", flush=True)
+    print("LID BLINK", stem, "on", n, "skins", "+ closed-lid colour and object-space relief" if closed else "", flush=True)
+
+
+def _blurred_copy(image: bpy.types.Image, factor: int = 8) -> bpy.types.Image:
+    """A 1/`factor`-size copy of an image (block means), sampled Linear: a soft blur of it at no extra cost."""
+    w, h = image.size
+    px = np.empty(w * h * 4, np.float32)
+    image.pixels.foreach_get(px)
+    px = px.reshape(h, w, 4)
+    small = px[: h - h % factor, : w - w % factor].reshape(h // factor, factor, w // factor, factor, 4).mean((1, 3))
+    out = bpy.data.images.new(image.name + " (blurred)", w // factor, h // factor, alpha=True, float_buffer=False)
+    out.colorspace_settings.name = image.colorspace_settings.name
+    out.pixels.foreach_set(small.astype(np.float32).ravel())
+    out.pack()
+    return out
+
+
+def _lid_closed_detail(nt, share, depth_mm: float, blur: int = 8, cell_mm: float = 0.35) -> None:
+    """The closed lid's skin: its colour faded toward a blurred copy (the stretched streaks out) and a fine pore-like
+    relief in object space (Voronoi pits ~0.35 mm, `depth_mm` deep) added, both by `share` (blink x the lid mask)."""
+    nodes, links = nt.nodes, nt.links
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    base_link = bsdf.inputs["Base Color"].links[0]
+    colour_tex = next((n for n in nodes if n.type == "TEX_IMAGE" and n.image and "base_color" in n.image.name), None)
+    if colour_tex is not None:
+        soft_tex = nodes.new("ShaderNodeTexImage")
+        soft_tex.image, soft_tex.interpolation = _blurred_copy(colour_tex.image, blur), "Linear"
+        soft_tex.extension = "EXTEND"
+        if colour_tex.inputs["Vector"].is_linked:
+            links.new(colour_tex.inputs["Vector"].links[0].from_socket, soft_tex.inputs["Vector"])
+        # the blurred colour carried through the same tone chain: the ratio blurred / sharp on the final colour
+        ratio = nodes.new("ShaderNodeVectorMath")
+        ratio.operation = "DIVIDE"
+        links.new(soft_tex.outputs["Color"], ratio.inputs[0])
+        links.new(colour_tex.outputs["Color"], ratio.inputs[1])
+        clamp = nodes.new("ShaderNodeVectorMath")
+        clamp.operation = "MINIMUM"
+        links.new(ratio.outputs["Vector"], clamp.inputs[0])
+        clamp.inputs[1].default_value = (3.0, 3.0, 3.0)
+        soft = nodes.new("ShaderNodeVectorMath")
+        soft.operation = "MULTIPLY"
+        links.new(base_link.from_socket, soft.inputs[0])
+        links.new(clamp.outputs["Vector"], soft.inputs[1])
+        mix = nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        links.new(share, mix.inputs["Factor"])
+        links.new(base_link.from_socket, next(i for i in mix.inputs if i.identifier == "A_Color"))
+        links.new(soft.outputs["Vector"], next(i for i in mix.inputs if i.identifier == "B_Color"))
+        # the eyes' surround tint (maps.EYE_SURROUND_TINT, x0.6) lifted off the closed lid: a closed lid's skin reads
+        # lighter than the open eye's surround (HD Aaron's), and darkened it read as a brown sheet (00:4x)
+        tint = _maps().EYE_SURROUND_TINT
+        lift = nodes.new("ShaderNodeMix")
+        lift.data_type = "RGBA"
+        links.new(share, lift.inputs["Factor"])
+        next(i for i in lift.inputs if i.identifier == "A_Color").default_value = (1.0, 1.0, 1.0, 1.0)
+        next(i for i in lift.inputs if i.identifier == "B_Color").default_value = (*(1.0 / c for c in tint), 1.0)
+        lifted = nodes.new("ShaderNodeVectorMath")
+        lifted.operation = "MULTIPLY"
+        links.new(next(o for o in mix.outputs if o.identifier == "Result_Color"), lifted.inputs[0])
+        links.new(next(o for o in lift.outputs if o.identifier == "Result_Color"), lifted.inputs[1])
+        links.new(lifted.outputs["Vector"], bsdf.inputs["Base Color"])
+    coords = nodes.new("ShaderNodeTexCoord")
+    vor = nodes.new("ShaderNodeTexVoronoi")
+    vor.feature = "F1"
+    vor.inputs["Scale"].default_value = 1000.0 / cell_mm  # cells `cell_mm` across in object space (metres)
+    links.new(coords.outputs["Object"], vor.inputs["Vector"])
+    noise = nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value, noise.inputs["Detail"].default_value = 1000.0 / 1.2, 3.0
+    links.new(coords.outputs["Object"], noise.inputs["Vector"])
+    height = nodes.new("ShaderNodeMath")
+    height.operation = "MULTIPLY_ADD"
+    links.new(vor.outputs["Distance"], height.inputs[0])
+    height.inputs[1].default_value = 1.0
+    links.new(noise.outputs["Fac"], height.inputs[2])
+    bump = nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 1.0
+    dist = nodes.new("ShaderNodeMath")
+    dist.operation = "MULTIPLY"
+    links.new(share, dist.inputs[0])
+    dist.inputs[1].default_value = depth_mm / 1000.0
+    links.new(dist.outputs[0], bump.inputs["Distance"])
+    links.new(height.outputs[0], bump.inputs["Height"])
+    if bsdf.inputs["Normal"].is_linked:
+        links.new(bsdf.inputs["Normal"].links[0].from_socket, bump.inputs["Normal"])
+    links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
 
 
 def maskshow(built: dict, stem: str) -> None:
@@ -4337,8 +4423,10 @@ def factor(name: str):
         bits = name.split("*")
         return lambda built: vfhair(built, bits[1], textured=len(bits) > 2 and bits[2] == "tex",
                                     alpha=f"hair{bits[2][3:]}" if len(bits) > 2 and bits[2].startswith("oga") else "")
-    if name.startswith("lidblink*"):  # lidblink*lid_blink (the relief faded by each eye's blink in a mask's R / G)
-        return lambda built: lidblink(built, name.split("*", 1)[1])
+    if name.startswith("lidblink*"):  # lidblink*lid_blink[*0.04] (the relief faded by each eye's blink; with a depth in
+        bits = name.split("*")  # mm: the closed lid's colour blurred and an object-space relief that deep added)
+        return lambda built: lidblink(built, bits[1], *(float(bits[2]),) if len(bits) > 2 else (),
+                                      *(int(bits[3]),) if len(bits) > 3 else (), *(float(bits[4]),) if len(bits) > 4 else ())
     if name.startswith("maskshow*"):  # maskshow*stretched (a head-tile mask under .dev/gate/masks painted red)
         return lambda built: maskshow(built, name.split("*", 1)[1])
     if name.startswith("tearfade*"):  # tearfade*0.7 (the film fades out from this share to its lid-side rim)

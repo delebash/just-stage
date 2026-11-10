@@ -1352,6 +1352,34 @@ booked with just-direct-mocap.
 - **00:31, the hand's and foot's gap is tone (`.dev/gate/parts/2026-11-10handtone`, `handtone_table.txt`):** at melanin
   0.08 the foot's bands are within his spread (1.15 / 1.06 / 1.07) and the hand's above (1.41 / 1.37); at his own
   brightness both sit at his level. Hands and feet: match in detail; the Average man's lighter tone is a setting.
+- **00:4x, the closed lid (box 75 min, from 00:45; the gate's `eye_blink`: ours a smooth glossy sheet, his textured
+  skin with creases).** The 16:3x route (1) finished: on top of `lidblink` (the UV relief faded by each eye's blink -
+  the open eye pixel-equal), the colour faded toward a blurred copy (a 1/8 image of the same tile, Linear - the
+  stretched streaks out at one more texture sample) and a fine pore-like relief in OBJECT space (Voronoi pits ~0.35 mm
+  + noise, not stretched by the lid's compressed UVs) added, both by the blink x the lid mask
+  (`factors lidblink*lid_blink*<depth mm>`). Running `batch_lidclosed.sh` (0.03 / 0.06 mm; the open eye checked
+  pixel-equal). The ear's concha: the approved route is HUTUBS's ear targets (Q-EAR-1, build step 4 - its 57 other
+  heads still zipped in `.dev/downloads/hf_samples/hutubs_meshes/meshes.zip`).
+  00:39 (`row_lc_eye_blink.png`): the streaks gone, the open eye pixel-equal (0 pixels over 2/255) - but a smooth
+  darker orange sheet: the 1/8 blur mixes the margin's dark, and the pits too faint. 00:44 (`row_lc2_*`, 1/32 blur,
+  0.15 mm pits at 0.6 mm): pores show on the lid, the streaks gone; still a darker brown sheet - the cause: the eyes'
+  surround tint (`maps.EYE_SURROUND_TINT` x0.6) darkens the closed lid's skin too. Round 3 (`batch_lidclosed3.sh`): the
+  tint lifted off the closed lid by the same blink x mask.
+  **00:49 (`row_lc3_eye_blink.png`): the closed lid reads as skin - its colour the skin round it, fine pores, no
+  streaks, no plastic sheet; the open eye pixel-equal (0 pixels over 2/255). Smoother than his (no lid creases). KEPT
+  (mine, under the go; attacked: MetaHuman's / CC5's own pattern - detail driven by the expression's value; the open
+  face untouched by construction; the cost one texture sample and a Voronoi on the head tile).**
+  **The product build (the plan, before code):** (1) `tools/make_lid_mask.py` writes `data/generated/skin/lid_blink.png`
+  (the shipped generated masks' way, `maps.lid_blink()` with its tool path); (2) the blink's value to the shader by
+  the object, not the material - each blink key drives an object property (`js_blink_l` / `_r`, non-scripted drivers
+  on the body, set where the blink keys are made) that an Attribute node (type OBJECT) reads, so a skin shared by
+  characters needs no retargeting (the trial's material drivers would); (3) `maps._closed_lid_layer`: the UV relief
+  faded, the colour toward a soft copy (`build_skins` writes a 1/32 `base_color_soft` tile beside each skin's colour),
+  the eye-surround tint lifted, object-space pits 0.15 mm at 0.6 mm - all by blink x mask; (4) tests: the open face
+  unchanged (share 0), the layer's nodes and the object properties present, the soft tile written; (5) the six skins
+  and the library rebuilt, the gate's blink and eye views, every suite. Standard: Unreal's / MetaHuman's animated
+  maps (expression-driven texture blends); the object-space pits NOT STANDARD (a procedural detail, the standard a
+  scanned closed-lid map - none free).
 - **17:1x, the slider's dark-end warmth (ISSA, CPU):** the slider at each measured person's L*, delta-E median by
   eumelanin share (blood 0.016): 0.6 (today) 3.27, 0.7 2.83, 0.8 2.55, 0.9 2.41, 1.0 2.30; at L* 30-35 4.11 -> 2.37
   (0.9). A small gain (~0.9 delta-E, near the threshold) that moves every tone and was not on NIST's fit - recorded
