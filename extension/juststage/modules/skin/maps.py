@@ -79,32 +79,44 @@ MICRO_TILE_MM = 10.0
 #: cheek's micro band went 1.07 -> 1.33 of HD Aaron's; x0.75 puts it back at 1.07 (`factors coatnormal`)
 MICRO_STRENGTH, MICRO_DISTANCE = 1.0, 0.0000302
 #: the nails (rec 14, the realism brief §6.14: "a layered nail shader on tile 1005"): each nail's own coordinates
-#: (`tools/make_nail_coords.py`: along it 0 at the cuticle to 1 at the free edge, across it -1 to 1, its digit); the
-#: plate drawn inside them with a curved cuticle edge and rounded sides (the tile's polygons are coarse), over a bed
-#: tinted toward blood's red, a lunula as long as its digit's (the gaps research §3: visible on 96% of thumbs, 48% of
-#: little fingers; toes but the big one rarely), a white free edge, faint lengthwise ridges; smoother, shinier and
-#: coated; raised a little at its edge
+#: over its whole fingertip, per vertex (`tools/make_nail_coords.py`: along it 0 at the cuticle line to 1 at the
+#: fingertip's end, across it -1 to 1 over the fingertip's back, its digit) - until 2026-11-10 they filled the tile's
+#: island alone, a coarse polygon that cut the plate into an octagon ~55% of the finger's width where HD Aaron's spans
+#: ~77% (the own-content proof, 13:5x-14:4x); the plate drawn in them with a gently curved cuticle edge and rounded
+#: sides, over a bed tinted toward blood's red, a lunula as long as its digit's (the gaps research §3: visible on 96% of
+#: thumbs, 48% of little fingers; toes but the big one rarely), a white free edge, faint lengthwise ridges; matte; its
+#: edge raised and the skin's fold beside it by a bump, the skin's relief flat under it
 NAIL_TOOL = "python tools/dev.py blender -b --python tools/make_nail_coords.py"
-NAIL_TILE_INDEX = 4  # 1005
+NAIL_ATTR = "js_nail"  # the coordinates as a point colour attribute: along, (across + 1) / 2, digit / 10, inside
 #: the arms' and hands' tile (1003): the microrelief x2 - HD Aaron's back of the hand against ours in EEVEE, the
 #: texture's excess over his own patch-to-patch (`tools/gate/dists.py --patches`) 0.071 -> 0.047 (2026-11-07; the
 #: torso's and the foot's didn't move with it, so only this tile)
-ARM_TILE_INDEX, ARM_MICRO = 2, 2.0
-NAIL_CUTICLE, NAIL_CUTICLE_CURVE = 0.08, 0.35  # where the plate starts: along > cuticle + curve * across^2
-NAIL_SIDE, NAIL_EDGE_SOFT = 0.8, 0.06  # |across| inside this; the edges' softness (in along / across)
+#: 2026-11-10 (`.dev/gate/parts/2026-11-10fingerskin*`): at the nails close-up the finger read cracked (the microrelief
+#: x2, set 11-07 from the back of the hand's texture 0.071 -> 0.047) and red-speckled (the face's pores); x1 / x0.5
+#: smooth it, the back of the hand at its view barely changes - a fingers-only region if the gate's hand measure drops
+ARM_TILE_INDEX, ARM_MICRO, ARM_PORES = 2, 1.0, 0.5
+#: where the plate starts: along > cuticle + curve * across^2 - the curve 0.35 drew a deep U over the whole fingertip,
+#: 0.12 his shallow arc (`factors nailobj`, 2026-11-10 round 2)
+NAIL_CUTICLE, NAIL_CUTICLE_CURVE = 0.08, 0.12
+#: |across| inside this - his plate ~77% of the finger's width; 0.78 (round 3) - and the edges' softness (in along
+#: / across)
+NAIL_SIDE, NAIL_EDGE_SOFT = 0.78, 0.06
+NAIL_LENGTH = 0.9  # the fingers' plate ends this far toward the fingertip's end (round 2: at 0.97 it wrapped the tip)
 #: the free edge rounded at its corners, as the cuticle is: the plate ends where along > 1 - curve * across^2 - hm08
 #: has no nail outline, so the tile's islands carry fingertip skin faces at their corners (RESEARCH 14.5), which a
 #: square plate painted white (2026-11-08)
 NAIL_TIP_CURVE = 0.35
 NAIL_FREE_EDGE = (0.92, 0.97)  # along: the free edge - a thin pale rim on a short nail - fades in over this
-#: the toes' plate, a share of the fingers' length and its half-width: hm08's toe islands run over the toe's tip, so the
-#: fingers' plate covered the whole tip - a large pale sticker beside HD Aaron's short plate on top of the toe
-#: (2026-11-09, `.dev/gate/parts/2026-11-09toenail`); 1.0 / NAIL_SIDE is the fingers' plate. 0.6 / 0.7: a short plate
-#: on top of the toe with its free edge, as his (`.dev/gate/parts/2026-11-09toeplate`; 0.5 / 0.65 left slivers)
+#: the toes' plate, its length and half-width: hm08's toe islands run over the toe's tip, so the fingers' plate covered
+#: the whole tip - a large pale sticker beside HD Aaron's short plate on top of the toe (2026-11-09,
+#: `.dev/gate/parts/2026-11-09toenail`). 0.6 / 0.7: a short plate on top of the toe with its free edge, as his
+#: (`.dev/gate/parts/2026-11-09toeplate`; 0.5 / 0.65 left slivers) - checked again over the whole toe tip 2026-11-10
 TOE_PLATE_LENGTH, TOE_PLATE_SIDE = 0.6, 0.7
 NAIL_LUNULA_FINGERS = (0.25, 0.03)  # lunula length = first - second * digit (thumb 0.22 ... little 0.10)
 NAIL_LUNULA_TOES = (0.06, 0.0)  # the big toe's, the others' (rarely seen)
-NAIL_BED, NAIL_BED_SHARE = (0.50, 0.30, 0.27), 0.25  # linear: mixed into the skin's colour
+#: linear, mixed into the skin's colour: at 0.25 the plate's colour against the skin's sat ~3 b* cooler than HD Aaron's
+#: (Lab distance to his 3.2), at 0.12 2.7 (`factors nailobj`, 2026-11-10 round 2)
+NAIL_BED, NAIL_BED_SHARE = (0.50, 0.30, 0.27), 0.12
 #: the lunula's pale share: 0.35 read as a white crescent beside HD Aaron's barely-seen one; 0.05 as his (the gate's
 #: `nailluna`, 2026-11-08, sheet `scratchpad/sheet_D22_luna.png`)
 NAIL_LUNULA, NAIL_LUNULA_SHARE = (0.82, 0.72, 0.68), 0.05
@@ -117,7 +129,11 @@ NAIL_RIDGES = 0.05  # +- share of the colour
 #: the plate's shine: matte like HD Aaron's - at 0.18 / 0.6 / 0.5 (roughness, specular level, coat) our plate read
 #: milky white beside his skin-toned one; at 0.55 / 0.3 / 0 it reads as his (the gate's `nailshine`, 2026-11-08)
 NAIL_ROUGHNESS, NAIL_SPECULAR, NAIL_COAT = 0.55, 0.3, 0.0
-NAIL_RAISE = 0.0006  # m: the plate over its fold
+NAIL_RAISE = 0.0006  # m: the plate over the skin beside it
+#: the skin's fold round the plate (the proximal and side folds; the geometric bed it replaces drew the plate's outline
+#: on the tile's island): the plate drawn this much wider past its cuticle and sides, its band raised NAIL_FOLD x the
+#: plate's raise (`factors nailobj`, 2026-11-10)
+NAIL_FOLD, NAIL_FOLD_REACH = 1.2, (0.10, 0.14)
 #: the mouth's lining (the inner lips and the mouth's skin; `tools/make_mouth_mask.py`): wet mucosa where the mask is -
 #: no scan or painting covers it, so an open mouth showed a pale rim of skin inside the lips (the gate, 2026-11-05)
 MOUTH_TOOL = "python tools/dev.py blender -b --python tools/make_mouth_mask.py"
@@ -341,12 +357,22 @@ def micro_relief() -> bpy.types.Image:
     return image
 
 
-def nail_coords() -> bpy.types.Image:
-    """Each nail's own coordinates on tile 1005 (NAIL_TOOL), loaded once and shared."""
-    path = paths.generated("skin", "nails.png", tool=NAIL_TOOL)
-    image = bpy.data.images.load(str(path), check_existing=True)
-    image.colorspace_settings.name = "Non-Color"
-    return image
+def nail_coords() -> np.ndarray:
+    """Each vertex's nail coordinates over its fingertip (NAIL_TOOL; vertices x 4: along, (across + 1) / 2, digit / 10,
+    1 inside a fingertip's region) on base v2 - hm08's vertices first, so an hm08 body reads its own part."""
+    with np.load(paths.generated("skin", "nails.npz", tool=NAIL_TOOL)) as data:
+        return data["coords"]
+
+
+def add_nail_coords(character: bpy.types.Object) -> None:
+    """The nail coordinates on the character as its point attribute NAIL_ATTR (again: replaced)."""
+    me = character.data
+    coords = nail_coords()
+    n = len(me.vertices)
+    values = np.zeros((n, 4), np.float32)
+    values[: min(n, len(coords))] = coords[:n]
+    attr = me.attributes.get(NAIL_ATTR) or me.attributes.new(NAIL_ATTR, "FLOAT_COLOR", "POINT")
+    attr.data.foreach_set("color", values.ravel())
 
 
 def _math(nt, name: str, op: str, a, b=None, c=None):
@@ -389,44 +415,26 @@ def _mix(nt, name: str, kind: str, factor, a, b):
     return next(o for o in node.outputs if o.identifier == "Result_" + suffix)
 
 
-def nail_plate(along: np.ndarray, across: np.ndarray, digit: np.ndarray, inside: np.ndarray) -> np.ndarray:
-    """The nail plate's share in the nail coordinates (numpy) - the same plate as `_nail_layer` draws, for the nail bed's
-    shape (nail_bed.py): past the curved cuticle, inside the rounded sides, before the free edge; a toe's shorter and
-    narrower (TOE_PLATE_*)."""
-    soft = 1.0 / NAIL_EDGE_SOFT
-    toes = digit > 5.5
-    length = np.where(toes, TOE_PLATE_LENGTH, 1.0)
-    side = np.where(toes, TOE_PLATE_SIDE, NAIL_SIDE)
-    cut = NAIL_CUTICLE + NAIL_CUTICLE_CURVE * across * across
-    tip = np.clip(((1.0 - NAIL_TIP_CURVE * across * across) * length - along) * soft, 0, 1)
-    return np.clip((along - cut) * soft, 0, 1) * np.clip((side - np.abs(across)) * soft, 0, 1) * tip * inside
-
-
-def _nail_layer(nt, bsdf, uv, which) -> None:
-    """The nail plate over the skin on tile 1005 (the NAIL_* constants): colour, roughness, specular and coat mixed by
-    the plate's mask, its edge raised by a bump at the end of the normal chain."""
+def _nail_layer(nt, bsdf) -> None:
+    """The nail plate over each fingertip's skin (the NAIL_* constants; its coordinates the attribute NAIL_ATTR):
+    colour, roughness, specular and coat mixed by the plate's mask; its edge raised and the skin's fold beside it by a
+    bump at the end of the normal chain, over the skin's relief flattened under the plate."""
 
     def fed(name):
         return bsdf.inputs[name].links[0].from_socket
 
-    shift = _node(nt, "ShaderNodeVectorMath", "nail_uv", (-1800, -1600))
-    shift.operation = "SUBTRACT"
-    nt.links.new(uv.outputs["UV"], shift.inputs[0])
-    shift.inputs[1].default_value = (float(NAIL_TILE_INDEX), 0.0, 0.0)
-    coords = _node(nt, "ShaderNodeTexImage", "nail_coords", (-1600, -1600))
-    coords.image, coords.interpolation, coords.extension = nail_coords(), "Linear", "CLIP"
-    nt.links.new(shift.outputs["Vector"], coords.inputs["Vector"])
+    coords = _node(nt, "ShaderNodeAttribute", "nail_coords", (-1600, -1600))
+    coords.attribute_type, coords.attribute_name = "GEOMETRY", NAIL_ATTR
     parts = _node(nt, "ShaderNodeSeparateColor", "nail_parts", (-1350, -1600))
     nt.links.new(coords.outputs["Color"], parts.inputs["Color"])
     along = parts.outputs["Red"]
     digit = _math(nt, "nail_digit", "MULTIPLY", parts.outputs["Blue"], 10.0)
     across = _math(nt, "nail_across", "MULTIPLY_ADD", parts.outputs["Green"], 2.0, -1.0)
     across2 = _math(nt, "nail_across2", "MULTIPLY", across, across)
-    on_tile = _math(nt, "nail_on_tile", "COMPARE", which.outputs["Value"], float(NAIL_TILE_INDEX), 0.5)
-    inside = _math(nt, "nail_inside", "MULTIPLY", coords.outputs["Alpha"], on_tile)
+    inside = _math(nt, "nail_inside", "MULTIPLY", coords.outputs["Alpha"], 1.0)  # 0 off every fingertip
     # the plate: past the curved cuticle edge, inside the rounded sides - a toe's shorter and narrower (TOE_PLATE_*)
     toes = _math(nt, "nail_toes", "GREATER_THAN", digit, 5.5)
-    length = _mix(nt, "nail_plate_length", "FLOAT", toes, 1.0, TOE_PLATE_LENGTH)
+    length = _mix(nt, "nail_plate_length", "FLOAT", toes, NAIL_LENGTH, TOE_PLATE_LENGTH)
     side = _mix(nt, "nail_plate_side", "FLOAT", toes, NAIL_SIDE, TOE_PLATE_SIDE)
     cut = _math(nt, "nail_cut", "MULTIPLY_ADD", across2, NAIL_CUTICLE_CURVE, NAIL_CUTICLE)
     start = _clamp01(nt, "nail_start", _math(nt, "nail_past_cut", "SUBTRACT", along, cut), 1 / NAIL_EDGE_SOFT)
@@ -480,10 +488,29 @@ def _nail_layer(nt, bsdf, uv, which) -> None:
                              ("Coat Weight", NAIL_COAT, "coat")):
         own = fed(name) if bsdf.inputs[name].is_linked else bsdf.inputs[name].default_value
         nt.links.new(_mix(nt, f"nail_{key}", "FLOAT", plate, own, value), bsdf.inputs[name])
+    # the skin's fold beside the plate: the plate drawn wider past its cuticle and sides (the same free edge), its band
+    # raised over the plate's edge
+    soft = 1.0 / NAIL_EDGE_SOFT
+    fold_cut = _math(nt, "nail_fold_cut", "SUBTRACT", cut, NAIL_FOLD_REACH[0])
+    start_w = _clamp01(nt, "nail_fold_start", _math(nt, "nail_fold_past", "SUBTRACT", along, fold_cut), soft)
+    sides_w = _clamp01(nt, "nail_fold_sides", _math(nt, "nail_fold_room", "SUBTRACT",
+                                                     _math(nt, "nail_fold_side", "ADD", side, NAIL_FOLD_REACH[1]),
+                                                     _math(nt, "nail_abs", "ABSOLUTE", across)), soft)  # fmt: skip
+    wide = _math(nt, "nail_wide", "MULTIPLY", _math(nt, "nail_wide_a", "MULTIPLY",
+                                                     _math(nt, "nail_wide_b", "MULTIPLY", start_w, sides_w), tip_room),
+                 inside)  # fmt: skip
+    fold = _math(nt, "nail_fold", "MULTIPLY", _math(nt, "nail_fold_band", "SUBTRACT", wide, plate), NAIL_FOLD)
+    # the skin's own relief (pores, microrelief, the scans') flat under the plate
+    geometry = _node(nt, "ShaderNodeNewGeometry", "nail_geometry", (-300, -200))
+    flat = _node(nt, "ShaderNodeMix", "nail_flat", (-150, -200))  # a VECTOR mix (`_mix` makes FLOAT / RGBA ones)
+    flat.data_type = "VECTOR"
+    nt.links.new(plate, flat.inputs["Factor"])
+    nt.links.new(fed("Normal"), next(i for i in flat.inputs if i.identifier == "A_Vector"))
+    nt.links.new(geometry.outputs["Normal"], next(i for i in flat.inputs if i.identifier == "B_Vector"))
     raise_ = _node(nt, "ShaderNodeBump", "nail_raise", (50, -200))
     raise_.inputs["Strength"].default_value, raise_.inputs["Distance"].default_value = 1.0, NAIL_RAISE
-    nt.links.new(plate, raise_.inputs["Height"])
-    nt.links.new(fed("Normal"), raise_.inputs["Normal"])
+    nt.links.new(_math(nt, "nail_height", "ADD", plate, fold), raise_.inputs["Height"])
+    nt.links.new(next(o for o in flat.outputs if o.identifier == "Result_Vector"), raise_.inputs["Normal"])
     nt.links.new(raise_.outputs["Normal"], bsdf.inputs["Normal"])
 
 
@@ -780,22 +807,20 @@ def face_share() -> bpy.types.Image:
 
 def _region_relief(nt, uv, which):
     """The relief's depth factors (pores, microrelief): the region map's on the head tile (R, B x
-    REGION_RELIEF_SCALE), 0 on the nails' tile, the microrelief ARM_MICRO on the arms' tile, 1 elsewhere."""
+    REGION_RELIEF_SCALE), ARM_MICRO and ARM_PORES on the arms' tile, 1 elsewhere (under a nail's plate the nail layer
+    flattens them)."""
     regions = _node(nt, "ShaderNodeTexImage", "face_regions", (-1600, -2700))
     regions.image, regions.interpolation, regions.extension = face_regions(), "Linear", "EXTEND"
     nt.links.new(uv.outputs["UV"], regions.inputs["Vector"])
     parts = _node(nt, "ShaderNodeSeparateColor", "face_regions_split", (-1350, -2700))
     nt.links.new(regions.outputs["Color"], parts.inputs["Color"])
     on_head = _math(nt, "regions_on_head", "COMPARE", which.outputs["Value"], 0.0, 0.5)
-    on_nails = _math(nt, "regions_on_nails", "COMPARE", which.outputs["Value"], float(NAIL_TILE_INDEX), 0.5)
     on_arms = _math(nt, "regions_on_arms", "COMPARE", which.outputs["Value"], float(ARM_TILE_INDEX), 0.5)
     factors = []
     for channel, key in (("Red", "pore"), ("Blue", "micro")):
         head = _math(nt, f"regions_{key}", "MULTIPLY", parts.outputs[channel], REGION_RELIEF_SCALE)
-        body = _mix(nt, f"{key}_on_arms", "FLOAT", on_arms, 1.0, ARM_MICRO) if key == "micro" else 1.0
-        factor = _mix(nt, f"{key}_factor", "FLOAT", on_head, body, head)
-        # none on the nails' tile: tiled under the nails' coat they read as a bumpy plate with white specks (gate run 4)
-        factors.append(_mix(nt, f"{key}_off_nails", "FLOAT", on_nails, factor, 0.0))
+        body = _mix(nt, f"{key}_on_arms", "FLOAT", on_arms, 1.0, ARM_MICRO if key == "micro" else ARM_PORES)
+        factors.append(_mix(nt, f"{key}_factor", "FLOAT", on_head, body, head))
     return factors
 
 
@@ -1004,9 +1029,14 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     fine.inputs["Strength"].default_value, fine.inputs["Distance"].default_value = HEIGHT_STRENGTH, HEIGHT_DISTANCE
     links.new(tex["height"].outputs["Color"], fine.inputs["Height"])
     links.new(normal.outputs["Normal"], fine.inputs["Normal"])
-    for old in ("body_uv", "pore_mapping"):  # the pores' former route on hm08's UVMap (a skin saved before)
+    # former routes in a skin saved before: the pores' on hm08's UVMap; the nails' island map and tile gates (until
+    # 2026-11-10 - the coordinates are an attribute now: its node is another type under the same name)
+    for old in ("body_uv", "pore_mapping", "nail_uv", "nail_on_tile", "regions_on_nails", "pore_off_nails",
+                "micro_off_nails"):
         if nt.nodes.get(NODE + old) is not None:
             nt.nodes.remove(nt.nodes[NODE + old])
+    if nt.nodes.get(NODE + "nail_coords") is not None and nt.nodes[NODE + "nail_coords"].type != "ATTRIBUTE":
+        nt.nodes.remove(nt.nodes[NODE + "nail_coords"])
     # the relief layers on the UDIM layer, each tile scaled by its own millimetres per unit (MM_PER_UV)
     which = _node(nt, "ShaderNodeMath", "tile_index", (-1200, -700))
     which.operation = "FLOOR"
@@ -1044,7 +1074,7 @@ def build_material(mat: bpy.types.Material, images: dict[str, bpy.types.Image], 
     next(i for i in coat.inputs if i.identifier == "A_Float").default_value = COAT_WEIGHT
     next(i for i in coat.inputs if i.identifier == "B_Float").default_value = BODY_COAT_WEIGHT
     links.new(next(o for o in coat.outputs if o.identifier == "Result_Float"), bsdf.inputs["Coat Weight"])
-    _nail_layer(nt, bsdf, uv, which)
+    _nail_layer(nt, bsdf)
     _lip_layer(nt, bsdf)
     _mouth_layer(nt, bsdf, uv, which)
     _seam_layer(nt, bsdf, uv)
@@ -1081,6 +1111,11 @@ def refresh(mat: bpy.types.Material) -> None:
 
             face_units.add_blink_props(obj)  # the closed lid's blink values (none without the keys; once)
             face_units.add_smile_props(obj)  # the crow's feet's smile values (likewise)
+            if NAIL_ATTR not in obj.data.attributes:  # the nails' coordinates (a character saved before 2026-11-10)
+                add_nail_coords(obj)
+            bed = obj.modifiers.get("JustStage nail bed")  # its geometric bed on the tile's island, replaced that day
+            if bed is not None:
+                obj.modifiers.remove(bed)
 
 
 def set_pores(mat: bpy.types.Material, character: bpy.types.Object) -> None:
@@ -1140,9 +1175,7 @@ def apply(character: bpy.types.Object, skin: bpy.types.Material) -> bpy.types.Ma
 
     add_layout(character)
     add_texel(character)
-    from . import nail_bed
-
-    nail_bed.add(character)  # the plate set into the finger: shape on the nail tile, after the levels
+    add_nail_coords(character)  # each nail's coordinates over its fingertip, for the nail layer
     old = character.juststage.skin_material
     mine = skin.copy()
     mine.name = f"JustStage Skin ({character.name})"

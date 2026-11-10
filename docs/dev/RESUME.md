@@ -153,6 +153,14 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   `batch_gate_1110b.sh` (THE FULL GATE on today's product -> `.dev/gate/parts/2026-11-10gate2`). If the held plate
   doesn't read rounded: the object-space nail plate (per-vertex nail coords over each fingertip) is the build.
   Waiting for the user: Q-BASE-4, Q-HAIR-7, Q-GATE-3.
+  15:1x: the lash ship FAILED its kink guard (not kept); trials (working doc 13:4x-15:1x) picked and APPLIED (not yet
+  committed - tests running): the upper lashes rise 30 / curl 20 / 6.5 mm, no clumping, at the approved 0.08 mm; the
+  stubble curl 45, greys' melanin 0.04; THE NAILS OVER THE WHOLE FINGERTIP (`make_nail_coords.py` -> `nails.npz`,
+  attribute `js_nail`, `nail_bed.py` removed; side 0.78, arc 0.12, length 0.9, bed share 0.12); the hand tile's
+  microrelief x1 / pores x0.5 (`ARM_MICRO`, `ARM_PORES`). Running `batch_final_1110.sh` (old scratchpad: the library's
+  characters and hair rebuilt - backup `.dev/backup/library_2026-11-10final`; the lash / stubble / skin-map tests; THE
+  FULL GATE -> `.dev/gate/parts/2026-11-10gate2`; every suite). Then: look at every sheet, the verdict doc, commit.
+  For the user: the lashes' finer root (0.06 mm against the design's approved 0.08).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

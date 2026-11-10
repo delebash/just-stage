@@ -1955,6 +1955,12 @@ booked with just-direct-mocap.
   The stubble's box is spent after round 2.
   14:4x, round 2 (`stubble3_a.jpg`: shipped | curl 45 | his; `stubble3_b.jpg`: 45 | 70 | his): curl 45 turns our
   straight needles into arcs like his; 70 reads woolly; ours still curve both ways at random where his flow one way.
+  2.0 mm (`stubble3_c.jpg`) reads sparser than his dense lower chin - 2.8 stays. Pick so far: curl 45 at 2.8 mm.
+  The greys' melanin 0.04 (`stubble3_d.jpg`: 0.12 | 0.04 | his): silver-white like his where 0.12 read beige. **THE
+  STUBBLE'S PICK (mine, attacked; box spent): curl 45, the greys' melanin 0.04** - shape and colour are independent
+  factors, each judged alone; the grey share stays scaled by age (none at 25; ~half the hairs on the 60-year-old Older
+  man - run 7's "white beard" was a third at 0.04 on HD Aaron's ~40-year-old age, here the age decides). Ships in the
+  final roll-out (`apply_stubble_pick.py 45 0.04`).
 - **13:5x, THE LASHES' SPIKES DIAGNOSED (CPU, `lash_diag.py` in this session's scratchpad, a dressed new human, today's
   UPPER): the clearing turns the upper lashes a median 0-15 deg (>20 deg on 2-32% by thirds of the lid) - NOT the
   cause I had written; before any clearing their tips already stand 67-83 deg up from straight ahead (rise 10 + curl
@@ -1993,6 +1999,14 @@ booked with just-direct-mocap.
   fans out and up most like his with fewer dark lashes over the iris, but darker and sparser-looking; 10/65 no clump
   similar (fails the guard on joints). Our lower lashes faint and short beside his. Round 2 (30/20, 25/35, 25/30 clump
   0.25) running; the best guard-passing shape ships.
+- **14:5x, THE LASHES' PICK (mine, attacked; box spent)** (`lashes4_a.jpg`: committed | 20/30 | 30/20; `lashes4_b.jpg`:
+  30/20 | 25/35 | 25/30 clump 0.25): **rise 30, curl 20, the longest 6.5 mm, no clumping** - the iris clearest, an even
+  fan out and up like his, the smoothest of the guard-passing shapes (joint p90 3.9-4.1); light clumping brings the
+  spikes back. **At the approved radius 0.08 mm, not the trial's 0.06**: the user approved the design's "lashes at 180
+  upper, 0.08 mm radius, melanin 1.0" (`2026-11-05-character-design.md` piece 3) - the finer root waits for their word
+  (listed). Ships in the final roll-out (`apply_lash_pick.py 30 20 6.5 0.08 0.0 ...`; the module's "clumped in fours"
+  corrected with it). LASHES stay CLOSER, NOT EQUAL: ours darker and sparser-looking than his dense fine fringe with
+  light tips; our lower lashes faint beside his long distinct ones (not tried).
 - **14:0x, THE NAILS ROUND 1, first variant (`nailobj1.jpg`: product | nailobj 0.8 / 0.92 | his): the size gap
   CLOSED** - the plate spans the fingertip and reaches its tip, no octagon. It overshoots: no skin beside it, the
   cuticle a deep U (the product's arc 0.35 x across^2, set for the island's narrow across), the plate a flat pale
@@ -2031,6 +2045,18 @@ booked with just-direct-mocap.
   -2.2, -6.1; his ~+4.1, -3.3, -3.1) - Lab distance to his 3.2 -> 2.7, picked; 0.68 still leaves the island's red
   line outside. Round 3 queued (`batch_trials3.sh`, after round 2): 0.78 / 0.82, arc 0.12, length 0.9, share 0.12 at
   the nails, hand and foot views (the toes in the new measure as well).
+- **15:0x, THE NAILS ROUND 3 (`nailobj3_a.jpg`: round 2's 0.62 | 0.78 | his): at 0.78 the plate is wide like his, a
+  shallow cuticle arc, reaching near the tip, a thin band of skin at its sides - and the island's red line is gone
+  (covered).** The closest to his yet; the plate a touch paler than his translucent pink. Width measured: ~79% of the
+  finger (his ~77%). Foot (`nailobj3_foot.jpg`): the toenails cover the toe tops, the big toe's plate a little wider
+  than his - reads as a toenail. Hand (`nailobj3_hand.jpg`): his proportions at hand distance, paler than his.
+  **THE NAILS' PICK (mine, attacked): the build ships at side 0.78**, arc 0.12, length 0.9, bed share 0.12, the fold
+  1.2 x (0.10, 0.14) - per-vertex coordinates over each fingertip (`tools/make_nail_coords.py` -> `nails.npz`, the
+  attribute `js_nail`), the shader reading them, the island's geometric bed (`nail_bed.py`) and the tile gates out.
+  Old and new side by side (rec 14, approved: "a layered nail shader on tile 1005"): the layered shader stays - its
+  coordinates now reach past the tile's island onto the fingertip's own skin; the user's self-check instruction
+  ("make decisions on your own without waiting for a human") read as the job's decisions being mine. The trial
+  factors that used the island map or the bed (`nailsoft`, `naildisp`, `nailobj`) removed from the gate tools.
 - **14:1x, THE FINGER'S SKIN at the nails close-up (`fingertip_skin.jpg`, full-size crops below the nail): ours
   coarse, FACETED (triangular texel-like patches) with red blotches; his smooth with soft creases.** The hands' PROVEN
   row held at the hand view only - corrected in the verdict doc. Which layer: `relief0` / `pores0` / `micro0` at the
@@ -2056,6 +2082,30 @@ booked with just-direct-mocap.
   the code says Ten24's Level_01 map is relative to its coarse level-1 mesh, decoded here with the 100k mesh's frames
   - that mesh isn't in the package (only the 100k decimate and a Level_06 map). Stopped digging; the render decides
   which layer shows the facets (`relief0` / `pores0` / `micro0`, round 2).
+  15:0x (`fingerskin_a.jpg`: product | `relief0` | his): **with the scan relief OFF the faceted cells stay** - the
+  Ten24 relief is not the facets (the hand-map digging above chased the wrong layer; the patches it found are real but
+  not what shows). Left: the tiled pores, or the microrelief at x2 on the hand tile (`maps.ARM_MICRO`, set 11-07 from
+  the back of the hand's DISTS); the red blotches are colour.
+  15:0x (`fingerskin_b.jpg`: `pores0` | `micro0` | his): **pores off removes the red blotches; microrelief off removes
+  the faceted cells** - the finger's faults are the TILED detail (the face-tuned pore tile reads as coarse red speckle
+  on a finger, the hand tile's x2 microrelief as cracked facets), not the scans. Trial queued after round 3
+  (`batch_fingers.sh`): pores x0.5 | micro x0.5 | both | micro x0.25 at the nails and hand views (the back of the hand
+  is where x2 was earned). If less reads like his finger, the product needs a finger region (the fingers' own share
+  of the hand tile) so the back of the hand keeps its x2.
+  15:1x (`fingerskin2_nails.jpg`: product | pores x0.5 + micro x0.5 | micro x0.25 | his; `fingerskin2_hand.jpg` the
+  same at the hand view): at the close-up pores x0.5 + micro x0.5 takes most of the red speckle and the cracked
+  facets off the finger; at the hand view the back of the hand barely changes (veins and tendons stay). **PICK (mine,
+  attacked): the arms' tile's microrelief x2 -> x1 and its pores x0.5 (`maps.ARM_MICRO`, new `ARM_PORES`)** - the
+  trade-off on record: x2 had moved the back of the hand's texture 0.071 -> 0.047 against his (11-07); the full gate
+  re-measures the hand view, and if it leaves his spread, the fix becomes a fingers-only region (the skeleton's
+  phalanx weights exist: `index_01`-`03` etc., ~90-130 vertices each). His finger stays smoother than ours.
+- **15:1x, APPLIED (`apply_final_1110.sh 0.78`, between batches): the lashes (rise 30 / curl 20 / 6.5 / no clumping /
+  0.08 mm), the stubble (curl 45, greys 0.04), the nail build (`nails.npz` for all 10 digits, 1,166 fingertip
+  vertices; `nail_bed.py` removed), the hand tile (micro x1, pores x0.5).** `batch_final_1110.sh`: the library's
+  characters and hair rebuilt 15:16 (backup `library_2026-11-10final`); the parts' tests 36 passed / 1 failed -
+  `test_the_relief_layers_..._microrelief_shades` asserted the nails' raise took the microrelief's normal directly (now
+  through `nail_flat`) - the test updated, not the product. Every new nail test, the lash guards and the stubble tests
+  passed. Rerunning from the tests: `batch_final_1110c.sh` (tests -> THE FULL GATE -> every suite).
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1

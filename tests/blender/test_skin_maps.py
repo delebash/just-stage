@@ -155,12 +155,14 @@ def test_the_relief_layers_keep_one_size_on_every_tile_and_the_microrelief_shade
             assert _factor(nodes, name, k) == pytest.approx(maps.MM_PER_UV[number] / size)
     bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
     micro = nodes[maps.NODE + "micro_bump"]
-    assert nodes[maps.NODE + "nail_raise"].inputs["Normal"].links[0].from_node == micro  # then the nails' edge
+    flat = nodes[maps.NODE + "nail_raise"].inputs["Normal"].links[0].from_node  # then the nails' edge, over the relief
+    assert flat == nodes[maps.NODE + "nail_flat"]  # flattened under the plate
+    assert next(i for i in flat.inputs if i.identifier == "A_Vector").links[0].from_node == micro
     assert micro.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "pore_bump"]
     assert nodes[maps.NODE + "micro"].image.size[0] >= 2048
 
 
-def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
+def test_the_nails_get_a_plate_over_each_fingertip(human, tmp_path):
     made, body = human
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
@@ -213,11 +215,17 @@ def test_the_nails_get_a_plate_over_the_skin_on_their_tile(human, tmp_path):
     lines = closed.inputs["Normal"].links[0].from_node  # the lips' lines, over the nails' raise
     assert lines == nodes[maps.NODE + "lips_lines"]
     assert lines.inputs["Normal"].links[0].from_node == nodes[maps.NODE + "nail_raise"]
-    coords = nodes[maps.NODE + "nail_coords"].image  # each nail's own coordinates, made once (make_nail_coords.py)
-    alpha = np.empty(coords.size[0] * coords.size[1] * 4, np.float32)
-    coords.pixels.foreach_get(alpha)
-    assert 0.3 < (alpha[3::4] > 0.5).mean() < 0.9  # the nails fill most of their tile
-    assert nodes[maps.NODE + "nail_on_tile"].inputs[1].default_value == maps.NAIL_TILE_INDEX
+    # each nail's coordinates over its whole fingertip, per vertex (make_nail_coords.py): until 2026-11-10 they filled
+    # the tile's island, whose coarse polygon cut the plate into an octagon
+    coords = nodes[maps.NODE + "nail_coords"]
+    assert coords.type == "ATTRIBUTE" and coords.attribute_name == maps.NAIL_ATTR
+    values = np.empty(len(body.data.vertices) * 4, np.float32)
+    body.data.attributes[maps.NAIL_ATTR].data.foreach_get("color", values)
+    values = values.reshape(-1, 4)
+    inside = values[:, 3] > 0.5
+    assert 0.02 < inside.mean() < 0.15  # the fingertips and toe tips only
+    assert set(np.round(values[inside, 2] * 10).astype(int).tolist()) == set(range(1, 11))  # every finger and toe
+    assert values[inside, 0].min() < 0.0 < 1.0 == pytest.approx(values[inside, 0].max())  # past the cuticle to the tip
 
 
 def test_the_mouths_lining_is_wet_mucosa_on_the_head_tile(human, tmp_path):
@@ -428,44 +436,54 @@ def test_the_nail_plate_is_matte_like_his(human, tmp_path):
     assert share <= 0.1  # a faint lunula, as his (0.35 read as a white crescent - `nailluna`, 2026-11-08)
 
 
-def test_a_mapped_skin_sets_the_nail_bed_into_the_finger(human, tmp_path):
-    """hm08 has no nail outline, so the plate's shape follows the shader's plate as a height map on the nail tile, after
-    the levels (modules/skin/nail_bed.py; the gate's `naildisp`, 2026-11-08): the plate domed, a groove at its edge,
-    the fold raised beside it, nothing past the tile's islands."""
-    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
-    build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
-    made, body = human
-    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
-    names = [m.name for m in body.modifiers]
-    assert nail_bed.MODIFIER in names and names.index(nail_bed.MODIFIER) == names.index(build.LEVELS) + 1
-    group = body.vertex_groups[nail_bed.GROUP]
-    count = sum(1 for v in body.data.vertices if any(g.group == group.index for g in v.groups))
-    assert 300 < count < 600  # the 20 nails' faces (245) and their corners
-    height = nail_bed.height_mm()
-    assert height.max() == pytest.approx(nail_bed.DOME_MM, abs=0.05) and height.min() < -0.1
-
-
-def test_the_nails_have_no_pores(human, tmp_path):
-    """The skin's pores and microrelief tiled onto the nails' tile under their coat read as a bumpy plate with white
-    specks (gate run 4's nails view; HD Aaron's plates smooth) - nails have none."""
+def test_the_nail_plate_sits_in_the_skins_fold(human, tmp_path):
+    """hm08 has no nail outline: the plate's edge is raised by the shader's bump and the skin's fold beside it - the
+    plate drawn NAIL_FOLD_REACH wider past its cuticle and sides, that band NAIL_FOLD x the plate's raise. The geometric
+    bed on the tile's island (nail_bed.py, 2026-11-08) followed the island's octagon and is gone (2026-11-10)."""
     made, body = human
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
-    for key in ("pore", "micro"):
-        assert maps.NODE + f"{key}_off_nails" in _upstream(nodes[maps.NODE + f"{key}_depth"].inputs[0])
+    assert "JustStage nail bed" not in body.modifiers
+    height = nodes[maps.NODE + "nail_raise"].inputs["Height"].links[0].from_node
+    assert height == nodes[maps.NODE + "nail_height"] and height.operation == "ADD"
+    assert height.inputs[0].links[0].from_node == nodes[maps.NODE + "nail_plate"]
+    fold = height.inputs[1].links[0].from_node
+    assert fold == nodes[maps.NODE + "nail_fold"] and fold.inputs[1].default_value == pytest.approx(maps.NAIL_FOLD)
+    assert maps.NAIL_FOLD > 1.0  # the fold stands over the plate's edge
+    assert nodes[maps.NODE + "nail_fold_cut"].inputs[1].default_value == pytest.approx(maps.NAIL_FOLD_REACH[0])
 
 
-def test_the_arms_tile_takes_more_microrelief(human, tmp_path):
-    """The back of the hand read too even against HD Aaron's (EEVEE, `dists.py --patches` 0.071); the microrelief x2
-    on the arms' tile brought it to 0.047 (2026-11-07) - the torso's and the foot's tiles keep 1."""
+def test_the_nail_plate_is_smooth_over_the_skins_relief(human, tmp_path):
+    """The skin's pores and microrelief under a nail read as a bumpy plate with white specks (gate run 4's nails view;
+    HD Aaron's plates smooth): under the plate the skin's relief gives way to the surface's own normal - by the plate,
+    not by the tile (the plate reaches past the tile's island since 2026-11-10)."""
     made, body = human
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
-    arms = nodes[maps.NODE + "micro_on_arms"]
-    assert arms.name in _upstream(nodes[maps.NODE + "micro_depth"].inputs[0])
+    flat = nodes[maps.NODE + "nail_raise"].inputs["Normal"].links[0].from_node
+    assert flat == nodes[maps.NODE + "nail_flat"] and flat.data_type == "VECTOR"
+    assert flat.inputs["Factor"].links[0].from_node == nodes[maps.NODE + "nail_plate"]
+    skin = next(i for i in flat.inputs if i.identifier == "A_Vector").links[0].from_node
+    assert skin == nodes[maps.NODE + "micro_bump"]  # the skin's whole relief chain
+    surface = next(i for i in flat.inputs if i.identifier == "B_Vector").links[0].from_node
+    assert surface == nodes[maps.NODE + "nail_geometry"]
+    for key in ("pore", "micro"):  # the relief no longer cut on the tile
+        assert maps.NODE + f"{key}_off_nails" not in nodes
+
+
+def test_the_arms_tile_sets_its_own_tiled_relief(human, tmp_path):
+    """The arms' and hands' tile sets its own pores and microrelief (ARM_PORES, ARM_MICRO): the microrelief x2 there
+    (2026-11-07, the back of the hand's texture against HD Aaron's 0.071 -> 0.047) read as cracked facets on the
+    fingers at the nails close-up, and the face's pores as red speckle (2026-11-10) - both lower there now."""
+    made, body = human
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
     assert nodes[maps.NODE + "regions_on_arms"].inputs[1].default_value == maps.ARM_TILE_INDEX
-    assert next(i for i in arms.inputs if i.identifier == "B_Float").default_value == maps.ARM_MICRO > 1.0
-    assert maps.NODE + "pore_on_arms" not in nodes  # the pores keep 1 there
+    for key, value in (("micro", maps.ARM_MICRO), ("pore", maps.ARM_PORES)):
+        arms = nodes[maps.NODE + f"{key}_on_arms"]
+        assert arms.name in _upstream(nodes[maps.NODE + f"{key}_depth"].inputs[0])
+        assert next(i for i in arms.inputs if i.identifier == "B_Float").default_value == pytest.approx(value)
+    assert maps.ARM_PORES < 1.0 and maps.ARM_MICRO <= 1.0
 
 
 def _upstream(socket):
@@ -544,27 +562,17 @@ def test_the_ears_redness_fades_where_melanin_hides_the_blood(human, tmp_path):
 
 def test_a_toes_nail_plate_is_short_and_on_top(human, tmp_path):
     """hm08's toe islands run over the toe's tip, so the fingers' plate covered it - a large pale sticker beside HD
-    Aaron's short toenail (2026-11-09): a toe's plate is TOE_PLATE_LENGTH of the fingers' long and TOE_PLATE_SIDE wide,
-    in the shader and the nail bed's shape alike (one plate, `maps.nail_plate`); the fingers' as before."""
+    Aaron's short toenail (2026-11-09): a toe's plate ends TOE_PLATE_LENGTH along its toe and is TOE_PLATE_SIDE wide,
+    shorter than a finger's (NAIL_LENGTH, NAIL_SIDE), each in its own digit's coordinates."""
     made, body = human
     api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
     nodes = body.juststage.skin_material.node_tree.nodes
-    for key, value in (("nail_plate_length", maps.TOE_PLATE_LENGTH), ("nail_plate_side", maps.TOE_PLATE_SIDE)):
+    for key, toe, finger in (("nail_plate_length", maps.TOE_PLATE_LENGTH, maps.NAIL_LENGTH),
+                             ("nail_plate_side", maps.TOE_PLATE_SIDE, maps.NAIL_SIDE)):
         node = nodes[maps.NODE + key]
-        assert next(i for i in node.inputs if i.identifier == "B_Float").default_value == pytest.approx(value)
-        assert next(i for i in node.inputs if i.identifier == "A_Float").default_value == pytest.approx(
-            1.0 if key == "nail_plate_length" else maps.NAIL_SIDE)  # the fingers'
-    img = maps.nail_coords()
-    w, h = img.size
-    px = np.empty(w * h * 4, np.float32)
-    img.pixels.foreach_get(px)
-    px = px.reshape(h, w, 4)
-    along, across, digit, inside = px[..., 0], px[..., 1] * 2 - 1, px[..., 2] * 10, px[..., 3] > 0.5
-    plate = maps.nail_plate(along, across, digit, inside)
-    toes, fingers = inside & (digit > 5.5), inside & (digit < 5.5)
-    assert toes.any() and fingers.any()
-    assert (plate[toes] > 0.5).mean() < 0.7 * (plate[fingers] > 0.5).mean()  # a toe's plate covers less of its island
-    assert along[toes & (plate > 0.5)].max() < maps.TOE_PLATE_LENGTH + 0.05  # and ends short of the toe's tip
+        assert next(i for i in node.inputs if i.identifier == "B_Float").default_value == pytest.approx(toe)
+        assert next(i for i in node.inputs if i.identifier == "A_Float").default_value == pytest.approx(finger)
+    assert maps.TOE_PLATE_LENGTH < maps.NAIL_LENGTH
     # its edge a faint darkening, not a drawn outline (0.45 read as a sticker; the nail bed's groove shades the edge)
     shade = nodes[maps.NODE + "nail_groove_shade"]
     assert shade.inputs[1].default_value == pytest.approx(-4 * maps.NAIL_GROOVE) and maps.NAIL_GROOVE <= 0.2

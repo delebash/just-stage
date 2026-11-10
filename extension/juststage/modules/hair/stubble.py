@@ -42,8 +42,11 @@ DENSITY = 220.0  # hairs a cm2
 LENGTH = 2.8  # mm
 RADIUS, TIP = 0.00003, 0.7  # m at the root; a cut hair's blunt end
 RISE = 22.0  # degrees off the skin at the root
-CURL = 12.0  # degrees the hair turns along its length (each its own way)
-GREY_SHARE, GREY_MELANIN = 0.25, 0.12  # the grey ones (run 7: a third at 0.04 read as a white beard; his mostly dark)
+#: 2026-11-10 (`.dev/gate/parts/2026-11-10stubble3`): curl 45 turns the straight needles into arcs like HD Aaron's (12 straight, 70 woolly)
+CURL = 45.0  # degrees the hair turns along its length (each its own way)
+#: the greys' melanin 0.04 (0.12 read beige beside HD Aaron's silver-white): 2026-11-10 (`.dev/gate/parts/2026-11-10stubble3`): curl 45 turns the straight needles into arcs like HD Aaron's (12 straight, 70 woolly); run 7's
+#: white beard was a third of the hairs at 0.04 - the share, not the colour
+GREY_SHARE, GREY_MELANIN = 0.25, 0.04  # the grey ones (his mostly dark)
 #: GREY_SHARE is the share at HD Aaron's age (~40: MakeHuman's age macro ~0.615 - 0.5 is 25, 1.0 is 90), scaled by
 #: the character's age: none at 25, x2.8 at 90 (2026-11-10: a fixed quarter read as a pale fuzz on the dark-skinned
 #: 25-year-old Muscular man; with none his stubble read dark and natural - `.dev/gate/parts/2026-11-10ship3`)

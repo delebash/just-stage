@@ -8,7 +8,7 @@ eye, 10+ points each for the curl). MetaHuman's way - strand grooms - as Blender
 - roots on the lid's front skin just past the opening's edge (modules/head/eyes.py), found by rays from in front, in a
   band just past the edge (the rows), none by the inner corner;
 - each lash leaves the lid at the measured angle off straight ahead and curls away from the eye, fanned as measured
-  from the front (FAN), longest just outside the middle, clumped in fours;
+  from the front (FAN), longest just outside the middle, each on its own (CLUMP_PULL 0);
 - attached as Blender attaches hair: the body as the Curves' surface, each strand's root UV, and Deform Curves on
   Surface carrying the strands from the surface's rest shape to its current one - so they follow the lid on any
   character, and through its shape keys. Made on one character, they are moved into rest space by each root
@@ -34,8 +34,11 @@ import numpy as np
 #: long spikes across the iris and out past the outer corner, where its painting shows a fine short lash line.
 #: 2026-11-06: 180 upper at 0.08 mm, melanin 1.0 - the approved design's piece 3 ("measured to make a lash line",
 #: proof (4), 2026-11-05) - never put in the code until the clean-input gate showed the lash line thin
-UPPER = {"count": 180, "long": 7.0, "short": 3.8, "rise": 0.0, "curl": 50.0, "band": (0.2, 1.0), "radius": 0.00008,
-         "melanin": 1.0}  # fmt: skip
+#: 2026-11-10: rise 30 / curl 20, the longest 6.5 mm, no clumping - HD Aaron's reach ~6-7 mm forward and ~4 mm up (his
+#: blend); rise 10 / curl 80 kinked (the guard); the iris clearest of the guard-passing shapes
+#: (`.dev/gate/parts/2026-11-10lashes4`)
+UPPER = {"count": 180, "long": 6.5, "short": 3.53, "rise": 30.0, "curl": 20.0, "band": (0.2, 1.0),
+         "radius": 0.00008, "melanin": 1.0}  # fmt: skip
 #: lower lashes are finer and a little lighter - at melanin 0.6 they read golden-orange on dark skin beside the near-black
 #: upper ones (2026-11-09, `.dev/gate/parts/2026-11-09lashlower`; HD Aaron's dark brown): 0.8. Their root radius 0.04 mm
 #: (0.08 mm across, a real lower lash's): at 0.025 they hardly showed beside his fan; 110 an eye showed more, but past
@@ -48,7 +51,8 @@ LOWER = {"count": 80, "long": 3.8, "short": 1.8, "rise": 5.0, "curl": 25.0, "ban
 #: leave the lid straight ahead and curl 50 deg up, ~25 deg up on average; the study's full lengths less ~5% (7.0 /
 #: 3.8 mm); upper 150, lower 80 (inside StatPearls' counts). The narrow lid that made long lashes cross the iris
 #: (round 79) is gone. Compared: `.dev/gate/parts/eyes/eevee_eye_ours_lash_{base,long,curl}.png` against Aaron's.
-CLUMP, CLUMP_PULL = 4, 0.5  # real lashes group: neighbours' tips pulled halfway together, more toward the tip
+#: 2026-11-10: 0.0 (0.5 bunched every 4 neighbours' tips into the spikes seen beside HD Aaron's even fringe)
+CLUMP, CLUMP_PULL = 4, 0.0  # neighbours' tips pulled together by this share, more toward the tip
 #: the fan seen from the front: (share of the way from the inner corner to the outer, the lash's angle from the line
 #: through the corners toward the outer one, degrees) - measured on the lower lid of Korean adults (Korea University,
 #: "Changes in the horizontal angular direction of lower eyelashes with age": medial 137, central 72, lateral 25);

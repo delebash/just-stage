@@ -3566,10 +3566,10 @@ def marginrelief(built: dict, kept: float) -> None:
 
 
 def toeplate(built: dict, length: float, side: float) -> None:
-    """The toes' nail plate shorter and narrower (`maps.TOE_PLATE_LENGTH`, `TOE_PLATE_SIDE`) in the shader and the nail
-    bed's shape together - 2026-11-09, the fingers' plate covered the toe's whole tip. A shape: --alone."""
+    """The toes' nail plate shorter and narrower (`maps.TOE_PLATE_LENGTH`, `TOE_PLATE_SIDE`) on the shader's mixes -
+    2026-11-09, the fingers' plate covered the toe's whole tip (the island's geometric bed it also reshaped is gone
+    since 2026-11-10)."""
     maps = _maps()
-    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
     n = 0
     for nt in _skin_trees(built):
         for key, value in (("nail_plate_length", length), ("nail_plate_side", side)):
@@ -3577,12 +3577,6 @@ def toeplate(built: dict, length: float, side: float) -> None:
             if node is not None:
                 next(i for i in node.inputs if i.identifier == "B_Float").default_value = value
                 n += 1
-    old = maps.TOE_PLATE_LENGTH, maps.TOE_PLATE_SIDE
-    maps.TOE_PLATE_LENGTH, maps.TOE_PLATE_SIDE = length, side
-    try:
-        nail_bed.add(built["body"])
-    finally:
-        maps.TOE_PLATE_LENGTH, maps.TOE_PLATE_SIDE = old
     print("TOE PLATE", length, side, "on", n, "nodes", flush=True)
 
 
@@ -3888,9 +3882,8 @@ def browtrial(built: dict, count: float, fine: float, fine_melanin: float, grey:
 
 
 def nailplate(built: dict, side: float, length: float) -> None:
-    """The fingers' plate inside its tile island: `maps.NAIL_SIDE` (0.8 of the island's half-width) and its length (1.0
-    - the island's distal edge) set on the shader's own mixes - 2026-11-10: the plate filled the island, whose coarse
-    polygon (13 corners) cut it into an octagon; held inside, the plate's own rounded outline shows."""
+    """The fingers' plate: its half-width (`maps.NAIL_SIDE`) and its length (`maps.NAIL_LENGTH`) in the fingertip's own
+    coordinates set on the shader's mixes - the plate's size beside HD Aaron's."""
     maps = _maps()
     n = 0
     for nt in _skin_trees(built):
@@ -3901,196 +3894,7 @@ def nailplate(built: dict, side: float, length: float) -> None:
                 n += 1
     if not n:
         raise RuntimeError("no nail plate mixes")
-    # the bed's shape follows the same plate: `nail_bed.height_mm` draws `maps.nail_plate`, whose fingers' side is
-    # NAIL_SIDE and length 1.0 - so a later `naildisp*` in the chain domes the held plate, not the island (the trial's
-    # copy of the product's formula with the fingers' two numbers as given)
-    def plate(along, across, digit, inside):
-        soft = 1.0 / maps.NAIL_EDGE_SOFT
-        toes = digit > 5.5
-        long_ = np.where(toes, maps.TOE_PLATE_LENGTH, length)
-        wide = np.where(toes, maps.TOE_PLATE_SIDE, side)
-        cut = maps.NAIL_CUTICLE + maps.NAIL_CUTICLE_CURVE * across * across
-        tip = np.clip(((1.0 - maps.NAIL_TIP_CURVE * across * across) * long_ - along) * soft, 0, 1)
-        return np.clip((along - cut) * soft, 0, 1) * np.clip((wide - np.abs(across)) * soft, 0, 1) * tip * inside
-
-    maps.nail_plate = plate
     print("NAIL PLATE side", side, "length", length, "on", n, "nodes", flush=True)
-
-
-NAIL_ATTR = "js_nail_trial"
-
-
-def _nail_frames(body) -> list[dict]:
-    """Each nail's frame (`tools/make_nail_coords.nails`: its tile island, digit, centre, normal, distal, side)."""
-    spec_ = importlib.util.spec_from_file_location("make_nail_coords", HERE.parent / "make_nail_coords.py")
-    tool = importlib.util.module_from_spec(spec_)
-    spec_.loader.exec_module(tool)
-    return tool.nails(body)
-
-
-def nail_vertex_coords(body, grow: float = 2.2) -> tuple[np.ndarray, dict]:
-    """Per vertex (n, 4): each nail's coordinates over its whole fingertip, not its tile island - along 0 at the
-    island's proximal edge (today's cuticle line) to 1 at the fingertip's far end, across -1 to 1 over the fingertip's
-    own dorsal width, the digit / 10 and 1 inside the fingertip's region (the vertices nearer this nail's centre than
-    any other's, within `grow` x the island's reach, facing the nail's way). The same encoding as `nails.png`."""
-    me = body.data
-    n = len(me.vertices)
-    co = np.empty(n * 3)
-    me.vertices.foreach_get("co", co)
-    co = co.reshape(-1, 3)
-    nor = np.empty(n * 3)
-    me.vertices.foreach_get("normal", nor)
-    nor = nor.reshape(-1, 3)
-    frames = _nail_frames(body)
-    centres = np.array([f["centre"] for f in frames])
-    nearest = np.argmin(((co[:, None, :] - centres[None]) ** 2).sum(-1), 1)
-    out = np.zeros((n, 4), np.float32)
-    stats = {}
-    for k, f in enumerate(frames):
-        c, nrm, dis, sid = f["centre"], f["normal"], f["distal"], f["side"]
-        isl = np.array(f["verts"])
-        reach = np.linalg.norm(co[isl] - c, axis=1).max()
-        a_isl = (co[isl] - c) @ dis
-        a0 = a_isl.min()
-        rel = co - c
-        facing = nor @ nrm
-        region = (nearest == k) & (np.linalg.norm(rel, axis=1) < grow * reach) & (facing > 0.0) & (rel @ dis > a0 - 0.004)
-        idx = np.flatnonzero(region)
-        if len(idx) < 4:
-            continue
-        al, ac = rel[idx] @ dis, rel[idx] @ sid
-        end = al.max()  # the fingertip's far end
-        top = facing[idx] > 0.5  # its dorsal face
-        mid = top & (al > a0) & (al < a0 + 0.7 * (end - a0))
-        half = np.abs(ac[mid]).max() if mid.any() else np.abs(ac).max()
-        out[idx, 0] = (al - a0) / max(end - a0, 1e-6)
-        out[idx, 1] = (np.clip(ac / max(half, 1e-6), -1.5, 1.5) + 1.0) / 2.0
-        out[idx, 2] = f["digit"] / 10.0
-        out[idx, 3] = 1.0
-        stats[f["digit"]] = (round(float((end - a0) * 1000), 1), round(float(half * 2000), 1),
-                             round(float((a_isl.max() - a0) * 1000), 1),
-                             round(float(np.abs((co[isl] - c) @ sid).max() * 2000), 1), len(idx))
-    return out, stats
-
-
-def nailobj(built: dict, side: float, length: float, fold: float = 1.2, bed_share: float | None = None,
-            curve: float | None = None, cuticle: float | None = None) -> None:
-    """The nails drawn over the whole fingertip (2026-11-10, `gate1110/row_nails.png`): HD Aaron's plate spans ~80% of
-    the fingertip's width and reaches its tip; ours fills its tile island, a coarse polygon ~55% wide in the middle.
-    Here the shader's nail coordinates come from a per-vertex attribute over each fingertip (`nail_vertex_coords`)
-    instead of the island's map, the plate's side and length in the fingertip's own measure; the product's nail bed
-    (the island's dome and groove) off, the plate's edge raised by the shader's bump with the skin's fold beside it
-    (`fold` x the plate's raise), the skin's relief flattened under the plate. A shape: --alone."""
-    maps = _maps()
-    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
-    body = built["body"]
-    coords, stats = nail_vertex_coords(body)
-    attr = body.data.attributes.get(NAIL_ATTR) or body.data.attributes.new(NAIL_ATTR, "FLOAT_COLOR", "POINT")
-    attr.data.foreach_set("color", coords.ravel())
-    old = body.modifiers.get(nail_bed.MODIFIER)
-    if old is not None:
-        body.modifiers.remove(old)
-    done = 0
-    for mat, _bsdf, mod in _skin_materials(built):
-        nt = mat.node_tree
-        node = lambda name: nt.nodes[maps.NODE + name]  # noqa: E731
-        a = nt.nodes.new("ShaderNodeAttribute")
-        a.attribute_type, a.attribute_name = "GEOMETRY", NAIL_ATTR
-        nt.links.new(a.outputs["Color"], node("nail_parts").inputs[0])
-        inside = node("nail_inside").inputs
-        for lk in list(inside[1].links):
-            nt.links.remove(lk)
-        nt.links.new(a.outputs["Alpha"], inside[0])
-        inside[1].default_value = 1.0
-        for name, value in (("nail_plate_side", side), ("nail_plate_length", length)):
-            next(i for i in node(name).inputs if i.identifier == "A_Float").default_value = value
-        if bed_share is not None and bed_share >= 0:  # -1: the product's share
-            node("nail_bed").inputs["Factor"].default_value = bed_share
-        # the cuticle's arc (`maps.NAIL_CUTICLE_CURVE` 0.35 x across^2, set for the island's narrow across - over the
-        # whole fingertip it draws a deep U, 2026-11-10 `nailobj1.jpg`) and its place (`NAIL_CUTICLE` 0.08)
-        if curve is not None:
-            node("nail_cut").inputs[1].default_value = curve
-        if cuticle is not None:
-            node("nail_cut").inputs[2].default_value = cuticle
-        # the fold: the plate drawn wider (past the cuticle and sides, the same tip) minus the plate - the skin beside it
-        def m(op, x, y=None):
-            nd = nt.nodes.new("ShaderNodeMath")
-            nd.operation = op
-            for i, v in enumerate((x, y)):
-                if v is None:
-                    continue
-                if isinstance(v, (int, float)):
-                    nd.inputs[i].default_value = v
-                else:
-                    nt.links.new(v, nd.inputs[i])
-            return nd.outputs[0]
-
-        def clamp01(x):
-            return m("MINIMUM", m("MAXIMUM", x, 0.0), 1.0)
-
-        soft = 1.0 / maps.NAIL_EDGE_SOFT
-        along = node("nail_parts").outputs["Red"]
-        cut = node("nail_cut").outputs[0]
-        absx = node("nail_abs").outputs[0]
-        side_now = next(o for o in node("nail_plate_side").outputs if o.identifier == "Result_Float")
-        start_w = clamp01(m("MULTIPLY", m("SUBTRACT", along, m("SUBTRACT", cut, 0.10)), soft))
-        sides_w = clamp01(m("MULTIPLY", m("SUBTRACT", m("ADD", side_now, 0.14), absx), soft))
-        tip_room = node("nail_tip_room_c").outputs[0]
-        wide = m("MULTIPLY", m("MULTIPLY", m("MULTIPLY", start_w, sides_w), tip_room), node("nail_inside").outputs[0])
-        plate = node("nail_plate").outputs[0]
-        height = m("ADD", plate, m("MULTIPLY", m("SUBTRACT", wide, plate), fold))
-        bump = node("nail_raise")
-        nt.links.new(height, bump.inputs["Height"])
-        # the skin's relief flattened under the plate (the hand's scan relief reached it beyond the island)
-        under = bump.inputs["Normal"].links[0].from_socket
-        geo = nt.nodes.new("ShaderNodeNewGeometry")
-        flat = nt.nodes.new("ShaderNodeMix")
-        flat.data_type = "VECTOR"
-        nt.links.new(plate, flat.inputs["Factor"])
-        nt.links.new(under, next(i for i in flat.inputs if i.identifier == "A_Vector"))
-        nt.links.new(geo.outputs["Normal"], next(i for i in flat.inputs if i.identifier == "B_Vector"))
-        nt.links.new(next(o for o in flat.outputs if o.identifier == "Result_Vector"), bump.inputs["Normal"])
-        mod.sync_live(mat)
-        done += 1
-    if not done:
-        raise RuntimeError("no skin trees")
-    print("NAIL OBJ side", side, "length", length, "fold", fold, "bed", bed_share, "curve", curve, "cuticle", cuticle,
-          "on", done, "trees;",
-          "digit: (fingertip mm, width mm, island mm, island width mm, vertices)", stats, flush=True)
-
-
-def nailsoft(built: dict, px: float) -> None:
-    """The nails' own coordinates (`make_nail_coords.py`'s map on tile 1005, the shader's plate drawn inside them)
-    blurred by a three-pass box of `px` texels - 2026-11-10 (`nailgeo.png`): the plate an octagon in the middle of the
-    fingertip whatever the geometry (dome only, level 3); the map is linear per coarse face. Its alpha (the nail's own
-    region) kept."""
-    nodes = [n for nt in _skin_trees(built) for n in nt.nodes if n.name.endswith("nail_coords")]
-    if not nodes:
-        raise RuntimeError("no nail coords node")
-    src = nodes[0].image
-    w, h = src.size
-    a = np.empty(w * h * 4, np.float32)
-    src.pixels.foreach_get(a)
-    a = a.reshape(h, w, 4)
-    r = max(1, int(round(px)))
-
-    def box(x, axis):
-        c = np.cumsum(np.pad(x, [(r + 1, r) if k == axis else (0, 0) for k in range(x.ndim)], mode="edge"), axis=axis)
-        return (np.take(c, range(2 * r + 1, c.shape[axis]), axis=axis)
-                - np.take(c, range(0, c.shape[axis] - 2 * r - 1), axis=axis)) / (2 * r + 1)  # fmt: skip
-
-    inside = a[..., 3:4] > 0.5
-    rgb = a[..., :3] * inside
-    wsum = inside.astype(np.float32)
-    for _ in range(3):
-        rgb, wsum = box(box(rgb, 0), 1), box(box(wsum, 0), 1)
-    a[..., :3] = np.where(inside, rgb / np.maximum(wsum, 1e-6), a[..., :3])  # blurred within each nail's own region
-    soft = bpy.data.images.new(f"nail coords soft {px}", w, h, alpha=True, float_buffer=True)
-    soft.colorspace_settings.name = "Non-Color"
-    soft.pixels.foreach_set(a.ravel())
-    for n in nodes:
-        n.image = soft
-    print("NAIL SOFT", px, "texels on", len(nodes), "nodes", flush=True)
 
 
 def build_(built: dict, muscle: float, weight: float) -> None:
@@ -4549,15 +4353,6 @@ def _nail_along(built: dict) -> int:
     attr = me.attributes.get("nail_along") or me.attributes.new("nail_along", "FLOAT", "POINT")
     attr.data.foreach_set("value", along)
     return len(pieces)
-
-
-def naildisp(built: dict, dome_mm: float, groove_mm: float, lip_mm: float) -> None:
-    """Item 7, the nail bed as detail on the shader's own plate outline (hm08 has no nail outline - RESEARCH 14.5):
-    the product's nail bed (`modules/skin/nail_bed.py`, which this trial chose at 1.0 / 0.6 / 0.4 mm on 2026-11-08)
-    set to other amounts - the plate's dome, the groove at its edge, the fold's lip. A shape: --alone."""
-    nail_bed = importlib.import_module("bl_ext.system.juststage.modules.skin.nail_bed")
-    mod = nail_bed.add(built["body"], dome_mm, groove_mm, lip_mm)
-    print("NAIL DISP", dome_mm, groove_mm, lip_mm, [m.name for m in built["body"].modifiers], mod.name, flush=True)
 
 
 def nailshine(built: dict, coat: float, specular: float, roughness: float) -> None:
@@ -5055,10 +4850,6 @@ def factor(name: str):
         return FACTORS[name]
     if name.startswith("nailplate*") and "+" not in name:  # nailplate*0.7*0.88 (the fingers' plate: side, length)
         return lambda built: nailplate(built, *(float(x) for x in name.split("*")[1:3]))
-    if name.startswith("nailobj*") and "+" not in name:  # nailobj*0.8*0.92[*fold*bed share (-1 product)*curve*cuticle] - --alone
-        return lambda built: nailobj(built, *(float(x) for x in name.split("*")[1:7]))
-    if name.startswith("nailsoft*") and "+" not in name:  # nailsoft*6 (the nail coords blurred, texels)
-        return lambda built: nailsoft(built, float(name.split("*", 1)[1]))
     if name.startswith("build*") and "+" not in name:  # build*0.8*0.45 (muscle, weight sliders) - --alone
         return lambda built: build_(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("levels*") and "+" not in name:  # levels*3 (the body's render subdivision) - --alone
@@ -5236,9 +5027,6 @@ def factor(name: str):
         return lambda built: eyescale(built, float(k), *pivot)
     if name.startswith("rigsmooth*"):  # rigsmooth*10 (the body rig with Corrective Smooth; *0 the plain rig)
         return lambda built: rigsmooth(built, int(name.split("*")[1]))
-    if name.startswith("naildisp*"):  # naildisp*0.6*0.4*0.3 (mm: dome, groove, lip - on the plate's own outline)
-        _k, dome, groove, lip = name.split("*")
-        return lambda built: naildisp(built, float(dome), float(groove), float(lip))
     if name == "mouthnoshadow":  # the mouth's inner skin casts no shadow (does it darken the tongue?)
         return mouthnoshadow
     if name.startswith("mouthlining*"):  # mouthlining*0.6*0.25*0.25 (the inner mouth's lining colour, linear)
