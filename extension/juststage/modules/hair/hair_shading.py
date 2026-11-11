@@ -27,8 +27,9 @@ ETA = 1.55  # hair's refractive index
 F0 = ((ETA - 1) / (ETA + 1)) ** 2
 SHIFT = 0.035  # rad: Karis' cuticle tilt; R at -2 x, TT at +1 x, TRT at +4 x
 ROUGHNESS = 0.3  # the longitudinal roughness (Cycles' Principled Hair default)
-#: calibrated against Cycles' Principled Hair on the gate's front view (the scalp's window, 2026-11-06): each term
-#: alone came out at about Cycles' whole (body 0.129, lobes 0.122 vs 0.121) - body x0.3, lobes x0.45 put the sum on it
+#: calibrated against Cycles' Principled Hair on the gate's front view (the scalp's window, 2026-11-06, 6e43562): with
+#: the lobes' width as Cycles maps its roughness and the body's shadow softened, body 0.4 / lobes 1.0 put the scalp's
+#: mean at 0.112 against Cycles' 0.121 (within the gate's 10%)
 DIFFUSE = 0.4  # the multiple-scattered body's share
 GLOSSY = 1.0  # the lobes' share
 BODY_LIGHT_THROUGH = 0.5  # the share of the light the body gets in the strands' own shadow
@@ -94,9 +95,9 @@ def _pow_colour(nt, colour, exponent):
     return comb.outputs["Color"]
 
 
-def build(nt, colour, roughness: float = ROUGHNESS, world_mean: float = 0.0):
+def build(nt, colour, roughness: float = ROUGHNESS, world_mean: float = 0.0, sheen: float = 1.0):
     """The hair model's closure in `nt` for strands of `colour` (a socket: the strand's own colour - groom.py's fitted
-    stand-in); returns its Shader output."""
+    stand-in), its lobes' light x `sheen` (a groom's own - the brows', `brows.SHEEN`); returns its Shader output."""
     geo = nt.nodes.new("ShaderNodeNewGeometry")
     T, V, P = geo.outputs["Tangent"], geo.outputs["Incoming"], geo.outputs["Position"]
     ev0 = nt.nodes.new("ShaderNodeLightEvaluation")
@@ -156,7 +157,8 @@ def build(nt, colour, roughness: float = ROUGHNESS, world_mean: float = 0.0):
     r_term = _math(nt, "MULTIPLY", m_r, n_r)
     spec = _vec(nt, "ADD", spec, _vec(nt, "SCALE", (1.0, 1.0, 1.0), scale=r_term))
     fiber_cos = _math(nt, "SQRT", _math(nt, "MAXIMUM", _math(nt, "SUBTRACT", 1.0, _math(nt, "MULTIPLY", sin_i, sin_i)), 0.0))
-    glossy = _vec(nt, "MULTIPLY", light, _vec(nt, "SCALE", spec, scale=_math(nt, "MULTIPLY", fiber_cos, math.pi * GLOSSY)))
+    lobes = _math(nt, "MULTIPLY", fiber_cos, math.pi * GLOSSY * sheen)  # the lobes' share x the groom's sheen
+    glossy = _vec(nt, "MULTIPLY", light, _vec(nt, "SCALE", spec, scale=lobes))
     acc = nt.nodes.new("ShaderNodeLightAccumulation")
     acc.name = NODE + "lights"
     nt.links.new(glossy, acc.inputs["Glossy Light"])

@@ -48,7 +48,10 @@ def main(params: Params) -> Result:
     if preset["format"] != "usd":
         raise CommandError(f"preset {params.preset!r}: format {preset['format']!r} is not built yet")
     obj = character.find(params.character)
-    members = [obj] + [o for o in bpy.data.objects if o.juststage.part_of == obj.juststage.character_id]
+    from ..body import cage
+
+    members = [obj] + [o for o in bpy.data.objects
+                       if o.juststage.part_of == obj.juststage.character_id and o.juststage.part != cage.PART]
     folder = Path(params.folder)
     folder.mkdir(parents=True, exist_ok=True)
     target = folder / preset["root_layer"]

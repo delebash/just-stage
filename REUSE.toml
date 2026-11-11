@@ -30,6 +30,11 @@ SPDX-FileCopyrightText = "Mika Suominen (MakeHuman's Faceunits 01 asset pack)"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
+path = ["extension/juststage/data/fetched/msa_hair/**"]
+SPDX-FileCopyrightText = "MotionStudioArts (Sketchfab: Black Short Hairs Fuzzy v2, White Long Wavy Hairs 016)"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
 path = ["extension/juststage/data/fetched/optics/**"]
 SPDX-FileCopyrightText = "Scott Prahl (OMLC); CIE — published tables, no licence stated; cited in tools/fetch_data.py"
 SPDX-License-Identifier = "LicenseRef-cited-data"

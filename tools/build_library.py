@@ -21,7 +21,9 @@ thumbnails tools/library_previews.py set.
 """
 
 import importlib
+import importlib.util
 import sys
+from pathlib import Path
 
 import addon_utils
 import bpy
@@ -37,6 +39,10 @@ lashes = importlib.import_module("bl_ext.system.juststage.modules.hair.lashes")
 stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
 brows = importlib.import_module("bl_ext.system.juststage.modules.hair.brows")
 scalp = importlib.import_module("bl_ext.system.juststage.modules.hair.scalp")
+cards = importlib.import_module("bl_ext.system.juststage.modules.hair.cards")
+_fetch_spec = importlib.util.spec_from_file_location("fetch_data", Path(__file__).resolve().parent / "fetch_data.py")
+tools_fetch = importlib.util.module_from_spec(_fetch_spec)  # the card packs' pages (MANUAL_PACKS), their one source
+_fetch_spec.loader.exec_module(tools_fetch)
 library = importlib.import_module("bl_ext.system.juststage.core.library")
 build = importlib.import_module("bl_ext.system.juststage.modules.body.build")
 #: the mapped skins' licence (tools/build_skins.py's LICENCE)
@@ -182,6 +188,17 @@ if "hair" in WANTED:
                   provenance="JustStage modules/hair/scalp.py (region from MakeHuman's CC0 short_hedgehog)",
                   part="scalp")  # fmt: skip
     print("LIBRARY", out.path, flush=True)
+    # Q-HAIR-7 (2026-11-10): MotionStudioArts' free CC BY card hairs (modules/hair/cards.py, fetched as manual packs)
+    for pack, label, about in (("msa_short_fuzzy", "Short fuzzy (MotionStudioArts)", "Short fuzzy hair, close-cropped"),
+                               ("msa_long_wavy", "Long wavy (MotionStudioArts)", "Long wavy hair past the shoulders")):
+        cards.make(bpy.data.objects[woman.object], pack, *BROWN)
+        out = api.run("juststage.library.save", character=woman.character, catalog="Hair/Scalp", name=label,
+                      description=f"{about} - card hair made for Character Creator 4", licence="CC-BY-4.0",
+                      provenance=f"MotionStudioArts on Sketchfab, CC BY 4.0 "
+                      f"({tools_fetch.MANUAL_PACKS[pack]['page']}); fitted and shaded by JustStage "
+                      "modules/hair/cards.py", part="scalp")  # fmt: skip
+        groom.remove_part(bpy.data.objects[woman.object], "scalp")
+        print("LIBRARY", out.path, flush=True)
     brows.make(bpy.data.objects[man.object])  # rec 8: one hair per follicle (modules/hair/brows.py)
     out = api.run("juststage.library.save", character=man.character, catalog="Hair/Brows", name="JustStage brows",
                   description=f"Both brows as single hairs ({brows.COUNT} coarse and {brows.FINE} fine each), flowing up "

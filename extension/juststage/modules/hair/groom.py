@@ -54,7 +54,7 @@ def hair_colour(melanin: float, redness: float, roughness: float = 0.3) -> tuple
 LIVE_EXPONENT, LIVE_FLOOR = 0.637, 0.008
 
 
-def _eevee_stand_in(nodes, links, melanin, redness, roughness: float):
+def _eevee_stand_in(nodes, links, melanin, redness, roughness: float, sheen: float = 1.0):
     """EEVEE has no hair shader ("Principled Hair BSDF — Not supported", manual render/eevee/limitations): a Principled
     BSDF in `hair_colour`'s colour, per strand, on an output only EEVEE reads - the Material Output's Target (Blender
     prefers the exact target over All); Cycles and the USD export keep Principled Hair on the All output."""
@@ -82,15 +82,17 @@ def _eevee_stand_in(nodes, links, melanin, redness, roughness: float):
     from . import hair_shading  # the hair model (rec 1): its lobes per light, the body, the image light
 
     nt = colour.id_data
-    shader = hair_shading.build(nt, colour.outputs["Color"], world_mean=hair_shading.world_mean(bpy.context.scene))
+    shader = hair_shading.build(nt, colour.outputs["Color"], world_mean=hair_shading.world_mean(bpy.context.scene),
+                                sheen=sheen)
     output = nodes.new("ShaderNodeOutputMaterial")
     output.target = "EEVEE"
     links.new(shader, output.inputs["Surface"])
 
 
-def hair_material(name: str) -> bpy.types.Material:
+def hair_material(name: str, sheen: float = 1.0) -> bpy.types.Material:
     """Principled Hair BSDF (Chiang) coloured by melanin, read per strand from the `melanin` and `redness` curve
-    attributes (Blender's melanin parametrisation — character-data-model.md §3, §4), and its EEVEE stand-in."""
+    attributes (Blender's melanin parametrisation — character-data-model.md §3, §4), and its EEVEE stand-in, whose
+    lobes take `sheen` (a groom's own: the brows', calibrated to the film - the film's BSDF is never changed)."""
     mat = bpy.data.materials.new(name)
     if mat.node_tree is None:
         mat.use_nodes = True
@@ -110,7 +112,8 @@ def hair_material(name: str) -> bpy.types.Material:
     output = next(n for n in nodes if n.type == "OUTPUT_MATERIAL")
     output.target = "ALL"
     links.new(hair.outputs[0], output.inputs["Surface"])
-    _eevee_stand_in(nodes, links, read["melanin"], read["redness"], hair.inputs["Radial Roughness"].default_value)
+    _eevee_stand_in(nodes, links, read["melanin"], read["redness"], hair.inputs["Radial Roughness"].default_value,
+                    sheen)
     output.is_active_output = True
     return mat
 
@@ -224,9 +227,10 @@ def portable(character: bpy.types.Object, part: str, name: str) -> list[bpy.type
     no surface — so a library file written from them holds the hair alone. The groom's copy is named `name`; the
     caller removes them with `remove_copies` once written."""
     from ...core.commands import CommandError
+    from . import cards
 
     found = of_part(character, part)
-    if not found or found[0].type != "CURVES":
+    if not found or (found[0].type != "CURVES" and not cards.is_cards(found[0])):
         raise CommandError(f"{character.name} has no {part} groom")
     copies = []
     for obj in found:
@@ -238,6 +242,9 @@ def portable(character: bpy.types.Object, part: str, name: str) -> list[bpy.type
             copy.data.surface = None
             for prop in _surface_inputs(copy):
                 prop.value = None
+        else:  # card hair (cards.py): no binding to this character - a new one refits and rebinds it
+            for mod in [m for m in copy.modifiers if m.type == "SURFACE_DEFORM"]:
+                copy.modifiers.remove(mod)
         copies.append(copy)
     prefix = f"{character.name}."
     for obj, copy in zip(found, copies, strict=True):
@@ -260,6 +267,14 @@ def add_from_file(character: bpy.types.Object, path: str) -> bpy.types.Object:
     with bpy.data.libraries.load(path, link=False) as (src, dst):
         dst.objects = list(src.objects)
     objects = [o for o in dst.objects if o is not None]
+    from . import cards
+
+    if objects and all(cards.is_cards(o) for o in objects):  # card hair: refitted to this character's cranium
+        for obj in objects:
+            obj.use_fake_user = False  # the library file's (core/library.py `save`); in the scene now
+            if obj.asset_data is not None:
+                obj.asset_clear()
+        return cards.attach_from_file(character, objects)
     groom = next((o for o in objects if o.type == "CURVES"), None)
     if groom is None or not groom.juststage.part:
         for obj in objects:
@@ -273,14 +288,15 @@ def add_from_file(character: bpy.types.Object, path: str) -> bpy.types.Object:
             obj.asset_clear()
     groom = _attach(character, objects, part)
     slots = groom.data.materials
+    from . import brows
+
+    sheen = brows.SHEEN if part == "eyebrows" else 1.0  # a library brow keeps the brows' own live-view sheen
     for i, mat in enumerate(slots):  # today's hair shading (it reads each strand's colour), not the file's
         if mat is not None and mat.name.startswith("JustStage Hair"):
-            slots[i] = hair_material(f"JustStage Hair ({groom.name})")
+            slots[i] = hair_material(f"JustStage Hair ({groom.name})", sheen=sheen)
             if mat.users == 0:
                 bpy.data.materials.remove(mat)
     if part == "eyebrows":  # a library brow (grown on whoever) thinned to this character's sex
-        from . import brows
-
         brows.set_density(character)
     return groom
 

@@ -94,6 +94,10 @@ def kind(path: str) -> str:
                 return "character"
             if obj.type == "CURVES" and obj.juststage.part:
                 return "groom"
+            from ..modules.hair import cards
+
+            if cards.is_cards(obj) and obj.juststage.part:  # card hair (Q-HAIR-7)
+                return "groom"
         if any(mat is not None and mat.juststage.is_skin for mat in dst.materials):
             return "skin"
     return ""

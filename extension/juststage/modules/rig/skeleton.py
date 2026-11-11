@@ -225,6 +225,11 @@ def _modifier(obj: bpy.types.Object, arm: bpy.types.Object) -> None:
     mod.use_deform_preserve_volume = False  # linear blend skinning, as Unreal deforms
     if obj.modifiers.find(MODIFIER) != 0:  # first: the levels, the mask and the rest act on the posed body
         obj.modifiers.move(obj.modifiers.find(MODIFIER), 0)
+    from ..body import cage
+
+    found = cage.of(obj)
+    if found is not None:  # what rides the skin through the cage follows the skeleton too
+        cage.sync(obj, found)
 
 
 def riders(character: bpy.types.Object) -> list[bpy.types.Object]:

@@ -197,6 +197,23 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   Q-HAIR-7 coded in scratch (`q_hair7/`, dry-run clean); Q-BASE-4's plan `docs/plans/2026-11-10-ict-head.md`, its
   step 0 (ICT's whole Light model via `fetch_data.py`) downloading. The roll-out of all picks: `batch_rollout.sh
   <sheen> <hand> <cards>` after rounds 13-18.
+  21:4x STATE (the working doc 20:0x-21:4x): picks - brows' live sheen 0.3, hands' relief 0.2, lashes 260 / 0.05 /
+  0.85, nail fold 1.2 / (0.18, 0.22) / own edge 0.12, stubble rise 40, the tongue kept; the ROLL-OUT (task bemk58c7m)
+  applied them all in the working tree (UNCOMMITTED) - the hand at his tone inside his spread on all three bands
+  (0.88 / 0.99 / 1.23; by eye still CLOSE), the brows dark at the eye view; the CARD HAIRS RENDER BROKEN (Surface
+  Deform vs the body's render-level Multires) - the fix, a deform cage (`q_hair7/cage.py`, `apply_cage.py`), runs in
+  `batch_cagefix.sh` (task b46or7bj4) after round 22 (the lid margin's scattering, the film's orange glow - task
+  bdc2wxw9k) and round 23 (the gate man's grey brows - task b5qk40kv9), then THE END RUN; commit only if green (the
+  message drafted: `commit_msg_1110g.txt`). Q-BASE-4 step 1 drafted in `q_base4/` (generator, module, tests), binding
+  through the cage; Q-GATE-3 (HD Ariana) after the card's work.
+  22:1x: the roll-out's suite 219 passed / 4 failed - all four my tests' faults, fixed in the working tree; round 22
+  closed the film's orange lid glow as a KNOWN FILM-ONLY FAULT (the scattering through the whole lid flap; no margin
+  patch); round 23: the face view's silver brows were the gate's own `BROW_GREY` (-> 0, `apply_gate_browgrey.py` at
+  the ICT trial's start). Queue: `batch_cagefix.sh` (b46or7bj4 - the cage, the hair library, the card hairs re-rendered,
+  THE END RUN; commit if green with `commit_msg_1110g.txt`) -> `batch_ict1.sh` (bfdug89y8 - the ICT head's step-1 trial:
+  the module, its tests, the eye / ear / face renders; the generator already ran: `data/generated/ict/head_proxy.npz`)
+  -> `batch_trials24.sh` (bv16uo6v3 - the hands' sheen, the nails' bed share). Drafted: `q_base4/apply_ict_step2.py`
+  and `batch_ict2.sh` (the dressed human wears the head; the export drops the faces under it).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

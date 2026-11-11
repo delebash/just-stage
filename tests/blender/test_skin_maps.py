@@ -504,6 +504,21 @@ def test_the_hands_take_finer_tiled_relief_than_the_arms(human, tmp_path):
     assert np.abs(co[share > 0.5, 0]).min() > 0.3  # the hands, out at the body's sides
 
 
+def test_the_hands_take_their_own_scan_relief(human, tmp_path):
+    """The scans' relief at HAND_RELIEF on the hands, by their share, and 1 elsewhere (2026-11-10, rounds 10 and 15: at
+    full strength the back of the hand's fold and form bands sat at 1.38 / 2.16 of HD Aaron's at his tone)."""
+    made, body = human
+    api.run("juststage.rig.add_skeleton", character=made.character)
+    api.run("juststage.library.add", path=_mapped_skin(tmp_path, melanin=0.12), character=made.character)
+    nodes = body.juststage.skin_material.node_tree.nodes
+    mix = nodes[maps.NODE + "relief_hands"]
+    assert mix.name in _upstream(nodes[maps.NODE + "normal_map"].inputs["Strength"])
+    assert mix.inputs["Factor"].links[0].from_node == nodes[maps.NODE + "hands_share"]
+    assert next(i for i in mix.inputs if i.identifier == "A_Float").default_value == pytest.approx(1.0)
+    assert next(i for i in mix.inputs if i.identifier == "B_Float").default_value == pytest.approx(maps.HAND_RELIEF)
+    assert 0.0 < maps.HAND_RELIEF < 1.0
+
+
 def _upstream(socket):
     """Every node feeding a socket, walked back through its links."""
     seen, todo = set(), [link.from_node for link in socket.links]
@@ -611,8 +626,11 @@ def test_the_lids_stretched_margins_have_no_relief_to_streak(human, tmp_path):
     mask.pixels.foreach_get(px)
     assert 0.00005 < (px[0::4] > 0.5).mean() < 0.002  # the lids' margins: a sliver of the head tile
     maps.refresh(body.juststage.skin_material)  # a rebuild (every library load) keeps one chain, no loop
-    assert nodes[maps.NODE + "relief_off_stretched"].inputs[0].default_value == 1.0
-    assert not nodes[maps.NODE + "relief_off_stretched"].inputs[0].is_linked
+    strength_in = nodes[maps.NODE + "relief_off_stretched"].inputs[0]
+    assert strength_in.links[0].from_node == nodes[maps.NODE + "relief_hands"]
+    mix = nodes[maps.NODE + "relief_hands"]
+    assert next(i for i in mix.inputs if i.identifier == "A_Float").default_value == 1.0
+    assert not next(i for i in mix.inputs if i.identifier == "A_Float").is_linked
 
 
 def test_the_closed_lid_reads_as_skin_only_while_the_blink_closes_it(human, tmp_path):
@@ -648,7 +666,10 @@ def test_the_closed_lid_reads_as_skin_only_while_the_blink_closes_it(human, tmp_
     maps.refresh(mat)  # a rebuild (every library load) adds nothing and keeps one chain
     assert len(nodes) == count
     assert bsdf.inputs["Base Color"].links[0].from_node.inputs[0].links[0].from_node == nodes[maps.NODE + "lid_lifted"]
-    assert not nodes[maps.NODE + "relief_off_stretched"].inputs[0].is_linked
+    # the relief's strength: one chain from the hands' mix (HAND_RELIEF, 2026-11-10), its own numbers unlinked - no loop
+    strength_in = nodes[maps.NODE + "relief_off_stretched"].inputs[0]
+    assert strength_in.links[0].from_node == nodes[maps.NODE + "relief_hands"]
+    assert not next(i for i in nodes[maps.NODE + "relief_hands"].inputs if i.identifier == "A_Float").is_linked
 
 
 def test_the_closed_lids_soft_colour_is_the_head_tile_averaged_once(tmp_path):

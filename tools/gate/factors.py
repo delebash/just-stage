@@ -71,11 +71,13 @@ def _depth(built: dict, key: str) -> None:
 
 
 def relief0(built: dict) -> None:
+    """The scans' relief off: the normal map's strength unlinked and 0 (it is fed by the margins' keep and, since
+    2026-11-10, the hands' own strength - a constant set behind a link would do nothing)."""
     for nt in _skin_trees(built):
-        cut = nt.nodes.get(_maps().NODE + "relief_off_stretched")  # the strength's own number since 2026-11-09
-        if cut is not None:
-            cut.inputs[0].default_value = 0.0
-        nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"].default_value = 0.0
+        strength = nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"]
+        for link in list(strength.links):
+            nt.links.remove(link)
+        strength.default_value = 0.0
 
 
 def pores0(built: dict) -> None:
@@ -148,30 +150,6 @@ def _rewrite_colour(built: dict, change) -> None:
         nt.links.new(node.outputs["Color"], mix.inputs["A"])
         nt.links.new(tex.outputs["Color"], mix.inputs["B"])
         print("COLOUR REWRITTEN on the head tile", flush=True)
-
-
-def handrelief(built: dict, k: float) -> None:
-    """The scans' relief (the skin's normal map) on the hands x `k` by their share (`maps.HANDS_ATTR`, the skeleton's
-    hand and finger weights - 0 on the arms, feet and torso), 1 elsewhere: round 10 (2026-11-10) at HD Aaron's tone -
-    with the relief off (`relief0`) the back of the hand's bands came inside his spread (pore 0.88, fold 0.97, form
-    1.16 of his; 0.91 / 1.38 / 2.16 with it) but read plain beside his soft knuckle wrinkles. Round 15."""
-    maps = _maps()
-    n = 0
-    for nt in _skin_trees(built):
-        cut = nt.nodes.get(maps.NODE + "relief_off_stretched")  # the strength's own number (1) x the margins' keep
-        share = nt.nodes.get(maps.NODE + "hands_share")
-        if cut is None or share is None or cut.inputs[0].is_linked:
-            continue
-        mix = nt.nodes.new("ShaderNodeMix")
-        mix.data_type = "FLOAT"
-        nt.links.new(share.outputs["Fac"], mix.inputs["Factor"])
-        next(i for i in mix.inputs if i.identifier == "A_Float").default_value = cut.inputs[0].default_value
-        next(i for i in mix.inputs if i.identifier == "B_Float").default_value = k
-        nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Float"), cut.inputs[0])
-        n += 1
-    if not n:
-        raise RuntimeError("no skin with the relief's strength and the hands' share")
-    print("HAND RELIEF x", k, "on", n, "skins", flush=True)
 
 
 def colourpores0(built: dict) -> None:
@@ -313,6 +291,87 @@ def nohair(built: dict) -> None:
     _hide_part(built, "scalp")
 
 
+def nobeard(built: dict) -> None:
+    """The stubble hidden (round 17, 2026-11-10): is the dark line along the jaw's silhouette the stubble's strands seen
+    edge-on, or the skin's own shading there?"""
+    _hide_part(built, "beard")
+
+
+def hidepart(built: dict, part: str) -> None:
+    """Any of the character's parts hidden from the render (round 21, 2026-11-10: the eyeballs, for the film's orange
+    lid margin); raises when nothing carried that part."""
+    n = sum(1 for o in bpy.data.objects if o.juststage.part == part)
+    if not n:
+        raise RuntimeError(f"no part {part!r} to hide")
+    _hide_part(built, part)
+
+
+def marginsss(built: dict, k: float) -> None:
+    """The skin's scattering scale x `k` over the lid margin (the margin layer's `js_margin` share), 1 elsewhere,
+    on every Principled BSDF of the skin (the film's and the live view's) - round 22, 2026-11-10: the film's orange glow
+    round a dark skin's lid margins is Cycles' scattering through the thin margin (round 21)."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        mask = nt.nodes.get(maps.NODE + "margin_attr")
+        if mask is None:
+            continue
+        for bsdf in [x for x in nt.nodes if x.type == "BSDF_PRINCIPLED"]:
+            socket = bsdf.inputs["Subsurface Scale"]
+            mix = nt.nodes.new("ShaderNodeMix")
+            mix.data_type = "FLOAT"
+            nt.links.new(mask.outputs["Fac"], mix.inputs["Factor"])
+            a = next(i for i in mix.inputs if i.identifier == "A_Float")
+            b = next(i for i in mix.inputs if i.identifier == "B_Float")
+            if socket.is_linked:
+                nt.links.new(socket.links[0].from_socket, a)
+                times = nt.nodes.new("ShaderNodeMath")
+                times.operation = "MULTIPLY"
+                nt.links.new(socket.links[0].from_socket, times.inputs[0])
+                times.inputs[1].default_value = k
+                nt.links.new(times.outputs[0], b)
+            else:
+                a.default_value, b.default_value = socket.default_value, socket.default_value * k
+            nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Float"), socket)
+            n += 1
+    if not n:
+        raise RuntimeError("no skin BSDF with the lid margin's share")
+    print("MARGIN SSS x", k, "on", n, "BSDFs", flush=True)
+
+
+def handrough(built: dict, k: float) -> None:
+    """The skin's roughness x `k` on the hands by their share (`maps.HANDS_ATTR`), 1 elsewhere, on every Principled
+    BSDF of the skin (the film's and the live view's) - round 24, 2026-11-10: his back of the hand reads wet and
+    glossy, ours matte, at bands inside his spread."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        share = nt.nodes.get(maps.NODE + "hands_share")
+        if share is None:
+            continue
+        for bsdf in [x for x in nt.nodes if x.type == "BSDF_PRINCIPLED"]:
+            socket = bsdf.inputs["Roughness"]
+            mix = nt.nodes.new("ShaderNodeMix")
+            mix.data_type = "FLOAT"
+            nt.links.new(share.outputs["Fac"], mix.inputs["Factor"])
+            a = next(i for i in mix.inputs if i.identifier == "A_Float")
+            b = next(i for i in mix.inputs if i.identifier == "B_Float")
+            if socket.is_linked:
+                times = nt.nodes.new("ShaderNodeMath")
+                times.operation = "MULTIPLY"
+                nt.links.new(socket.links[0].from_socket, a)
+                nt.links.new(socket.links[0].from_socket, times.inputs[0])
+                times.inputs[1].default_value = k
+                nt.links.new(times.outputs[0], b)
+            else:
+                a.default_value, b.default_value = socket.default_value, socket.default_value * k
+            nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Float"), socket)
+            n += 1
+    if not n:
+        raise RuntimeError("no skin BSDF with the hands' share")
+    print("HAND ROUGH x", k, "on", n, "BSDFs", flush=True)
+
+
 def tear0(built: dict) -> None:
     """The tearline (ICT's ring, the wet film along the lid margins) hidden."""
     _hide_part(built, "eyeEdge")
@@ -324,7 +383,7 @@ def occl0(built: dict) -> None:
 
 
 FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart, margindry,
-                                   margintint0, tear0, occl0, nohair)}
+                                   margintint0, tear0, occl0, nohair, nobeard)}
 
 
 #: the shine trials: a key -> the Principled input it scales on both of the skin's BSDFs (the film's and the live view's)
@@ -394,10 +453,10 @@ def scaled(spec: str):
                             node.outputs[0].default_value /= float(factor)
                         elif node.name.startswith(_maps().NODE + "pore_scale_"):
                             node.inputs[1].default_value /= float(factor)
-                elif key == "relief":  # the strength's own number (relief_off_stretched's) since 2026-11-09
-                    cut = nt.nodes.get(_maps().NODE + "relief_off_stretched")
-                    target = cut.inputs[0] if cut is not None else nt.nodes[_maps().NODE + "normal_map"].inputs["Strength"]
-                    target.default_value *= float(factor)
+                elif key == "relief":  # the strength's own numbers: the hands' mix (HAND_RELIEF, 1 elsewhere)
+                    mix = nt.nodes[_maps().NODE + "relief_hands"]
+                    for socket in [i for i in mix.inputs if i.identifier in ("A_Float", "B_Float")]:
+                        socket.default_value *= float(factor)
                 elif key in SHINE:
                     _scale_input(nt, SHINE[key], float(factor))
                 else:
@@ -3864,12 +3923,14 @@ def stubblepatch(built: dict, patchy: float, density: float) -> None:
 
 
 def stubbletrial(built: dict, density: float, grey: float, length: float, thin: float = 1.0, curl: float | None = None,
-                 grey_melanin: float | None = None) -> None:
+                 grey_melanin: float | None = None, rise: float | None = None) -> None:
     """Our stubble regrown (`stubble.make`) at a density (hairs a cm2, 160 shipped), grey share (0.25) and length (mm,
     2.8) - step 1's fault: a dense dark mat over the lower face against his short, sparse, greying stubble - and its
     hairs' root radius x `thin` (`stubble.RADIUS`; 2026-11-10's "his hairs a little finer"). A new groom: --alone."""
     stubble = importlib.import_module("bl_ext.system.juststage.modules.hair.stubble")
-    radius, turn, silver = stubble.RADIUS, stubble.CURL, stubble.GREY_MELANIN
+    radius, turn, silver, lift = stubble.RADIUS, stubble.CURL, stubble.GREY_MELANIN, stubble.RISE
+    if rise is not None:  # degrees off the skin at the root (`stubble.RISE`, 22) - 2026-11-10 round 20: the jaw's line
+        stubble.RISE = rise
     stubble.RADIUS = radius * thin
     if grey_melanin is not None and grey_melanin >= 0:  # the greys' melanin (`stubble.GREY_MELANIN`); -1: the product's
         stubble.GREY_MELANIN = grey_melanin
@@ -3878,11 +3939,11 @@ def stubbletrial(built: dict, density: float, grey: float, length: float, thin: 
     try:
         stubble.make(built["body"], density=density, length_mm=length, grey=grey)  # the share given, not the age's
     finally:
-        stubble.RADIUS, stubble.CURL, stubble.GREY_MELANIN = radius, turn, silver
+        stubble.RADIUS, stubble.CURL, stubble.GREY_MELANIN, stubble.RISE = radius, turn, silver, lift
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("STUBBLE", density, "a cm2, grey", grey, "length", length, "radius x", thin, "curl", curl, "grey melanin",
-          grey_melanin, flush=True)
+          grey_melanin, "rise", rise, flush=True)
 
 
 #: the face's shape by our own sliders (2026-11-08, step 1's fault: a broad, flat, puffy face with small squinting
@@ -5078,8 +5139,6 @@ def factor(name: str):
     if name.startswith("nailfold*") and "+" not in name:  # nailfold*1.2*0.10*0.14[*0.06] (height, cut, side, edge)
         bits = [float(x) for x in name.split("*")[1:5]]
         return lambda built: nailfold(built, *bits)
-    if name.startswith("handrelief*") and "+" not in name:  # handrelief*0.5 (the scans' relief on the hands x k)
-        return lambda built: handrelief(built, float(name.split("*", 1)[1]))
     if name.startswith("browhuang*") and "+" not in name:  # browhuang*0.3 (the film: Huang's lobes x k)
         return lambda built: browhuang(built, float(name.split("*", 1)[1]))
     if name.startswith("mhbrow*") and "+" not in name:  # mhbrow*012 (MakeHuman's CC0 brow card set)
@@ -5221,8 +5280,14 @@ def factor(name: str):
         return lambda built: margintint(built, *(float(x) for x in name.split("*")[1:4]))
     if name.startswith("eyewhite*"):  # eyewhite*0.85
         return lambda built: eyewhite(built, float(name.split("*")[1]))
+    if name.startswith("marginsss*") and "+" not in name:  # marginsss*0.3 (scattering x k on the lid margin)
+        return lambda built: marginsss(built, float(name.split("*", 1)[1]))
+    if name.startswith("handrough*") and "+" not in name:  # handrough*0.8 (the hands' roughness x k)
+        return lambda built: handrough(built, float(name.split("*", 1)[1]))
+    if name.startswith("hidepart*") and "+" not in name:  # hidepart*eyeLeft (a part hidden from the render)
+        return lambda built: hidepart(built, name.split("*", 1)[1])
     if name.startswith("stubbletrial*"):  # stubbletrial*90*0.4*2.8[*0.75] (a cm2, grey share, mm, radius x) - --alone
-        return lambda built: stubbletrial(built, *(float(x) for x in name.split("*")[1:7]))
+        return lambda built: stubbletrial(built, *(float(x) for x in name.split("*")[1:8]))
     if name.startswith("scalpstyle"):  # scalpstyle*sides (SCALP_PRESETS)
         return lambda built: scalpstyle(built, name.split("*", 1)[1])
     if name.startswith("fieldcut"):  # fieldcut*field_aaron[*3000] (the field's stem, the guides)

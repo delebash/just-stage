@@ -41,7 +41,9 @@ DENSITY = 220.0  # hairs a cm2
 #: darker 0.173 against his 0.061); his finer, denser, flowing one way, reading as a texture
 LENGTH = 2.8  # mm
 RADIUS, TIP = 0.00003, 0.7  # m at the root; a cut hair's blunt end
-RISE = 22.0  # degrees off the skin at the root
+#: 2026-11-10 rounds 17 / 20 (mine): at 22 deg the hairs lay nearly flat on the jaw's underside and lined up edge-on
+#: at the silhouette - a dark line from ear to ear (gone with the stubble hidden; `.dev/gate/parts/2026-11-10round20`)
+RISE = 40  # degrees off the skin at the root
 #: 2026-11-10 (`.dev/gate/parts/2026-11-10stubble3`): curl 45 turns the straight needles into arcs like HD Aaron's (12 straight, 70 woolly)
 CURL = 45.0  # degrees the hair turns along its length (each its own way)
 #: the greys' melanin 0.04 (0.12 read beige beside HD Aaron's silver-white): 2026-11-10 (`.dev/gate/parts/2026-11-10stubble3`): curl 45 turns the straight needles into arcs like HD Aaron's (12 straight, 70 woolly); run 7's

@@ -304,10 +304,87 @@ def fetch(name: str, spec: dict, check_only: bool) -> int:
     return bad
 
 
+#: Packs whose download needs a signed-in account (Sketchfab's download, and its API, want the user's own token - a
+#: credential this tool never holds): the user downloads each zip from its page once; this finds it under
+#: .dev/downloads/, checks it against its pinned SHA-256 and unpacks the files the product reads. CC BY 4.0 - credited
+#: in ATTRIBUTION.md and each library style's provenance (Q-HAIR-7, 2026-11-10).
+MANUAL_PACKS = {
+    "msa_short_fuzzy": {
+        "page": "https://sketchfab.com/3d-models/none-b95196254b5e4cd19597eefbda48fffd",
+        "file": "black-short-hairs-fuzzy-v2.zip",
+        "sha256": "cc8faaa4204ac645e0b30114dab7c578a296e87359e4abaa1018dd8ce99a0b3e",
+        "inner": "source/02 Short Hairs Black Fuzzy.zip",
+        "dest": FETCHED / "msa_hair" / "short-fuzzy",
+        "files": {
+            "02 Short Hairs Black Fuzzy/Short Hairs Black Fuzzy.obj":
+                "d6c42aced5f82703a516eaf3f68fce2a085d8f4575e7c3daedfc7f22de062908",
+            "02 Short Hairs Black Fuzzy/Short Hairs Black Fuzzy/GoZMesh_Import_Material_diffuse.jpg":
+                "6ca6764c5b77c62ff3b795922f00ecb46ad9753a8aebdb1f3b13950fa8ca7be7",
+            "02 Short Hairs Black Fuzzy/Short Hairs Black Fuzzy/GoZMesh_Import_Material_opacity.jpg":
+                "84dffb620e2e4f17de6238832be6b21212aef1644451808972dbddfb27a6f31d",
+            "02 Short Hairs Black Fuzzy/Short Hairs Black Fuzzy/Sclup_diffuse.png":
+                "b51e909caf2620f5eebac437770ff19ff46b442b870bab9166993f4eb5b4801b",
+            "02 Short Hairs Black Fuzzy/Short Hairs Black Fuzzy/Sclup_opacity.png":
+                "e07d7b4cb2edc786f99fb03758b024e0d3b68c1b7123572a24996e1fe0339915",
+        },
+    },
+    "msa_long_wavy": {
+        "page": "https://sketchfab.com/3d-models/none-d1e6d46366be4b5cb19a26656bdfbb5c",
+        "file": "white-long-wavy-hairs-016.zip",
+        "sha256": "d8ec9240af68fdbe0120bb0651345888cd496e456419b0760c9af456e946810a",
+        "inner": "source/016 White Long Wavy Hairs.zip",
+        "dest": FETCHED / "msa_hair" / "long-wavy",
+        "files": {
+            "016 White Long Wavy Hairs/White Long Wavy Hairs.obj":
+                "ff2b822852fa94fd9d9ce8925c3eca902b4db6ea4fed61b205eba96d6b8359c4",
+            "016 White Long Wavy Hairs/White Long Wavy Hairs/GoZMesh_Import_Material_diffuse.jpg":
+                "e39de61276e6b41bb1e74f6e0815b559576d976b0bee4e235ab713c4703573cf",
+            "016 White Long Wavy Hairs/White Long Wavy Hairs/GoZMesh_Import_Material_opacity.jpg":
+                "b5a97f8e0b05effa1c4dc1be77eb36d22a2a29f09d4b54f1b5345b7ac8c1b17a",
+            "016 White Long Wavy Hairs/White Long Wavy Hairs/Sclup_diffuse.png":
+                "32adc131ab446ef4bce9ff6952ef0f20bc4caa2386bfe095f6ada5112b0c47c2",
+            "016 White Long Wavy Hairs/White Long Wavy Hairs/Sclup_opacity.png":
+                "e07d7b4cb2edc786f99fb03758b024e0d3b68c1b7123572a24996e1fe0339915",
+        },
+    },
+}
+
+
+def fetch_manual(name: str, spec: dict, check_only: bool) -> int:
+    dest: Path = spec["dest"]
+    wanted = {m: h for m, h in spec["files"].items() if not _has(dest / m, h)}
+    if not wanted:
+        print(f"{name}: present")
+        return 0
+    if check_only:
+        for member in wanted:
+            print(f"missing or changed: {dest / member}")
+        return len(wanted)
+    found = sorted((ROOT / ".dev" / "downloads").rglob(spec["file"]))
+    if not found:
+        print(f"{name}: download {spec['file']} from {spec['page']} (a signed-in download) into .dev/downloads/")
+        return 1
+    data = found[0].read_bytes()
+    if hashlib.sha256(data).hexdigest() != spec["sha256"]:
+        sys.exit(f"{name}: {found[0]} does not match its pinned SHA-256 (the pack changed upstream)")
+    with zipfile.ZipFile(io.BytesIO(data)) as outer:
+        inner = outer.read(spec["inner"])
+    with zipfile.ZipFile(io.BytesIO(inner)) as z:
+        for member, sha in wanted.items():
+            body = z.read(member)
+            if hashlib.sha256(body).hexdigest() != sha:
+                sys.exit(f"{name}: {member} does not match its pinned SHA-256")
+            (dest / member).parent.mkdir(parents=True, exist_ok=True)
+            (dest / member).write_bytes(body)
+    print(f"{name}: unpacked {len(wanted)} file(s) from {found[0].name}")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     check_only = "--check" in argv
     bad = sum(fetch(n, s, check_only) for n, s in SOURCES.items())
     bad += sum(fetch_pack(n, s, check_only) for n, s in PACKS.items())
+    bad += sum(fetch_manual(n, s, check_only) for n, s in MANUAL_PACKS.items())
     bad += sum(fetch_tool_input(n, s, check_only) for n, s in {**TABLES, **TOOL_INPUTS}.items())
     return 1 if bad else 0
 

@@ -99,6 +99,11 @@ ARM_TILE_INDEX, ARM_MICRO = 2, 2.0
 #: `.dev/gate/parts/2026-11-10fingerskin*`, `handtone2`, `handtone3`)
 HANDS_ATTR = "js_hands"
 HAND_PORES, HAND_MICRO = 0.5, 1.0
+#: the scans' relief (the skin's normal map) on the hands, by the same share: at full strength the back of the hand
+#: read drier and older than HD Aaron's, its fold and form bands 1.38 / 2.16 of his at his tone; with none 0.97 / 1.16
+#: (inside his spread) but plain beside his soft knuckle wrinkles (2026-11-10 rounds 10 and 15,
+#: `.dev/gate/parts/2026-11-10round10`)
+HAND_RELIEF = 0.2
 #: the skeleton's bones whose weights make the hands' share (UE5's names, modules/rig: hand, metacarpals, fingers)
 HAND_BONES = ("hand_", "thumb_", "index_", "middle_", "ring_", "pinky_")
 #: where the plate starts: along > cuticle + curve * across^2 - the curve 0.35 drew a deep U over the whole fingertip,
@@ -142,7 +147,10 @@ NAIL_RAISE = 0.0006  # m: the plate over the skin beside it
 #: the skin's fold round the plate (the proximal and side folds; the geometric bed it replaces drew the plate's outline
 #: on the tile's island): the plate drawn this much wider past its cuticle and sides, its band raised NAIL_FOLD x the
 #: plate's raise (`factors nailobj`, 2026-11-10)
-NAIL_FOLD, NAIL_FOLD_REACH = 1.2, (0.10, 0.14)
+#: 2026-11-10 round 14 (mine): 1.2, reach (0.10, 0.14), edges 0.06 drew a step beside HD Aaron's soft rolled
+#: fold (`.dev/gate/parts/2026-11-10round14`)
+NAIL_FOLD, NAIL_FOLD_REACH = 1.2, (0.18, 0.22)
+NAIL_FOLD_SOFT = 0.12  # the fold's edges' width (the plate's own stay NAIL_EDGE_SOFT)
 #: the mouth's lining (the inner lips and the mouth's skin; `tools/make_mouth_mask.py`): wet mucosa where the mask is -
 #: no scan or painting covers it, so an open mouth showed a pale rim of skin inside the lips (the gate, 2026-11-05)
 MOUTH_TOOL = "python tools/dev.py blender -b --python tools/make_mouth_mask.py"
@@ -516,7 +524,7 @@ def _nail_layer(nt, bsdf) -> None:
         nt.links.new(_mix(nt, f"nail_{key}", "FLOAT", plate, own, value), bsdf.inputs[name])
     # the skin's fold beside the plate: the plate drawn wider past its cuticle and sides (the same free edge), its band
     # raised over the plate's edge
-    soft = 1.0 / NAIL_EDGE_SOFT
+    soft = 1.0 / NAIL_FOLD_SOFT
     fold_cut = _math(nt, "nail_fold_cut", "SUBTRACT", cut, NAIL_FOLD_REACH[0])
     start_w = _clamp01(nt, "nail_fold_start", _math(nt, "nail_fold_past", "SUBTRACT", along, fold_cut), soft)
     sides_w = _clamp01(nt, "nail_fold_sides", _math(nt, "nail_fold_room", "SUBTRACT",
@@ -766,8 +774,11 @@ def _relief_off_stretched(nt, uv, closed=None) -> None:
         depth = nodes[NODE + f"{key}_depth"]
         factor = depth.inputs[0].links[0].from_socket
         nt.links.new(_math(nt, f"{key}_off_stretched", "MULTIPLY", factor, keep), depth.inputs[0])
-    # the scans' relief at full strength (1) times the keep - a number each build, so a rebuild can't loop it into itself
-    nt.links.new(_math(nt, "relief_off_stretched", "MULTIPLY", 1.0, keep), nodes[NODE + "normal_map"].inputs["Strength"])
+    # the scans' relief at full strength (1; HAND_RELIEF on the hands, by their share) times the keep - numbers each
+    # build, so a rebuild can't loop it into itself
+    strength = _mix(nt, "relief_hands", "FLOAT", nodes[NODE + "hands_share"].outputs["Fac"], 1.0, HAND_RELIEF)
+    cut = _math(nt, "relief_off_stretched", "MULTIPLY", strength, keep)
+    nt.links.new(cut, nodes[NODE + "normal_map"].inputs["Strength"])
 
 
 def _margin_layer(nt, bsdf) -> None:

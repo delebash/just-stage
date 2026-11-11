@@ -178,9 +178,9 @@ def build_ours(scene, skin: str = "", brows: str = "own", character: str = "", s
         importlib.import_module("bl_ext.system.juststage.modules.hair.scalp").make(
             next(o for o in scene.objects if o.juststage.character_id == shown.character and not o.juststage.part_of),
             style)
-    else:
-        api.run("juststage.library.add", path=str(root / "Hair" / "Scalp" / f"{OURS['scalp']}.blend"),
-                character=shown.character)
+    else:  # "library": the gate's own style; "library:<name>" another of the library's (Q-HAIR-7's card hair)
+        name = scalp.partition(":")[2] or OURS["scalp"]
+        api.run("juststage.library.add", path=str(root / "Hair" / "Scalp" / f"{name}.blend"), character=shown.character)
     if not character:
         for o in list(scene.objects):
             if o.juststage.part_of == shown.character and o.juststage.part == "scalp":
@@ -690,7 +690,7 @@ if __name__ == "__main__":
                    help="own: a library character's saved brows (the gate's man: JustStage's, greying); generated: grown "
                    "again")
     p.add_argument("--character", default="", help="another library character for ours")
-    p.add_argument("--scalp", default="library", help='library, generated, or "generated:<style>" (scalp.STYLES)')
+    p.add_argument("--scalp", default="library", help='library, "library:<name>", generated, "generated:<style>"')
     p.add_argument("--lights", choices=("stage", "world"), default="stage", help="world: the image light alone")
     p.add_argument("--clay", action="store_true", help="every skin one grey, every hair hidden: the form alone")
     p.add_argument("--passes", default="", help="view-layer passes into an EXR beside each PNG (glossy_direct,...)")

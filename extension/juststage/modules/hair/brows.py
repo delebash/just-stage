@@ -57,6 +57,11 @@ GREY_SHARE, GREY_MELANIN = 0.0, 0.05
 #: grey-black bar at the eye view and grey smoke at the face view - black hairs thinner than a pixel averaged with the
 #: skin (2026-11-09, `.dev/gate/parts/2026-11-09browcol`; on him brown is no worse)
 MELANIN, REDNESS, MELANIN_SPREAD = 0.8, 0.3, 0.05
+#: the brows' sheen in the live view (its lobes' light - `groom.hair_material`; the film's BSDF untouched): at 1.0 the
+#: live view's brows read a grey veil the film (the oracle) doesn't show - on a dark skin and, at the face view, on a
+#: light one; the value is the one whose brows match the film's in mean Lab (2026-11-10 rounds 9 / 9b,
+#: `.dev/gate/parts/2026-11-10round9`, `round9cycles`)
+SHEEN = 0.3
 #: the brow's soft body under the coarse hairs (CC5's brows lay a soft base layer under their hair cards; MetaHuman's
 #: strand brows hold fine short hairs among the coarse ones): FINE hairs a brow, at FINE_LENGTH x the coarse ones'
 #: length, FINE_RADIUS thick, lighter - with the painted brows gone from the skins (2026-11-06) the 800 coarse hairs
@@ -253,7 +258,7 @@ def make(character: bpy.types.Object, seed: int = 11, grey_share: float = GREY_S
     obj.modifiers.new("Surface Deform", "NODES").node_group = lashes._deform_group()
     groom.remove_part(character, "eyebrows")
     groom._attach(character, [obj], "eyebrows")
-    curves.materials.append(groom.hair_material(f"JustStage Hair ({obj.name})"))
+    curves.materials.append(groom.hair_material(f"JustStage Hair ({obj.name})", sheen=SHEEN))
     to_local = np.array(character.matrix_world.inverted())
     wanted = np.array(found) @ to_local[:3, :3].T + to_local[:3, 3]
     miss = lashes.place(obj, rest[:, 0], wanted)

@@ -5,6 +5,7 @@
 its head and along it by its tail, attached to the body like every groom."""
 
 import importlib
+import math
 
 import bpy
 import numpy as np
@@ -126,6 +127,26 @@ def test_brows_are_dark_brown_not_black(man):
     melanin = np.array(melanin)
     assert 0.7 < np.median(melanin) < 0.88
     assert brows.REDNESS >= 0.25 and brows.FINE_MELANIN < 0.88
+
+
+def test_the_brows_live_view_takes_its_own_sheen_and_the_film_is_untouched(man):
+    """The live view's brows read a grey veil the film doesn't (2026-11-10, rounds 9 / 9b): their lobes' light takes
+    `brows.SHEEN`, calibrated to the film; the film's Principled Hair stays Chiang's at its defaults; every other groom
+    (a default hair material) keeps the full sheen. (A plain New human grows no brows - `dressed` does: grown here.)"""
+    _made, body = man
+    hs = importlib.import_module("bl_ext.system.juststage.modules.hair.hair_shading")
+    groom = importlib.import_module("bl_ext.system.juststage.modules.hair.groom")
+    nodes = brows.make(body).data.materials[0].node_tree.nodes
+    hair = next(n for n in nodes if n.bl_idname == "ShaderNodeBsdfHairPrincipled")
+    assert brows.SHEEN < 1.0 and hair.model == "CHIANG"
+    scales = [n.inputs[1].default_value for n in nodes if n.bl_idname == "ShaderNodeMath" and n.operation == "MULTIPLY"]
+    assert any(v == pytest.approx(math.pi * hs.GLOSSY * brows.SHEEN) for v in scales)
+    other = groom.hair_material("Sheen test").node_tree.nodes
+    assert next(n for n in other if n.bl_idname == "ShaderNodeBsdfHairPrincipled").model == "CHIANG"
+    other_scales = [n.inputs[1].default_value for n in other
+                    if n.bl_idname == "ShaderNodeMath" and n.operation == "MULTIPLY"]
+    assert any(v == pytest.approx(math.pi * hs.GLOSSY) for v in other_scales)
+    assert not any(v == pytest.approx(math.pi * hs.GLOSSY * brows.SHEEN) for v in other_scales)
 
 
 @pytest.mark.parametrize("gender", [1.0, 0.0])

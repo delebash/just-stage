@@ -37,8 +37,11 @@ import numpy as np
 #: 2026-11-10: rise 30 / curl 20, the longest 6.5 mm, no clumping - HD Aaron's reach ~6-7 mm forward and ~4 mm up (his
 #: blend); rise 10 / curl 80 kinked (the guard); the iris clearest of the guard-passing shapes
 #: (`.dev/gate/parts/2026-11-10lashes4`)
-UPPER = {"count": 180, "long": 6.5, "short": 3.53, "rise": 30.0, "curl": 20.0, "band": (0.2, 1.0),
-         "radius": 0.00008, "melanin": 1.0}  # fmt: skip
+#: 2026-11-10 round 13 (mine): the design's approved 180 / 0.08 mm / melanin 1.0 (2026-11-05) read as thick
+#: black spikes with gaps beside HD Aaron's fine brownish fringe at full size (`.dev/gate/parts/2026-11-10round13`)
+#: -> 260 / 0.05 mm / 0.85 (a real lash ~0.1 mm across)
+UPPER = {"count": 260, "long": 6.5, "short": 3.53, "rise": 30.0, "curl": 20.0, "band": (0.2, 1.0),
+         "radius": 0.00005, "melanin": 0.85}  # fmt: skip
 #: lower lashes are finer and a little lighter - at melanin 0.6 they read golden-orange on dark skin beside the near-black
 #: upper ones (2026-11-09, `.dev/gate/parts/2026-11-09lashlower`; HD Aaron's dark brown): 0.8. Their root radius 0.04 mm
 #: (0.08 mm across, a real lower lash's): at 0.025 they hardly showed beside his fan; 110 an eye showed more, but past
