@@ -150,6 +150,30 @@ def _rewrite_colour(built: dict, change) -> None:
         print("COLOUR REWRITTEN on the head tile", flush=True)
 
 
+def handrelief(built: dict, k: float) -> None:
+    """The scans' relief (the skin's normal map) on the hands x `k` by their share (`maps.HANDS_ATTR`, the skeleton's
+    hand and finger weights - 0 on the arms, feet and torso), 1 elsewhere: round 10 (2026-11-10) at HD Aaron's tone -
+    with the relief off (`relief0`) the back of the hand's bands came inside his spread (pore 0.88, fold 0.97, form
+    1.16 of his; 0.91 / 1.38 / 2.16 with it) but read plain beside his soft knuckle wrinkles. Round 15."""
+    maps = _maps()
+    n = 0
+    for nt in _skin_trees(built):
+        cut = nt.nodes.get(maps.NODE + "relief_off_stretched")  # the strength's own number (1) x the margins' keep
+        share = nt.nodes.get(maps.NODE + "hands_share")
+        if cut is None or share is None or cut.inputs[0].is_linked:
+            continue
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "FLOAT"
+        nt.links.new(share.outputs["Fac"], mix.inputs["Factor"])
+        next(i for i in mix.inputs if i.identifier == "A_Float").default_value = cut.inputs[0].default_value
+        next(i for i in mix.inputs if i.identifier == "B_Float").default_value = k
+        nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Float"), cut.inputs[0])
+        n += 1
+    if not n:
+        raise RuntimeError("no skin with the relief's strength and the hands' share")
+    print("HAND RELIEF x", k, "on", n, "skins", flush=True)
+
+
 def colourpores0(built: dict) -> None:
     def blur(rgb, mm_per_px):  # numpy only: Blender's Python has no scipy
         sigma = PORE_BAND_MM / mm_per_px / 2.0
@@ -630,10 +654,10 @@ def lipsoft(built: dict, px: float) -> None:
     print("LIPS SOFT", px, "texels on", len(nodes), "nodes, mask", w, "x", h, flush=True)
 
 
-def browthick(built: dict, k: float, melanin: float | None = None) -> None:
-    """Our strand brows' radius x `k` (and the coarse hairs' melanin, given): his brows read as crisp dark hairs, ours
-    a hazy grey bar - count, fine hairs, grey share and melanin were tried (`browtrial`, 11-08/09); the root radius was
-    tuned too (`brows.RADIUS` 0.035 mm: 0.09 mm across read as a brush) - this scales the whole strand (2026-11-10)."""
+def browthick(built: dict, k: float) -> None:
+    """Our strand brows' radius x `k`: his brows read as crisp dark hairs, ours a hazy grey bar - count, fine hairs,
+    grey share and melanin were tried (`browtrial`, 11-08/09); the root radius was tuned too (`brows.RADIUS` 0.035 mm:
+    0.09 mm across read as a brush) - this scales the whole strand (2026-11-10). The strands' colour: `browmelanin`."""
     n = 0
     for o in bpy.data.objects:
         if o.juststage.part == "eyebrows" and o.type == "CURVES":
@@ -643,17 +667,99 @@ def browthick(built: dict, k: float, melanin: float | None = None) -> None:
             vals = np.empty(len(radius.data), np.float32)
             radius.data.foreach_get("value", vals)
             radius.data.foreach_set("value", vals * k)
-            if melanin is not None:
-                for mat in o.data.materials:
-                    for node in (mat.node_tree.nodes if mat and mat.node_tree else []):
-                        sock = node.inputs.get("Melanin") if hasattr(node, "inputs") else None
-                        if sock is not None and not sock.is_linked:
-                            sock.default_value = melanin
             o.data.update_tag()
             n += 1
             print("BROW THICK x", k, "radius p50 before", float(np.median(vals)) * 1000, "mm", flush=True)
     if not n:
         raise RuntimeError("no brow curves with a radius")
+
+
+def _brow_curves():
+    """The brows' strand objects (groom._attach tags them `eyebrows`)."""
+    return [o for o in bpy.data.objects if o.juststage.part == "eyebrows" and o.type == "CURVES"]
+
+
+def browmelanin(built: dict, coarse: float, fine: float | None = None) -> None:
+    """The brows' strand colour: the `melanin` curve attribute that `groom.hair_material` and its live-view stand-in
+    read, each class's mean moved to `coarse` / `fine` (default `coarse`) with its spread kept - the fine under-hairs
+    told apart by their root radius (`brows.FINE_RADIUS` against `RADIUS`). Round 8's grey haze on the Heavy woman:
+    is it the strands' colour - lighter than her skin? (2026-11-10, round 9)."""
+    fine = coarse if fine is None else fine
+    n = 0
+    for o in _brow_curves():
+        cv = o.data
+        mel, rad = cv.attributes.get("melanin"), cv.attributes.get("radius")
+        if mel is None or rad is None:
+            continue
+        r = np.empty(len(rad.data), np.float32)
+        rad.data.foreach_get("value", r)
+        roots = r[np.array([c.first_point_index for c in cv.curves])]
+        is_fine = roots < 0.8 * roots.max()  # FINE_RADIUS is 0.63 of RADIUS; the radius has no per-hair spread
+        m = np.empty(len(mel.data), np.float32)
+        mel.data.foreach_get("value", m)
+        before = (float(m[~is_fine].mean()), float(m[is_fine].mean()) if is_fine.any() else None)
+        m[~is_fine] += coarse - m[~is_fine].mean()
+        if is_fine.any():
+            m[is_fine] += fine - m[is_fine].mean()
+        mel.data.foreach_set("value", np.clip(m, 0.0, 1.0))
+        cv.update_tag()
+        n += 1
+        print("BROW MELANIN", o.name, int((~is_fine).sum()), "coarse", before[0], "->", coarse, "|",
+              int(is_fine.sum()), "fine", before[1], "->", fine, flush=True)
+    if not n:
+        raise RuntimeError("no brow curves with a melanin attribute")
+
+
+def browsheen(built: dict, k: float) -> None:
+    """The brows' glossy light x `k` - the hair model's three lobes (R the white highlight, TT and TRT through the
+    strand) into the live view's Light Accumulation node - on the brows' own material (copied first when it is shared):
+    is round 8's grey haze over a dark skin the strands' sheen? (2026-11-10, round 9)."""
+    n = 0
+    for o in _brow_curves():
+        for slot in o.material_slots:
+            mat = slot.material
+            if mat is None or mat.node_tree is None:
+                continue
+            if mat.users > 1:
+                mat = mat.copy()
+                slot.material = mat
+            nt = mat.node_tree
+            for acc in [x for x in nt.nodes if x.bl_idname == "ShaderNodeLightAccumulation"]:
+                sock = acc.inputs["Glossy Light"]
+                if not sock.is_linked:
+                    continue
+                scale = nt.nodes.new("ShaderNodeVectorMath")
+                scale.operation = "SCALE"
+                nt.links.new(sock.links[0].from_socket, scale.inputs[0])
+                scale.inputs["Scale"].default_value = k
+                nt.links.new(scale.outputs["Vector"], sock)
+                n += 1
+                print("BROW SHEEN x", k, "on", o.name, mat.name, flush=True)
+    if not n:
+        raise RuntimeError("no brow material with a linked glossy light")
+
+
+def browhuang(built: dict, k: float) -> None:
+    """The film's side of `browsheen`: the brows' Principled Hair BSDF switched to Huang's model with its Reflection,
+    Transmission and Secondary Reflection x `k` - Chiang's (the product's) has no lobe multipliers (RESEARCH 14.14).
+    Round 9b, Cycles: at k 1 the model switch alone; at 0.3 does the film match the live view's sheen x0.3?"""
+    n = 0
+    for o in _brow_curves():
+        for slot in o.material_slots:
+            mat = slot.material
+            if mat is None or mat.node_tree is None:
+                continue
+            if mat.users > 1:
+                mat = mat.copy()
+                slot.material = mat
+            for node in [x for x in mat.node_tree.nodes if x.bl_idname == "ShaderNodeBsdfHairPrincipled"]:
+                node.model = "HUANG"
+                for socket in ("Reflection", "Transmission", "Secondary Reflection"):
+                    node.inputs[socket].default_value = k
+                n += 1
+                print("BROW HUANG x", k, "on", o.name, mat.name, flush=True)
+    if not n:
+        raise RuntimeError("no brow Principled Hair BSDF")
 
 
 MH_BROWS = Path(__file__).resolve().parents[2] / ".dev" / "gate" / "mhbrows"  # MakeHuman's CC0 pack, unpacked
@@ -952,7 +1058,8 @@ def lashtrial(built: dict, radius_mm: float, count: float) -> None:
 
 
 def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, radius_mm: float | None = None,
-           tries: float | None = None, clump: float | None = None) -> None:
+           tries: float | None = None, clump: float | None = None, count: float | None = None,
+           melanin: float | None = None) -> None:
     """The upper lashes grown again with their rise (`lashes.UPPER["rise"]`, 0 deg) and curl (50 deg) set - 2026-11-10
     at full size: ours hang down over the iris as a dark curtain with a few spikes standing at the centre, his leave
     the margin and curl up and out. A new groom: --alone."""
@@ -968,6 +1075,10 @@ def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, 
         lashes.UPPER.update(long=long_mm, short=old["short"] * long_mm / old["long"])
     if radius_mm is not None:
         lashes.UPPER.update(radius=radius_mm / 1000.0)
+    if count is not None:  # the upper lashes a lid (`lashes.UPPER["count"]`, the design's 180)
+        lashes.UPPER.update(count=int(count))
+    if melanin is not None:  # their colour (`lashes.UPPER["melanin"]`, the design's 1.0), on the strands' attribute
+        lashes.UPPER.update(melanin=melanin)
     try:
         lashes.make(built["body"])
     finally:
@@ -977,7 +1088,7 @@ def lashup(built: dict, rise: float, curl: float, long_mm: float | None = None, 
     cid = built["body"].juststage.character_id
     built["objects"] = [o for o in bpy.context.scene.objects if cid in (o.juststage.character_id, o.juststage.part_of)]
     print("LASHES upper rise", rise, "curl", curl, "long", long_mm, "radius", radius_mm, "tries", tries, "clump", clump,
-          flush=True)
+          "count", count, "melanin", melanin, flush=True)
 
 
 def lashlower(built: dict, melanin: float) -> None:
@@ -1435,6 +1546,18 @@ def browup(built: dict, value: float) -> None:
     sliders.apply(built["body"], sliders.catalog()["eyebrows/eyebrows-trans-down-up"], value)
     bpy.context.view_layer.update()
     print("BROW UP", value, flush=True)
+
+
+def mhslider(built: dict, group: str, name: str, value: float) -> None:
+    """One of MakeHuman's detail sliders (`sliders.catalog()`'s "<group>/<name>", as the Body panel ships them) set to
+    `value` (-1..1 for a pair, 0..1 for one target) - 2026-11-10: two parts were filed "beyond the shape range" or
+    "shape" with a shipped slider never tried - the torso's pectoral mass (`torso` / `torso-muscle-pectoral-decr-incr`;
+    13:29 set only the global muscle) and the smile's fold, already in HD Aaron's neutral (`mouth` /
+    `mouth-laugh-lines-in-out`). A shape: --alone."""
+    sliders = importlib.import_module("bl_ext.system.juststage.modules.body.sliders")
+    sliders.apply(built["body"], sliders.catalog()[f"{group}/{name}"], value)
+    bpy.context.view_layer.update()
+    print("MH SLIDER", f"{group}/{name}", value, flush=True)
 
 
 def eye_slider(built: dict, key: str, value: float) -> None:
@@ -3933,6 +4056,26 @@ def nailplate(built: dict, side: float, length: float) -> None:
     print("NAIL PLATE side", side, "length", length, "on", n, "nodes", flush=True)
 
 
+def nailfold(built: dict, height: float, cut: float, side: float, edge: float | None = None) -> None:
+    """The skin's fold round the nail plate set on the shader's own nodes: its height (`maps.NAIL_FOLD`, 1.2 x the
+    plate's raise), its reach past the cuticle and the sides (`NAIL_FOLD_REACH`, 0.10 / 0.14) and, given, its edges'
+    width (`NAIL_EDGE_SOFT`, 0.06) - 2026-11-10 round 14: beside HD Aaron's soft rolled fold ours draws a step."""
+    maps = _maps()
+    n = 0
+    sets = [("nail_fold", height), ("nail_fold_cut", cut), ("nail_fold_side", side)]
+    if edge is not None:
+        sets += [("nail_fold_start", 1.0 / edge), ("nail_fold_sides", 1.0 / edge)]
+    for nt in _skin_trees(built):
+        for name, value in sets:
+            node = nt.nodes.get(maps.NODE + name)
+            if node is not None:
+                node.inputs[1].default_value = value
+                n += 1
+    if n < len(sets):
+        raise RuntimeError(f"nail fold nodes found {n}, wanted {len(sets)} a skin")
+    print("NAIL FOLD height", height, "cut", cut, "side", side, "edge", edge, "on", n, "nodes", flush=True)
+
+
 def build_(built: dict, muscle: float, weight: float) -> None:
     """The gate's man's build set by the app's own sliders (`juststage.body.set_slider` muscle, weight) - 2026-11-10: the
     torso's gap beside HD Aaron read as his athletic build, which is a slider setting; this judges our skin at a like
@@ -4921,13 +5064,24 @@ def factor(name: str):
         return lambda built: msahair(built, *bits)
     if name.startswith("lashlow*") and "+" not in name:  # lashlow*5.5*0.05[*count (0 shipped)*rise*curl] (the lower lashes) - --alone
         return lambda built: lashlow(built, *(float(x) for x in name.split("*")[1:6]))
-    if name.startswith("lashup*") and "+" not in name:  # lashup*15*80[*long mm*radius mm*tries*clump] - --alone
-        return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:7]))
+    if name.startswith("lashup*") and "+" not in name:  # lashup*15*80[*long mm*radius mm*tries*clump*count*melanin]
+        return lambda built: lashup(built, *(float(x) for x in name.split("*")[1:9]))
     if name.startswith("lipsoft*") and "+" not in name:  # lipsoft*4 (the lips mask blurred, texels)
         return lambda built: lipsoft(built, float(name.split("*", 1)[1]))
-    if name.startswith("browthick*") and "+" not in name:  # browthick*2 or browthick*2*0.95 (radius x k, the coarse hairs' melanin)
-        bits = [float(x) for x in name.split("*")[1:]]
-        return lambda built: browthick(built, bits[0], bits[1] if len(bits) > 1 else None)
+    if name.startswith("browthick*") and "+" not in name:  # browthick*2 (the brows' radius x k)
+        return lambda built: browthick(built, float(name.split("*", 1)[1]))
+    if name.startswith("browmelanin*") and "+" not in name:  # browmelanin*0.95[*0.9] (coarse, fine melanin)
+        bits = [float(x) for x in name.split("*")[1:3]]
+        return lambda built: browmelanin(built, *bits)
+    if name.startswith("browsheen*") and "+" not in name:  # browsheen*0.3 (the brows' glossy light x k)
+        return lambda built: browsheen(built, float(name.split("*", 1)[1]))
+    if name.startswith("nailfold*") and "+" not in name:  # nailfold*1.2*0.10*0.14[*0.06] (height, cut, side, edge)
+        bits = [float(x) for x in name.split("*")[1:5]]
+        return lambda built: nailfold(built, *bits)
+    if name.startswith("handrelief*") and "+" not in name:  # handrelief*0.5 (the scans' relief on the hands x k)
+        return lambda built: handrelief(built, float(name.split("*", 1)[1]))
+    if name.startswith("browhuang*") and "+" not in name:  # browhuang*0.3 (the film: Huang's lobes x k)
+        return lambda built: browhuang(built, float(name.split("*", 1)[1]))
     if name.startswith("mhbrow*") and "+" not in name:  # mhbrow*012 (MakeHuman's CC0 brow card set)
         return lambda built: mhbrow(built, name.split("*", 1)[1])
     if name.startswith("icthead*") and "+" not in name:  # icthead*head1 (ICT-FaceKit's head placed by tools/gate/ict_head.py)
@@ -5152,6 +5306,9 @@ def factor(name: str):
         return lambda built: aaronskin(built, name.split("*", 1)[1]) if "*" in name else aaronskin(built)
     if name.startswith("guidefile"):  # guidefile*aaron_cards (the carried strands' file stem)
         return lambda built: guidefile(built, name.split("*", 1)[1])
+    if name.startswith("mhslider*") and "+" not in name:  # mhslider*torso*torso-scale-depth-decr-incr*0.5
+        bits = name.split("*")[1:4]
+        return lambda built: mhslider(built, bits[0], bits[1], float(bits[2]))
     if name.startswith("browup"):  # browup*1 (the brow slider, up)
         return lambda built: browup(built, float(name.split("*")[1]))
     if name == "blinkfix":  # the blink closed onto the lower lid (row 10)

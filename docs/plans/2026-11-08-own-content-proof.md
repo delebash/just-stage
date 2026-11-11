@@ -2240,6 +2240,177 @@ booked with just-direct-mocap.
   fold is in his neutral face; MakeHuman's laugh-lines slider, never tried, -1 / 0 / +1). The same sweep for the
   ear: MakeHuman's 11 ear sliders (`target.json`'s `ears`: lobe, shape, trans, rot, scale, flap, wing, depth) hold no
   concha depth - `ear-scale-depth` moves the whole ear - so the ear's route stays ICT's head (Q-BASE-4).
+- **18:19, THE END RUN GREEN (`batch_end4_1110.sh`, the card free): unit 45, tools 67, Blender 219 passed (the AI test
+  deselected); committed a84048c and pushed** - the hands' own tiled relief, the nail roughness, bed colour and toes'
+  plate, the lower lashes, the tongue's shear, their tests. 18:2x: rounds 9-12 started (`batch_r9_r10.sh`, task
+  br3eiazlt; the patch `apply_brow_factors.py` applies at its start - `browmelanin`, `browsheen`, `mhslider`).
+- 18:2x, THE LASHES at full size (`lash_now.jpg`: the product's eye from gate3 | his): ours read as thick black spikes
+  with gaps, standing up; his a dense, fine, brownish fringe with light tips along the lid. Queued after rounds 9-12
+  (`batch_trials13.sh`, task bfsn3xi4r; `apply_lash_factor.py` gives `lashup` the count and melanin): the product
+  regrown | radius 0.05 mm | melanin 0.85 | both | both at 260 a lid. The design's 180 / 0.08 mm / melanin 1.0 are the
+  user's approved values - a trial for the rec, not a change.
+- **18:3x, ROUND 9 - THE BROWS' HAZE IS THE STRANDS' SHEEN** (the Heavy woman, `r9_woman_eye.jpg` / `_face.jpg`:
+  product | sheen x0.3 | x0 | melanin 0.95 | both; each factor printed its change - 2,400 coarse and 1,600 fine
+  strands 0.80 -> 0.95; the brows' own material's glossy light scaled): at sheen x0.3 the inner brow's grey veil is
+  gone - a crisp dark-brown brow at the eye and face views; x0 flat and warmer; melanin 0.95 GREYER and bluer (on
+  near-black strands the white highlight dominates - the 11-09 "near-black read as a grey bar"); both together dark
+  grey. Before any fix, the oracle (AGENTS.md): does Cycles show the veil too (the model's physics - a brow material
+  setting, the film's Huang multipliers) or only EEVEE (the live view's hair model too bright - fix it there, for
+  every groom)? Round 9b (`batch_trials13.sh`'s first step): the product's brows in Cycles beside EEVEE's. Found on
+  the way: `hair_shading.py`'s calibration comment ("body x0.3, lobes x0.45 put the sum on it") is stale - 6e43562's
+  own message calibrated body 0.4 / lobes 1.0 (the constants as they stand; scalp 0.112 vs Cycles' 0.121, the brow
+  window 0.405 vs 0.367 on the Average man) - fixed when no batch runs Blender.
+  18:3x, round 9b widened (attack: the film's fix is itself a change - Chiang has no lobe multipliers, so a brow
+  setting in Cycles means Huang's model, RESEARCH 14.14): Cycles, the Heavy woman's eye, a build each - the product
+  (Chiang) | Huang x1 (the switch alone) | Huang x0.3 (`browhuang`, new in `apply_lash_factor.py`, applied first).
+  The fix waits on it; drafted meanwhile (not applied): `brows.SHEEN`, `groom.hair_material(..., sheen)` -> Huang's
+  three multipliers in the film and `hair_shading.build(..., glossy)` in the live view; the scalp, stubble and lashes
+  unchanged (sheen 1.0, Chiang). Written as `scratchpad/apply_brow_sheen.py <root> <sheen>` (dry-run on copies:
+  compiles, ruff 17 errors against the originals' 18 - none new; with the stale calibration comment fixed and the test
+  `test_the_brows_take_their_own_sheen_in_both_renderers`). Blast radius (grep): `hair_material` - brows, lashes,
+  scalp, stubble, groom's style load and refresh (all default 1.0); `hair_shading.build` and `_eevee_stand_in` - groom
+  only. Roll-out needs the library's brows asset and characters rebuilt (as 12:2x's `batch_libhair.sh`); drafted as
+  `scratchpad/batch_rollout.sh <sheen|-> <hand relief|->` (18:5x: one roll-out for the brows and the hands - the
+  patches, library backup and rebuild, the man's eye / face / hand / nails beside his, the hand and foot at his tone
+  measured, three characters' eyes, the Heavy woman in Cycles, every suite).
+- 18:3x, round 9 on the Average man (`r9_man_eye_ab.jpg`: product | sheen x0.3 | his): on light skin both read as a
+  real brow; x0.3 warmer and browner, the product's dark grey-brown nearer his grey-brown (his about a fifth grey
+  hairs, `GREY_SHARE` 0 by default) - so the cut helps the dark skins and costs the light ones a little warmth. The
+  value is weighed against the film (9b) before any pick; x0.5 the middle if the film sits between. Added to 9b: x0.5
+  in both renderers (Huang x0.5 in Cycles; sheen x0.5 on the woman and the man).
+- 18:4x, ROUND 10's colour variant is VOID on the hand (found while it ran): `colourflat` goes through
+  `_rewrite_colour`, which rewrites the HEAD tile only (`image.pixels` reads tile 1001 alone) - the hand is on 1003.
+  Its baseline and `relief0` (the whole skin's normal map off) stand. Fix: `tileflat*1003` (in `apply_lash_factor.py`)
+  decodes the tile from the image's own packed file (`tile_probe.py` on the library's Average man: tile 1003, 2048 px,
+  mean sRGB (0.77, 0.59, 0.50)) and holds that tile at its linear mean; round 10b runs it after 9b and re-measures
+  round 10's folder beside his.
+- **18:47, ROUND 10 - THE HAND'S EXCESS IS THE SCANS' RELIEF** (`r10_table.txt`, at his tone; his 0.821 / 1.004 /
+  1.491): the product pore 0.745 / fold 1.383 / form 3.215 (0.91 / 1.38 / 2.16 of his - the same numbers as 17:3x, a
+  repeat); `colourflat` IDENTICAL (void on the hand, as found); `relief0` 0.726 / 0.973 / 1.725 = **0.88 / 0.97 / 1.16
+  of his - all three inside his spread** (17% / 20% / 29%). By eye (`r10_hand.jpg`: product | relief off | his): ours
+  a drier, older hand with heavy knuckle and vein relief; relief off smooth and a little plain; his between - smooth,
+  glossy, soft knuckle wrinkles. So the route is the hands' own relief strength, not zero: round 15 (replaces 10b,
+  whose colour question is moot) - `handrelief` x0.3 / 0.5 / 0.7 by the hands' share (the relief's own strength node
+  `relief_off_stretched` fed through a mix on `hands_share`), measured and seen beside his. The pick: the strongest
+  inside his spread on all three bands that reads like his by eye.
+- **18:5x, ROUND 11 - "HIS UPPER LIP 3 MM LOWER" WAS THE ANCHOR, NOT THE LIP** (`mouth_profile_rest.py`, logs
+  `r11_{rest,open}_{ours,cc5}.log`, read by hand - the parser's heuristics gave nonsense and were dropped): the gate's
+  mouth anchor ("the front teeth's centre") moves 5.3 mm on ours between rest and jawOpen (z 1.5476 -> 1.5529), 1.1 mm
+  on his (1.6126 -> 1.6137) - so heights from it don't compare. Against each mouth's own UPPER INCISAL EDGE (the skin
+  hidden, the first jump deeper below the upper incisors' front): at rest our lips' seam 0.4 mm above our edge, his
+  0.1-0.25 mm below his; at jawOpen our upper lip hangs 1.25 mm below our edge, his 0.8 mm below his. **The lips sit
+  alike on the teeth (within 0.5 mm) - the route "his upper lip lower" is void.** What differs is the opening's size at
+  the same jawOpen value (ours 17.5 mm tall, his 13.75 - the units' amounts) and what the open mouth shows: his tongue
+  24-29 mm behind his front teeth, our first hits 27-35 mm behind ours (kind "T" - the teeth object holds our tongue;
+  by material in round 11b, queued: what shows now, after the shear). (His midline above +3.25 mm hits his stubble
+  cards - his upper lip's skin there is hidden; the edges above are below it.)
+- 18:5x, ROUND 12 (torso) first renders (`r12_pecs_partial.jpg`: like build | pectoral 0.5 | his): MakeHuman's
+  pectoral slider at 0.5 fills the chest and draws the pectorals' lower edge - a clear step toward his broad, massive
+  pecs; his frame is also broader (shoulders, a V) and his skin shinier. MakeHuman ships those too
+  (`torso-vshape-decr-incr`, `measure-shoulder-dist-decr-incr`, `torso-scale-horiz-decr-incr` - `target.json`'s
+  torso group), so his frame is a build setting; pectoral 1.0 next. 19:0x, pectoral 1.0 (`r12_pecs_torso.jpg`: like
+  build | 0.5 | 1.0 | his): a full, defined chest - the pectorals' lower edge and the sternum's line - that reads as a
+  real muscular chest near his mass. **The torso's "pectoral mass beyond MakeHuman's range" is WRONG: a shipped slider
+  reaches it.** Left: his broader frame and his oilier sheen. Round 16 queued (end of `batch_trials13.sh`): pectoral 1
+  with MakeHuman's V-shape and shoulder-width sliders at 0.5 and at 1.
+- 19:0x, round 12's smile baseline (`r12_smile_base.jpg`: the product's smile | his): ours lifts the corners with no
+  fold from the nose to the mouth and no bunched cheeks; his deep nasolabial folds, bunched cheeks, crow's feet. The
+  same render shows our Average man's brows SILVER-WHITE at the face view beside his dark ones - round 9's sheen at
+  distance on a light skin too: the brows' fix is for every character, not only the dark skins.
+- **19:1x, ROUND 9b's first film render** (`r9b_first.jpg`: live product | live sheen x0.3 | FILM product, the Heavy
+  woman's eye): in Cycles the product's brows are darker brown with only a faint grey at the inner start - far less
+  veil than the live view's. So against its oracle THE LIVE VIEW'S HAIR MODEL IS TOO BRIGHT ON THE BROWS (the film
+  carries a little haze of its own). The Huang renders (x1 / 0.3 / 0.5) decide between matching the live view to the
+  film and a brow sheen in both. NEW FAULT, FILM ONLY: a bright ORANGE band along the lower lid's margin and at the
+  eye's inner corner in Cycles (none in EEVEE) - a film-path product fault (the lid margin's or the eye strips'
+  material in Cycles); its own diagnosis next. The 11-07 film eye (`2026-11-07b`, the Average man) had none - two
+  suspects since: the margin's tint (`margintint`, 11-09) and the skin's scattering through the thin margin on a darker
+  skin. Round 18 queued (end of `batch_trials17.sh`; Cycles, her eye): product | `margintint0` | `sss*0.5` |
+  `tear0+occl0`; and the Average man's product eye in the film.
+- 19:2x, 9b's second film render (`r9b_huang1.jpg`: film Chiang product | film Huang x1): the model switch ALONE makes
+  the brows darker and greyer - Huang changes the look by itself, so a film-side "sheen" isn't one factor. The film's
+  product (Chiang) reads warm dark brown with a faint grey at the inner start. (19:2x a scare checked: the film's
+  skin looked far lighter at a small crop - side by side at the same frame the cheek is L* 46.2 film / 48.2 live,
+  `film_vs_live.jpg`; no skin mismatch.) **MEASURED 19:3x (`brow_contrast.py`: the brow box minus a forehead box
+  above it, Lab, each renderer's skin cancelling; boxes drawn on the frame, `brow_boxes.jpg`):** whole brow dL* film
+  -26.5 | live x1 -18.0 (dE 8.8 off the film) | x0.3 -23.7 (2.8) | x0 -27.1 (1.6) | film Huang x1 -27.0 (0.8);
+  inner brow (the veil) film -15.4 | live x1 -8.3 (7.4) | x0.3 -16.2 (1.1) | x0 -21.2 (6.6). Today's live view is the
+  farthest from the film everywhere; x0.3 the best overall (closest where the veil is). x0.5 and the Average man's film
+  eye (round 18) to confirm. The film's Huang (inner brow): x1 -17.6 (2.3 off the film's product), x0.3 -24.7 (9.4) -
+  cutting the film's sheen overshoots: the film stays Chiang, confirmed. 19:3x the live view's x0.5: whole brow -21.8
+  (dE 4.75 off the film), inner -13.5 (1.87) - worse than x0.3 (2.82 / 1.06) on both. **PICK (mine): `brows.SHEEN` 0.3**
+  - the live view's brows closest to the film's; cross-checked on the Average man's film eye in round 18 (a light
+  skin), then rolled out (`batch_rollout.sh 0.3 ...`). **Decision (mine, attacked): the film
+  stays as it is (Chiang - the oracle); the live view's brows are calibrated to it** - a brow-only scale on the live
+  view's lobes, its value MEASURED: the brow region's mean Lab in the live view at x1 / 0.5 / 0.3 against the film's
+  product, the closest kept (the scalp was calibrated the same way, 6e43562 - within 10%). `apply_brow_sheen.py` loses
+  its Huang switch (the film untouched) when the value is in.
+- **19:1x, ROUND 12 - THE LAUGH-LINES SLIDER BARELY MOVES THE SMILE** (`r12_laugh.jpg`: -1 | 0 | +1 | his, the smile):
+  at -1 ("in") the fold from the nose to the corner a little deeper, at +1 hardly a change; his deep folds and bunched
+  cheeks far beyond. So the smile's gap is the smile SHAPE's content (row 9's finding), not a neutral slider. SMILE: the
+  sliders' box spent - CLOSE; the route left is ICT-FaceKit's scanned expression set on its own head (Q-BASE-4, taken
+  19:2x - the rebuild's work). NEW FAULT SEEN in the same renders: a dark line along our jaw's and chin's edge in all
+  three (his stubbled jaw has none) - most likely the stubble's strands piling up edge-on at the silhouette; a new fact
+  for the stubble (its box was spent on flow and curl) - its own trial next (the stubble at the jaw's underside).
+  Zoomed (`jawline_zoom.jpg`): a thin, clean, continuous dark outline from ear to ear along the silhouette - too clean
+  for strands edge-on, so possibly the skin's shading at grazing angles. Round 17 (`batch_trials17.sh`, task
+  b4q6vccxr, after round 13's batch): the stubble hidden (`nobeard`, new in `apply_nobeard.py`) against round 12's
+  product face - line gone: the stubble; line kept: the skin.
+- **19:2x, THE USER: "why are you waiting on my decision what did i tell you?" ... "correct remember it and never ask
+  me for a decision"** (global CLAUDE.md's decisions rule rewritten the same reply: every decision mine, a change to an
+  approved one included, old and new side by side; only the irreversible or outward actions wait). The four items I had
+  parked as "waiting for the user" - MY DECISIONS NOW (each attacked; mine, not the user's):
+  1. **The lashes' root radius** - old (the approved design, 2026-11-05): "lashes at 180 upper, 0.08 mm radius, melanin
+     1.0"; new: round 13 picks radius, melanin and count from its renders beside his (a real lash is ~0.1 mm across -
+     radius ~0.05), recorded old beside new.
+  2. **Q-BASE-4: YES - the head moves onto ICT-FaceKit's topology (MIT), the plan's option C (the head alone, joined at
+     the neck).** Attack: (a) breaks every hm08-topology piece of the head - MakeHuman's face targets, Faceunits' keys,
+     the skins' head tile and per-scan colour-relief bakes, the mixer's heads and HUTUBS ears, the brows' and lashes'
+     binding, the teeth / tongue fit, the eyes' placement, the skeleton's face weights - a multi-day job; (b) the cheaper
+     route (keep hm08, carry ICT's lid fold and concha as a shape) fails where it matters: the 58 HUTUBS ears carried
+     onto hm08 stayed shallow and the carried lid tore - hm08's mesh can't hold them; (c) the standard: CC5 and
+     MetaHuman own their head topologies; ICT-FaceKit brings its own identity model and its scanned expression set
+     (the smile and blink rows already used them) - the face sliders and expressions come from ICT's own models on its
+     own mesh, not carried; (d) the eye reads NEAR EQUAL and the ear CLOSE on it - the only route found for both. Built
+     as the next job after this evening's rounds; its plan doc with the blast radius from greps starts now (CPU) beside
+     the GPU rounds - written 19:4x: `docs/plans/2026-11-10-ict-head.md` (ICT's Light model read at its source: 26,719
+     v, 100 identity modes, 53 ARKit expressions, MIT; design, 8 build steps, blast radius, attack passes 1-2).
+  3. **Q-HAIR-7: YES - MotionStudioArts' two CC BY hairs into the library as styles** (on disk, read as real hair at
+     close-up), each with its ATTRIBUTION row from its Sketchfab page's licence read at the source; queued after the
+     GPU rounds (a library build). Licences READ AT THE SOURCE 19:4x (each page and Sketchfab's API): "Black Short
+     Hairs Fuzzy v2" (uid b95196254b5e4cd19597eefbda48fffd) and "White Long Wavy Hairs 016" (uid
+     d1e6d46366be4b5cb19a26656bdfbb5c), both by MotionStudioArts, "Creative Commons Attribution" - "Learn more" to
+     creativecommons.org/licenses/by/4.0/; both downloadable. Neither zip carries a licence file.
+     The build (mine, 19:5x, attacked): Sketchfab's download needs a signed-in account (its download API a user
+     token - a credential, the user's), so `fetch_data.py` gets a MANUAL source kind: each zip pinned by SHA-256
+     (fuzzy `cc8faaa4...0b3e`, 30,862,120 bytes; long `d8ec9240...810a`, 69,169,813 bytes), read from its download
+     folder, unpacked into `data/fetched/msa_hair/`; missing -> it prints the page to fetch it from. (Attack: committing
+     the files instead - 205 MB unpacked, and the repo commits no fetched data; hosting them ourselves is a release
+     step, the user's - so the pinned manual source.) A small `hair/cards.py`: the pack's OBJ imported, fitted to the
+     character's cranium (the trial's `msahair` fit), bound by Surface Deform, its textures tinted by the hair colour;
+     `build_library.py -- hair` saves the two as Hair/Scalp styles (licence CC-BY-4.0, provenance and credit);
+     ATTRIBUTION rows in the same change. Coded in scratch while the card runs; applied between batches.
+     19:4x CODED (`scratchpad/q_hair7/`: `cards.py`, `apply_q_hair7.py` - applied after `apply_brow_sheen.py`, both
+     touch `groom.add_from_file`): the module; `groom.portable` / `add_from_file` and `core/library.kind` take card
+     hair; the colour command colours a card hair's whole set; `fetch_data.py`'s MANUAL_PACKS (five files a pack, each
+     pinned); two Hair/Scalp library styles; ATTRIBUTION and REUSE rows; two Blender tests (the fit, binding and colour;
+     the library round trip onto a heavier, older character). Dry run on copies: compiles, no new lint errors (ruff's
+     list before / after compared); the manual source tested alone (`manual_unpack/`): 5 missing -> unpacked from the
+     pinned zip -> present, both packs. Attack found and fixed: the cap found by name broke when `portable` renames the
+     first copy (now a cap property); the texture's mean as the colour's divisor (a multiply alone can't lighten the
+     near-black fibres).
+  4. **Q-GATE-3: YES - HD Ariana exported from CC5 through the bridge** (one of the trial's counted exports - 4 of 30;
+     local test content, never shipped), after the GPU rounds (CC5 needs the card). HD Aaron's way, repeated
+     (RESEARCH 14.1 L1689): CC5's Blender Pipeline plugin "Export FBX" (Selected Models, SubD 1, every box off), CC
+     Blender Tools' import into `aaron_cctools_{eevee,cycles}.blend`'s kind for her; `parts_gate.build_cc5` taught
+     her file. At 19:3x CC5 isn't running (bridge 127.0.0.1:5101 silent). Recorded limit (RESEARCH): the CC5 trial's
+     own dialogs are the user's to click - if one blocks the launch, that ACTION (their trial account), not a decision,
+     is reported plainly.
+- 18:4x, THE NAILS' NEXT ROUTE queued (round 14, end of `batch_trials13.sh`): the verdict's "a softer fold at the
+  cuticle" - `nailfold` (new) sets the fold's own shader nodes (`nail_fold` height 1.2, `nail_fold_cut` / `_side`
+  reach 0.10 / 0.14, `nail_fold_start` / `_sides` edge 1/0.06; checked in `maps._nail_layer`: each a named Math node,
+  the value on input 1). At his tone: the product | 0.8, reach 0.18 / 0.22, edge 0.12 | 1.2 with that reach and edge;
+  beside his nails.
 - **07:0x, the forehead's granules in texture space (CPU, `granule_tiles.py`, `tools/gate/micro_compare.py` against
   HD Aaron's head micro normal - in his blend the head's "Micro Normal Map" is `Std_Tongue_MicroN.png`, 4096², tiling
   10.56 mm):** today's tile DISTS 0.300 (his floor 0.156); rounder pillowed granules with fainter grooves - gran1
@@ -2583,6 +2754,11 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
   setting's default changes nothing).
 - A trial factor proves it changed something: it prints what it set and raises when it set nothing (2026-11-10 18:0x:
   `browthick`'s melanin wrote the Principled Hair node's socket only where unlinked - groom links it to the strands'
-  attribute - so round 8's "melanin 1.0" and the morning's "melanin 0.95" were silently the product).
+  attribute - so round 8's "melanin 1.0" and the morning's "melanin 0.95" were silently the product). And it acts on
+  the part being measured: read the factor's code for WHERE it acts before queuing it (18:4x: round 10 queued
+  `colourflat` for the hand - it rewrites the head tile only).
+- A distance compared between two characters is measured from a landmark both share in the same pose - never from the
+  gate's anchors across an expression (2026-11-10 18:5x: "his upper lip 3 mm lower" at jawOpen came from the mouth
+  anchor, which moves 5.3 mm on ours and 1.1 mm on his; against each mouth's own incisal edge the lips sit alike).
 - "Beyond the range" is said only after every shipped slider for that region was tried (2026-11-10 13:29: the torso's
   box was closed on the global muscle slider alone; MakeHuman's pectoral slider was never tried).

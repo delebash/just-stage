@@ -47,7 +47,9 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   file, the plan's §18a and §19.3 and `docs/gate/2026-11-07/report.md` first; keep a background job running.**
 - **Wake-ups (session-only, expire after 7 days or with the session - set them again with CronCreate; last set
   2026-11-08 14:25 after the lock-up):** every 20 min when idle, resume the own-content proof from its working doc;
-  every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task").
+  every 3 h, remind every peer session of the shared rules (the user: "they can help keep you on task"); the
+  SELF-CHECK (the user, 2026-11-10 12:3x) every hour at :07 - the user, 19:1x: "change the reminder timer to every
+  hour" (it was every 10 minutes).
 - **2026-11-09 18:3x:** the verdict committed (51bc0ab: not CC5 quality with free assets - the face's mid-scale
   relief, the live-view hair). Then the face relief's "can't" REOPENED (the user: "never stop until you have proven or
   disproven"): HSR0040 (HSRD-100, CC BY 4.0, in our scan set) is 50 and his COLOUR carries deep forehead lines and
@@ -152,7 +154,7 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   -> `batch_nailplate.sh` (the nail plate held inside its tile island, the bed on the same plate) ->
   `batch_gate_1110b.sh` (THE FULL GATE on today's product -> `.dev/gate/parts/2026-11-10gate2`). If the held plate
   doesn't read rounded: the object-space nail plate (per-vertex nail coords over each fingertip) is the build.
-  Waiting for the user: Q-BASE-4, Q-HAIR-7, Q-GATE-3.
+  Waiting for the user: none since 19:2x (the user: "never ask me for a decision") - Q-BASE-4, Q-HAIR-7, Q-GATE-3 taken as mine (the working doc 19:2x).
   15:1x: the lash ship FAILED its kink guard (not kept); trials (working doc 13:4x-15:1x) picked and APPLIED (not yet
   committed - tests running): the upper lashes rise 30 / curl 20 / 6.5 mm, no clumping, at the approved 0.08 mm; the
   stubble curl 45, greys' melanin 0.04; THE NAILS OVER THE WHOLE FINGERTIP (`make_nail_coords.py` -> `nails.npz`,
@@ -177,7 +179,24 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   melanin never reached the strands). After the end run's commit: `scratchpad/batch_r9_r10.sh` (this session's
   scratchpad) - round 9 (`apply_brow_factors.py`: `browmelanin`, `browsheen`; the brows' sheen and colour), round 10
   (the hand's large-scale relief at his tone: `colourflat` / `relief0`), round 11 (`mouth_profile_rest.py`: our
-  upper lip at rest and open against his).
+  upper lip at rest and open against his), round 12 (`mhslider`: MakeHuman's pectoral and laugh-lines sliders, never
+  tried). 18:19: the end run GREEN (unit 45, tools 67, Blender 219) - committed a84048c, pushed; rounds 9-12 running
+  (the patch to `tools/gate/factors.py` applied at their start - uncommitted until their own tools-suite run).
+  18:5x results (the working doc's 18:3x-18:5x): BROWS - the haze is the strands' sheen (x0.3 removes it; darker
+  strands greyer); the film check 9b decides the fix (`apply_brow_sheen.py`, `batch_rollout_brows.sh` drafted).
+  HAND - the scans' relief makes the excess (relief off: 0.88 / 0.97 / 1.16 of his, inside); round 15 picks the hands'
+  strength (`apply_hand_relief_strength.py` drafted). MOUTH - "his upper lip 3 mm lower" was the gate's anchor (moves
+  5.3 mm on ours); the lips sit alike on the teeth. Queued after round 12: `batch_trials13.sh` (task bfsn3xi4r) - the
+  patch `apply_lash_factor.py`, 9b (Cycles), 15 (hands), 11b (the open mouth by material), 13 (lashes), 14 (nail fold).
+  19:2x THE USER: "never ask me for a decision" (global CLAUDE.md rewritten; the hourly self-check has it) - Q-BASE-4,
+  Q-HAIR-7, Q-GATE-3 and the lashes' radius TAKEN as mine (the working doc 19:2x). 19:3x-19:4x: BROWS - the film (the
+  oracle) shows far less veil than the live view; measured, the live view's brow sheen x0.3 matches the film (inner
+  brow dE 1.1) - the film untouched (`apply_brow_sheen.py` updated). TORSO - MakeHuman's pectoral slider reaches his
+  mass (round 12). SMILE - the laugh-lines slider barely moves it; the route is ICT's expressions (Q-BASE-4). NEW
+  FAULTS queued: a dark line along the jaw's silhouette (round 17, `nobeard`), the film's orange lid margin (round 18).
+  Q-HAIR-7 coded in scratch (`q_hair7/`, dry-run clean); Q-BASE-4's plan `docs/plans/2026-11-10-ict-head.md`, its
+  step 0 (ICT's whole Light model via `fetch_data.py`) downloading. The roll-out of all picks: `batch_rollout.sh
+  <sheen> <hand> <cards>` after rounds 13-18.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

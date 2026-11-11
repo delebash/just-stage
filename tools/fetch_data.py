@@ -57,12 +57,12 @@ SOURCES = {
         "commit": "da5f95a607f5e6b37755b38d3385d7f2853732e5",  # master, 2020-12-01 (its last push)
         "strip": "FaceXModel/",
         "licence": "MIT (ICT-FaceKit's LICENSE)",
-        # its neutral face: the eye occlusion and lacrimal-fluid strips the app's eye layers are made from; its scanned
-        # blink and smile, our blink and smile units (tools/make_ict_units.py, 2026-11-08)
-        "include": ["FaceXModel/generic_neutral_mesh.obj", "FaceXModel/eyeBlink_L.obj", "FaceXModel/eyeBlink_R.obj",
-                    "FaceXModel/mouthSmile_L.obj", "FaceXModel/mouthSmile_R.obj", "FaceXModel/cheekSquint_L.obj",
-                    "FaceXModel/cheekSquint_R.obj"],
-        "extra": {"LICENSE": "LICENSE"},
+        # its Light model whole (2026-11-10, Q-BASE-4 - the head onto its topology, docs/plans/2026-11-10-ict-head.md
+        # step 0): the neutral mesh (its eye occlusion and lacrimal strips are the app's eye layers already), its 100
+        # identity modes (identityNNN.obj) and its expressions (ARKit names; the blink and smile were our units since
+        # 2026-11-08, tools/make_ict_units.py)
+        "include": ["FaceXModel/*"],
+        "extra": {"LICENSE": "LICENSE", "CREDITS.md": "CREDITS.md"},
     },
 }
 

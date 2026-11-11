@@ -3564,6 +3564,11 @@ every one logged; key claims page-read):
   percentile 0.3–3.8 mm (the beards highest), worst 5.6 mm, over the 15 styles with strands; the same after age 0 (a baby). `tail_base` alone stayed at
   5.5 mm median / 16.6 mm p95 until its Attach Hair Curves to Surface modifier's empty `Surface` input was set to the
   body: 0.3 / 0.8 mm. Blender 5.3's Principled Hair BSDF defaults: Chiang model, Melanin 0.8, Melanin Redness 1.0.
+  Its two models' inputs (probed 2026-11-10, `hair_node_inputs.py` in that session's scratchpad, Blender 5.3 factory
+  startup): CHIANG - Roughness 0.3, Radial Roughness 0.3, Coat 0, IOR 1.55, Offset 2 deg, Random Roughness, Random;
+  HUANG - Aspect Ratio 0.85, Roughness 0.3, IOR 1.55, Offset, Random Roughness, Random and per-lobe multipliers
+  **Reflection, Transmission, Secondary Reflection (1.0 each)** - the film's own way to scale a groom's R / TT / TRT
+  lobes (the live view's hair model scales its glossy light the same way: `hair_shading.build`'s lobes).
 - **Scalp masks tried and dropped** (a procedural groom: Generate Hair Curves inside a mask): MakeHuman's hair helper
   (`helper-hair`, 428 vertices, y 0.201–0.85 m in MakeHuman's axes — it runs to the shoulders for long hair — a median
   15 mm, p90 39 mm, above the skin) and MPFB2's `uv_layers/scalp_solid.json.gz` (its MakeUp "scalp" focus region: 520
