@@ -441,6 +441,32 @@ def mouthao(built: dict, rear: float, depth_mm: float) -> None:
           flush=True)
 
 
+def occlgain(built: dict, gain: float, span: float = 1.0) -> None:
+    """The live view's eye-occlusion film: its gain (`eye_layers.EEVEE_OCCLUSION_GAIN`, 2.5) set to `gain` and each
+    side's band reach x `span` - 2026-11-11: the film shades our eye's white under the lids far more than the live view
+    (gate 6's eye, the same pixels). The film's own output untouched."""
+    layers = importlib.import_module("bl_ext.system.juststage.modules.head.eye_layers")
+    n = 0
+    for mat in {s.material for o in bpy.data.objects for s in o.material_slots if s.material}:
+        nodes = mat.node_tree.nodes if mat.node_tree else []
+        if not any(x.type == "OUTPUT_MATERIAL" and x.target == "EEVEE" for x in nodes):
+            continue
+        gains = [x for x in nodes if x.type == "MATH" and x.operation == "MULTIPLY"
+                 and abs(x.inputs[1].default_value - layers.EEVEE_OCCLUSION_GAIN) < 1e-6]
+        if not gains:
+            continue
+        for x in gains:
+            x.inputs[1].default_value = gain
+        for ramp in [x for x in nodes if x.type == "MAP_RANGE" and x.interpolation_type == "SMOOTHSTEP"]:
+            lo, hi = ramp.inputs["From Min"].default_value, ramp.inputs["From Max"].default_value
+            width = abs(hi - lo) * span
+            ramp.inputs["From Min"].default_value = hi - width if hi > lo else hi + width
+        n += 1
+    if not n:
+        raise RuntimeError("no eye-occlusion material with the live view's gain found")
+    print("OCCLUSION GAIN", gain, "span x", span, "on", n, "materials", flush=True)
+
+
 def tear0(built: dict) -> None:
     """The tearline (ICT's ring, the wet film along the lid margins) hidden."""
     _hide_part(built, "eyeEdge")
@@ -5295,6 +5321,8 @@ def factor(name: str):
         return FACTORS[name]
     if name.startswith("ictproxy*") and "+" not in name:  # ictproxy*p610 (a trial placement's npz) - --alone
         return lambda built: ictproxytrial(built, name.split("*", 1)[1])
+    if name.startswith("occlgain*") and "+" not in name:  # occlgain*5[*1.5] (the live view's gain, band reach x)
+        return lambda built: occlgain(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("mouthao*") and "+" not in name:  # mouthao*0.25*25 (rear share, depth mm) - materials only
         return lambda built: mouthao(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("ictteeth") and "+" not in name:  # ictteeth[*1.05] (ICT's teeth, x scale) - --alone

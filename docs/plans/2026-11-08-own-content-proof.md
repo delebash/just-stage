@@ -2702,6 +2702,41 @@ booked with just-direct-mocap.
   export never began, so no counted use; the count is read at the next launch) so the queued renders get the card.
   Every CC5 export shows that notice (OK / Upgrade), so her export needs the user present to press OK; everything
   after it is ready (`scratchpad/batch_ariana.sh`: both imports, then her views via `--cc5 ariana`).
+- **01:0x, ROUND 28 AND THE LASHES' ROOT CAUSE:**
+  - Round 28 (`occlgain`, the eye white against the film on the same pixels, film L* 33.4 / 32.6): gain 5 60.0 /
+    47.1; gain 5 bands x1.6 54.1 / 31.5; gain 8 x1.6 49.2 / 18.6 - the occlusion film darkens only rings at the
+    corners (a dark band at gain 8), never the white beside the iris; the film's darkening is the lids' broad soft
+    shadow, which EEVEE's shadow maps draw only as a sliver (the code's own 11-04 note). **No pick; the product stays.**
+  - **The lashes across the iris, measured (CPU, `lash_iris_probe*.py`, `lash_hit_probe.py`):** 10-16% of the upper
+    lashes hang down across the iris (1.7-2 mm below their root, up to 4.8 mm), on the product's own path (a dressed
+    New human - the library man is the same body and seed). They START pointing 20-38 deg down. With the clearing step
+    off, none droop; as aimed, 166 of 520 upper lashes run into the SKIN above them (1.56 mm median, 3.3 max), none
+    into the eye. **ROOT CAUSE: hm08's upper lid overhangs its lash line; `_cleared` turns the lashes down and out of
+    it - across the iris.** The same root cause as the lid's ledge. A clamp on the turning would be the second
+    workaround for it (the clearing already is one) - the rule says stop: the approach (hm08's lid) is wrong; leading
+    apps' lids don't overhang their lash line (CC5's, MetaHuman's, ICT's).
+  - ~~Decision: the ICT head's build job fixes the lashes too~~ - **DISPROVED 01:1x by measure
+    (`lash_ict_probe.py`):** under the ICT head (p610m), the lashes clearing against ITS surface droop MORE - 126 of
+    520 against 48 clearing against hm08 - ICT's fuller lid overhangs our lash line more. So the overhang isn't hm08's
+    alone: the LASH SHAPE is the mismatch - ours leave the margin already rising 30 deg, into any lid that overhangs;
+    real upper lashes leave it going forward and curl up past the lid. One CPU sweep queued (rise against curl, scored
+    by the droop count, the kink guard and the tips' rise - no renders; box 30 min, to 01:5x).
+  - **01:2x, THE SWEEP (`lash_sweep.py`, a dressed New human, 520 upper lashes):** rise/curl 30/20 (the product) 48
+    drooping; 10/40 42; 10/55 38; 0/50 35; 0/65 45; 5/60 46; 15/45 37 - every shape droops, all pass the kink guard
+    (p90 4-11 deg), the tips rise only 0.5-1.5 mm above the root anywhere. The shape barely matters: the roots sit
+    ~2 mm above the eye's centre, under skin that overhangs them, and the clearing turns 7-9% down. **BOX SPENT -
+    LASHES' VERDICT: OPEN DEFECT** (7-9% of the upper lashes cross the iris at close-up). Root cause: the lash line's
+    place - roots low on the margin under an overhanging lid. What would fix it: lashes rooted on a lid margin that
+    doesn't overhang (leading apps author lid and lashes together; ICT's lid overhangs our line more - so the ICT
+    head's build job must root the lashes on ICT's own margin, not ours). Culling the 7-9% would be a second
+    workaround for this root cause - not done (the rule). Moving on.
+- **00:5x, THE EYE IN THE FILM (`batch_eyefilm.sh`; `scratchpad/eyefilm.jpg`: ours EEVEE | ours Cycles | his EEVEE |
+  his Cycles):** our white of the eye is grey and shaded under the lids in the film, bright and flat in the live view
+  - on the same pixels L* ~60 live against ~33 film (rough: `sclera_box.py`'s boxes catch some lashes). A live-view
+  gap like the mouth's: the occlusion film's live gain (`EEVEE_OCCLUSION_GAIN` 2.5) darkens only edge bands. Round 28
+  queued and running (`occlgain`: gain 5 and 8, band reach x1.6; build-once). **A NEW DEFECT at full resolution
+  (`scratchpad/sclera_boxcheck.png`): the upper lashes hang down across the iris and pupil** - straight strands over
+  the cornea (noted 11-09 23:36, never fixed); the lashes' 00:3x "final" corrected in the verdict sheet on this fact.
 - **00:3x, THE HOURLY LOOP CHECK, ACTED ON:** hands, nails, lashes, brows, forehead, torso and smile had two or more
   rounds that only moved them from close to closer - a loop by the rule. Their rounds stopped at 23:4x but their
   verdicts were never written: written now as FINAL in `docs/gate/2026-11-10-verdict.md` (each with why it's closed:
