@@ -237,6 +237,13 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   build) feeds the page; round 24 skipped; rounds 25 (ICT teeth) and 26 (stubble at his age, lips) follow. A
   PreToolUse hook (`F:/ClaudeCode/config/hooks/preflight-batch.js`) refuses any batch without answered PREFLIGHT
   lines (loop, cheapest, measures, reminders, the user's question).
+  00:1x (11-11): rounds 25-27 done - ICT's scanned teeth remove the mouth's CG tells (adoption plan
+  `docs/plans/2026-11-11-ict-teeth.md`, waits for verdicts); the lit cavity is the live view's (the film shows it
+  dark) - darkened toward the back, 0.25 over 25 mm, matched to the film by measure; the stubble at his age reads like
+  his (the gate's man was 25 - now set to his age, `OURS_AGE`); the lips closed (final: close, not proven). Blind
+  pages: `.dev/gate/blind/2026-11-10/` (20 pairs) and `2026-11-10b/` (6 trial pairs), scored by
+  `scratchpad/score_blind.py`. RUNNING: `batch_rollout_1111.sh` (task b1alymggr) - the mouth fix, the library, GATE 6
+  at his age, the end run; commit if green.
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

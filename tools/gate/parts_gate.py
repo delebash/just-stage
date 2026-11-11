@@ -48,6 +48,9 @@ CC5_BLEND = CC5_REFS["aaron"]
 #: the library's Average man in the Scan man A skin (2026-11-06: Daniel's skin is a face-test AI painting with painted
 #: lashes - docs/plans/2026-11-06-inputs-audit.md); recs 11, 8 for the scalp and brows; stubble as hair (build_ours)
 OURS = {"character": "Average man", "scalp": "JustStage short taper"}
+#: the gate's man at HD Aaron's age (~40: MakeHuman's age macro 0.615 - 0.5 is 25, 1.0 is 90; `stubble.GREY_BY_AGE`) -
+#: since 2026-11-11; until then he was the library's 25-year-old, with no grey stubble beside HD Aaron's greys (round 26)
+OURS_AGE = 0.615
 #: our man's scalp hair as dark as HD Aaron's (2026-11-06: the library style's brown 0.82 with a fifth grey measured
 #: L* 42 at the face view against his 22) - his hair's colour, so the hair's shading and structure are what differ;
 #: through the app's own juststage.hair.set_colour, the gate's man only (character="" )
@@ -183,6 +186,8 @@ def build_ours(scene, skin: str = "", brows: str = "own", character: str = "", s
         return {"body": body, "objects": objects, "keyed": [body]}
     root = library.root()
     shown = api.run("juststage.library.add", path=str(root / "Characters" / f"{character or OURS['character']}.blend"))
+    if not character:  # the gate's own man at HD Aaron's age, before anything is grown on him
+        api.run("juststage.body.set_slider", character=shown.character, slider="age", value=OURS_AGE)
     if scalp.startswith("generated"):  # JustStage's own (modules/hair/scalp.py, rec 11); "generated:<style>" a style
         style = scalp.partition(":")[2] or "short combed"
         importlib.import_module("bl_ext.system.juststage.modules.hair.scalp").make(

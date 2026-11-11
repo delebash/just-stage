@@ -144,6 +144,54 @@ def _teeth_shading(mat: bpy.types.Material) -> None:
     bsdf.inputs["Coat Roughness"].default_value = WET_ROUGHNESS
 
 
+#: the mouth's cavity in the live view: base colour x a ramp from 1 at the front teeth to CAVITY_REAR CAVITY_DEPTH (m)
+#: behind them - EEVEE's screen-space occlusion can't see the lips and cheeks that shade it (2026-11-10 round 25: lit
+#: red in EEVEE, dark in Cycles); 0.25 over 25 mm met the film (round 27: the opening's mean L* 20.3, the film's 20.8).
+#: CC5's teeth and tongue shaders paint the same ("Front/Rear AO"). The film keeps its own shading.
+CAVITY_REAR, CAVITY_DEPTH = 0.25, 0.025
+
+
+def _eevee_cavity(mat: bpy.types.Material, y_front: float) -> None:
+    """A copy of the material's BSDF with its base colour darkened toward the back of the mouth, on an output only
+    EEVEE reads (the Material Output's Target); the film's output keeps the original. `y_front`: the front teeth's
+    depth in the part's object space (its Y)."""
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    main = next(n for n in nodes if n.type == "OUTPUT_MATERIAL" and n.target in ("ALL", "CYCLES"))
+    live = nodes.new("ShaderNodeBsdfPrincipled")
+    for attr in ("distribution", "subsurface_method"):
+        setattr(live, attr, getattr(bsdf, attr))
+    for socket, target in zip(bsdf.inputs, live.inputs, strict=True):  # the same node type: the same sockets, in order
+        if socket.is_linked:
+            links.new(socket.links[0].from_socket, target)
+        elif hasattr(socket, "default_value"):
+            target.default_value = socket.default_value
+    coords = nodes.new("ShaderNodeTexCoord")
+    split = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coords.outputs["Object"], split.inputs[0])
+    ramp = nodes.new("ShaderNodeMapRange")
+    ramp.clamp = True
+    ramp.inputs["From Min"].default_value = y_front
+    ramp.inputs["From Max"].default_value = y_front + CAVITY_DEPTH
+    ramp.inputs["To Min"].default_value = 1.0
+    ramp.inputs["To Max"].default_value = CAVITY_REAR
+    links.new(split.outputs["Y"], ramp.inputs["Value"])
+    times = nodes.new("ShaderNodeVectorMath")
+    times.operation = "SCALE"
+    base = bsdf.inputs["Base Color"]
+    if base.is_linked:
+        links.new(base.links[0].from_socket, times.inputs[0])
+    else:
+        times.inputs[0].default_value = tuple(base.default_value)[:3]
+    links.new(ramp.outputs["Result"], times.inputs["Scale"])
+    links.new(times.outputs["Vector"], live.inputs["Base Color"])
+    output = nodes.new("ShaderNodeOutputMaterial")
+    output.target = "EEVEE"
+    links.new(live.outputs["BSDF"], output.inputs["Surface"])
+    main.target = "ALL"
+    main.is_active_output = True
+
+
 def _gum_shading(mat: bpy.types.Material) -> None:
     nt = mat.node_tree
     bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
@@ -175,6 +223,9 @@ def assign(obj: bpy.types.Object, part: str, groups: dict[str, list[int]]) -> di
         obj.data.materials.append(mat)
     if part == "teeth":
         tooth_heights(obj, groups)
+        y_front = float(np.array([v.co[1] for v in obj.data.vertices]).min())  # the front teeth: the part's least Y
+        for mat in obj.data.materials:
+            _eevee_cavity(mat, y_front)
     counts = dict.fromkeys(slots, 0)
     fallback = regions[-1][0]
     indices = []

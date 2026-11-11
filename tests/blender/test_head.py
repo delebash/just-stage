@@ -155,6 +155,17 @@ def test_the_lids_stay_in_front_of_the_eyes():
     bpy.data.objects.remove(body)
 
 
+def _upstream(node, seen=None) -> list:
+    """Every node feeding `node`, transitively."""
+    seen = seen if seen is not None else {}
+    for socket in node.inputs:
+        for link in socket.links:
+            if link.from_node.name not in seen:
+                seen[link.from_node.name] = link.from_node
+                _upstream(link.from_node, seen)
+    return list(seen.values())
+
+
 def test_the_teeth_shade_from_gum_line_to_biting_edge():
     """Rec 13 (the MIO photo's ratios): each tooth's height above the gum line drives its colour; teeth and gums wet."""
     pm = importlib.import_module("bl_ext.system.juststage.modules.head.part_materials")
@@ -175,6 +186,18 @@ def test_the_teeth_shade_from_gum_line_to_biting_edge():
         for name in ("JustStage Teeth", "JustStage Gums"):
             bsdf = next(n for n in mats[name].node_tree.nodes if n.type == "BSDF_PRINCIPLED")
             assert bsdf.inputs["Coat Weight"].default_value == pytest.approx(pm.WET_COAT)
+        # the cavity darkened toward the back in the live view only (round 27): each material's EEVEE output reads a
+        # BSDF whose base colour runs through the 1 -> CAVITY_REAR ramp; the film's output keeps the plain one
+        for mat in mats.values():
+            outs = {n.target: n for n in mat.node_tree.nodes if n.type == "OUTPUT_MATERIAL"}
+            assert set(outs) >= {"ALL", "EEVEE"}, mat.name
+            live = outs["EEVEE"].inputs["Surface"].links[0].from_node
+            ramp = live.inputs["Base Color"].links[0].from_node.inputs["Scale"].links[0].from_node
+            assert ramp.type == "MAP_RANGE" and ramp.inputs["To Max"].default_value == pytest.approx(pm.CAVITY_REAR)
+            film = outs["ALL"].inputs["Surface"].links[0].from_node
+            cavity = [n for n in _upstream(film) if n.type == "MAP_RANGE"
+                      and n.inputs["To Max"].default_value == pytest.approx(pm.CAVITY_REAR)]
+            assert not cavity, mat.name  # (the enamel's own mottle is a Map Range too, 0.95-1.05: not the cavity's)
         # ivory, not white: the enamel between HD Aaron's upper and lower teeth's texture medians (linear, 2026-11-08)
         enamel = np.array(pm.REGIONS["teeth"][0])
         assert (np.array([0.43, 0.35, 0.30]) <= enamel).all() and (enamel <= np.array([0.60, 0.48, 0.42])).all()

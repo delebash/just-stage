@@ -2642,6 +2642,26 @@ booked with just-direct-mocap.
   Trial factor `ictproxy*<stem>` (a trial's npz). Chain restarted as task bqoeye7wp: `batch_ict1b.sh` (the tests, then
   `ictproxy` and `ictproxy*p610` at eye / ear / face / three-quarter / profile beside his - no patch steps; the old
   `batch_ict1.sh` would have copied the stale drafts back over the fixes) -> round 24 -> round 25.
+- **23:4x, ROUND 25's FIRST READ - THE MOUTH WITH ICT'S SCANNED TEETH (`scratchpad/r25_mouth_now.jpg`, jawOpen):**
+  the product's mouth reads lit-up inside with grey shapes in its corners (CG tells); with ICT-FaceKit's teeth, gums
+  and tongue (MIT, `ictteeth`, scale 1.0) the cavity reads dark and deep like his, a natural row of upper incisors just
+  under the lip, the lower row low - the defect gone with free content. Left (his traits, not quality): his side teeth
+  show at the corners, his lower row shows more. The 0.92 scale and the film's check follow. Adopting them is a
+  build job (the teeth part replaced by ICT's, placed at each character's front teeth as `ictteeth` does).
+  23:5x at "aa" (`scratchpad/r25_scale.jpg`): both scales show full arches - upper and lower rows, the side teeth -
+  and a dark deep cavity: a real open mouth. 0.92 reads the same as 1.0 - **scale 1.0 (ICT's scanned size; mine)**.
+  His mouth opens less at "aa" (the unit's amount, an expression setting, not quality).
+  **23:57, THE FILM'S CHECK (`scratchpad/r25_oracle.jpg`: ours EEVEE | ours Cycles | his EEVEE | his Cycles):** our
+  inner mouth is DARK in the film and lit red in the live view - the lit cavity is the live view missing the
+  occlusion inside the mouth, not our parts' colours (the film is the live view's oracle, AGENTS.md). ICT's teeth help
+  because their gums and palate close the cavity. The live-view fix is the real-time engines' standard one - CC5's
+  teeth and tongue shaders darken toward the back of the mouth (its "Front/Rear AO"); open, one trial when the mouth
+  is next. (His film render shows his stubble as black patches - CC Blender Tools' cards in Cycles, not ours.)
+  Blender 5.3's EEVEE has its screen-space occlusion on by default (`use_fast_gi` True, horizon scan, read in a
+  factory Blender) - it can't see occluders off the screen's depth, so the cavity stays lit. **Round 27 queued
+  (`batch_trials27.sh`, task bz4mc8529, after the chain):** `mouthao` (new, `scratchpad/apply_mouthao.py`) - the teeth
+  part's materials x a ramp from 1 at the front teeth to `rear` over `depth` mm (object space; raises if the part is
+  turned); variants 0.25/25, 0.1/20, 0.35/15 in the build-once mode, beside round 25's product and film renders and his.
 - **23:4x, THE ICT PRODUCT ROUNDS STOPPED - a loop by the new rule (one root cause, three fixes):** with the UVs
   carried at the basis the pink patches are gone, but p610 and p610m read worse than the product: torn, red-rimmed lid
   edges and a seam above the crease (`scratchpad/ict1c_eye_now.jpg`). The brows buried, the UVs on wrong faces, the
@@ -2682,6 +2702,42 @@ booked with just-direct-mocap.
   export never began, so no counted use; the count is read at the next launch) so the queued renders get the card.
   Every CC5 export shows that notice (OK / Upgrade), so her export needs the user present to press OK; everything
   after it is ready (`scratchpad/batch_ariana.sh`: both imports, then her views via `--cc5 ariana`).
+- **00:3x, THE HOURLY LOOP CHECK, ACTED ON:** hands, nails, lashes, brows, forehead, torso and smile had two or more
+  rounds that only moved them from close to closer - a loop by the rule. Their rounds stopped at 23:4x but their
+  verdicts were never written: written now as FINAL in `docs/gate/2026-11-10-verdict.md` (each with why it's closed:
+  the gap left is his character's settings or one person's skin content, or it runs only through a build job). The
+  method already changed (blind pick, quality defects only). No Edge, CC5 or Reallusion Hub open; the one Blender
+  is the end run (one failure so far - fixed when it reports).
+- **00:26, GATE 6 DONE (19 views, the man at HD Aaron's age, the mouth fix in):** at his age the stubble reads
+  salt-and-pepper like his and the drawn jaw line is gone; the open mouth's cavity dark (`scratchpad/g6_check.jpg`).
+  Still different: our teeth (the ICT teeth plan), paler lips, the scanned skin's cheek crease. Its blind page
+  `.dev/gate/blind/2026-11-11/index.html` (20 pairs, answers `BLIND-6`) supersedes the gate-5 page (a 25-year-old,
+  the lit mouth) - the one to judge. Unit 45, tools 67 passed; the Blender suite running.
+- **00:15, ROLL-OUT + GATE 6 + THE END RUN (`batch_rollout_1111.sh`, task b1alymggr):** the mouth's live-view
+  darkening into the product (`apply_mouth_dark.py`: `part_materials.CAVITY_REAR`/`CAVITY_DEPTH`, an EEVEE-target
+  output per teeth-part material, the film's output untouched; its test in `test_head.py`); the library's characters
+  rebuilt (backup `library_2026-11-11rollout`); GATE 6 - every view with the man at HD Aaron's age, the new baseline
+  for the blind pages; then unit, tools and the whole Blender suite (none since 33871b7).
+- **00:13, ROUND 27 - THE MOUTH'S LIVE-VIEW DARKNESS, MEASURED AGAINST THE FILM (`scratchpad/r27_mouth_jawOpen.jpg`,
+  `cavity_measure2.py`: the whole opening, mean L* and mean |dL*| from our Cycles render, film 20.8):** product 22.6 /
+  3.0; `mouthao` 0.25 over 25 mm 20.3 / **1.9**; 0.1/20 19.4 / 2.4; 0.35/15 19.9 / 2.4. **Pick (mine): rear 0.25 over
+  25 mm** - the nearest to the film. Into the product as the LIVE VIEW's only (an EEVEE-target output, as the cornea's
+  `_eevee_clear`): on the film too it would darken a cavity Cycles already shades (the film is the oracle). Patch
+  drafted for the next roll-out. Also 00:12: the gate's man at HD Aaron's age applied (`apply_gate_age.py`).
+- **00:08, ROUND 26 DONE - THE LIPS' LAST TRIAL, AND THE SECOND BLIND PAGE:** `lipsoft*4` (a crisper border) reads
+  the same as the product; `liptint 1.0/0.48/0.75` slightly redder; his keep fine vertical creases and a crisp red
+  border (`scratchpad/r26_lipvar.jpg`). **LIPS: FINAL - close, not proven by my eye; the gap is lip-texture content
+  (his creases), no more setting rounds**; the blind pages decide whether it reads as CG. Second page
+  `.dev/gate/blind/2026-11-10b/index.html` (6 pairs: ICT's teeth at the open and "aa" mouth, the stubble at his age at
+  lips, chin, face, the crisper redder lips; its answers start `BLIND-B`); `scratchpad/score_blind.py` scores either.
+- **00:00, ROUND 26's FIRST READ - THE STUBBLE AT HIS AGE (`scratchpad/r26_lips_now.jpg`: product | grey 0.25,
+  rise 40 | his):** at his age's share the stubble reads salt-and-pepper like his; the drawn black line along the
+  jaw's silhouette becomes a soft grey edge (a faint darker rim left at its lowest point). The verdict's "jaw edge
+  darker than his" was mostly the gate's age mismatch (its man is 25), not the stubble. The product needs no change
+  (the share follows age); the gate's comparison should run at his age. **Decision (mine): the gate's man at HD
+  Aaron's age from the next gate run** (`OURS_AGE` 0.615 set by the product's own slider before anything is grown -
+  `scratchpad/apply_gate_age.py`, dry-run clean, applied by a waiter after round 27 so no running Blender reads a
+  half-changed gate). Attack: every baseline since 11-05 was at 25 - the next gate is the new baseline, said so in it.
 - **23:0x, ROUND 26 QUEUED (`batch_trials26.sh`, task bdxvkr1kk, after the chain) - a GATE MISMATCH found in the
   stubble:** the gate's man is the library's Average man at age 0.5 (25 years), so the product grows him NO grey
   stubble (`stubble.GREY_SHARE` 0.25 x `GREY_BY_AGE`: 0 at 25, 1 at HD Aaron's ~40 = age 0.615); round 20 judged the

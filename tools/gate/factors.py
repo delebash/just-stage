@@ -399,6 +399,48 @@ def ictproxytrial(built: dict, stem: str) -> None:
     print("ICT PROXY TRIAL", path.name, flush=True)
 
 
+def mouthao(built: dict, rear: float, depth_mm: float) -> None:
+    """The teeth part's materials (teeth, gums, tongue) darkened toward the back of the mouth - base colour x a ramp
+    from 1 at the front teeth to `rear` `depth_mm` behind them (object space, the part's own depth axis) - round 27,
+    2026-11-11: the film shows our cavity dark where the live view lights it red (EEVEE's screen-space occlusion can't
+    see the lips and cheeks); CC5's teeth and tongue shaders paint the same darkening (Front/Rear AO)."""
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    teeth = parts.parts_of(built["body"])["teeth"]
+    rot = np.array(teeth.matrix_world)[:3, :3]
+    if np.abs(rot / np.linalg.norm(rot, axis=0) - np.eye(3)).max() > 0.05:
+        raise RuntimeError(f"the teeth part is turned in its object space - its depth axis isn't Y ({rot.round(3)})")
+    co = np.array([v.co[:] for v in teeth.data.vertices])
+    y_front = float(co[:, 1].min())
+    n = 0
+    for slot in teeth.material_slots:
+        nt = slot.material.node_tree
+        bsdf = next(x for x in nt.nodes if x.type == "BSDF_PRINCIPLED")
+        coords = nt.nodes.new("ShaderNodeTexCoord")
+        split = nt.nodes.new("ShaderNodeSeparateXYZ")
+        nt.links.new(coords.outputs["Object"], split.inputs[0])
+        ramp = nt.nodes.new("ShaderNodeMapRange")
+        ramp.clamp = True
+        ramp.inputs["From Min"].default_value = y_front
+        ramp.inputs["From Max"].default_value = y_front + depth_mm / 1000.0
+        ramp.inputs["To Min"].default_value = 1.0
+        ramp.inputs["To Max"].default_value = rear
+        nt.links.new(split.outputs["Y"], ramp.inputs["Value"])
+        base = bsdf.inputs["Base Color"]
+        times = nt.nodes.new("ShaderNodeVectorMath")
+        times.operation = "SCALE"
+        if base.is_linked:
+            nt.links.new(base.links[0].from_socket, times.inputs[0])
+        else:
+            times.inputs[0].default_value = tuple(base.default_value)[:3]
+        nt.links.new(ramp.outputs["Result"], times.inputs["Scale"])
+        nt.links.new(times.outputs["Vector"], base)
+        n += 1
+    if not n:
+        raise RuntimeError("the teeth part has no materials to darken")
+    print("MOUTH AO: rear", rear, "over", depth_mm, "mm on", n, "materials; front teeth at y", round(y_front, 4),
+          flush=True)
+
+
 def tear0(built: dict) -> None:
     """The tearline (ICT's ring, the wet film along the lid margins) hidden."""
     _hide_part(built, "eyeEdge")
@@ -2027,6 +2069,118 @@ def aaronteeth(built: dict) -> None:
     ours.hide_render = True
     print("AARON TEETH: scale", round(scale, 3), "front teeth moved", round(float(np.linalg.norm(b - a)) * 1000, 1),
           "mm; riding our jaw and head bones:", sorted(made), flush=True)
+
+
+#: ICT-FaceKit's Light model (MIT): its README's index table - #5 gums and tongue, #6 teeth (vertices, polygons)
+ICT_MOUTH = {"gums": ((14062, 17038), (14034, 17005)), "teeth": ((17039, 21450), (17006, 21495))}
+ICT_FETCHED = Path(__file__).resolve().parents[2] / "extension" / "juststage" / "data" / "fetched" / "ict"
+
+
+def _ict_obj(path: Path) -> tuple[np.ndarray, list[list[int]]]:
+    """An ICT OBJ's positions in Blender's axes and metres (y up, z forward, centimetres - `smile_transfer._obj`'s
+    reading) and its polygons."""
+    v, faces = [], []
+    for line in path.read_text().splitlines():
+        if line.startswith("v "):
+            v.append([float(x) for x in line.split()[1:4]])
+        elif line.startswith("f "):
+            faces.append([int(t.split("/")[0]) - 1 for t in line.split()[1:]])
+    v = np.array(v)
+    return np.c_[v[:, 0], -v[:, 2], v[:, 1]] * 0.01, faces
+
+
+def ictteeth(built: dict, scale: float = 1.0) -> None:
+    """ICT-FaceKit's scanned teeth, gums and tongue (MIT; the Light model's #5 and #6) in our mouth - round 25,
+    2026-11-10: the mouth's verdict names "ICT-FaceKit's scanned teeth" as its free route (ours read big, blocky and
+    uniform beside HD Aaron's smaller, irregular ones; `aaronteeth` showed our mouth and jaw carry CC5's). Placed as
+    `aaronteeth` places his (front teeth on our front teeth, x `scale`), in OUR mouth's materials (teeth, gums,
+    tongue - the trial compares the geometry and the arch, not a texture); each vertex rides our jaw joint by its
+    share of ICT's own `jawOpen` (its displacement over the lower incisors'), the rest our head bone; ours hidden.
+    A new set of objects: --alone."""
+    from mathutils import Matrix, Vector
+    from mathutils.kdtree import KDTree
+
+    parts = importlib.import_module("bl_ext.system.juststage.modules.head.parts")
+    materials = importlib.import_module("bl_ext.system.juststage.modules.head.part_materials")
+    skeleton = importlib.import_module("bl_ext.system.juststage.modules.rig.skeleton")
+    body = built["body"]
+    ours = parts.parts_of(body)["teeth"]
+    co, faces = _ict_obj(ICT_FETCHED / "generic_neutral_mesh.obj")
+    opened, _ = _ict_obj(ICT_FETCHED / "jawOpen.obj")
+    if len(co) != 26719 or len(opened) != len(co):
+        raise RuntimeError(f"ICT's Light model expected (26719 vertices), got {len(co)} / {len(opened)}")
+    (g0, t1), (p0, p1) = (ICT_MOUTH["gums"][0][0], ICT_MOUTH["teeth"][0][1]), (ICT_MOUTH["gums"][1][0],
+                                                                               ICT_MOUTH["teeth"][1][1])
+    polys = faces[p0:p1 + 1]
+    if any(not g0 <= i <= t1 for f in polys for i in f):
+        raise RuntimeError("ICT's mouth polygons reach outside #5-#6 - the index table doesn't match the file")
+    pts = co[g0:t1 + 1]
+    teeth = np.arange(ICT_MOUTH["teeth"][0][0] - g0, t1 - g0 + 1)
+    gums_all = np.arange(0, ICT_MOUTH["gums"][0][1] - g0 + 1)
+    # the jaw's share: ICT's jawOpen moves the lower teeth rigidly (their motion fitted - Kabsch), the tongue and lower
+    # gum with them, the upper teeth not at all; each vertex's share = its own displacement projected on the jaw's
+    # rigid motion at that point (1 on the jaw however near the hinge, 0 on the skull)
+    moved = opened[g0:t1 + 1] - pts
+    d = np.linalg.norm(moved, axis=1)
+    lower_teeth = teeth[d[teeth] > 0.25 * d[teeth].max()]
+    P, Q = pts[lower_teeth], opened[g0:t1 + 1][lower_teeth]
+    pc, qc = P.mean(0), Q.mean(0)
+    U, _s, Vt = np.linalg.svd((P - pc).T @ (Q - qc))
+    R = Vt.T @ np.diag([1.0, 1.0, float(np.sign(np.linalg.det(Vt.T @ U.T)))]) @ U.T
+    rigid = (pts - pc) @ R.T + qc - pts
+    fit_mm = float(np.sqrt((((P - pc) @ R.T + qc - Q) ** 2).sum(1).mean())) * 1000
+    share = np.clip((moved * rigid).sum(1) / np.maximum((rigid ** 2).sum(1), 1e-10), 0.0, 1.0)
+    share[np.linalg.norm(rigid, axis=1) < 0.0005] = 0.0  # at the hinge the jaw barely moves: the skull's
+    # gums against tongue (one piece in ICT): within 4 mm of a tooth the gum, beyond it the tongue and palate
+    tree = KDTree(len(teeth))
+    for i in teeth:
+        tree.insert(Vector(pts[i]), int(i))
+    tree.balance()
+    near = np.array([tree.find(Vector(p))[2] for p in pts])
+    mesh = bpy.data.meshes.new("ICT mouth (trial)")
+    mesh.from_pydata(pts.tolist(), [], [[i - g0 for i in f] for f in polys])
+    mesh.update()
+    obj = bpy.data.objects.new("ICT mouth (trial)", mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    regions = [r for r, _ in materials.PART_REGIONS["teeth"]]  # tongue, gums, teeth - `assign`'s slot order
+    for r in regions:
+        mesh.materials.append(next(m for m in ours.data.materials if m.name.startswith(f"JustStage {r.title()}")))
+    is_tooth = np.zeros(len(pts), bool)
+    is_tooth[teeth] = True
+    index = []
+    for poly in mesh.polygons:
+        vs = list(poly.vertices)
+        if is_tooth[vs].all():
+            index.append(regions.index("teeth"))
+        elif near[vs].mean() < 0.004:
+            index.append(regions.index("gums"))
+        else:
+            index.append(regions.index("tongue"))
+    mesh.polygons.foreach_set("material_index", index)
+    mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
+    gums = [int(i) for i in gums_all if near[i] < 0.004]
+    materials.tooth_heights(obj, {"gums": gums, "teeth": teeth.tolist()})
+    # placed: ICT's front teeth onto ours (teeth faces only on both - `parts_gate._front_teeth`)
+    slot = {m.name: i for i, m in enumerate(ours.data.materials)}
+    our_teeth_slot = next(i for n, i in slot.items() if n.startswith("JustStage Teeth"))
+    our_pts = pg._world(ours, evaluated=False)
+    our_ids = sorted({v for p in ours.data.polygons if p.material_index == our_teeth_slot for v in p.vertices})
+    a, b = np.array(pg._front_teeth(pts[teeth])), np.array(pg._front_teeth(our_pts[our_ids]))
+    obj.matrix_world = Matrix.Translation(b) @ Matrix.Scale(scale, 4) @ Matrix.Translation(-a)
+    arm = skeleton.skeleton_of(body)
+    for group, w in ((skeleton.JAW, share), (skeleton.HEAD, 1.0 - share)):
+        vg = obj.vertex_groups.new(name=group)
+        for i in np.flatnonzero(w > 1e-4):
+            vg.add([int(i)], float(w[i]), "REPLACE")
+    mod = obj.modifiers.new("JustStage skeleton", "ARMATURE")
+    mod.object = arm
+    ours.hide_render = True
+    bpy.context.view_layer.update()
+    print("ICT TEETH: scale", scale, "front teeth moved", round(float(np.linalg.norm(b - a)) * 1000, 1), "mm;",
+          "faces teeth / gums / tongue", [index.count(regions.index(r)) for r in ("teeth", "gums", "tongue")],
+          "; lower teeth", len(lower_teeth), "of", len(teeth), "(rigid fit", round(fit_mm, 2), "mm RMS); jaw share:",
+          "lower teeth p10", round(float(np.quantile(share[lower_teeth], 0.1)), 2), "upper teeth p90",
+          round(float(np.quantile(share[np.setdiff1d(teeth, lower_teeth)], 0.9)), 2), flush=True)
 
 
 def aaroncards(built: dict, stem: str = "aaron_skin_pinned", shaped: bool = False) -> None:
@@ -5141,6 +5295,11 @@ def factor(name: str):
         return FACTORS[name]
     if name.startswith("ictproxy*") and "+" not in name:  # ictproxy*p610 (a trial placement's npz) - --alone
         return lambda built: ictproxytrial(built, name.split("*", 1)[1])
+    if name.startswith("mouthao*") and "+" not in name:  # mouthao*0.25*25 (rear share, depth mm) - materials only
+        return lambda built: mouthao(built, *(float(x) for x in name.split("*")[1:3]))
+    if name.startswith("ictteeth") and "+" not in name:  # ictteeth[*1.05] (ICT's teeth, x scale) - --alone
+        k = float(name.split("*")[1]) if "*" in name else 1.0
+        return lambda built: ictteeth(built, k)
     if name.startswith("nailplate*") and "+" not in name:  # nailplate*0.7*0.88 (the fingers' plate: side, length)
         return lambda built: nailplate(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("build*") and "+" not in name:  # build*0.8*0.45 (muscle, weight sliders) - --alone
