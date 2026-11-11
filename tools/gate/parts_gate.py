@@ -36,7 +36,15 @@ from mathutils import Matrix, Vector
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".dev" / "gate" / "parts"
 CC5_DIR = ROOT / ".dev" / "gate" / "cc5_aaron_blender"
-CC5_BLEND = {"eevee": CC5_DIR / "aaron_hair_eevee.blend", "cycles": CC5_DIR / "aaron_hair_cycles.blend"}
+#: CC5's references (`--cc5`): each CC5 character exported to FBX (Blender pipeline, SubD 1) and imported by
+#: Reallusion's CC Blender Tools once per engine (its EEVEE and Cycles material builds differ). HD Aaron is the bar
+#: (TASKS "HD AARON IS THE BAR"); HD Ariana (Q-GATE-3, 2026-11-10) a second, a woman - "any character" checked
+#: against CC5 itself. Local test content, never shipped.
+CC5_REFS = {
+    "aaron": {"eevee": CC5_DIR / "aaron_hair_eevee.blend", "cycles": CC5_DIR / "aaron_hair_cycles.blend"},
+    "ariana": {e: ROOT / ".dev" / "gate" / "cc5_ariana_blender" / f"ariana_{e}.blend" for e in ("eevee", "cycles")},
+}
+CC5_BLEND = CC5_REFS["aaron"]
 #: the library's Average man in the Scan man A skin (2026-11-06: Daniel's skin is a face-test AI painting with painted
 #: lashes - docs/plans/2026-11-06-inputs-audit.md); recs 11, 8 for the scalp and brows; stubble as hair (build_ours)
 OURS = {"character": "Average man", "scalp": "JustStage short taper"}
@@ -47,7 +55,9 @@ SCALP_COLOUR = {"melanin": 0.96, "redness": 0.6}
 #: and his little grey (the style's fifth grey strands made it L* 41; a twentieth: 28 at melanin 0.93) - the scalp
 #: groom's "Strand colour" modifier input (Blender 5.3: mod.properties.inputs.<identifier>.value)
 SCALP_GREY = 0.05
-BROW_GREY = 0.2  # his brows: about a fifth of the coarse hairs white (gate run 5's eye view)
+#: the gate's man's brow greys - 0 since 2026-11-10 (round 23): at 0.2 (a fifth near-white, gate run 5's eye view)
+#: they read silver-grey at the face view where HD Aaron's read dark brown; the product's own brows (no greys) match
+BROW_GREY = 0.0
 LENS = 85.0  # quality-gate.md §3
 SENSOR = 36.0
 SIZE = 2048
@@ -217,11 +227,11 @@ def colour_scalp(groom) -> None:
         getattr(mod.properties.inputs, ident).value = SCALP_GREY
 
 
-def build_cc5(scene, engine: str, inputs: dict[str, float] | None = None) -> dict:
-    """HD Aaron from CC Blender Tools' import, appended with his armature, materials and drivers. `inputs`: values set
-    on his skin shaders' group inputs (e.g. "Micro Normal Strength": 0) - one factor at a time, to see what his look
-    owes to each map."""
-    with bpy.data.libraries.load(str(CC5_BLEND[engine]), link=False) as (src, dst):
+def build_cc5(scene, engine: str, inputs: dict[str, float] | None = None, ref: str = "aaron") -> dict:
+    """A CC5 reference (CC5_REFS; HD Aaron unless `ref` says) from CC Blender Tools' import, appended with its
+    armature, materials and drivers. `inputs`: values set on the skin shaders' group inputs (e.g. "Micro Normal
+    Strength": 0) - one factor at a time, to see what the look owes to each map."""
+    with bpy.data.libraries.load(str(CC5_REFS[ref][engine]), link=False) as (src, dst):
         dst.objects = list(src.objects)
     kept = [o for o in dst.objects if o is not None and o.type in {"MESH", "ARMATURE"} and o.name != "Cube"]
     for obj in kept:
@@ -477,13 +487,14 @@ def place(cam, target: Vector, direction: Vector, up: Vector, width: float) -> N
 def render(who: str, engine: str, out_dir: Path, names: list[str], size: int, samples: int,
            cc5_inputs: dict[str, float] | None = None, tag: str = "", skin: str = "", brows: str = "own",
            character: str = "", scalp: str = "library", prepare=None, lights: str = "stage",
-           variants: list[tuple[str, object]] | None = None) -> None:
+           variants: list[tuple[str, object]] | None = None, cc5: str = "aaron") -> None:
     """`prepare(built)`, if given, changes the built character before any render - one factor at a time
     (`tools/gate/factors.py`). `variants` [(tag, prepare)]: the character built once, and before each variant every
     object's materials set back to fresh copies of the built ones (a variant may change only its materials' trees and
     load images - one that changes anything else runs alone) - a trial in about a minute instead of a rebuild's six."""
     scene, cam = _stage()
-    built = build_ours(scene, skin, brows, character, scalp) if who == "ours" else build_cc5(scene, engine, cc5_inputs)
+    built = (build_ours(scene, skin, brows, character, scalp) if who == "ours"
+             else build_cc5(scene, engine, cc5_inputs, cc5))
     if variants:
         slots = [(obj, i, s.material) for obj in scene.objects for i, s in enumerate(obj.material_slots) if s.material]
         pristine = {m.name: m.copy() for m in {m for _, _, m in slots}}
@@ -678,6 +689,7 @@ if __name__ == "__main__":
     p.add_argument("command", choices=("render", "sheet"))
     p.add_argument("--who", choices=("ours", "cc5"))
     p.add_argument("--engine", choices=("eevee", "cycles"), default="eevee")
+    p.add_argument("--cc5", choices=tuple(CC5_REFS), default="aaron", help="which CC5 reference --who cc5 renders")
     p.add_argument("--out", type=Path, default=OUT / "2026-11-05")
     p.add_argument("--views", default=",".join(VIEWS))
     p.add_argument("--size", type=int, default=SIZE)
@@ -701,6 +713,6 @@ if __name__ == "__main__":
     if a.command == "render":
         inputs = {k.strip(): float(v) for k, v in (pair.split("=") for pair in a.cc5_inputs.split(";") if pair)}
         render(a.who, a.engine, out, a.views.split(","), a.size, a.samples, inputs, a.tag, a.skin, a.brows, a.character,
-               a.scalp, lights=a.lights)
+               a.scalp, lights=a.lights, cc5=a.cc5)
     else:
         sheet(out)

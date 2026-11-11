@@ -214,6 +214,29 @@ proved / disproved. The gate: `docs/standards/quality-gate.md`.
   the module, its tests, the eye / ear / face renders; the generator already ran: `data/generated/ict/head_proxy.npz`)
   -> `batch_trials24.sh` (bv16uo6v3 - the hands' sheen, the nails' bed share). Drafted: `q_base4/apply_ict_step2.py`
   and `batch_ict2.sh` (the dressed human wears the head; the export drops the faces under it).
+  22:4x: THE ROLL-OUT COMMITTED 33871b7 (pushed): the end run 223 passed / 1 failed - the new card test's follow
+  check used weight (0.5 mm at the cranium) - changed to height, passed alone. Q-GATE-3: CC5 open, HD Ariana loaded,
+  her export (the bridge's "Blender" preset, POST `/export/fbx`) WAITS ON CC5's TRIAL NOTICE (OK / Upgrade - the
+  user's; notified 22:38); box to 23:10, then CC5 closed (no use spent) and the export retried with the user. THE
+  CHAIN (task bh2w6e697): `batch_ict1.sh` (the cc5refs, ICT-proxy and brow-grey patches, the proxy's tests, then the
+  eye / ear / face renders) -> `batch_trials24.sh` -> `batch_trials25.sh` (the mouth: `ictteeth` - ICT's scanned
+  teeth - and the film oracle); every render waits until CC5 is closed or `q_gate3/cc5_done` exists. Next after
+  her export: `q_gate3/cct_import.py` for EEVEE and Cycles -> `.dev/gate/cc5_ariana_blender/ariana_{eevee,cycles}.blend`
+  (the gate reads them by `--cc5 ariana`).
+  23:0x: Q-BASE-4 step 1's tests found the ICT head NEVER BOUND (the cage's concave / collinear faces - fixed: the
+  cage ends with a Triangulate; the bind raises when it fails) and the brows' roots BURIED 1.6 mm under it (fixed:
+  `ict_head.place(project=True)` - on our skin beyond the kept lids; the product's head re-placed, keep 8-15). Trial
+  6-10 keep (`.dev/gate/ict/head_proxy_p610.npz`): brows on the surface (p50 +0.03 mm). UNCOMMITTED in the tree:
+  cage.py, ict_proxy.py, test_ict_proxy.py, ict_head.py, make_ict_proxy.py, factors.py (`ictproxy*<stem>`), docs.
+  THE CHAIN NOW: task bqoeye7wp (`batch_ict1b.sh` - renders `ictproxy` and `ictproxy*p610` once the card is free ->
+  round 24 -> round 25). HD Ariana's batch ready: `scratchpad/batch_ariana.sh` (imports, then her views).
+  23:4x THE METHOD CHANGED (the user: "stuck in loop ... taking way too long"): verdicts by a BLIND A/B page (ours vs
+  HD Aaron shuffled, "which looks more real at close-up", `scratchpad/make_blind.py`), quality defects only - no
+  rounds on his traits; trials prove, product integration waits (the ICT head's product wiring is a build job: its
+  own UVs, the skin re-baked, the lid layers on its loops). Gate 5 (task bzmv3klni: the product now, every view, ONE
+  build) feeds the page; round 24 skipped; rounds 25 (ICT teeth) and 26 (stubble at his age, lips) follow. A
+  PreToolUse hook (`F:/ClaudeCode/config/hooks/preflight-batch.js`) refuses any batch without answered PREFLIGHT
+  lines (loop, cheapest, measures, reminders, the user's question).
 - **2026-11-09 17:0x:** committed since 14:0x - lower lashes colour and thickness, lip creases (ff494f2), the nails'
   outline (fa83f03), the hands' tint (6f19979). The user, 16:4x: I had asked for two downloads for ~12 hours under a
   standing go - both fetched now: ISSA (`.dev/downloads/issa_2026-11-09/`) - read: the tone model matches measured

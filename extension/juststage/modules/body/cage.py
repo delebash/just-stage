@@ -8,7 +8,14 @@ Deform needs its target's topology unchanged after binding
 another mesh at render and flew apart. The cage is a linked duplicate of the body - the same mesh data, so the same
 shape keys (macros, details, the mixer, expressions, the floor) - with the body's deform modifiers (its helper mask,
 its skeleton's armature) and no Multires: one topology always, deformed as the body is. Binding to a low cage is the
-riggers' usual way (a mesh deform cage); hidden from the viewport and render, and from exports."""
+riggers' usual way (a mesh deform cage); hidden from the viewport and render, and from exports.
+
+Last on the cage a Triangulate modifier: Surface Deform's target "must not contain concave faces" nor "faces with
+collinear edges" (the manual's "Target Mesh Validity", read 2026-11-10 at projects.blender.org/blender/blender-manual,
+`manual/modeling/modifiers/deform/surface_deform.rst`). hm08 has concave quads round the eyes and the lid cut's
+five-sided faces (`body/base.cut`: a vertex on a straight edge) - the ICT head bound to them failed silently
+(2026-11-10 22:5x: is_bound False; bound at once to the triangulated basis). Triangles are never concave; Beauty keeps
+the cut's straight-edge vertex out of a zero-area one (measured: smallest 0.005 mm2)."""
 
 from __future__ import annotations
 
@@ -17,6 +24,7 @@ import bpy
 NAME = "JustStage deform cage"
 PART = "deform_cage"
 SKIP = {"MULTIRES", "SUBSURF"}  # the body's subdivision: the one thing the cage must not have
+TRIANGULATE = "JustStage triangulate"  # the cage's last modifier: a valid Surface Deform target
 
 
 def of(character: bpy.types.Object) -> bpy.types.Object | None:
@@ -36,12 +44,15 @@ def _copy_modifier(src: bpy.types.Modifier, dst_obj: bpy.types.Object) -> None:
 
 
 def sync(character: bpy.types.Object, cage: bpy.types.Object) -> None:
-    """The cage's modifiers as the body's deform ones, in order, without the subdivision."""
+    """The cage's modifiers as the body's deform ones, in order, without the subdivision - then triangulated."""
     for mod in list(cage.modifiers):
         cage.modifiers.remove(mod)
     for mod in character.modifiers:
         if mod.type not in SKIP:
             _copy_modifier(mod, cage)
+    tri = cage.modifiers.new(TRIANGULATE, "TRIANGULATE")
+    tri.quad_method = "BEAUTY"
+    tri.ngon_method = "BEAUTY"
 
 
 def get(character: bpy.types.Object) -> bpy.types.Object:

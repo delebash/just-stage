@@ -2609,6 +2609,87 @@ booked with just-direct-mocap.
   round 24's waiter fired between my reading its script and editing it (to hold it for CC5) - the edit landed under
   the running shell, which then read a shifted line and died at a parse error ("unexpected EOF") before any Blender;
   reverted at once; the hand-roughness patch had applied once. Round 25's waiter (on round 24's end marker) stopped.
+- **22:40-22:5x, Q-BASE-4 STEP 1's TESTS: 9 of 9 FAILED - three faults, each found at its source (probes
+  `scratchpad/ict_bind_probe*.py`, Blender on the CPU while the card waits on CC5):** (1) the tests read the lid rims
+  on the evaluated cage - its helper mask renumbers the lid cut's vertices (they sit after the helpers: index 19161
+  of 13,508) -> the rims from `build.shaped_coords` (hm08's numbering, the keys mixed); (2) the skin-swap test's
+  helper skipped `skin.set_tone`, which makes the skin material -> as `test_skin_maps`' helper; (3) **THE HEAD NEVER
+  BOUND** (`is_bound` False, silently - so it never followed a slider). Bisected: the cranium and the ear side bind,
+  the eye band (z 1.505-1.559) fails on both eyes; not the head's mesh (finite, no loose vertices), not coincident
+  vertices (none within 0.01 mm), not the units (x100 data / 0.01 scale fails alike), not the socket's back faces;
+  **the target**: Blender's manual (projects.blender.org/blender/blender-manual, `surface_deform.rst`, "Target Mesh
+  Validity": the target "must not contain concave faces" nor "faces with collinear edges") - the cage has 16 concave
+  quads under the head and the lid cut's 24 five-sided faces (a vertex on a straight edge); **triangulated at the
+  basis it binds** (Beauty: no zero-area triangle, smallest 0.005 mm2). And `_bind_at_basis` evaluated the bind only
+  after unmuting the keys (the operator only flags it) - so it would have bound at the shaped state. **Fixed (mine,
+  attacked: one cage for cards and head - `attach_from_file` refits and rebinds a library card hair, so saved hairs
+  survive; a second cage only for the head would evaluate the body twice):** `cage.sync` ends with a Triangulate
+  (Beauty / Beauty); `_bind_at_basis` evaluates while muted and RAISES when not bound; the tests' three fixes. The
+  scratch drafts in `q_base4/` are now stale - the repo is the source.
+- **22:5x-23:0x, THE BROWS UNDER THE HEAD (the design's named risk, now measured):** with the bind fixed, the eye
+  openings pass at every shape (the test now measures as the generator snaps - to the rim's EDGES - and asks each
+  shape to stay within 0.3 mm of the placement's own residual at the basis); but 3,017 of 3,440 brow roots lay UNDER
+  the proxy (`ict_brow_probe.py`: median 1.55 mm, p10 3.2 mm - even 15-20 mm from the eye, outside the kept lids):
+  the wrap alone stops short of our skin (the generator's "off our skin p50 0.74 / p90 2.97 mm"), and a brow hair
+  rising 8 deg from 1.5 mm under the surface comes out ~10 mm along. **Decision (mine, attacked: the design said
+  "the full wrap everywhere, so brows, scalp and stubble on hm08's skin sit on it" - the wrap never met that; MakeHuman's
+  proxies hug the base where other things attach; re-rooting every groom onto the proxy instead touches brows, lashes,
+  stubble and scalp - a wider change):** `ict_head.place(..., project=True)` - beyond the kept lids and ears the head
+  is the wrap's closest point ON our skin; `make_ict_proxy.py place [--keep LO HI] [--out PATH]` (always projected).
+  Placed: off our skin p50 0.00 / p90 1.22 mm (keep 8-15, now the product's file) and 1.17 (keep 6-10, trial
+  `.dev/gate/ict/head_proxy_p610.npz`); ~20 s each on the CPU. The brows' 10-15 mm band still sits in the 8-15 blend -
+  the p610 trial asks whether a narrower kept lid keeps the look (the crease is within ~6 mm) and frees the brows.
+  Trial factor `ictproxy*<stem>` (a trial's npz). Chain restarted as task bqoeye7wp: `batch_ict1b.sh` (the tests, then
+  `ictproxy` and `ictproxy*p610` at eye / ear / face / three-quarter / profile beside his - no patch steps; the old
+  `batch_ict1.sh` would have copied the stale drafts back over the fixes) -> round 24 -> round 25.
+- **23:4x, THE ICT PRODUCT ROUNDS STOPPED - a loop by the new rule (one root cause, three fixes):** with the UVs
+  carried at the basis the pink patches are gone, but p610 and p610m read worse than the product: torn, red-rimmed lid
+  edges and a seam above the crease (`scratchpad/ict1c_eye_now.jpg`). The brows buried, the UVs on wrong faces, the
+  margins torn - one ROOT CAUSE: our skin's texture and lid layers are laid out for hm08's lids, and nearest-face
+  carrying onto ICT's different lids can't fit them. Leading pipelines (CC5, MetaHuman) give a head its OWN UV
+  layout and textures authored or baked for it; the standard move is a Selected-to-Active bake of our skin onto ICT's
+  own UVs and the lid layers re-authored on ICT's lid loops. **Decision (mine):** the PROOF for the eye and ear rests
+  on the trial that already answered it - ICT's free head on our man read NEAR EQUAL (`head6.png`, 11-10
+  `.dev/gate/parts/2026-11-10icthead`), which goes into the blind A/B as ours; the proxy for every character becomes
+  a BUILD job (ICT's own UVs, the skin re-baked onto them, the lid layers on its loops), out of the proof. No more
+  ICT rounds tonight.
+- **23:3x, DECISION (mine; the user, 23:3x: "are you getting stuck in loop, what is wrong why is it taking so long"):
+  NO MORE TWEAK ROUNDS.** 26 rounds today; hands, nails, lashes, brows, stubble and lips each took several nudges
+  (x0.8, x0.65 ...) from "close" to "closer" and none to proven - where the gap is content, nudging can't close it,
+  and the boxes were never closed. From now: each close part gets ONE last trial on its last named cause, then a
+  FINAL verdict (proven, or not - with what's missing): hands = gloss (round 24), nails = the plate's colour (round
+  24), mouth = ICT's teeth (round 25), stubble = at his age (round 26), lips = border and red (round 26). Lashes,
+  torso, forehead and scalp hair get their final verdicts now from the evidence in hand. The ICT head (eye, ear,
+  smile, mouth) stays the one structural route open. When the queue ends every part has a written verdict.
+- **23:1x, THE FIRST PRODUCT-WAY ICT RENDERS (`ict_eye_p815.jpg`, `ict_ear_p815.jpg`): BROKEN - and why.** The nose
+  bridge a smooth pink patch with jagged black outlines, a staircase patch on the forehead, black seam lines across
+  the ear and neck: our UVs on the wrong faces - `add` carried them from the body at its SHAPED state (keys on,
+  Multires) while the head sat at the basis (head6's trial placed it on the shaped body, so there they matched).
+  Fixed (`q_base4/apply_uv_at_basis.py`, applied 23:2x with no Blender running): the UVs come from the cage with the
+  keys muted, right before the bind. Also seen: the lower lashes hanging loose over the cheek and a knob at the inner
+  corner - our lashes root on OUR lid margin, ICT's kept lid differs there by ~1 mm -> `ict_head.place(margin_mm=)`
+  (our margin within 0.5 mm of the opening, fading to ICT's lid by 2.5 mm; the crease band stays ICT's):
+  `head_proxy_p610m.npz` (the snap before it 0.57 mm p50, was 1.37). The rest of that render run was stopped (the same
+  UV fault on the 6-10 head); the queue restarted (task bzmv3klni): `batch_ict1c.sh` (p610 and p610m at eye, ear,
+  face, three-quarter) -> rounds 24, 25, 26. Edge, opened by CC5's launch at 22:35, closed 23:2x (the user asked).
+- **23:1x, THE MOUTH'S DARK CORNERS, measured (`scratchpad/mouth_corner_probe.py`: rays from the front, 2 mm steps,
+  a dressed man at jawOpen 0.5):** the opening holds the tongue in the middle and OUR SIDE TEETH AND GUMS at its
+  corners (teeth and gums hit at x 12-18 mm off the middle, just inside the lip corners) - the dark grey there is our
+  side teeth and gums deep behind the lips in the cheeks' shadow, where his side teeth come forward into the light
+  (the arch's shape and depth, not a missing surface). Round 25's `ictteeth` (ICT's scanned arch) is the test.
+- **23:08, Q-GATE-3 PAUSED ON THE USER'S CLICK:** the box (to 23:10) ran out with CC5's trial notice still open (its
+  main thread blocked 33 min; nothing exported - `.dev/gate/cc5_ariana_blender/` empty); CC5 closed (taskkill - the
+  export never began, so no counted use; the count is read at the next launch) so the queued renders get the card.
+  Every CC5 export shows that notice (OK / Upgrade), so her export needs the user present to press OK; everything
+  after it is ready (`scratchpad/batch_ariana.sh`: both imports, then her views via `--cc5 ariana`).
+- **23:0x, ROUND 26 QUEUED (`batch_trials26.sh`, task bdxvkr1kk, after the chain) - a GATE MISMATCH found in the
+  stubble:** the gate's man is the library's Average man at age 0.5 (25 years), so the product grows him NO grey
+  stubble (`stubble.GREY_SHARE` 0.25 x `GREY_BY_AGE`: 0 at 25, 1 at HD Aaron's ~40 = age 0.615); round 20 judged the
+  rise at grey 0 as well (its files' `x0`). The verdict's "the jaw's edge still darker than his (his grey with age)"
+  compared a 25-year-old's stubble with a 40-year-old's. (a) Regrown at his age's share 0.25, rise 40 (shipped),
+  beside his at lips, chin, face. (b) The lips (the 15:33 lips view, `scratchpad/lips_now.jpg`): his vermilion border
+  crisp and his lips redder; ours blurred on purpose (11-10 morning) and paler - `lipsoft*4`, `liptint*1.0*0.48*0.75`,
+  both.
 - **22:4x, ROUND 25 QUEUED - THE MOUTH (`batch_trials25.sh`, after round 24).** Looked at the product's open mouth
   beside his (`scratchpad/mouth_r19.jpg`): ours big, blocky, uniform teeth; dark grey gaps at both corners where his
   side teeth show; a lit red palate where his cavity reads dark brown; his lips redder with a crisp border. 11-08's
@@ -2978,6 +3059,20 @@ the colour (a* 11.1 vs 13.0; L* is the tone slider). Round 2: pores x0.6 on the 
 - A distance compared between two characters is measured from a landmark both share in the same pose - never from the
   gate's anchors across an expression (2026-11-10 18:5x: "his upper lip 3 mm lower" at jawOpen came from the mouth
   anchor, which moves 5.3 mm on ours and 1.1 mm on his; against each mouth's own incisal edge the lips sit alike).
+- Count a trial's cost before queuing it (the user, 2026-11-10 23:4x: "do you really need to rebuild the whole
+  character to test nails or glos ... are you thinking smarlty"): a material change goes through the gate's
+  build-once variants (about a minute each), never `--alone` (a 5-6 minute rebuild each - round 24 queued six for
+  six material settings); a view hides what is out of its frame; a shape or fit question gets a CPU measurement
+  first (tonight's one-minute probes found the unbound head, the buried brows and the mouth's corners).
+- Judge parity, not likeness: the bar is that a person can't tell ours from CC5's at close-up - a BLIND pick, not
+  my labelled side-by-side; his gloss, tendons, lip colour and greys are his character's settings, not quality
+  (2026-11-10 23:4x: 26 rounds chased HD Aaron's traits and no part could ever be "equal" to another person).
+- Launching an app can open the browser too (2026-11-10 22:35: CC5's launch opened Edge on a Reallusion page; it
+  stayed open 45 minutes - the user: "why is the browswer still open"). After any launch and at its close, list
+  the msedge processes and close what the launch opened (memory `browser-launch`).
+- A bound modifier is checked bound: Surface Deform fails SILENTLY on an invalid target (2026-11-10 22:5x: the ICT
+  head's tests all failed with a 0.0 mm move before `is_bound` was read) - read `is_bound` after the evaluation the
+  bind operator asks for, and raise in product code; the target's validity is the manual's list.
 - Never edit a batch script once its waiter can start it - the waiter may fire between the read and the write, and
   bash reads a running script by offset (2026-11-10 22:36: an edit to hold round 24 for CC5 landed under the running
   shell, which died at a parse error). Hold a batch by a flag its own script already checks, or stop its waiter

@@ -372,6 +372,33 @@ def handrough(built: dict, k: float) -> None:
     print("HAND ROUGH x", k, "on", n, "BSDFs", flush=True)
 
 
+def ictproxy(built: dict) -> None:
+    """Q-BASE-4's product route on trial (2026-11-10, `docs/plans/2026-11-10-ict-head.md` §0): ICT-FaceKit's head as a
+    proxy over ours (`modules/head/ict_proxy.add`: placed once on the basis, bound through the deform cage, our skin
+    on it, the covered faces hidden) - the eye's lid and the ear's concha beside HD Aaron's."""
+    ict_proxy = importlib.import_module("bl_ext.system.juststage.modules.head.ict_proxy")
+    head = ict_proxy.add(built["body"])
+    built["objects"] = built["objects"] + [head]
+    print("ICT PROXY on", built["body"].name, len(head.data.vertices), "vertices", flush=True)
+
+
+def ictproxytrial(built: dict, stem: str) -> None:
+    """`ictproxy` with a trial's placement (`tools/make_ict_proxy.py place --out .dev/gate/ict/head_proxy_<stem>.npz`)
+    instead of the product's file - 2026-11-10 23:0x: the head projected onto our skin beyond the kept lids, at two
+    keep zones."""
+    ict_proxy = importlib.import_module("bl_ext.system.juststage.modules.head.ict_proxy")
+    path = ICT_TRIALS / f"head_proxy_{stem}.npz"
+    with np.load(path) as d:
+        data = {k: d[k] for k in d.files}
+    product = ict_proxy._data
+    ict_proxy._data = lambda: data
+    try:
+        ictproxy(built)
+    finally:
+        ict_proxy._data = product
+    print("ICT PROXY TRIAL", path.name, flush=True)
+
+
 def tear0(built: dict) -> None:
     """The tearline (ICT's ring, the wet film along the lid margins) hidden."""
     _hide_part(built, "eyeEdge")
@@ -383,7 +410,7 @@ def occl0(built: dict) -> None:
 
 
 FACTORS = {f.__name__: f for f in (relief0, pores0, micro0, colourpores0, colourflat, handspart, margindry,
-                                   margintint0, tear0, occl0, nohair, nobeard)}
+                                   margintint0, tear0, occl0, nohair, nobeard, ictproxy)}
 
 
 #: the shine trials: a key -> the Principled input it scales on both of the skin's BSDFs (the film's and the live view's)
@@ -5112,6 +5139,8 @@ def exprset(built: dict, expression: str, key: str, value: float) -> None:
 def factor(name: str):
     if name in FACTORS:
         return FACTORS[name]
+    if name.startswith("ictproxy*") and "+" not in name:  # ictproxy*p610 (a trial placement's npz) - --alone
+        return lambda built: ictproxytrial(built, name.split("*", 1)[1])
     if name.startswith("nailplate*") and "+" not in name:  # nailplate*0.7*0.88 (the fingers' plate: side, length)
         return lambda built: nailplate(built, *(float(x) for x in name.split("*")[1:3]))
     if name.startswith("build*") and "+" not in name:  # build*0.8*0.45 (muscle, weight sliders) - --alone

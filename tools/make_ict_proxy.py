@@ -6,7 +6,7 @@ docs/plans/2026-11-10-ict-head.md §0 and step 1's recipe). MakeHuman's own way 
 to the base mesh once, which then follows every target (here by Surface Deform, `modules/head/ict_proxy.py`).
 
     1. python tools/dev.py blender -b --python tools/make_ict_proxy.py -- export     (hm08's basis: every key muted)
-    2. .dev/venv-tools/Scripts/python -I tools/make_ict_proxy.py place               (ict_head.place, head6's options)
+    2. .dev/venv-tools/Scripts/python -I tools/make_ict_proxy.py place [--keep LO HI] [--margin LO HI] [--out PATH]
 
 Writes `extension/juststage/data/generated/ict/head_proxy.npz`: `verts` (ICT's face and head-and-neck, 11,248, on the
 basis, the body's object space), `counts` / `flat` (its polygons), `eyes` (ICT's eyeball centres, placed). head6's
@@ -53,14 +53,27 @@ def export() -> None:
     print("EXPORTED the basis:", len(co), "vertices,", len(tris), "skin triangles ->", BASIS, flush=True)
 
 
-def place() -> None:
+def place(args: list[str]) -> None:
+    """`--keep LO HI`: ICT's lids kept within LO mm of the eye opening, fading to ours by HI (head6's 8 15 by default);
+    `--margin LO HI`: the lids' margin ours within LO mm, fading to ICT's by HI; `--out PATH`: a trial's file instead
+    of the product's. Beyond the kept zones the head lies ON our skin (`project`,
+    2026-11-10: the wrap alone left the brows' roots 1.6 mm under it)."""
     sys.path.insert(0, str(ROOT / "tools" / "gate"))
     import ict_head
 
-    ict_head.place(BASIS, ICT, PROXY, keep_lids=False, crease_mm=CREASE_MM, keep_mm=ict_head.EYE_KEEP_LID_MM)
-    print("PROXY", PROXY, flush=True)
+    keep = ict_head.EYE_KEEP_LID_MM
+    if "--keep" in args:
+        i = args.index("--keep")
+        keep = (float(args[i + 1]), float(args[i + 2]))
+    margin = None
+    if "--margin" in args:
+        i = args.index("--margin")
+        margin = (float(args[i + 1]), float(args[i + 2]))
+    out = Path(args[args.index("--out") + 1]) if "--out" in args else PROXY
+    ict_head.place(BASIS, ICT, out, keep_lids=False, crease_mm=CREASE_MM, keep_mm=keep, project=True, margin_mm=margin)
+    print("PROXY", out, "keep", keep, "margin", margin, flush=True)
 
 
 if __name__ == "__main__":
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
-    {"export": export, "place": place}[args[0]]()
+    export() if args[0] == "export" else place(args[1:])

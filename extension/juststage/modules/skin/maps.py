@@ -1231,6 +1231,11 @@ def apply(character: bpy.types.Object, skin: bpy.types.Material) -> bpy.types.Ma
     else:
         slots.append(mine)
     character.juststage.skin_material = mine
+    from ..head import ict_proxy
+
+    head = ict_proxy.of(character)
+    if head is not None:  # the ICT head (Q-BASE-4) wears the body's skin
+        head.data.materials[0] = mine
     if old is not None and old.users == 0:
         bpy.data.materials.remove(old)
     props = character.juststage

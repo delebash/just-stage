@@ -124,7 +124,11 @@ def _crease(verts: np.ndarray, tri: np.ndarray, eyes: list[np.ndarray], depth_mm
 
 
 def place(ours_npz: Path, ict_dir: Path, out: Path, keep_lids: bool = False, crease_mm: float = 0.0,
-          keep_mm: tuple | None = None) -> None:
+          keep_mm: tuple | None = None, project: bool = False, margin_mm: tuple | None = None) -> None:
+    """`project`: beyond the kept lids and ears the head lies exactly on our skin (the proxy: what is grown on our
+    skin - brows, stubble, scalp - stays on its surface). `margin_mm` (LO, HI): the lids' margin ours too - within LO
+    of the eye opening, fading to ICT's kept lid by HI (our lashes root on our lid margin, 2026-11-10: ICT's kept
+    margin left the lower lashes hanging off it)."""
     import trimesh
     from trimesh import registration
 
@@ -173,6 +177,11 @@ def place(ours_npz: Path, ict_dir: Path, out: Path, keep_lids: bool = False, cre
 
     keep = keep_mm or (EYE_KEEP_WIDE_MM if keep_lids else EYE_KEEP_MM)
     w = np.minimum(ramp(d_eye, keep), ramp(d_ear, EAR_KEEP_MM))[:, None]
+    if margin_mm:
+        w = np.maximum(w, 1.0 - ramp(d_eye, margin_mm)[:, None])
+    if project:  # outside ICT's kept lids and ears, ON our skin: the wrap alone stops short (2026-11-10: p50 0.74 / p90
+        # 2.97 mm off - the brows' roots, grown on our skin, lay 1.6 mm under the proxy at the median)
+        wrapped = trimesh.proximity.closest_point(target, wrapped)[0]
     head_v = soft + w * (wrapped - soft)
     # every eye-opening vertex onto our rim (its nearest point on our rim's edges), spread over SNAP_MM
     rim_set = set(rim.tolist())
